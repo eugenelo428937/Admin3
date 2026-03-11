@@ -22,43 +22,43 @@ import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext.js";
 import { Container } from "@mui/material";
 
 // Existing admin components
-import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
-import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
-import AdminSubjectList from "./components/admin/subjects/SubjectList";
-import AdminSubjectForm from "./components/admin/subjects/SubjectForm";
-import AdminSubjectDetail from "./components/admin/subjects/SubjectDetail";
-import AdminSubjectImport from "./components/admin/subjects/SubjectImport";
-import AdminProductList from "./components/admin/products/ProductList";
-import AdminProductDetail from "./components/admin/products/ProductDetail";
-import AdminProductForm from "./components/admin/products/ProductForm";
-import AdminProductImport from "./components/admin/products/ProductImport";
+import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList.js";
+import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm.js";
+import AdminSubjectList from "./components/admin/subjects/SubjectList.js";
+import AdminSubjectForm from "./components/admin/subjects/SubjectForm.js";
+import AdminSubjectDetail from "./components/admin/subjects/SubjectDetail.js";
+import AdminSubjectImport from "./components/admin/subjects/SubjectImport.js";
+import AdminProductList from "./components/admin/products/ProductList.js";
+import AdminProductDetail from "./components/admin/products/ProductDetail.js";
+import AdminProductForm from "./components/admin/products/ProductForm.js";
+import AdminProductImport from "./components/admin/products/ProductImport.js";
 
 // US3: New catalog admin components
-import AdminExamSessionSubjectList from "./components/admin/exam-session-subjects/ExamSessionSubjectList";
-import AdminExamSessionSubjectForm from "./components/admin/exam-session-subjects/ExamSessionSubjectForm";
-import AdminProductVariationList from "./components/admin/product-variations/ProductVariationList";
-import AdminProductVariationForm from "./components/admin/product-variations/ProductVariationForm";
-import AdminProductBundleList from "./components/admin/product-bundles/ProductBundleList";
-import AdminProductBundleForm from "./components/admin/product-bundles/ProductBundleForm";
+import AdminExamSessionSubjectList from "./components/admin/exam-session-subjects/ExamSessionSubjectList.js";
+import AdminExamSessionSubjectForm from "./components/admin/exam-session-subjects/ExamSessionSubjectForm.js";
+import AdminProductVariationList from "./components/admin/product-variations/ProductVariationList.js";
+import AdminProductVariationForm from "./components/admin/product-variations/ProductVariationForm.js";
+import AdminProductBundleList from "./components/admin/product-bundles/ProductBundleList.js";
+import AdminProductBundleForm from "./components/admin/product-bundles/ProductBundleForm.js";
 
 // US4: Store admin components
-import AdminStoreProductList from "./components/admin/store-products/StoreProductList";
-import AdminStoreProductForm from "./components/admin/store-products/StoreProductForm";
-import AdminRecommendationList from "./components/admin/recommendations/RecommendationList";
-import AdminRecommendationForm from "./components/admin/recommendations/RecommendationForm";
-import AdminPriceList from "./components/admin/prices/PriceList";
-import AdminPriceForm from "./components/admin/prices/PriceForm";
-import AdminStoreBundleList from "./components/admin/store-bundles/StoreBundleList";
-import AdminStoreBundleForm from "./components/admin/store-bundles/StoreBundleForm";
+import AdminStoreProductList from "./components/admin/store-products/StoreProductList.js";
+import AdminStoreProductForm from "./components/admin/store-products/StoreProductForm.js";
+import AdminRecommendationList from "./components/admin/recommendations/RecommendationList.js";
+import AdminRecommendationForm from "./components/admin/recommendations/RecommendationForm.js";
+import AdminPriceList from "./components/admin/prices/PriceList.js";
+import AdminPriceForm from "./components/admin/prices/PriceForm.js";
+import AdminStoreBundleList from "./components/admin/store-bundles/StoreBundleList.js";
+import AdminStoreBundleForm from "./components/admin/store-bundles/StoreBundleForm.js";
 
 // New Session Setup wizard
-import NewSessionSetup from "./components/admin/new-session-setup/NewSessionSetup";
+import NewSessionSetup from "./components/admin/new-session-setup/NewSessionSetup.js";
 
 // US5: User admin components
-import AdminUserProfileList from "./components/admin/user-profiles/UserProfileList";
-import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileForm";
-import AdminStaffList from "./components/admin/staff/StaffList";
-import AdminStaffForm from "./components/admin/staff/StaffForm";
+import AdminUserProfileList from "./components/admin/user-profiles/UserProfileList.js";
+import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileForm.js";
+import AdminStaffList from "./components/admin/staff/StaffList.js";
+import AdminStaffForm from "./components/admin/staff/StaffForm.js";
 
 // US6: Email System admin components
 import EmailSettingsList from "./components/admin/email/settings/EmailSettingsList";
@@ -77,18 +77,18 @@ import ClosingSalutationList from "./components/admin/email/closing-salutations/
 import ClosingSalutationForm from "./components/admin/email/closing-salutations/ClosingSalutationForm";
 
 // Public pages
-import ProductList from "./components/Product/ProductList";
-import CheckoutPage from "./components/Ordering/CheckoutPage";
-import OrderHistory from "./components/User/OrderHistory";
-import TutorialSummaryBarContainer from "./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer"; // T015
-import ForgotPasswordForm from "./components/User/ForgotPasswordForm";
-import ResetPasswordForm from "./components/User/ResetPasswordForm";
-import AccountActivation from "./components/User/AccountActivation";
-import ResendActivation from "./components/User/ResendActivation";
-import EmailVerification from "./components/User/EmailVerification";
-import StyleGuide from "./pages/StyleGuide";
-import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer";
-import Registration from './pages/Registration';
+import ProductList from "./components/Product/ProductList.js";
+import CheckoutPage from "./components/Ordering/CheckoutPage.js";
+import OrderHistory from "./components/User/OrderHistory.js";
+import TutorialSummaryBarContainer from "./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js"; // T015
+import ForgotPasswordForm from "./components/User/ForgotPasswordForm.js";
+import ResetPasswordForm from "./components/User/ResetPasswordForm.js";
+import AccountActivation from "./components/User/AccountActivation.js";
+import ResendActivation from "./components/User/ResendActivation.js";
+import EmailVerification from "./components/User/EmailVerification.js";
+import StyleGuide from "./pages/StyleGuide.js";
+import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer.js";
+import Registration from './pages/Registration.js';
 import Footer from "./components/Footer";
 import "./App.scss";
 
@@ -99,7 +99,7 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	// reCAPTCHA v3 configuration
-	const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+	const RECAPTCHA_SITE_KEY = import.meta.env?.VITE_RECAPTCHA_SITE_KEY;
 
 	// Validate reCAPTCHA configuration
 	useEffect(() => {
