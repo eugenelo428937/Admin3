@@ -8,7 +8,6 @@ import {
    Container,
    IconButton,
    Box,
-   Tooltip,
    useTheme,
 } from "@mui/material";
 import {
@@ -42,7 +41,7 @@ const MainNavBar = () => {
    const navigate = useNavigate();
    const dispatch = useDispatch();
    const theme = useTheme();
-   const { isInternal } = useConfig();
+   const { isInternal, configLoaded } = useConfig();
    // State for navbar expansion
    const [expanded, setExpanded] = useState(false);
 
@@ -83,6 +82,8 @@ const MainNavBar = () => {
 
    // Fetch all navigation data in a single API call (skip in internal mode)
    useEffect(() => {
+      if (!configLoaded) return;
+
       if (isInternal) {
          setLoadingNavigation(false);
          return;
@@ -105,7 +106,7 @@ const MainNavBar = () => {
          }
       };
       fetchNavigationData();
-   }, [isInternal]);
+   }, [configLoaded, isInternal]);
 
    // Handle navigating to product list with subject filter
    const handleSubjectClick = (subjectCode) => {
@@ -196,7 +197,7 @@ const MainNavBar = () => {
          {/* TopNavBar hidden on mobile (sm and smaller), hidden entirely in internal mode */}
          {!isInternal && (
             <div className="d-none d-sm-block">
-               <TopNavBar onOpenSearch={handleOpenSearchModal}/>
+               <TopNavBar onOpenSearch={handleOpenSearchModal} />
             </div>
          )}
          <AppBar
@@ -204,43 +205,28 @@ const MainNavBar = () => {
             component="nav"
             aria-label="Main navigation"
             elevation={5}
-            sx={{              
-               alignContent:"center",
+            sx={{
+               alignContent: "center",
             }}
             className="navbar navbar-expand-md navbar-main align-content-center justify-content-between"
          >
             <Toolbar disableGutters sx={{ width: "100%" }}>
-               <Container                  
+               <Container
                   maxWidth={false}
                   disableGutters
                   sx={{
                      display: "flex",
                      justifyContent: "space-between",
-                     px:"0 !Important",
+                     px: "0 !Important",
                   }}
                >
                   {/* Left Box - Action icons (mobile only, left-aligned) */}
                   <div className="d-flex justify-content-start align-items-center order-1 order-lg-3 d-md-none">
                      {isInternal ? (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                           <Tooltip title="Knowledge Base">
-                              <IconButton
-                                 aria-label="knowledge base"
-                                 variant="navAction"
-                              >
-                                 <KnowledgeBaseIcon />
-                              </IconButton>
-                           </Tooltip>
-                           <Tooltip title="Search">
-                              <IconButton
-                                 onClick={handleOpenSearchModal}
-                                 aria-label="search"
-                                 variant="navAction"
-                              >
-                                 <SearchIcon />
-                              </IconButton>
-                           </Tooltip>
-                        </Box>
+                        <AdminNavActions
+                           onOpenAuth={handleOpenAuthModal}
+                           onOpenSearch={handleOpenSearchModal}
+                        />
                      ) : (
                         <MainNavActions
                            onOpenAuth={handleOpenAuthModal}
@@ -260,14 +246,19 @@ const MainNavBar = () => {
                   <Box
                      id="navbar-menu"
                      className="justify-content-lg-center justify-content-md-start order-3 order-md-2 d-none d-md-flex"
-                     sx={{                        
+                     sx={{
                         flexDirection: { xs: "column", md: "row" },
-                        width:"auto",
+                        width: "auto",
                      }}
-                     
                   >
                      {/* Desktop Navigation - Hidden on mobile */}
-                     <Container disableGutters sx={{ display: { xs: "none", md: "flex" }, width:"auto" }}>
+                     <Container
+                        disableGutters
+                        sx={{
+                           display: { xs: "none", md: "flex" },
+                           width: "auto",
+                        }}
+                     >
                         {isInternal ? (
                            <AdminNavigationMenu
                               onCollapseNavbar={() => setExpanded(false)}
@@ -342,25 +333,10 @@ const MainNavBar = () => {
                      {/* Desktop actions - hidden on mobile */}
                      <div className="d-none d-md-flex">
                         {isInternal ? (
-                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                              <Tooltip title="Knowledge Base">
-                                 <IconButton
-                                    aria-label="knowledge base"
-                                    variant="navAction"
-                                 >
-                                    <KnowledgeBaseIcon />
-                                 </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Search">
-                                 <IconButton
-                                    onClick={handleOpenSearchModal}
-                                    aria-label="search"
-                                    variant="navAction"
-                                 >
-                                    <SearchIcon />
-                                 </IconButton>
-                              </Tooltip>
-                           </Box>
+                           <AdminNavActions
+                              onOpenAuth={handleOpenAuthModal}
+                              onOpenSearch={handleOpenSearchModal}
+                           />
                         ) : (
                            <MainNavActions
                               onOpenAuth={handleOpenAuthModal}
@@ -386,7 +362,13 @@ const MainNavBar = () => {
                            display: { xs: "flex", md: "none" },
                         }}
                      >
-                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.spacingTokens.xl[1] }}>
+                        <Box
+                           sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              height: theme.spacingTokens.xl[1],
+                           }}
+                        >
                            <span className="toggler-icon top-bar"></span>
                            <span className="toggler-icon middle-bar"></span>
                            <span className="toggler-icon bottom-bar"></span>
