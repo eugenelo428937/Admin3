@@ -1,8 +1,9 @@
 // src/components/MobileNavigation.js
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../hooks/useAuth.js";
+import { useConfig } from "../../contexts/ConfigContext.js";
+import { useCart } from "../../contexts/CartContext.js";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
 import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from "@mui/material";
 
@@ -417,7 +418,7 @@ const MobileNavigation = ({
 										group
 									)
 								}>
-								<ListItemText primary={<Typography variant="mainnavlink">group.name</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{group.name}</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>

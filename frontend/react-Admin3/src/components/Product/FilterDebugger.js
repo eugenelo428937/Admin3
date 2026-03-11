@@ -7,7 +7,7 @@ const FilterDebugger = ({
     navbarFilters, 
     finalParams 
 }) => {
-    if (process.env.NODE_ENV !== 'development') {
+    if (!import.meta.env?.DEV) {
         return null;
     }
 

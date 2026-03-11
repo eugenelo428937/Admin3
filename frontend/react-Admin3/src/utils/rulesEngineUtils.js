@@ -239,7 +239,7 @@ const extractMessage = (content, fallback) => {
   }
 
   // Debug logging for development
-  if (process.env.NODE_ENV === 'development' && !messageText) {
+  if (import.meta.env?.DEV && !messageText) {
 
   }
 

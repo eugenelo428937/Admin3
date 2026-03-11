@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for bundleService
  *
@@ -12,17 +13,17 @@
  * - determineProductType: Determine product type from component
  */
 
-jest.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     productsUrl: 'http://test-api/products',
@@ -30,12 +31,12 @@ jest.mock('../../config', () => ({
   },
 }));
 
-import bundleService from '../bundleService';
-import httpService from '../httpService';
+import bundleService from '../bundleService.js';
+import httpService from '../httpService.js';
 
 describe('bundleService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getAllBundles', () => {
@@ -101,7 +102,7 @@ describe('bundleService', () => {
     test('should return error on API failure', async () => {
       const mockError = new Error('Network error');
       httpService.get.mockRejectedValue(mockError);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const result = await bundleService.getAllBundles();
 
@@ -139,7 +140,7 @@ describe('bundleService', () => {
     test('should return error on API failure', async () => {
       const mockError = new Error('Bundle not found');
       httpService.get.mockRejectedValue(mockError);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const result = await bundleService.getBundleContents(999);
 
@@ -242,7 +243,7 @@ describe('bundleService', () => {
     test('should return error when getBundleContents fails', async () => {
       const mockError = new Error('Bundle fetch failed');
       httpService.get.mockRejectedValue(mockError);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const result = await bundleService.processBundleForCart(mockBundleProduct);
 
@@ -299,7 +300,7 @@ describe('bundleService', () => {
     test('should return error on API failure', async () => {
       const mockError = new Error('Metadata fetch failed');
       httpService.get.mockRejectedValue(mockError);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const result = await bundleService.getBundleMetadata(999);
 
@@ -372,7 +373,7 @@ describe('bundleService', () => {
     test('should return error when getBundleContents fails', async () => {
       const mockError = new Error('Validation failed');
       httpService.get.mockRejectedValue(mockError);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const result = await bundleService.validateBundle(mockBundleProduct);
 

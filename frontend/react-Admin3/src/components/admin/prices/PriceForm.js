@@ -5,9 +5,9 @@ import {
   FormControl, FormLabel, Select, MenuItem, CircularProgress
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import priceService from '../../../services/priceService';
-import storeProductService from '../../../services/storeProductService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import priceService from '../../../services/priceService.js';
+import storeProductService from '../../../services/storeProductService.js';
 
 const AdminPriceForm = () => {
     const { isSuperuser } = useAuth();

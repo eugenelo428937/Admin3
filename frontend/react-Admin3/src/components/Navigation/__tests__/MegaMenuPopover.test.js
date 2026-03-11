@@ -1,13 +1,15 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import MegaMenuPopover from '../MegaMenuPopover';
+import MegaMenuPopover from '../MegaMenuPopover.js';
 
+import appTheme from '../../../theme';
 expect.extend(toHaveNoViolations);
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderWithTheme = (component) => {
   return render(
@@ -122,7 +124,7 @@ describe('MegaMenuPopover', () => {
   });
 
   test('calls onOpen when menu opens', async () => {
-    const onOpen = jest.fn();
+    const onOpen = vi.fn();
     renderWithTheme(<MegaMenuPopover {...defaultProps} onOpen={onOpen} />);
 
     await userEvent.click(screen.getByRole('button', { name: /test menu/i }));
@@ -131,7 +133,7 @@ describe('MegaMenuPopover', () => {
   });
 
   test('calls onClose when menu closes', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     renderWithTheme(<MegaMenuPopover {...defaultProps} onClose={onClose} />);
 
     await userEvent.click(screen.getByRole('button', { name: /test menu/i }));

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for httpService
  *
@@ -5,34 +6,34 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../httpService');
+vi.unmock('../httpService.js');
 
 // Create mock axios instance and direct get function - must use var for hoisting
-var mockAxiosGet = jest.fn();
-var mockAuthServiceRefreshToken = jest.fn();
+var mockAxiosGet = vi.fn();
+var mockAuthServiceRefreshToken = vi.fn();
 var mockAxiosInstance = {
-  get: jest.fn(),
-  post: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn(),
-  patch: jest.fn(),
+  get: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  patch: vi.fn(),
   interceptors: {
-    request: { use: jest.fn() },
-    response: { use: jest.fn() },
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
   },
 };
 
 // Mock axios module - axios.get is used directly for CSRF token fetch
-jest.mock('axios', () => ({
+vi.mock('axios', () => ({
   __esModule: true,
   default: {
-    create: jest.fn(() => mockAxiosInstance),
+    create: vi.fn(() => mockAxiosInstance),
     get: mockAxiosGet,
   },
 }));
 
 // Mock authService
-jest.mock('../authService', () => ({
+vi.mock('../authService.js', () => ({
   __esModule: true,
   default: {
     refreshToken: mockAuthServiceRefreshToken,
@@ -40,18 +41,18 @@ jest.mock('../authService', () => ({
 }));
 
 // Mock loggerService
-jest.mock('../loggerService', () => ({
+vi.mock('../loggerService.js', () => ({
   __esModule: true,
   default: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
 // Mock config
-jest.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',
@@ -60,7 +61,7 @@ jest.mock('../../config', () => ({
 }));
 
 import axios from 'axios';
-import authService from '../authService';
+import authService from '../authService.js';
 
 describe('httpService', () => {
   let requestInterceptorFn;
@@ -68,9 +69,9 @@ describe('httpService', () => {
   let responseSuccessFn;
   let responseErrorFn;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Import httpService to trigger axios.create and interceptor setup
-    require('../httpService');
+    await import('../httpService.js');
 
     // Capture the interceptor callbacks
     if (mockAxiosInstance.interceptors.request.use.mock.calls.length > 0) {
@@ -83,8 +84,8 @@ describe('httpService', () => {
     }
   });
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
     localStorage.clear();
     // Reset cookies
     Object.defineProperty(document, 'cookie', {
@@ -94,19 +95,19 @@ describe('httpService', () => {
   });
 
   describe('axios instance creation', () => {
-    test('should have request interceptor function available', () => {
+    test('should have request interceptor function available', async () => {
       // The interceptor function is captured and used by other tests
       // This verifies the module sets up interceptors correctly
       expect(requestInterceptorFn).toBeDefined();
       expect(typeof requestInterceptorFn).toBe('function');
     });
 
-    test('should have response success interceptor function available', () => {
+    test('should have response success interceptor function available', async () => {
       expect(responseSuccessFn).toBeDefined();
       expect(typeof responseSuccessFn).toBe('function');
     });
 
-    test('should have response error interceptor function available', () => {
+    test('should have response error interceptor function available', async () => {
       expect(responseErrorFn).toBeDefined();
       expect(typeof responseErrorFn).toBe('function');
     });
@@ -307,7 +308,7 @@ describe('httpService', () => {
       expect(result.method).toBe('PATCH');
     });
 
-    test('should have request interceptor error handler defined', () => {
+    test('should have request interceptor error handler defined', async () => {
       expect(requestInterceptorErrorFn).toBeDefined();
       expect(typeof requestInterceptorErrorFn).toBe('function');
     });
@@ -319,7 +320,7 @@ describe('httpService', () => {
   });
 
   describe('response interceptor', () => {
-    test('should pass through successful responses', () => {
+    test('should pass through successful responses', async () => {
       const response = { data: { test: 'data' }, status: 200 };
       const result = responseSuccessFn(response);
 
@@ -360,7 +361,7 @@ describe('httpService', () => {
     });
 
     test('should handle network errors (no response)', async () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const error = { message: 'Network Error' };
 

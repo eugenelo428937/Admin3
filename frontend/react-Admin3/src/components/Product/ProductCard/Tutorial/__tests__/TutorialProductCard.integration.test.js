@@ -1,23 +1,27 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real contexts
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
-jest.unmock('../../../../../contexts/CartContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
+vi.unmock('../../../../../contexts/CartContext.js');
 
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
 }));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import TutorialProductCard from '../TutorialProductCard';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider } from '../../../../../contexts/CartContext';
+import TutorialProductCard from '../TutorialProductCard.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider } from '../../../../../contexts/CartContext.js';
 
 // Mock tutorial service
-jest.mock('../../../../../services/tutorialService', () => ({
-  getTutorialVariations: jest.fn(() => Promise.resolve([]))
+vi.mock('../../../../../services/tutorialService.js', () => ({
+  getTutorialVariations: vi.fn(() => Promise.resolve([]))
 }));
 
 // Helper to get SpeedDialAction button by label (tooltipOpen creates duplicate labels)
@@ -71,7 +75,7 @@ describe('TutorialProductCard Integration with Epic 2 Components', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 

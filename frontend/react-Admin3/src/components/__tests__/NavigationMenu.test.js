@@ -1,16 +1,17 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import NavigationMenu from '../Navigation/NavigationMenu';
+import NavigationMenu from '../Navigation/NavigationMenu.js';
 import theme from '../../theme';
 
 // Mock useAuth
-jest.mock('../../hooks/useAuth', () => ({
-  useAuth: jest.fn(),
+vi.mock('../../hooks/useAuth.js', () => ({
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.js';
 
 const defaultProps = {
   subjects: [{ id: 1, code: 'CM2', description: 'Financial Mathematics' }],
@@ -20,13 +21,13 @@ const defaultProps = {
   loadingProductGroups: false,
   loadingDistanceLearning: false,
   loadingTutorial: false,
-  handleSubjectClick: jest.fn(),
-  handleProductClick: jest.fn(),
-  handleProductGroupClick: jest.fn(),
-  handleSpecificProductClick: jest.fn(),
-  handleProductVariationClick: jest.fn(),
-  handleMarkingVouchersClick: jest.fn(),
-  onCollapseNavbar: jest.fn(),
+  handleSubjectClick: vi.fn(),
+  handleProductClick: vi.fn(),
+  handleProductGroupClick: vi.fn(),
+  handleSpecificProductClick: vi.fn(),
+  handleProductVariationClick: vi.fn(),
+  handleMarkingVouchersClick: vi.fn(),
+  onCollapseNavbar: vi.fn(),
 };
 
 const renderWithProviders = (props = {}) =>
@@ -45,7 +46,7 @@ const openAdminMenu = () => {
 
 describe('NavigationMenu - New Session Setup', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('shows New Session Setup button for superusers in admin mega menu', async () => {

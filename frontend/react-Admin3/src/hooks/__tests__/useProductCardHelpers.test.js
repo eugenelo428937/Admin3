@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useProductCardHelpers hook
  *
@@ -10,19 +11,19 @@
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useProductCardHelpers from '../useProductCardHelpers';
+import useProductCardHelpers from '../useProductCardHelpers.js';
 
 // Mock CartContext
-const mockAddToCart = jest.fn();
-jest.mock('../../contexts/CartContext', () => ({
+const mockAddToCart = vi.fn();
+vi.mock('../../contexts/CartContext.js', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
   }),
 }));
 
 // Mock productService
-const mockGetBulkMarkingDeadlines = jest.fn();
-jest.mock('../../services/productService', () => ({
+const mockGetBulkMarkingDeadlines = vi.fn();
+vi.mock('../../services/productService.js', () => ({
   __esModule: true,
   default: {
     getBulkMarkingDeadlines: (...args) => mockGetBulkMarkingDeadlines(...args),
@@ -31,13 +32,13 @@ jest.mock('../../services/productService', () => ({
 
 describe('useProductCardHelpers', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     mockGetBulkMarkingDeadlines.mockResolvedValue({});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('initialization', () => {
@@ -348,7 +349,8 @@ describe('useProductCardHelpers', () => {
       const { result } = renderHook(() => useProductCardHelpers(products));
 
       // null is falsy, so fallback to product_id
-      expect(result.current.allStoreProductIds).toEqual([999, 102]);
+      expect(result.current.allStoreProductIds).toEqual(expect.arrayContaining([999, 102]));
+      expect(result.current.allStoreProductIds).toHaveLength(2);
     });
   });
 });

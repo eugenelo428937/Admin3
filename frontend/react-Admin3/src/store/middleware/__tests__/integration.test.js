@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Redux Middleware Integration Tests (Story 1.16)
  *
@@ -18,14 +19,14 @@ import {
   createMockStore,
   waitForStateUpdate,
   simulateUrlChange,
-} from '../../../test-utils/testHelpers';
+} from '../../../test-utils/testHelpers.js';
 import {
   setSubjects,
   setCategories,
   setProductTypes,
   setSearchQuery,
   clearAllFilters,
-} from '../../slices/filtersSlice';
+} from '../../slices/filtersSlice.js';
 
 describe('Redux Middleware Integration', () => {
 
@@ -246,7 +247,7 @@ describe('Redux Middleware Integration', () => {
       // Mock performance API
       const performanceMarks = [];
       const originalMark = window.performance.mark;
-      window.performance.mark = jest.fn((name) => {
+      window.performance.mark = vi.fn((name) => {
         performanceMarks.push(name);
         return originalMark.call(window.performance, name);
       });
@@ -259,7 +260,7 @@ describe('Redux Middleware Integration', () => {
       });
 
       // Should have performance marks (in development mode)
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         expect(performanceMarks.some((mark) => mark.includes('urlSync'))).toBe(true);
       }
 
@@ -272,7 +273,7 @@ describe('Redux Middleware Integration', () => {
 
       const performanceMarks = [];
       const originalMark = window.performance.mark;
-      window.performance.mark = jest.fn((name) => {
+      window.performance.mark = vi.fn((name) => {
         performanceMarks.push(name);
         return originalMark.call(window.performance, name);
       });
@@ -286,7 +287,7 @@ describe('Redux Middleware Integration', () => {
       });
 
       // Should track validation (in development mode)
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         expect(performanceMarks.some((mark) => mark.includes('validation'))).toBe(true);
       }
 
@@ -301,7 +302,7 @@ describe('Redux Middleware Integration', () => {
 
       // Mock middleware tracking
       const originalDispatch = store.dispatch;
-      store.dispatch = jest.fn((action) => {
+      store.dispatch = vi.fn((action) => {
         executionOrder.push('dispatch');
         return originalDispatch(action);
       });

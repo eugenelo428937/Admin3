@@ -245,7 +245,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
 
         throw new Error(
           `Found components missing vatUtils import:\n${message}\n\n` +
-          `Import { formatVatLabel } from '../../utils/vatUtils' to format VAT rates.`
+          `Import { formatVatLabel } from '../../utils/vatUtils.js' to format VAT rates.`
         );
       }
 

@@ -1,17 +1,19 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import NewSessionSetup from '../NewSessionSetup';
+import NewSessionSetup from '../NewSessionSetup.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
-  useAuth: jest.fn(),
+vi.mock('../../../../hooks/useAuth.js', () => ({
+  useAuth: vi.fn(),
 }));
 
 // Mock child components to isolate integration behavior
-jest.mock('../StepExamSession', () => {
-  return function MockStepExamSession({ onSessionCreated }) {
+vi.mock('../StepExamSession.js', () => ({
+  __esModule: true,
+  default: function MockStepExamSession({ onSessionCreated }) {
     return (
       <div data-testid="step-exam-session">
         <button
@@ -32,43 +34,47 @@ jest.mock('../StepExamSession', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-jest.mock('../StepSubjects', () => {
-  return function MockStepSubjects({ onComplete, isExistingSession }) {
+vi.mock('../StepSubjects.js', () => ({
+  __esModule: true,
+  default: function MockStepSubjects({ onComplete, isExistingSession }) {
     return (
       <div data-testid="step-subjects">
         <span data-testid="is-existing">{String(isExistingSession)}</span>
         <button onClick={onComplete}>Save Subjects</button>
       </div>
     );
-  };
-});
+  },
+}));
 
-jest.mock('../StepMaterials', () => {
-  return function MockStepMaterials({ onComplete }) {
+vi.mock('../StepMaterials.js', () => ({
+  __esModule: true,
+  default: function MockStepMaterials({ onComplete }) {
     return (
       <div data-testid="step-materials">
         <button onClick={onComplete}>Complete Materials</button>
       </div>
     );
-  };
-});
+  },
+}));
 
-jest.mock('../StepTutorials', () => {
-  return function MockStepTutorials({ onComplete }) {
+vi.mock('../StepTutorials.js', () => ({
+  __esModule: true,
+  default: function MockStepTutorials({ onComplete }) {
     return (
       <div data-testid="step-tutorials">
         <button onClick={onComplete}>Set up later</button>
       </div>
     );
-  };
-});
+  },
+}));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithProviders = (initialPath = '/admin/new-session-setup') =>
   render(
@@ -86,7 +92,7 @@ const renderWithProviders = (initialPath = '/admin/new-session-setup') =>
 
 describe('NewSessionSetup - Integration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({ isSuperuser: true });
   });
 

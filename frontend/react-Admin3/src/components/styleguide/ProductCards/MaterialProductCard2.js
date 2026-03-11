@@ -29,7 +29,7 @@ import {
    TipsAndUpdatesOutlined,
    FolderCopyOutlined,
 } from "@mui/icons-material";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 
 const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...props }) => {
    const [selectedVariation, setSelectedVariation] = useState("printed");

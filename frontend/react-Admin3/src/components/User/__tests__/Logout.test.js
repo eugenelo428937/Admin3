@@ -1,16 +1,17 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/Logout.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Logout from '../Logout';
+import Logout from '../Logout.js';
 
 // Mock fetch
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('Logout', () => {
-  const mockSetIsAuthenticated = jest.fn();
+  const mockSetIsAuthenticated = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 
@@ -49,7 +50,7 @@ describe('Logout', () => {
 
     test('handles API error gracefully', async () => {
       global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderLogout();
 

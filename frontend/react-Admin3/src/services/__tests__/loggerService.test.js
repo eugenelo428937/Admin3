@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for loggerService
  *
@@ -10,28 +11,35 @@
  */
 
 describe('loggerService', () => {
-  const originalEnv = process.env.NODE_ENV;
+  const originalMode = import.meta.env.MODE;
+  const originalDev = import.meta.env.DEV;
+  const originalProd = import.meta.env.PROD;
 
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'info').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
-    jest.resetModules();
-    process.env.NODE_ENV = originalEnv;
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.resetModules();
+    import.meta.env.MODE = originalMode;
+    import.meta.env.DEV = originalDev;
+    import.meta.env.PROD = originalProd;
   });
 
   describe('in development environment', () => {
     let loggerService;
 
-    beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'development';
-      loggerService = require('../loggerService').default;
+    beforeEach(async () => {
+      vi.resetModules();
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     describe('debug', () => {
@@ -80,10 +88,13 @@ describe('loggerService', () => {
   describe('in production environment', () => {
     let loggerService;
 
-    beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'production';
-      loggerService = require('../loggerService').default;
+    beforeEach(async () => {
+      vi.resetModules();
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     describe('debug', () => {
@@ -114,10 +125,13 @@ describe('loggerService', () => {
   describe('in test environment', () => {
     let loggerService;
 
-    beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'test';
-      loggerService = require('../loggerService').default;
+    beforeEach(async () => {
+      vi.resetModules();
+      import.meta.env.MODE = 'test';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = false;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     test('should log debug in test environment', () => {

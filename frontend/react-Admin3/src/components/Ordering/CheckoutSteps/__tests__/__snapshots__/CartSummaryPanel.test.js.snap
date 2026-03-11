@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders collapsed cart summary 1`] = `
+exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > renders collapsed cart summary 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
-  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-81fgub-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);"
 >
   <div
     class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
@@ -12,19 +12,19 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
       class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
     >
       <span
-        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-gjb7fe-MuiTypography-root"
       >
         <div
           class="MuiBox-root css-69i1ev"
         >
           <h2
-            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h6 css-zgu9xz-MuiTypography-root"
           >
             Order Summary
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -48,7 +48,7 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
     class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
   >
     <p
-      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-187dmm9-MuiTypography-root"
     >
       2
        
@@ -65,28 +65,28 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <table
-            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            class="MuiTable-root css-4gshm9-MuiTable-root"
           >
             <thead
               class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-o7jwfe-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-2og303-MuiTableCell-root"
                   scope="col"
                 >
                   Product
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-127g9qy-MuiTableCell-root"
                   scope="col"
                 >
                   Qty
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-mkksdf-MuiTableCell-root"
                   scope="col"
                 >
                   Total
@@ -97,18 +97,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
               class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-o7jwfe-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1alwytg-MuiTableCell-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-7focpm-MuiTypography-root"
                   >
                     Test Product 1
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1bl3oup-MuiTypography-root"
                   >
                     TEST1
                      • 
@@ -116,36 +116,36 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
                   </span>
                   <br />
                   <code
-                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-o7q92u-MuiTypography-root"
                   >
                     N/A
                   </code>
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-b3z6yw-MuiTableCell-root"
                 >
                   1
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-sat8fs-MuiTableCell-root"
                 >
                   £
                   50.00
                 </td>
               </tr>
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-o7jwfe-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1alwytg-MuiTableCell-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-7focpm-MuiTypography-root"
                   >
                     Test Product 2
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1bl3oup-MuiTypography-root"
                   >
                     TEST2
                      • 
@@ -153,18 +153,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
                   </span>
                   <br />
                   <code
-                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-o7q92u-MuiTypography-root"
                   >
                     N/A
                   </code>
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-b3z6yw-MuiTableCell-root"
                 >
                   2
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-sat8fs-MuiTableCell-root"
                 >
                   £
                   150.00
@@ -173,21 +173,21 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
             </tbody>
           </table>
           <div
-            class="MuiBox-root css-1yuhvjn"
+            class="MuiBox-root css-19ug521"
           >
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 Subtotal:
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 200.00
@@ -200,11 +200,11 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
                 class="MuiBox-root css-70qvj9"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
                 >
                   VAT (20%)
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-om8r9v-MuiTypography-root"
                   >
                     (
                     United Kingdom
@@ -213,25 +213,25 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
                 </p>
               </div>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 40.00
               </p>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 Total:
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 £
                 240.00
@@ -242,18 +242,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
       </div>
     </div>
     <div
-      class="MuiBox-root css-1yuhvjn"
+      class="MuiBox-root css-19ug521"
     >
       <div
         class="MuiBox-root css-gg4vpm"
       >
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           Total:
         </h6>
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           £
           240.00
@@ -264,10 +264,10 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
 </div>
 `;
 
-exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders empty cart summary 1`] = `
+exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > renders empty cart summary 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
-  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-81fgub-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);"
 >
   <div
     class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
@@ -276,19 +276,19 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
       class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
     >
       <span
-        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-gjb7fe-MuiTypography-root"
       >
         <div
           class="MuiBox-root css-69i1ev"
         >
           <h2
-            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h6 css-zgu9xz-MuiTypography-root"
           >
             Order Summary
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -312,7 +312,7 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
     class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
   >
     <p
-      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-187dmm9-MuiTypography-root"
     >
       0
        
@@ -329,28 +329,28 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <table
-            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            class="MuiTable-root css-4gshm9-MuiTable-root"
           >
             <thead
               class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-o7jwfe-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-2og303-MuiTableCell-root"
                   scope="col"
                 >
                   Product
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-127g9qy-MuiTableCell-root"
                   scope="col"
                 >
                   Qty
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-mkksdf-MuiTableCell-root"
                   scope="col"
                 >
                   Total
@@ -362,21 +362,21 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
             />
           </table>
           <div
-            class="MuiBox-root css-1yuhvjn"
+            class="MuiBox-root css-19ug521"
           >
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 Subtotal:
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 0.00
@@ -389,11 +389,11 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
                 class="MuiBox-root css-70qvj9"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
                 >
                   VAT (20%)
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-om8r9v-MuiTypography-root"
                   >
                     (
                     United Kingdom
@@ -402,25 +402,25 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
                 </p>
               </div>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 0.00
               </p>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 Total:
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 £
                 0.00
@@ -431,18 +431,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
       </div>
     </div>
     <div
-      class="MuiBox-root css-1yuhvjn"
+      class="MuiBox-root css-19ug521"
     >
       <div
         class="MuiBox-root css-gg4vpm"
       >
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           Total:
         </h6>
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           £
           0.00
@@ -453,10 +453,10 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
 </div>
 `;
 
-exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders multi-item cart summary 1`] = `
+exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > renders multi-item cart summary 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
-  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-81fgub-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);"
 >
   <div
     class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
@@ -465,19 +465,19 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
       class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
     >
       <span
-        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-gjb7fe-MuiTypography-root"
       >
         <div
           class="MuiBox-root css-69i1ev"
         >
           <h2
-            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h6 css-zgu9xz-MuiTypography-root"
           >
             Order Summary
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -501,7 +501,7 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
     class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
   >
     <p
-      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-187dmm9-MuiTypography-root"
     >
       2
        
@@ -518,28 +518,28 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <table
-            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            class="MuiTable-root css-4gshm9-MuiTable-root"
           >
             <thead
               class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-o7jwfe-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-2og303-MuiTableCell-root"
                   scope="col"
                 >
                   Product
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-127g9qy-MuiTableCell-root"
                   scope="col"
                 >
                   Qty
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-mkksdf-MuiTableCell-root"
                   scope="col"
                 >
                   Total
@@ -550,18 +550,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
               class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-o7jwfe-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1alwytg-MuiTableCell-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-7focpm-MuiTypography-root"
                   >
                     Test Product 1
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1bl3oup-MuiTypography-root"
                   >
                     TEST1
                      • 
@@ -569,36 +569,36 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
                   </span>
                   <br />
                   <code
-                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-o7q92u-MuiTypography-root"
                   >
                     N/A
                   </code>
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-b3z6yw-MuiTableCell-root"
                 >
                   1
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-sat8fs-MuiTableCell-root"
                 >
                   £
                   50.00
                 </td>
               </tr>
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-o7jwfe-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1alwytg-MuiTableCell-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-7focpm-MuiTypography-root"
                   >
                     Test Product 2
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1bl3oup-MuiTypography-root"
                   >
                     TEST2
                      • 
@@ -606,18 +606,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
                   </span>
                   <br />
                   <code
-                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-o7q92u-MuiTypography-root"
                   >
                     N/A
                   </code>
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-b3z6yw-MuiTableCell-root"
                 >
                   2
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-sat8fs-MuiTableCell-root"
                 >
                   £
                   150.00
@@ -626,21 +626,21 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
             </tbody>
           </table>
           <div
-            class="MuiBox-root css-1yuhvjn"
+            class="MuiBox-root css-19ug521"
           >
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 Subtotal:
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 200.00
@@ -653,11 +653,11 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
                 class="MuiBox-root css-70qvj9"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
                 >
                   VAT (20%)
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-om8r9v-MuiTypography-root"
                   >
                     (
                     United Kingdom
@@ -666,25 +666,25 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
                 </p>
               </div>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 40.00
               </p>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 Total:
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 £
                 240.00
@@ -695,18 +695,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
       </div>
     </div>
     <div
-      class="MuiBox-root css-1yuhvjn"
+      class="MuiBox-root css-19ug521"
     >
       <div
         class="MuiBox-root css-gg4vpm"
       >
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           Total:
         </h6>
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           £
           240.00
@@ -717,10 +717,10 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
 </div>
 `;
 
-exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders single item cart summary 1`] = `
+exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > renders single item cart summary 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
-  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-81fgub-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);"
 >
   <div
     class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
@@ -729,19 +729,19 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
       class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
     >
       <span
-        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-gjb7fe-MuiTypography-root"
       >
         <div
           class="MuiBox-root css-69i1ev"
         >
           <h2
-            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h6 css-zgu9xz-MuiTypography-root"
           >
             Order Summary
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -765,7 +765,7 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
     class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
   >
     <p
-      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-187dmm9-MuiTypography-root"
     >
       1
        
@@ -782,28 +782,28 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <table
-            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            class="MuiTable-root css-4gshm9-MuiTable-root"
           >
             <thead
               class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-o7jwfe-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-2og303-MuiTableCell-root"
                   scope="col"
                 >
                   Product
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-127g9qy-MuiTableCell-root"
                   scope="col"
                 >
                   Qty
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-mkksdf-MuiTableCell-root"
                   scope="col"
                 >
                   Total
@@ -814,18 +814,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
               class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+                class="MuiTableRow-root css-o7jwfe-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1alwytg-MuiTableCell-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-7focpm-MuiTypography-root"
                   >
                     Single Test Product
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1bl3oup-MuiTypography-root"
                   >
                     TEST1
                      • 
@@ -833,18 +833,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
                   </span>
                   <br />
                   <code
-                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-o7q92u-MuiTypography-root"
                   >
                     N/A
                   </code>
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-b3z6yw-MuiTableCell-root"
                 >
                   1
                 </td>
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-sat8fs-MuiTableCell-root"
                 >
                   £
                   50.00
@@ -853,21 +853,21 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
             </tbody>
           </table>
           <div
-            class="MuiBox-root css-1yuhvjn"
+            class="MuiBox-root css-19ug521"
           >
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 Subtotal:
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 50.00
@@ -880,11 +880,11 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
                 class="MuiBox-root css-70qvj9"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
                 >
                   VAT (20%)
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-om8r9v-MuiTypography-root"
                   >
                     (
                     United Kingdom
@@ -893,25 +893,25 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
                 </p>
               </div>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-19oum3u-MuiTypography-root"
               >
                 £
                 10.00
               </p>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth css-1mxedee-MuiDivider-root"
             />
             <div
               class="MuiBox-root css-gg4vpm"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 Total:
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
               >
                 £
                 60.00
@@ -922,18 +922,18 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
       </div>
     </div>
     <div
-      class="MuiBox-root css-1yuhvjn"
+      class="MuiBox-root css-19ug521"
     >
       <div
         class="MuiBox-root css-gg4vpm"
       >
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           Total:
         </h6>
         <h6
-          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-12f2php-MuiTypography-root"
         >
           £
           60.00

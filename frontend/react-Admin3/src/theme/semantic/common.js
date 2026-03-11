@@ -11,7 +11,7 @@
  * @see data-model.md for full token structure
  */
 
-import { md3, scales, staticColors } from '../tokens/colors';
+import { md3, scales, staticColors } from '../tokens/colors.js';
 
 // =============================================================================
 // Text Colors

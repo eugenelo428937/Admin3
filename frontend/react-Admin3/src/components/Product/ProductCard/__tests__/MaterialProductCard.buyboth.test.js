@@ -1,14 +1,15 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme';
-import MaterialProductCard from '../MaterialProductCard';
-import { useCart } from '../../../../contexts/CartContext';
+import theme from '../../../../theme/theme.js';
+import MaterialProductCard from '../MaterialProductCard.js';
+import { useCart } from '../../../../contexts/CartContext.js';
 
 // Mock the CartContext
-jest.mock('../../../../contexts/CartContext', () => ({
-  useCart: jest.fn(),
+vi.mock('../../../../contexts/CartContext.js', () => ({
+  useCart: vi.fn(),
 }));
 
 // Wrap component with theme provider for tests
@@ -21,33 +22,33 @@ const renderWithTheme = (component) => {
 };
 
 // Mock child components that aren't being tested
-jest.mock('../Tutorial/TutorialProductCard', () => ({
+vi.mock('../Tutorial/TutorialProductCard.js', () => ({
   __esModule: true,
   default: () => <div data-testid="tutorial-product-card">Tutorial Product Card</div>,
 }));
 
-jest.mock('../MarkingProductCard', () => ({
+vi.mock('../MarkingProductCard.js', () => ({
   __esModule: true,
   default: () => <div data-testid="marking-product-card">Marking Product Card</div>,
 }));
 
-jest.mock('../MarkingVoucherProductCard', () => ({
+vi.mock('../MarkingVoucherProductCard.js', () => ({
   __esModule: true,
   default: () => <div data-testid="marking-voucher-product-card">Marking Voucher Product Card</div>,
 }));
 
-jest.mock('../OnlineClassroomProductCard', () => ({
+vi.mock('../OnlineClassroomProductCard.js', () => ({
   __esModule: true,
   default: () => <div data-testid="online-classroom-product-card">Online Classroom Product Card</div>,
 }));
 
-jest.mock('../BundleCard', () => ({
+vi.mock('../BundleCard.js', () => ({
   __esModule: true,
   default: () => <div data-testid="bundle-card">Bundle Card</div>,
 }));
 
 describe('MaterialProductCard - Buy Both with SpeedDial', () => {
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
   const mockCartData = {
     vat_calculations: {
       region_info: {
@@ -57,7 +58,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useCart.mockReturnValue({ cartData: mockCartData });
   });
 

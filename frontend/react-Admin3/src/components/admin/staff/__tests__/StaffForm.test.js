@@ -1,46 +1,49 @@
+import { vi } from 'vitest';
 // src/components/admin/staff/__tests__/StaffForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminStaffForm from '../StaffForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminStaffForm from '../StaffForm.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock staffService
-jest.mock('../../../../services/staffService', () => ({
+vi.mock('../../../../services/staffService.js', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
-import staffService from '../../../../services/staffService';
+import staffService from '../../../../services/staffService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const renderComponent = (isEditMode = false) => {
@@ -59,7 +62,7 @@ const renderComponent = (isEditMode = false) => {
 
 describe('AdminStaffForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -101,7 +104,8 @@ describe('AdminStaffForm', () => {
     test('shows validation error when user is empty on submit', async () => {
       renderComponent();
 
-      fireEvent.click(screen.getByRole('button', { name: /create staff member/i }));
+      const submitButton = screen.getByRole('button', { name: /create staff member/i });
+      fireEvent.submit(submitButton.closest('form'));
 
       await waitFor(() => {
         const matches = screen.getAllByText(/please provide a user/i);

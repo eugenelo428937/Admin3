@@ -3,10 +3,10 @@ import {
   Box, Typography, TextField, Grid, Button, Alert, Divider,
 } from "@mui/material";
 import { Business, Add, Remove, Edit as EditIcon } from "@mui/icons-material";
-import SmartAddressInput from "../../Address/SmartAddressInput";
-import DynamicAddressForm from "../../Address/DynamicAddressForm";
-import ValidatedPhoneInput from "../ValidatedPhoneInput";
-import config from "../../../config";
+import SmartAddressInput from "../../Address/SmartAddressInput.js";
+import DynamicAddressForm from "../../Address/DynamicAddressForm.js";
+import ValidatedPhoneInput from "../ValidatedPhoneInput.js";
+import config from "../../../config.js";
 import { useTheme } from "@mui/material/styles";
 
 const WorkAddressStep = ({

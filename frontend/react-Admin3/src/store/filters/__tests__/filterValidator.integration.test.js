@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * FilterValidator Integration Tests (Story 1.16)
  *
@@ -12,15 +13,15 @@
 
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders, createMockStore, waitForStateUpdate } from '../../../test-utils/testHelpers';
-import FilterValidator from '../filterValidator';
+import { renderWithProviders, createMockStore, waitForStateUpdate } from '../../../test-utils/testHelpers.js';
+import FilterValidator from '../filterValidator.js';
 import {
   setSubjects,
   setCategories,
   setProductTypes,
   selectHasValidationErrors,
   selectValidationErrors,
-} from '../../slices/filtersSlice';
+} from '../../slices/filtersSlice.js';
 
 // Simple component to test validator integration
 const TestValidationDisplay = () => {
@@ -415,7 +416,7 @@ describe('FilterValidator Integration', () => {
       // Mock performance API
       const performanceMarks = [];
       const originalMark = window.performance.mark;
-      window.performance.mark = jest.fn((name) => {
+      window.performance.mark = vi.fn((name) => {
         performanceMarks.push(name);
         return originalMark.call(window.performance, name);
       });
@@ -423,7 +424,7 @@ describe('FilterValidator Integration', () => {
       FilterValidator.validate(filters);
 
       // Should have performance marks (in development mode)
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         expect(performanceMarks.some((mark) => mark.includes('validation'))).toBe(true);
       }
 
@@ -442,7 +443,7 @@ describe('FilterValidator Integration', () => {
 
       const performanceMarks = [];
       const originalMark = window.performance.mark;
-      window.performance.mark = jest.fn((name) => {
+      window.performance.mark = vi.fn((name) => {
         performanceMarks.push(name);
         return originalMark.call(window.performance, name);
       });
@@ -450,7 +451,7 @@ describe('FilterValidator Integration', () => {
       FilterValidator.validate(filters);
 
       // Should track validation with metadata
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         expect(performanceMarks.length).toBeGreaterThan(0);
       }
 

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Test suite for CartItemWithVAT component (Phase 4, Task T038)
  *
@@ -16,7 +17,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartItemWithVAT from '../CartItemWithVAT';
+import CartItemWithVAT from '../CartItemWithVAT.js';
 
 describe('CartItemWithVAT Component', () => {
   const mockCartItem = {
@@ -38,12 +39,12 @@ describe('CartItemWithVAT Component', () => {
   };
 
   const mockHandlers = {
-    onQuantityChange: jest.fn(),
-    onRemove: jest.fn()
+    onQuantityChange: vi.fn(),
+    onRemove: vi.fn()
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders product name', () => {

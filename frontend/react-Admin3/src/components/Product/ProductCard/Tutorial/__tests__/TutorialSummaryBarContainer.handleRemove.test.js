@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Unit Tests: TutorialSummaryBarContainer.handleRemove
  *
@@ -8,35 +9,37 @@
  */
 
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 // Mock httpService BEFORE importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
-  delete: jest.fn(),
-  patch: jest.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+  },
 }));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider, useCart } from '../../../../../contexts/CartContext';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider, useCart } from '../../../../../contexts/CartContext.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 // Mock CartContext with controllable state
 let mockCartContext = {
   cartItems: [],
-  removeFromCart: jest.fn(),
-  addToCart: jest.fn(),
-  updateCartItem: jest.fn(),
+  removeFromCart: vi.fn(),
+  addToCart: vi.fn(),
+  updateCartItem: vi.fn(),
   cartData: { fees: [], items: [] },
   loading: false,
 };
 
-jest.mock('../../../../../contexts/CartContext', () => {
-  const React = require('react');
-  const actual = jest.requireActual('../../../../../contexts/CartContext');
+vi.mock('../../../../../contexts/CartContext.js', async () => {
+  const actual = await vi.importActual('../../../../../contexts/CartContext');
   return {
     ...actual,
     useCart: () => mockCartContext,
@@ -45,9 +48,9 @@ jest.mock('../../../../../contexts/CartContext', () => {
 
 describe('TutorialSummaryBarContainer - handleRemove Tests (T006-T009)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCartContext.cartItems = [];
-    mockCartContext.removeFromCart = jest.fn().mockResolvedValue({ data: { items: [] } });
+    mockCartContext.removeFromCart = vi.fn().mockResolvedValue({ data: { items: [] } });
   });
 
   /**

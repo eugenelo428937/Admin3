@@ -93,7 +93,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     # Start React server in new Terminal tab
     echo -e "\033[0;32mStarting React on port $FRONTEND_PORT...\033[0m"
-    osascript -e "tell application \"Terminal\" to do script \"cd '$FRONTEND_DIR' && npm start\""
+    osascript -e "tell application \"Terminal\" to do script \"cd '$FRONTEND_DIR' && VITE_API_BASE_URL=http://127.0.0.1:$BACKEND_PORT npm run dev -- --port $FRONTEND_PORT\""
 
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Linux
@@ -131,10 +131,11 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     # Start React server
     echo -e "\033[0;32mStarting React on port $FRONTEND_PORT...\033[0m"
+    REACT_CMD="cd '$FRONTEND_DIR'; VITE_API_BASE_URL=http://127.0.0.1:$BACKEND_PORT npm run dev -- --port $FRONTEND_PORT; exec bash"
     if [ "$TERMINAL" = "gnome-terminal" ]; then
-        $TERMINAL -- bash -c "cd '$FRONTEND_DIR'; npm start; exec bash" &
+        $TERMINAL -- bash -c "$REACT_CMD" &
     else
-        $TERMINAL -e bash -c "cd '$FRONTEND_DIR'; npm start; exec bash" &
+        $TERMINAL -e bash -c "$REACT_CMD" &
     fi
 
 else

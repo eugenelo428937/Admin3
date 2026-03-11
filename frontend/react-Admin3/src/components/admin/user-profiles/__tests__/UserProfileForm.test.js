@@ -1,55 +1,59 @@
+import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminUserProfileForm from '../UserProfileForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminUserProfileForm from '../UserProfileForm.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
     Link: ({ to, children, ...props }) => <a href={to} {...props}>{children}</a>,
   };
 });
 
 // Mock userProfileService
-jest.mock('../../../../services/userProfileService', () => ({
+vi.mock('../../../../services/userProfileService.js', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    update: jest.fn(),
-    getAddresses: jest.fn(),
-    getContacts: jest.fn(),
+    getById: vi.fn(),
+    update: vi.fn(),
+    getAddresses: vi.fn(),
+    getContacts: vi.fn(),
   },
 }));
 
 // Mock ValidatedPhoneInput to avoid country API fetch
-jest.mock('../../../User/ValidatedPhoneInput', () => {
-  return function MockValidatedPhoneInput({ label, name, value, onChange }) {
+vi.mock('../../../User/ValidatedPhoneInput.js', () => ({
+  __esModule: true,
+  default: function MockValidatedPhoneInput({ label, name, value, onChange }) {
     return <input aria-label={label} name={name} value={value || ''} onChange={onChange} />;
-  };
-});
+  },
+}));
 
-import userProfileService from '../../../../services/userProfileService';
+import userProfileService from '../../../../services/userProfileService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const renderComponent = () => {
@@ -72,7 +76,7 @@ describe('AdminUserProfileForm', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

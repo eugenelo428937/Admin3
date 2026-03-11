@@ -5,8 +5,8 @@
 // The tokens layer provides primitive values; this module adds MUI-specific
 // configurations like !important flags and responsive overrides.
 
-import spacingTokens, { spacing } from '../tokens/spacing';
-import { md3 } from '../tokens/colors';
+import spacingTokens, { spacing } from '../tokens/spacing.js';
+import { md3 } from '../tokens/colors.js';
 import
   {
     fontFamilies,
@@ -14,8 +14,8 @@ import
     fontWeights,
     lineHeights,
     letterSpacings,
-  } from '../tokens/typography';
-import { navigation } from '../semantic/navigation';
+  } from '../tokens/typography.js';
+import { navigation } from '../semantic/navigation.js';
 // =============================================================================
 // Helper: Add !important to CSS values for MUI specificity
 // =============================================================================

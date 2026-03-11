@@ -43,16 +43,16 @@ import {
    InfoOutline,
    ErrorOutline,
 } from "@mui/icons-material";
-import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
-import { useCart } from "../../../../contexts/CartContext";
-import tutorialService from "../../../../services/tutorialService";
-import { formatPrice } from "../../../../utils/vatUtils";
+import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext.js";
+import { useCart } from "../../../../contexts/CartContext.js";
+import tutorialService from "../../../../services/tutorialService.js";
+import { formatPrice, getVatStatusDisplay } from "../../../../utils/vatUtils.js";
 import {
    buildTutorialMetadata,
    buildTutorialProductData,
    buildTutorialPriceData,
-} from "../../../../utils/tutorialMetadataBuilder";
-import TutorialSelectionDialog from "./TutorialSelectionDialog";
+} from "../../../../utils/tutorialMetadataBuilder.js";
+import TutorialSelectionDialog from "./TutorialSelectionDialog.js";
 
 /**
  * TutorialProductCard
@@ -818,7 +818,7 @@ const TutorialProductCard = React.memo(
                               color="text.secondary"
                            >
                               {product.vat_status_display ||
-                                 "Price includes VAT"}
+                                 getVatStatusDisplay(product.vat_status)}
                            </Typography>
                         </Box>
                      </Box>

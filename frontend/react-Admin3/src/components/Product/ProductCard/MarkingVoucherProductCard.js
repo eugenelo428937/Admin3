@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useMemo } from "react";
-import { formatPrice } from "../../../utils/priceFormatter";
+import { formatPrice } from "../../../utils/priceFormatter.js";
 import {
 	CardHeader,
 	CardContent,
@@ -32,8 +32,8 @@ import {
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { NumberInput, HStack, IconButton as ChakraIconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
-import BaseProductCard from "../../Common/BaseProductCard";
-import { useCart } from "../../../contexts/CartContext";
+import BaseProductCard from "../../Common/BaseProductCard.js";
+import { useCart } from "../../../contexts/CartContext.js";
 
 const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 	const theme = useTheme();

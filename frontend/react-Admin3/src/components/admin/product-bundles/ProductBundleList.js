@@ -8,9 +8,9 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import catalogBundleService from '../../../services/catalogBundleService';
-import BundleProductsPanel from './BundleProductsPanel';
+import { useAuth } from '../../../hooks/useAuth.js';
+import catalogBundleService from '../../../services/catalogBundleService.js';
+import BundleProductsPanel from './BundleProductsPanel.js';
 
 const AdminProductBundleList = () => {
     const { isSuperuser } = useAuth();

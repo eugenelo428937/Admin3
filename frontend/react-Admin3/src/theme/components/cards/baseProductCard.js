@@ -1,7 +1,7 @@
 // Base Product Card Styles
 // Common styles shared by all product card variants
-import { spacing } from '../../tokens/spacing';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../tokens/spacing.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Base product card variant styles.

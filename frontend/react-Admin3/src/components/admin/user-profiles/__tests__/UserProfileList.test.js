@@ -1,30 +1,32 @@
+import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileList.test.js
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminUserProfileList from '../UserProfileList';
+import AdminUserProfileList from '../UserProfileList.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock userProfileService
-jest.mock('../../../../services/userProfileService', () => ({
+vi.mock('../../../../services/userProfileService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
   },
 }));
 
-import userProfileService from '../../../../services/userProfileService';
+import userProfileService from '../../../../services/userProfileService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockProfiles = [
   {
@@ -51,7 +53,7 @@ const renderComponent = () => {
 
 describe('AdminUserProfileList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

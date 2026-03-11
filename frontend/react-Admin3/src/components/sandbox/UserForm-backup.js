@@ -26,11 +26,11 @@ import {
    Autocomplete,
 } from "@mui/material";
 import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
-import authService from "../../services/authService";
-import config from "../../config";
-import ValidatedPhoneInput from "../User/ValidatedPhoneInput";
-import SmartAddressInput from "../Address/SmartAddressInput";
-import addressMetadataService from "../../services/addressMetadataService";
+import authService from "../../services/authService.js";
+import config from '../../config.js';
+import ValidatedPhoneInput from "../User/ValidatedPhoneInput.js";
+import SmartAddressInput from "../Address/SmartAddressInput.js";
+import addressMetadataService from "../../services/addressMetadataService.js";
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
    title: "",

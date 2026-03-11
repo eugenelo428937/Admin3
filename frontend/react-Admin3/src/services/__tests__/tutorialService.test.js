@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for tutorialService
  *
@@ -19,15 +20,15 @@ describe('tutorialService', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset modules to get fresh instances
-    jest.resetModules();
+    vi.resetModules();
 
     // Mock console.error to avoid test noise
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         tutorialUrl: 'http://test-api/tutorials',
@@ -37,21 +38,21 @@ describe('tutorialService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
-        get: jest.fn(),
+        get: vi.fn(),
       },
     }));
 
     // Import after mocks are set up
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getEvents', () => {
@@ -461,32 +462,32 @@ describe('tutorialService URL fallback', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
-    jest.resetModules();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config without tutorialUrl
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         apiBaseUrl: 'http://fallback-api',
       },
     }));
 
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
-        get: jest.fn().mockResolvedValue({ data: [] }),
+        get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('should use apiBaseUrl fallback when tutorialUrl not configured', async () => {
@@ -500,32 +501,32 @@ describe('tutorialService apiUrl fallback', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
-    jest.resetModules();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config with only apiUrl
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         apiUrl: 'http://apiurl-fallback',
       },
     }));
 
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
-        get: jest.fn().mockResolvedValue({ data: [] }),
+        get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('should use apiUrl fallback when tutorialUrl and apiBaseUrl not configured', async () => {
@@ -539,13 +540,13 @@ describe('tutorialService empty config', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
-    jest.resetModules();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config with no URL values (empty strings are falsy)
     // Note: The fallback logic still produces '/tutorials' as URL
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         tutorialUrl: '',
@@ -554,20 +555,20 @@ describe('tutorialService empty config', () => {
       },
     }));
 
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
-        get: jest.fn().mockResolvedValue({ data: [] }),
+        get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('should use /tutorials fallback when all config values are empty', async () => {

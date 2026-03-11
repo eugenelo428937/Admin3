@@ -1,46 +1,49 @@
+import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminProductVariationForm from '../ProductVariationForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminProductVariationForm from '../ProductVariationForm.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock productVariationService
-jest.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService.js', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
-import productVariationService from '../../../../services/productVariationService';
+import productVariationService from '../../../../services/productVariationService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const mockEditData = {
@@ -67,7 +70,7 @@ const renderComponent = (isEditMode = false) => {
 
 describe('AdminProductVariationForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -120,7 +123,8 @@ describe('AdminProductVariationForm', () => {
     test('shows validation error when required fields are empty', async () => {
       renderComponent();
 
-      fireEvent.click(screen.getByRole('button', { name: /create product variation/i }));
+      const submitButton = screen.getByRole('button', { name: /create product variation/i });
+      fireEvent.submit(submitButton.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/please fill in all required fields/i)).toBeInTheDocument();

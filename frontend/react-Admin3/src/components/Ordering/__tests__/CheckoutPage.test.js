@@ -1,28 +1,29 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import CheckoutPage from '../CheckoutPage';
-import theme from '../../../theme/theme';
-import cartService from '../../../services/cartService';
+import CheckoutPage from '../CheckoutPage.js';
+import theme from '../../../theme/theme.js';
+import cartService from '../../../services/cartService.js';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => mockNavigate)
 }));
 
 // Mock cart service
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
-    checkout: jest.fn()
+    checkout: vi.fn()
   }
 }));
 
 // Mock CartContext
-const mockClearCart = jest.fn();
+const mockClearCart = vi.fn();
 const mockCartItems = [
   {
     id: 1,
@@ -39,7 +40,7 @@ const mockCartItems = [
 
 let mockCartItemsValue = [...mockCartItems];
 
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: mockCartItemsValue,
     cartData: { id: 1, user: null, session_key: 'test-session' },
@@ -48,16 +49,17 @@ jest.mock('../../../contexts/CartContext', () => ({
 }));
 
 // Mock TutorialChoiceContext
-const mockRemoveAllChoices = jest.fn();
-jest.mock('../../../contexts/TutorialChoiceContext', () => ({
+const mockRemoveAllChoices = vi.fn();
+vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices
   })
 }));
 
 // Mock CheckoutSteps component
-jest.mock('../CheckoutSteps', () => {
-  return function MockCheckoutSteps({ onComplete }) {
+vi.mock('../CheckoutSteps.js', () => ({
+  __esModule: true,
+  default: function MockCheckoutSteps({ onComplete }) {
     return (
       <div data-testid="checkout-steps">
         <button
@@ -74,8 +76,8 @@ jest.mock('../CheckoutSteps', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
 const renderWithTheme = (component) => {
   return render(
@@ -87,7 +89,7 @@ const renderWithTheme = (component) => {
 
 describe('CheckoutPage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCartItemsValue = [...mockCartItems];
     mockClearCart.mockResolvedValue();
     cartService.checkout.mockResolvedValue({

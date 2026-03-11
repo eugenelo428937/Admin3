@@ -1,30 +1,32 @@
+import { vi } from 'vitest';
 // src/components/admin/store-products/__tests__/StoreProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStoreProductList from '../StoreProductList';
+import AdminStoreProductList from '../StoreProductList.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock storeProductService
-jest.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService.js', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
-    delete: jest.fn(),
+    adminList: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService';
+import storeProductService from '../../../../services/storeProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockStoreProducts = [
   {
@@ -75,21 +77,23 @@ const renderComponent = () => {
   );
 };
 
-/** Helper: expand a session by clicking its header */
-const expandSession = (sessionCode) => {
+/** Helper: toggle a session by clicking its header.
+ *  Note: sessions start EXPANDED by default (component uses inverted logic). */
+const toggleSession = (sessionCode) => {
   const sessionHeader = screen.getByText(new RegExp(`exam session: ${sessionCode}`, 'i')).closest('tr');
   fireEvent.click(sessionHeader);
 };
 
-/** Helper: expand a subject by clicking its header */
-const expandSubject = (subjectCode) => {
+/** Helper: toggle a subject by clicking its header.
+ *  Note: subjects start COLLAPSED by default. */
+const toggleSubject = (subjectCode) => {
   const subjectHeader = screen.getByText(new RegExp(`subject: ${subjectCode}`, 'i')).closest('tr');
   fireEvent.click(subjectHeader);
 };
 
 describe('AdminStoreProductList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -143,25 +147,22 @@ describe('AdminStoreProductList', () => {
     test('displays subject group headers when session is expanded', async () => {
       renderComponent();
 
+      // Sessions are expanded by default, so subjects should be visible
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
-
-      expandSession('2025-04');
-
-      expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       expect(screen.getByText(/subject: sa1/i)).toBeInTheDocument();
     });
 
     test('displays catalog product rows when session and subject are expanded', async () => {
       renderComponent();
 
+      // Sessions are expanded by default; expand subject
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       expect(screen.getByText('CM2 Core Reading')).toBeInTheDocument();
     });
@@ -170,11 +171,10 @@ describe('AdminStoreProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       // CM2 Core Reading has 2 variations
       expect(screen.getByText('2')).toBeInTheDocument();
@@ -184,11 +184,10 @@ describe('AdminStoreProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       // CM2CR should appear once (grouped), not twice
       const productCodes = screen.getAllByText('CM2CR');
@@ -206,57 +205,54 @@ describe('AdminStoreProductList', () => {
     test('displays subject product counts in header', async () => {
       renderComponent();
 
+      // Sessions are expanded by default, so subject headers with counts are visible
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/1 product, 2 variations/)).toBeInTheDocument();
       });
-
-      expandSession('2025-04');
-
-      expect(screen.getByText(/1 product, 2 variations/)).toBeInTheDocument();
     });
   });
 
   describe('collapsible sessions', () => {
-    test('sessions are collapsed by default', async () => {
+    test('sessions are expanded by default', async () => {
       renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
       });
 
-      // Subject headers should NOT be visible (session is collapsed)
-      expect(screen.queryByText(/subject: cm2/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/subject: sa1/i)).not.toBeInTheDocument();
-    });
-
-    test('clicking session header expands its content', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
-      });
-
-      expandSession('2025-04');
-
-      // Subject headers should now be visible
+      // Subject headers should be visible (session is expanded by default)
       expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       expect(screen.getByText(/subject: sa1/i)).toBeInTheDocument();
     });
 
-    test('clicking expanded session header re-collapses it', async () => {
+    test('clicking session header collapses its content', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      // Expand
-      expandSession('2025-04');
-      expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
+      toggleSession('2025-04');
 
-      // Re-collapse
-      expandSession('2025-04');
+      // Subject headers should now be hidden
       expect(screen.queryByText(/subject: cm2/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/subject: sa1/i)).not.toBeInTheDocument();
+    });
+
+    test('clicking collapsed session header re-expands it', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
+      });
+
+      // Collapse
+      toggleSession('2025-04');
+      expect(screen.queryByText(/subject: cm2/i)).not.toBeInTheDocument();
+
+      // Re-expand
+      toggleSession('2025-04');
+      expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
     });
   });
 
@@ -264,15 +260,12 @@ describe('AdminStoreProductList', () => {
     test('subjects are collapsed by default', async () => {
       renderComponent();
 
+      // Sessions are expanded by default, subjects visible
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      // Expand session to see subjects
-      expandSession('2025-04');
-      expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
-
-      // Product rows should NOT be visible (subjects collapsed)
+      // Product rows should NOT be visible (subjects collapsed by default)
       expect(screen.queryByText('CM2 Core Reading')).not.toBeInTheDocument();
     });
 
@@ -280,11 +273,10 @@ describe('AdminStoreProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       expect(screen.getByText('CM2 Core Reading')).toBeInTheDocument();
     });
@@ -293,11 +285,10 @@ describe('AdminStoreProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       // CM2 products visible, SA1 products remain hidden
       expect(screen.getByText('CM2 Core Reading')).toBeInTheDocument();
@@ -335,14 +326,13 @@ describe('AdminStoreProductList', () => {
     test('displays view buttons for catalog products', async () => {
       renderComponent();
 
+      // Sessions expanded by default; expand both subjects to see product rows
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      // Expand session and both subjects to see product rows
-      expandSession('2025-04');
-      expandSubject('cm2');
-      expandSubject('sa1');
+      toggleSubject('cm2');
+      toggleSubject('sa1');
 
       const viewButtons = screen.getAllByRole('link', { name: /view/i });
       expect(viewButtons).toHaveLength(2);
@@ -352,11 +342,10 @@ describe('AdminStoreProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText(/exam session: 2025-04/i)).toBeInTheDocument();
+        expect(screen.getByText(/subject: cm2/i)).toBeInTheDocument();
       });
 
-      expandSession('2025-04');
-      expandSubject('cm2');
+      toggleSubject('cm2');
 
       const viewButtons = screen.getAllByRole('link', { name: /view/i });
       expect(viewButtons[0]).toHaveAttribute('href', '/admin/products/10');

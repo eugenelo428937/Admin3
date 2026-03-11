@@ -11,35 +11,17 @@
  */
 
 /**
- * Base VAT rates by region.
- * These are the standard VAT rates for each region, used for display purposes.
- * Actual VAT calculations are done by the backend Rules Engine.
- */
-export const BASE_VAT_RATES = {
-  'UK': 0.20,    // 20% UK VAT
-  'IE': 0.23,    // 23% Ireland VAT
-  'SA': 0.15,    // 15% South Africa VAT
-  'ROW': 0.00,   // 0% Rest of World (no VAT)
-  'CH': 0.00,    // 0% Switzerland (no VAT)
-  'GG': 0.00,    // 0% Guernsey (no VAT)
-  'JE': 0.00,    // 0% Jersey (no VAT)
-  'EU': 0.00,    // 0% EU (reverse charge for B2B)
-  'UNKNOWN': 0.00
-};
-
-/**
- * Get base VAT rate for a region.
+ * Get effective VAT rate from API-provided VAT calculations.
  *
- * @param {string} region - VAT region code (UK, IE, SA, ROW, etc.)
- * @returns {number} Base VAT rate as decimal (e.g., 0.20 for 20%)
+ * @param {object} vatCalculations - VAT calculations object from API
+ * @returns {number} Effective VAT rate as decimal (e.g., 0.20 for 20%)
  *
  * @example
- * getBaseVatRate('UK')  // 0.20
- * getBaseVatRate('IE')  // 0.23
- * getBaseVatRate('ROW') // 0.00
+ * getEffectiveVatRate(vatCalculations)  // 0.20
+ * getEffectiveVatRate(null)             // 0
  */
-export const getBaseVatRate = (region) => {
-  return BASE_VAT_RATES[region] || BASE_VAT_RATES['UNKNOWN'];
+export const getEffectiveVatRate = (vatCalculations) => {
+  return vatCalculations?.totals?.effective_vat_rate || 0;
 };
 
 /**

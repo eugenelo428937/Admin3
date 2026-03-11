@@ -1,19 +1,21 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import SessionProductsSummary from '../SessionProductsSummary';
+import SessionProductsSummary from '../SessionProductsSummary.js';
 
-jest.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService.js', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
+    adminList: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService';
+import storeProductService from '../../../../services/storeProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithProviders = (ui) =>
   render(
@@ -30,7 +32,7 @@ const mockProducts = [
 
 describe('SessionProductsSummary', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('fetches products with session filter and renders table', async () => {

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { semantic } from '../../theme/semantic/common';
-import { navigation } from '../../theme/semantic/navigation';
-import * as productCards from '../../theme/semantic/productCards';
+import { semantic } from '../../theme/semantic/common.js';
+import { navigation } from '../../theme/semantic/navigation.js';
+import * as productCards from '../../theme/semantic/productCards.js';
 
 export default {
   title: 'Design System/Tokens/Semantic',

@@ -14,7 +14,7 @@ import {
   buildUrl,
   hasActiveFilters,
   areFiltersEqual
-} from '../filterUrlManager';
+} from '../filterUrlManager.js';
 
 describe('FilterUrlManager', () => {
   describe('toUrlParams', () => {

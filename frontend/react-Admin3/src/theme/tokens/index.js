@@ -12,10 +12,10 @@
  * import { semantic, productCards } from '../theme/semantic';
  */
 // Color tokens - single source of truth for all colors
-export { default as colors, md3, scales, staticColors } from './colors';
+export { default as colors, md3, scales, staticColors } from './colors.js';
 
 // Typography tokens - font families, sizes, weights
-export { default as typography } from './typography';
+export { default as typography } from './typography.js';
 export
 {
   fontFamilies,
@@ -24,10 +24,10 @@ export
   lineHeights,
   letterSpacings,
   scaleMultipliers,
-} from './typography';
+} from './typography.js';
 
 // Spacing tokens - spacing scale, gaps, padding, border radius
-export { default as spacing } from './spacing';
+export { default as spacing } from './spacing.js';
 export
 {
   scaleFactor,
@@ -35,21 +35,29 @@ export
   spacing as spacingScale,
   gaps,
   padding,
-} from './spacing';
-export { iconSizes } from './icons'
+} from './spacing.js';
+export { iconSizes } from './icons.js'
 
-export { shadows } from './shadows'
+export { shadows } from './shadows.js'
 
-export { borderRadius } from './borderRadius'
+export { borderRadius } from './borderRadius.js'
+
+// Re-import defaults for consolidated export
+import colorsDefault from './colors.js';
+import typographyDefault from './typography.js';
+import spacingDefault from './spacing.js';
+import iconSizesDefault from './icons.js';
+import shadowsDefault from './shadows.js';
+import borderRadiusDefault from './borderRadius.js';
 
 // Consolidated export for convenience
 const tokens = {
-  colors: require('./colors').default,
-  typography: require('./typography').default,
-  spacing: require('./spacing').default,
-  iconSizes: require('./icons').default,
-  shawdows: require('./shadows').default,
-  borderRadius: require('./borderRadius').default, 
+  colors: colorsDefault,
+  typography: typographyDefault,
+  spacing: spacingDefault,
+  iconSizes: iconSizesDefault,
+  shadows: shadowsDefault,
+  borderRadius: borderRadiusDefault,
 };
 
 export default tokens;

@@ -1,25 +1,27 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/OrderHistory.test.js
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import OrderHistory from '../OrderHistory';
+import { ThemeProvider } from '@mui/material/styles';
+import OrderHistory from '../OrderHistory.js';
 
 // Mock cartService
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
-    fetchOrders: jest.fn(),
+    fetchOrders: vi.fn(),
   },
 }));
 
 // Mock productCodeGenerator
-jest.mock('../../../utils/productCodeGenerator', () => ({
-  generateProductCode: jest.fn((item) => `CODE-${item.id || '001'}`),
+vi.mock('../../../utils/productCodeGenerator.js', () => ({
+  generateProductCode: vi.fn((item) => `CODE-${item.id || '001'}`),
 }));
 
-import cartService from '../../../services/cartService';
+import cartService from '../../../services/cartService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const renderComponent = () => {
   return render(
@@ -31,7 +33,7 @@ const renderComponent = () => {
 
 describe('OrderHistory', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('loading state', () => {

@@ -6,9 +6,9 @@ import {
   Select, MenuItem
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import catalogBundleService from '../../../services/catalogBundleService';
-import subjectService from '../../../services/subjectService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import catalogBundleService from '../../../services/catalogBundleService.js';
+import subjectService from '../../../services/subjectService.js';
 
 const AdminProductBundleForm = () => {
     const { isSuperuser } = useAuth();

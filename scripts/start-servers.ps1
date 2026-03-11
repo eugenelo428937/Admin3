@@ -120,8 +120,8 @@ if ($IsWindows -or $env:OS -eq "Windows_NT") {
 
     # Set environment variables to override .env file (use current worktree's backend port)
     $apiBaseUrl = "http://127.0.0.1:$backendPort"
-    Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$reactDir'; `$env:PORT=$frontendPort; `$env:REACT_APP_API_BASE_URL='$apiBaseUrl'; npm start"
+    Write-Host "Setting VITE_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$reactDir'; `$env:VITE_API_BASE_URL='$apiBaseUrl'; npm run dev -- --port $frontendPort"
 
 } else {
     # Mac/Linux - use bash
@@ -175,12 +175,11 @@ python manage.py runserver $backendPort
 
         # Set environment variables to override .env file (use current worktree's backend port)
         $apiBaseUrl = "http://127.0.0.1:$backendPort"
-        Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
+        Write-Host "Setting VITE_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
         $reactScript = @"
 cd '$reactDir'
-export PORT=$frontendPort
-export REACT_APP_API_BASE_URL=$apiBaseUrl
-npm start
+export VITE_API_BASE_URL=$apiBaseUrl
+npm run dev -- --port $frontendPort
 "@
         osascript -e "tell application `"Terminal`" to do script `"$reactScript`""
 
@@ -230,12 +229,12 @@ npm start
 
             # Set environment variables to override .env file (use current worktree's backend port)
             $apiBaseUrl = "http://127.0.0.1:$backendPort"
-            Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
+            Write-Host "Setting VITE_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
 
             if ($terminal -eq "gnome-terminal") {
-                & $terminal -- bash -c "cd '$reactDir'; export PORT=$frontendPort; export REACT_APP_API_BASE_URL=$apiBaseUrl; npm start; exec bash"
+                & $terminal -- bash -c "cd '$reactDir'; export VITE_API_BASE_URL=$apiBaseUrl; npm run dev -- --port $frontendPort; exec bash"
             } else {
-                & $terminal -e bash -c "cd '$reactDir'; export PORT=$frontendPort; export REACT_APP_API_BASE_URL=$apiBaseUrl; npm start; exec bash"
+                & $terminal -e bash -c "cd '$reactDir'; export VITE_API_BASE_URL=$apiBaseUrl; npm run dev -- --port $frontendPort; exec bash"
             }
         } else {
             Write-Host "No suitable terminal emulator found. Please install gnome-terminal, konsole, or xterm." -ForegroundColor Red

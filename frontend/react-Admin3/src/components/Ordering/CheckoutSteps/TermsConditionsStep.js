@@ -10,10 +10,10 @@ import {
   Box,
   CircularProgress
 } from '@mui/material';
-import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils';
-import rulesEngineService from '../../../services/rulesEngineService';
-import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal';
-import { useAuth } from '../../../hooks/useAuth';
+import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils.js';
+import rulesEngineService from '../../../services/rulesEngineService.js';
+import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 
 const TermsConditionsStep = ({
   cartData,

@@ -1,13 +1,13 @@
-import { FilterRegistry } from '../filterRegistry';
+import { FilterRegistry } from '../filterRegistry.js';
 
 describe('FilterRegistry', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear registry before each test
     FilterRegistry.clear();
   });
 
   describe('register', () => {
-    test('registers new filter type', () => {
+    test('registers new filter type', async () => {
       FilterRegistry.register({
         type: 'test_filter',
         label: 'Test Filter',
@@ -17,7 +17,7 @@ describe('FilterRegistry', () => {
       expect(FilterRegistry.has('test_filter')).toBe(true);
     });
 
-    test('throws error if type missing', () => {
+    test('throws error if type missing', async () => {
       expect(() => {
         FilterRegistry.register({
           label: 'Test',
@@ -26,7 +26,7 @@ describe('FilterRegistry', () => {
       }).toThrow('Filter config must have "type" field');
     });
 
-    test('throws error if label missing', () => {
+    test('throws error if label missing', async () => {
       expect(() => {
         FilterRegistry.register({
           type: 'test',
@@ -35,7 +35,7 @@ describe('FilterRegistry', () => {
       }).toThrow('Filter config must have "label" field');
     });
 
-    test('throws error if urlParam missing', () => {
+    test('throws error if urlParam missing', async () => {
       expect(() => {
         FilterRegistry.register({
           type: 'test',
@@ -44,7 +44,7 @@ describe('FilterRegistry', () => {
       }).toThrow('Filter config must have "urlParam" field');
     });
 
-    test('sets default values for optional fields', () => {
+    test('sets default values for optional fields', async () => {
       FilterRegistry.register({
         type: 'test',
         label: 'Test',
@@ -62,7 +62,7 @@ describe('FilterRegistry', () => {
       expect(config.icon).toBeNull();
     });
 
-    test('allows overriding default values', () => {
+    test('allows overriding default values', async () => {
       FilterRegistry.register({
         type: 'test',
         label: 'Test',
@@ -88,7 +88,7 @@ describe('FilterRegistry', () => {
       expect(config.icon).toBe('TestIcon');
     });
 
-    test('includes getDisplayValue function in config', () => {
+    test('includes getDisplayValue function in config', async () => {
       FilterRegistry.register({
         type: 'test',
         label: 'Test',
@@ -102,7 +102,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('get', () => {
-    test('retrieves registered filter by type', () => {
+    test('retrieves registered filter by type', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -117,18 +117,18 @@ describe('FilterRegistry', () => {
       expect(config.color).toBe('primary');
     });
 
-    test('returns undefined for unregistered type', () => {
+    test('returns undefined for unregistered type', async () => {
       expect(FilterRegistry.get('nonexistent')).toBeUndefined();
     });
   });
 
   describe('getAll', () => {
-    test('returns empty array when no filters registered', () => {
+    test('returns empty array when no filters registered', async () => {
       const all = FilterRegistry.getAll();
       expect(all).toEqual([]);
     });
 
-    test('returns all registered filters', () => {
+    test('returns all registered filters', async () => {
       FilterRegistry.register({
         type: 'filter1',
         label: 'Filter 1',
@@ -149,7 +149,7 @@ describe('FilterRegistry', () => {
       expect(all[1].type).toBe('filter1');
     });
 
-    test('sorts filters by order ascending', () => {
+    test('sorts filters by order ascending', async () => {
       FilterRegistry.register({
         type: 'filter1',
         label: 'Filter 1',
@@ -177,7 +177,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('getByUrlParam', () => {
-    test('finds filter by primary URL parameter', () => {
+    test('finds filter by primary URL parameter', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -189,7 +189,7 @@ describe('FilterRegistry', () => {
       expect(config.type).toBe('subjects');
     });
 
-    test('finds filter by URL parameter alias', () => {
+    test('finds filter by URL parameter alias', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -206,11 +206,11 @@ describe('FilterRegistry', () => {
       expect(config2.type).toBe('subjects');
     });
 
-    test('returns undefined for unknown URL parameter', () => {
+    test('returns undefined for unknown URL parameter', async () => {
       expect(FilterRegistry.getByUrlParam('unknown')).toBeUndefined();
     });
 
-    test('handles empty urlParamAliases array', () => {
+    test('handles empty urlParamAliases array', async () => {
       FilterRegistry.register({
         type: 'test',
         label: 'Test',
@@ -224,11 +224,11 @@ describe('FilterRegistry', () => {
   });
 
   describe('getMultipleSelectFilters', () => {
-    test('returns empty array when no filters registered', () => {
+    test('returns empty array when no filters registered', async () => {
       expect(FilterRegistry.getMultipleSelectFilters()).toEqual([]);
     });
 
-    test('returns only filters with multiple=true', () => {
+    test('returns only filters with multiple=true', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -255,7 +255,7 @@ describe('FilterRegistry', () => {
       expect(multipleFilters.map(f => f.type)).toEqual(['subjects', 'categories']);
     });
 
-    test('maintains sort order by order field', () => {
+    test('maintains sort order by order field', async () => {
       FilterRegistry.register({
         type: 'filter1',
         label: 'Filter 1',
@@ -279,11 +279,11 @@ describe('FilterRegistry', () => {
   });
 
   describe('getBooleanFilters', () => {
-    test('returns empty array when no filters registered', () => {
+    test('returns empty array when no filters registered', async () => {
       expect(FilterRegistry.getBooleanFilters()).toEqual([]);
     });
 
-    test('returns only filters with dataType=boolean', () => {
+    test('returns only filters with dataType=boolean', async () => {
       FilterRegistry.register({
         type: 'distance_learning',
         label: 'Distance Learning',
@@ -312,11 +312,11 @@ describe('FilterRegistry', () => {
   });
 
   describe('getArrayFilters', () => {
-    test('returns empty array when no filters registered', () => {
+    test('returns empty array when no filters registered', async () => {
       expect(FilterRegistry.getArrayFilters()).toEqual([]);
     });
 
-    test('returns only filters with dataType=array', () => {
+    test('returns only filters with dataType=array', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -345,7 +345,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('has', () => {
-    test('returns true for registered filter type', () => {
+    test('returns true for registered filter type', async () => {
       FilterRegistry.register({
         type: 'test',
         label: 'Test',
@@ -355,13 +355,13 @@ describe('FilterRegistry', () => {
       expect(FilterRegistry.has('test')).toBe(true);
     });
 
-    test('returns false for unregistered filter type', () => {
+    test('returns false for unregistered filter type', async () => {
       expect(FilterRegistry.has('nonexistent')).toBe(false);
     });
   });
 
   describe('clear', () => {
-    test('removes all registered filters', () => {
+    test('removes all registered filters', async () => {
       FilterRegistry.register({
         type: 'filter1',
         label: 'Filter 1',
@@ -385,7 +385,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('real-world filter registrations', () => {
-    test('registers subjects filter with correct configuration', () => {
+    test('registers subjects filter with correct configuration', async () => {
       FilterRegistry.register({
         type: 'subjects',
         label: 'Subject',
@@ -405,7 +405,7 @@ describe('FilterRegistry', () => {
       expect(config.urlParamAliases).toContain('subject');
     });
 
-    test('registers boolean filter with correct configuration', () => {
+    test('registers boolean filter with correct configuration', async () => {
       FilterRegistry.register({
         type: 'distance_learning',
         label: 'Distance Learning',
@@ -426,7 +426,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('registerFromBackend (T045)', () => {
-    test('populates registry from backend config array', () => {
+    test('populates registry from backend config array', async () => {
       // Simulate backend response: dict with config name keys
       const backendConfigs = {
         'Categories': {
@@ -474,7 +474,7 @@ describe('FilterRegistry', () => {
       expect(ptConfig.order).toBe(2);
     });
 
-    test('clears existing registrations before re-registering', () => {
+    test('clears existing registrations before re-registering', async () => {
       // Register a custom filter first
       FilterRegistry.register({
         type: 'custom_filter',
@@ -503,7 +503,7 @@ describe('FilterRegistry', () => {
       expect(FilterRegistry.has('categories')).toBe(true);
     });
 
-    test('preserves searchQuery registration after backend load', () => {
+    test('preserves searchQuery registration after backend load', async () => {
       // searchQuery is special — not rendered in panel, should survive
       FilterRegistry.registerFromBackend({
         'Categories': {
@@ -524,7 +524,7 @@ describe('FilterRegistry', () => {
   });
 
   describe('registerFromBackend preserves Redux state keys (T048)', () => {
-    test('maps to standard Redux state keys', () => {
+    test('maps to standard Redux state keys', async () => {
       const backendConfigs = {
         'Subjects': {
           filter_key: 'subjects',
@@ -593,13 +593,13 @@ describe('FilterRegistry', () => {
   describe('module initialization (default registrations)', () => {
     // This test verifies that the module registers default filters on import
     // by re-importing in a fresh context
-    test('auto-registers default filters on module load', () => {
+    test('auto-registers default filters on module load', async () => {
       // Clear to start fresh
       FilterRegistry.clear();
 
       // Re-import the module to trigger registration code
-      jest.resetModules();
-      const { FilterRegistry: FreshRegistry } = require('../filterRegistry');
+      vi.resetModules();
+      const _reqmod____filterRegistry_js = await import('../filterRegistry.js'); const { FilterRegistry: FreshRegistry } = _reqmod____filterRegistry_js;
 
       // Verify all 6 default filters are registered
       expect(FreshRegistry.has('subjects')).toBe(true);

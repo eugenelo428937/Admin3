@@ -24,7 +24,7 @@
  * // - Instant scroll behavior
  */
 
-import { a11y } from '../semantic/common';
+import { a11y } from '../semantic/common.js';
 
 export const baselineOverrides = {
   MuiCssBaseline: {

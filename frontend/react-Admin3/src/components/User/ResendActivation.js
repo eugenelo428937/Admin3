@@ -20,7 +20,7 @@ import {
   ArrowBack as ArrowBackIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import authService from '../../services/authService';
+import authService from '../../services/authService.js';
 
 const ResendActivation = () => {
     const navigate = useNavigate();

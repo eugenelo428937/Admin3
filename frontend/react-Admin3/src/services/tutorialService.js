@@ -1,5 +1,5 @@
-import config from "../config";
-import httpService from "./httpService";
+import config from "../config.js";
+import httpService from "./httpService.js";
 
 // Add validation for tutorial URL
 const TUTORIAL_API_URL = config.tutorialUrl || `${config.apiBaseUrl || config.apiUrl}/tutorials`;

@@ -15,10 +15,10 @@ import {
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import CountryAutocomplete from '../User/CountryAutocomplete';
-import DynamicAddressForm from './DynamicAddressForm';
-import addressMetadataService, { ADDRESS_METADATA } from '../../services/addressMetadataService';
-import config from '../../config';
+import CountryAutocomplete from '../User/CountryAutocomplete.js';
+import DynamicAddressForm from './DynamicAddressForm.js';
+import addressMetadataService, { ADDRESS_METADATA } from '../../services/addressMetadataService.js';
+import config from '../../config.js';
 import { useTheme } from '@mui/material/styles';
 const SmartAddressInput = ({
   values = {},

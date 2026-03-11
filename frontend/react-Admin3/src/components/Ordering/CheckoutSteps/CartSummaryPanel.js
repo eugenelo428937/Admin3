@@ -17,8 +17,8 @@ import {
   useTheme
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { generateProductCode } from '../../../utils/productCodeGenerator';
-import { formatVatLabel, getBaseVatRate, getRegionDisplayName } from '../../../utils/vatUtils';
+import { generateProductCode } from '../../../utils/productCodeGenerator.js';
+import { formatVatLabel, getEffectiveVatRate, getRegionDisplayName } from '../../../utils/vatUtils.js';
 
 const CartSummaryPanel = ({
   cartItems = [],
@@ -48,7 +48,7 @@ const CartSummaryPanel = ({
 
   // Get region from vatCalculations
   const region = vatCalculations?.region_info?.region || 'UNKNOWN';
-  const baseVatRate = getBaseVatRate(region);
+  const baseVatRate = getEffectiveVatRate(vatCalculations);
 
   // Get per-item VAT calculations
   const itemVatCalculations = vatCalculations?.vat_calculations || [];

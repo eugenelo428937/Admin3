@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for acknowledgmentService
  *
@@ -13,23 +14,23 @@
  * - validateCheckoutReadiness: Combined validation check
  */
 
-jest.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-import acknowledgmentService from '../acknowledgmentService';
-import httpService from '../httpService';
+import acknowledgmentService from '../acknowledgmentService.js';
+import httpService from '../httpService.js';
 
 describe('acknowledgmentService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -200,7 +201,7 @@ describe('acknowledgmentService', () => {
     test('should return empty array when validateComprehensiveCheckout throws', async () => {
       // Mock the method to throw directly (bypassing internal error handling)
       const originalMethod = acknowledgmentService.validateComprehensiveCheckout;
-      acknowledgmentService.validateComprehensiveCheckout = jest.fn().mockRejectedValue(new Error('Direct throw'));
+      acknowledgmentService.validateComprehensiveCheckout = vi.fn().mockRejectedValue(new Error('Direct throw'));
 
       const result = await acknowledgmentService.collectAllRequiredAcknowledgments({});
 
@@ -268,7 +269,7 @@ describe('acknowledgmentService', () => {
     test('should return false when validateComprehensiveCheckout throws', async () => {
       // Mock the method to throw directly (bypassing internal error handling)
       const originalMethod = acknowledgmentService.validateComprehensiveCheckout;
-      acknowledgmentService.validateComprehensiveCheckout = jest.fn().mockRejectedValue(new Error('Direct throw'));
+      acknowledgmentService.validateComprehensiveCheckout = vi.fn().mockRejectedValue(new Error('Direct throw'));
 
       const result = await acknowledgmentService.canProceedWithCheckout({});
 
@@ -347,7 +348,7 @@ describe('acknowledgmentService', () => {
     test('should return error result when validateComprehensiveCheckout throws', async () => {
       // Mock the method to throw directly (bypassing internal error handling)
       const originalMethod = acknowledgmentService.validateComprehensiveCheckout;
-      acknowledgmentService.validateComprehensiveCheckout = jest.fn().mockRejectedValue(new Error('Direct throw'));
+      acknowledgmentService.validateComprehensiveCheckout = vi.fn().mockRejectedValue(new Error('Direct throw'));
 
       const result = await acknowledgmentService.getMissingAcknowledgments({});
 

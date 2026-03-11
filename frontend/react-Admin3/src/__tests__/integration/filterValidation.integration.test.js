@@ -29,7 +29,7 @@ import filtersReducer, {
   navSelectSubject,
   clearValidationErrors,
   clearAllFilters,
-} from '../../store/slices/filtersSlice';
+} from '../../store/slices/filtersSlice.js';
 
 // Mock component that uses validation
 const ValidationTestComponent = () => {

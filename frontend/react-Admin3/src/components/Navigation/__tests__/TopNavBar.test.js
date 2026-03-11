@@ -1,20 +1,21 @@
+import { vi } from 'vitest';
 // src/components/Navigation/__tests__/TopNavBar.test.js
 
 // Mock services BEFORE any imports to prevent axios import errors
-jest.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(() => Promise.resolve({
+    getCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: {
@@ -22,9 +23,9 @@ jest.mock('../../../services/cartService', () => ({
         }
       }
     })),
-    addToCart: jest.fn(),
-    updateCartItem: jest.fn(),
-    removeFromCart: jest.fn(),
+    addToCart: vi.fn(),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn(),
   },
 }));
 
@@ -32,62 +33,31 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TopNavBar from '../TopNavBar';
+import TopNavBar from '../TopNavBar.js';
+import appTheme from '../../../theme';
 
 // Create a theme with liftkit spacing and semantic navigation colors for tests
-const theme = createTheme({
-  liftkit: {
-    spacing: {
-      xs: 4,
-      xs2: 8,
-      xs3: 12,
-      sm: 16,
-      md: 24,
-      lg: 32,
-      xl: 48,
-      xxl: 64,
-    },
-  },
-  palette: {
-    liftkit: {
-      light: {
-        background: '#ffffff',
-      },
-    },
-    offwhite: {
-      '000': '#ffffff',
-      '001': '#f0edf1',
-    },
-    semantic: {
-      navigation: {
-        text: {
-          primary: '#ffffff',
-          secondary: '#f0edf1',
-        },
-      },
-    },
-  },
-});
+const theme = appTheme;
 
 // Mock the useAuth hook
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
-    logout: jest.fn(),
+    logout: vi.fn(),
   }),
 }));
 
 // Mock the useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-    addToCart: jest.fn(() => Promise.resolve()),
-    updateCartItem: jest.fn(() => Promise.resolve()),
-    removeFromCart: jest.fn(() => Promise.resolve()),
-    clearCart: jest.fn(() => Promise.resolve()),
-    refreshCart: jest.fn(() => Promise.resolve()),
+    addToCart: vi.fn(() => Promise.resolve()),
+    updateCartItem: vi.fn(() => Promise.resolve()),
+    removeFromCart: vi.fn(() => Promise.resolve()),
+    clearCart: vi.fn(() => Promise.resolve()),
+    refreshCart: vi.fn(() => Promise.resolve()),
     cartCount: 0,
     loading: false,
   }),
@@ -103,55 +73,58 @@ const renderWithProviders = (component) => {
 };
 
 // Mock react-router-dom for navigation tests
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 let mockLocation = { pathname: '/', state: null };
 
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   const React = require('react');
   return {
     __esModule: true,
     Link: ({ children, to }) => React.createElement('a', { href: to }, children),
-    useNavigate: () => mockNavigate,
-    useLocation: () => mockLocation,
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => mockLocation),
   };
 });
 
 // Mock SearchModal
-jest.mock('../SearchModal', () => {
-  return function MockSearchModal({ open, onClose }) {
+vi.mock('../SearchModal.js', () => ({
+  __esModule: true,
+  default: function MockSearchModal({ open, onClose }) {
     return open ? (
       <div data-testid="search-modal">
         <button data-testid="close-search" onClick={onClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 // Mock AuthModal
-jest.mock('../AuthModal', () => {
-  return function MockAuthModal({ open, onClose }) {
+vi.mock('../AuthModal.js', () => ({
+  __esModule: true,
+  default: function MockAuthModal({ open, onClose }) {
     return open ? (
       <div data-testid="auth-modal">
         <button data-testid="close-auth" onClick={onClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 // Mock CartPanel
-jest.mock('../../Ordering/CartPanel', () => {
-  return function MockCartPanel({ show, handleClose }) {
+vi.mock('../../Ordering/CartPanel.js', () => ({
+  __esModule: true,
+  default: function MockCartPanel({ show, handleClose }) {
     return show ? (
       <div data-testid="cart-panel">
         <button data-testid="close-cart" onClick={handleClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 describe('TopNavBar', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockNavigate.mockClear();
     mockLocation = { pathname: '/', state: null };
   });
@@ -160,8 +133,8 @@ describe('TopNavBar', () => {
     test('should render navbar-top wrapper element', () => {
       const { container } = renderWithProviders(<TopNavBar />);
 
-      // TopNavBar should have a wrapper div with navbar-top class
-      const topNavWrapper = container.querySelector('.navbar-top');
+      // TopNavBar renders a Container as wrapper
+      const topNavWrapper = container.querySelector('.MuiContainer-root');
       expect(topNavWrapper).toBeInTheDocument();
     });
 
@@ -222,7 +195,7 @@ describe('TopNavBar', () => {
     });
 
     test('should clean up event listener on unmount', () => {
-      const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+      const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
       const { unmount } = renderWithProviders(<TopNavBar />);
 
       unmount();
@@ -239,7 +212,7 @@ describe('TopNavBar', () => {
   describe('Search Button', () => {
     test('should call onOpenSearch callback when search button is clicked', async () => {
       const user = userEvent.setup();
-      const mockOnOpenSearch = jest.fn();
+      const mockOnOpenSearch = vi.fn();
       renderWithProviders(<TopNavBar onOpenSearch={mockOnOpenSearch} />);
 
       // Click search button

@@ -3,11 +3,11 @@
  * Tests the consolidated theme structure with semantic tokens
  */
 
-import theme from '../index';
-import { md3, scales, staticColors } from '../tokens/colors';
-import { semantic } from '../semantic/common';
-import productCards from '../semantic/productCards';
-import navigation from '../semantic/navigation';
+import theme from '../index.js';
+import { md3, scales, staticColors } from '../tokens/colors.js';
+import { semantic } from '../semantic/common.js';
+import productCards from '../semantic/productCards.js';
+import navigation from '../semantic/navigation.js';
 
 describe('Theme Configuration', () => {
   describe('theme exports', () => {
@@ -189,9 +189,9 @@ describe('Theme Configuration', () => {
       expect(theme.typography.body2).toBeDefined();
     });
 
-    test('has button style with no text transform', () => {
+    test('has button style with uppercase text transform (MUI default)', () => {
       expect(theme.typography.button).toBeDefined();
-      expect(theme.typography.button.textTransform).toBe('none');
+      expect(theme.typography.button.textTransform).toBe('uppercase');
     });
   });
 
@@ -201,7 +201,7 @@ describe('Theme Configuration', () => {
       expect(theme.breakpoints.values.sm).toBe(600);
       expect(theme.breakpoints.values.md).toBe(960);
       expect(theme.breakpoints.values.lg).toBe(1280);
-      expect(theme.breakpoints.values.xl).toBe(1920);
+      expect(theme.breakpoints.values.xl).toBe(1440);
     });
   });
 

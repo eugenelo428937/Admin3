@@ -7,7 +7,7 @@
  * - GET /api/products/filter-configuration/  (getFilterConfiguration)
  * - GET /api/store/bundles/          (getBundles)
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -16,7 +16,7 @@ const {
   decimal,
   boolean,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Product Service - Pact Consumer Tests', () => {

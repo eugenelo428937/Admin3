@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { TextField, Paper, List, ListItem, ListItemText, Box, Typography, Portal } from "@mui/material";
-import config from "../../config";
+import config from '../../config.js';
 
 const frequentCountries = [
   "United Kingdom",

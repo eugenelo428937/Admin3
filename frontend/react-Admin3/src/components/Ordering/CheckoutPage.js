@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useCart } from "../../contexts/CartContext";
-import { useTutorialChoice } from "../../contexts/TutorialChoiceContext";
+import { useCart } from "../../contexts/CartContext.js";
+import { useTutorialChoice } from "../../contexts/TutorialChoiceContext.js";
 import { useNavigate } from "react-router-dom";
-import cartService from "../../services/cartService";
+import cartService from "../../services/cartService.js";
 import { Container, Alert, Typography, Box } from "@mui/material";
-import CheckoutSteps from "./CheckoutSteps";
+import CheckoutSteps from "./CheckoutSteps.js";
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useCart();

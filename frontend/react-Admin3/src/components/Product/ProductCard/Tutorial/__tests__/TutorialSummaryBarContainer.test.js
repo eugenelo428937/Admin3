@@ -1,18 +1,22 @@
+import { vi } from 'vitest';
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
 }));
 
 // Mock CartContext
 const mockCartState = {
-  addToCart: jest.fn(),
-  updateCartItem: jest.fn(),
-  removeFromCart: jest.fn(),
+  addToCart: vi.fn(),
+  updateCartItem: vi.fn(),
+  removeFromCart: vi.fn(),
 };
 
-jest.mock('../../../../../contexts/CartContext', () => {
-  const React = require('react');
+vi.mock('../../../../../contexts/CartContext.js', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     useCart: () => ({
@@ -23,8 +27,8 @@ jest.mock('../../../../../contexts/CartContext', () => {
       cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
       loading: false,
       cartCount: 0,
-      clearCart: jest.fn(() => Promise.resolve()),
-      refreshCart: jest.fn(() => Promise.resolve()),
+      clearCart: vi.fn(() => Promise.resolve()),
+      refreshCart: vi.fn(() => Promise.resolve()),
     }),
     CartProvider: ({ children }) => React.createElement('div', null, children),
     CartContext: React.createContext({}),
@@ -35,11 +39,12 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+import theme from '../../../../../theme/theme.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
-// Import the mocked module to allow jest.spyOn
-import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext';
+// Import the mocked modules to allow vi.spyOn
+import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';
+import * as CartContextModule from '../../../../../contexts/CartContext.js';
 
 // Helper to render with theme provider only (contexts are mocked globally)
 const renderWithProviders = (ui) => {
@@ -107,18 +112,18 @@ describe('TutorialSummaryBarContainer', () => {
       };
 
       // Mock useTutorialChoice to return mock choices
-      jest.spyOn(TutorialChoiceContextModule, 'useTutorialChoice').mockReturnValue({
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice').mockReturnValue({
         tutorialChoices: mockChoices,
-        getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
-        getDraftChoices: jest.fn((code) => {
+        getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
+        getDraftChoices: vi.fn((code) => {
           const choices = mockChoices[code] || {};
           return Object.values(choices).filter(c => c.isDraft);
         }),
-        hasCartedChoices: jest.fn(() => false),
-        removeTutorialChoice: jest.fn(),
-        removeSubjectChoices: jest.fn(),
-        markChoicesAsAdded: jest.fn(),
-        openEditDialog: jest.fn(),
+        hasCartedChoices: vi.fn(() => false),
+        removeTutorialChoice: vi.fn(),
+        removeSubjectChoices: vi.fn(),
+        markChoicesAsAdded: vi.fn(),
+        openEditDialog: vi.fn(),
       });
 
       const { getAllByRole } = renderWithProviders(
@@ -139,8 +144,8 @@ describe('TutorialSummaryBarContainer', () => {
     it('should call addToCart and markChoicesAsAdded when Add to Cart clicked', async () => {
       const user = userEvent.setup();
       mockCartState.addToCart.mockResolvedValue({});
-      const mockMarkChoicesAsAdded = jest.fn();
-      const mockGetDraftChoices = jest.fn((code) => {
+      const mockMarkChoicesAsAdded = vi.fn();
+      const mockGetDraftChoices = vi.fn((code) => {
         const choices = mockChoices[code] || {};
         return Object.values(choices).filter(c => c.isDraft);
       });
@@ -162,15 +167,15 @@ describe('TutorialSummaryBarContainer', () => {
       };
 
       // Mock TutorialChoiceContext
-      jest.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
-          getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
+          getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
           getDraftChoices: mockGetDraftChoices,
-          hasCartedChoices: jest.fn(() => false),
+          hasCartedChoices: vi.fn(() => false),
           markChoicesAsAdded: mockMarkChoicesAsAdded,
-          removeTutorialChoice: jest.fn(),
-          openEditDialog: jest.fn()
+          removeTutorialChoice: vi.fn(),
+          openEditDialog: vi.fn()
         });
 
       render(<TutorialSummaryBarContainer />);
@@ -224,21 +229,21 @@ describe('TutorialSummaryBarContainer', () => {
         }
       };
 
-      const mockGetDraftChoices = jest.fn((code) => {
+      const mockGetDraftChoices = vi.fn((code) => {
         const choices = mockChoices[code] || {};
         return Object.values(choices).filter(c => c.isDraft);
       });
 
-      jest.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
-          getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
+          getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
           getDraftChoices: mockGetDraftChoices,
-          hasCartedChoices: jest.fn(() => false),
-          openEditDialog: jest.fn(), // Not used anymore but keep for compatibility
-          markChoicesAsAdded: jest.fn(),
-          removeTutorialChoice: jest.fn(),
-          removeSubjectChoices: jest.fn()
+          hasCartedChoices: vi.fn(() => false),
+          openEditDialog: vi.fn(), // Not used anymore but keep for compatibility
+          markChoicesAsAdded: vi.fn(),
+          removeTutorialChoice: vi.fn(),
+          removeSubjectChoices: vi.fn()
         });
 
       render(<TutorialSummaryBarContainer />);
@@ -262,8 +267,8 @@ describe('TutorialSummaryBarContainer', () => {
   describe('Handler: Remove', () => {
     it('should remove all choices for subject when Remove clicked', async () => {
       const user = userEvent.setup();
-      const mockRemoveSubjectChoices = jest.fn();
-      const mockRemoveFromCart = jest.fn().mockResolvedValue({ data: { items: [] } });
+      const mockRemoveSubjectChoices = vi.fn();
+      const mockRemoveFromCart = vi.fn().mockResolvedValue({ data: { items: [] } });
 
       const mockChoices = {
         'CS2': {
@@ -292,27 +297,27 @@ describe('TutorialSummaryBarContainer', () => {
         }
       };
 
-      const mockGetDraftChoices = jest.fn((code) => {
+      const mockGetDraftChoices = vi.fn((code) => {
         const choices = mockChoices[code] || {};
         return Object.values(choices).filter(c => c.isDraft);
       });
 
-      jest.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
-          getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
+          getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
           getDraftChoices: mockGetDraftChoices,
-          hasCartedChoices: jest.fn(() => false),
-          removeTutorialChoice: jest.fn(), // Not used anymore
+          hasCartedChoices: vi.fn(() => false),
+          removeTutorialChoice: vi.fn(), // Not used anymore
           removeSubjectChoices: mockRemoveSubjectChoices,
-          markChoicesAsAdded: jest.fn(),
-          openEditDialog: jest.fn()
+          markChoicesAsAdded: vi.fn(),
+          openEditDialog: vi.fn()
         });
 
       // Mock CartContext
-      jest.spyOn(require('../../../../../contexts/CartContext'), 'useCart')
+      vi.spyOn(CartContextModule, 'useCart')
         .mockReturnValue({
-          addToCart: jest.fn(),
+          addToCart: vi.fn(),
           removeFromCart: mockRemoveFromCart,
           cartItems: [],
           loading: false

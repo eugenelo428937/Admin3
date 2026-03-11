@@ -1,5 +1,5 @@
-import httpService from "./httpService";
-import config from "../config";
+import httpService from "./httpService.js";
+import config from "../config.js";
 
 const API_BASE = config.cartUrl;
 const ORDERS_API_URL = `${config.apiBaseUrl}/api/orders`;

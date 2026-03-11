@@ -46,8 +46,8 @@ import {
     setSearchQuery,
     setSearchFilterProductIds,
     clearAllFilters
-} from '../../store/slices/filtersSlice';
-import { FilterRegistry } from '../../store/filters/filterRegistry';
+} from '../../store/slices/filtersSlice.js';
+import { FilterRegistry } from '../../store/filters/filterRegistry.js';
 
 /**
  * Map filter types to their Redux removal actions

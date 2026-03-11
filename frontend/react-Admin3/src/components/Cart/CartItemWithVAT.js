@@ -34,7 +34,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import CartVATDisplay from './CartVATDisplay';
+import CartVATDisplay from './CartVATDisplay.js';
 
 const CartItemWithVAT = ({
   item,
