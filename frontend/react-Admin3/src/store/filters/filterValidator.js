@@ -6,8 +6,8 @@
  * Performance monitoring: Tracks validation timing against budget
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker';
-import { VALIDATION_BUDGET } from '../../config/performanceBudgets';
+import PerformanceTracker from '../../utils/PerformanceTracker.js';
+import { VALIDATION_BUDGET } from '../../config/performanceBudgets.js';
 
 class FilterValidator {
   /**
@@ -57,7 +57,7 @@ class FilterValidator {
         errorCount: errors.length
       });
 
-      if (metric && !import.meta.env.PROD) {
+      if (metric && !import.meta.env?.PROD) {
         PerformanceTracker.checkBudget('validation', metric.duration, VALIDATION_BUDGET);
       }
     }

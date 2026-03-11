@@ -23,8 +23,8 @@
  * });
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker';
-import { REGISTRY_LOOKUP_BUDGET } from '../../config/performanceBudgets';
+import PerformanceTracker from '../../utils/PerformanceTracker.js';
+import { REGISTRY_LOOKUP_BUDGET } from '../../config/performanceBudgets.js';
 
 /**
  * Filter configuration schema
@@ -92,7 +92,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && !import.meta.env.PROD) {
+      if (metric && !import.meta.env?.PROD) {
         PerformanceTracker.checkBudget('registry.lookup', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }
@@ -134,7 +134,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && !import.meta.env.PROD) {
+      if (metric && !import.meta.env?.PROD) {
         PerformanceTracker.checkBudget('registry.getByUrlParam', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }

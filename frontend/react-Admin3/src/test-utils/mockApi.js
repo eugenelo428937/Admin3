@@ -7,10 +7,10 @@ import {
   mockOrder,
   mockUser,
   mockPaginatedResponse,
-} from './mockData';
+} from './mockData.js';
 
 // Define API base URL (match your actual API)
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8888/api';
+const API_BASE = import.meta.env?.VITE_API_URL || 'http://localhost:8888/api';
 
 // MSW Request Handlers
 export const handlers = [
