@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Alert, Card, CardActions, CardContent, Grid, Box, useTheme, Stepper, Step, StepLabel, Typography } from '@mui/material';
-import { useCart } from '../../contexts/CartContext';
-import { useAuth } from '../../hooks/useAuth';
-import httpService from '../../services/httpService';
-import config from "../../config";
-import rulesEngineService from '../../services/rulesEngineService';
-import RulesEngineModal from '../Common/RulesEngineModal';
-import userService from '../../services/userService';
-import useCheckoutValidation from '../../hooks/useCheckoutValidation';
+import { useCart } from '../../contexts/CartContext.js';
+import { useAuth } from '../../hooks/useAuth.js';
+import httpService from '../../services/httpService.js';
+import config from '../../config.js';
+import rulesEngineService from '../../services/rulesEngineService.js';
+import RulesEngineModal from '../Common/RulesEngineModal.js';
+import userService from '../../services/userService.js';
+import useCheckoutValidation from '../../hooks/useCheckoutValidation.js';
 import './CheckoutSteps/CheckoutSteps.css';
 
 // Import step components
-import CartReviewStep from './CheckoutSteps/CartReviewStep';
-import TermsConditionsStep from './CheckoutSteps/TermsConditionsStep';
-import PreferenceStep from './CheckoutSteps/PreferenceStep';
-import PaymentStep from './CheckoutSteps/PaymentStep';
-import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel';
+import CartReviewStep from './CheckoutSteps/CartReviewStep.js';
+import TermsConditionsStep from './CheckoutSteps/TermsConditionsStep.js';
+import PreferenceStep from './CheckoutSteps/PreferenceStep.js';
+import PaymentStep from './CheckoutSteps/PaymentStep.js';
+import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel.js';
 
 const CheckoutSteps = ({ onComplete }) => {
   const theme = useTheme();
@@ -106,9 +106,9 @@ const CheckoutSteps = ({ onComplete }) => {
 
   useEffect(() => {
     // Check if we're in development environment
-    setIsDevelopment(import.meta.env.DEV || config.API_BASE_URL?.includes('localhost'));
+    setIsDevelopment(import.meta.env?.DEV || config.API_BASE_URL?.includes('localhost'));
     // Check if we're in UAT environment
-    setIsUAT(config.isUAT || import.meta.env.VITE_ENV === 'uat' || import.meta.env.VITE_ENVIRONMENT === 'uat');
+    setIsUAT(config.isUAT || import.meta.env?.VITE_ENV === 'uat' || import.meta.env?.VITE_ENVIRONMENT === 'uat');
   }, []);
 
   // Fetch user profile function (extracted for reuse)
@@ -326,7 +326,7 @@ const CheckoutSteps = ({ onComplete }) => {
         if (err.name === 'SchemaValidationError') {
           console.error('🚨 Schema validation failed for rules engine:', err.details);
           console.error('🔍 Schema errors:', err.schemaErrors);
-          if (import.meta.env.DEV) {
+          if (import.meta.env?.DEV) {
             setError(`Development Error: Schema validation failed - ${err.details}`);
           }
         }

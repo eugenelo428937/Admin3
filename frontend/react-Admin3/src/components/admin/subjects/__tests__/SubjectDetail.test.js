@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/subjects/__tests__/SubjectDetail.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminSubjectDetail from '../SubjectDetail';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminSubjectDetail from '../SubjectDetail.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,15 +19,15 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ id: '1' }),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({ id: '1' })),
     Link: ({ children, to }) => <a href={to}>{children}</a>,
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService', () => ({
+vi.mock('../../../../services/subjectService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,9 +35,10 @@ vi.mock('../../../../services/subjectService', () => ({
   },
 }));
 
-import subjectService from '../../../../services/subjectService';
+import subjectService from '../../../../services/subjectService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockSubject = {
   id: '1',

@@ -13,8 +13,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme';
-import CheckoutSteps from '../CheckoutSteps';
+import theme from '../../../theme/theme.js';
+import CheckoutSteps from '../CheckoutSteps.js';
 
 // Helper to render with theme
 const renderWithTheme = (component) => {
@@ -26,7 +26,7 @@ const renderWithTheme = (component) => {
 };
 
 // Mock the rules engine service
-vi.mock('../../../services/rulesEngineService', () => ({
+vi.mock('../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
@@ -39,7 +39,7 @@ vi.mock('../../../services/rulesEngineService', () => ({
 }));
 
 // Mock httpService
-vi.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
     post: vi.fn(() => Promise.resolve({ data: {} })),
@@ -49,7 +49,7 @@ vi.mock('../../../services/httpService', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
     getUserProfile: vi.fn(() => Promise.resolve({
@@ -68,13 +68,16 @@ vi.mock('../../../services/userService', () => ({
 }));
 
 // Mock config
-vi.mock('../../../config', () => ({
-  API_BASE_URL: 'http://localhost:8888',
-  isUAT: false
+vi.mock('../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    API_BASE_URL: 'http://localhost:8888',
+    isUAT: false
+  },
 }));
 
 // Mock useCheckoutValidation
-vi.mock('../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
   __esModule: true,
   default: () => ({
     validateCheckout: vi.fn(() => Promise.resolve({ blocked: false })),
@@ -86,12 +89,12 @@ vi.mock('../../../hooks/useCheckoutValidation', () => ({
 }));
 
 // Mock useCart hook
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: vi.fn()
 }));
 
 // Mock useAuth hook
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: true,
     user: { id: 1, email: 'test@example.com' }
@@ -117,11 +120,11 @@ const mockCartData = {
 };
 
 describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     // Mock useCart hook
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -275,10 +278,10 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 });
 
 describe('CheckoutSteps - Button States', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -308,10 +311,10 @@ describe('CheckoutSteps - Button States', () => {
 });
 
 describe('CheckoutSteps - Complete Order Flow', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -335,10 +338,10 @@ describe('CheckoutSteps - Complete Order Flow', () => {
 });
 
 describe('CheckoutSteps - Cart Summary Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData

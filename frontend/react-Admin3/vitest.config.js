@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 
 // Custom plugin to handle JSX in .js files (CRA convention)
 function jsxInJsPlugin() {
@@ -25,15 +26,48 @@ function jsxInJsPlugin() {
   };
 }
 
+// Plugin to resolve extensionless relative imports (CRA compatibility)
+// Node ESM requires explicit extensions, but CRA allowed extensionless imports.
+function resolveExtensionsPlugin() {
+  const extensions = ['.js', '.jsx', '.ts', '.tsx', '.mjs'];
+  return {
+    name: 'resolve-extensions',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (!importer || !source.startsWith('.') || path.extname(source)) return null;
+      const importerDir = path.dirname(importer);
+      const basePath = path.resolve(importerDir, source);
+      // Try each extension
+      for (const ext of extensions) {
+        const fullPath = basePath + ext;
+        if (fs.existsSync(fullPath)) {
+          return fullPath;
+        }
+      }
+      // Try index files in directory
+      for (const ext of extensions) {
+        const indexPath = path.join(basePath, 'index' + ext);
+        if (fs.existsSync(indexPath)) {
+          return indexPath;
+        }
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
+    resolveExtensionsPlugin(),
     jsxInJsPlugin(),
     react(),
   ],
   resolve: {
     alias: {
       src: path.resolve(__dirname, 'src'),
+      '@sentry/react': path.resolve(__dirname, 'src/__mocks__/sentry-react.js'),
     },
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   test: {
     globals: true,
@@ -71,15 +105,24 @@ export default defineConfig({
     },
     // Match CRA's transformIgnorePatterns behavior
     deps: {
-      inline: [
-        '@reduxjs/toolkit',
-        '@standard-schema',
-        'msw',
-        '@mswjs',
-        'axios',
-        'react-router',
-        'react-router-dom',
-      ],
+      optimizer: {
+        web: {
+          include: [
+            '@reduxjs/toolkit',
+            '@standard-schema',
+            'msw',
+            '@mswjs',
+            'axios',
+            'react-router',
+            'react-router-dom',
+          ],
+        },
+      },
+    },
+    server: {
+      deps: {
+        inline: [/^(?!.*node_modules)/],
+      },
     },
   },
 });

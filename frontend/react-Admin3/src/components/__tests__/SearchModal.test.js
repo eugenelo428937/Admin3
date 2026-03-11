@@ -14,22 +14,24 @@ const mockNavigate = vi.fn();
 
 vi.mock('react-router-dom', () => ({
   BrowserRouter: ({ children }) => children,
-  useNavigate: () => mockNavigate
+  useNavigate: vi.fn(() => mockNavigate)
 }));
 
-vi.mock('../SearchBox', () => {
-  return function MockSearchBox() {
+vi.mock('../SearchBox.js', () => ({
+  __esModule: true,
+  default: function MockSearchBox() {
     const React = require('react');
     return React.createElement('div', { 'data-testid': 'mock-search-box' }, 'SearchBox Component');
-  };
-});
+  },
+}));
 
-vi.mock('../SearchResults', () => {
-  return function MockSearchResults() {
+vi.mock('../SearchResults.js', () => ({
+  __esModule: true,
+  default: function MockSearchResults() {
     const React = require('react');
     return React.createElement('div', { 'data-testid': 'mock-search-results' }, 'SearchResults Component');
-  };
-});
+  },
+}));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -37,9 +39,9 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchModal from '../Navigation/SearchModal';
-import filtersReducer from '../../store/slices/filtersSlice';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
+import SearchModal from '../Navigation/SearchModal.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 /**
  * Test helper: Create mock Redux store

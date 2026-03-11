@@ -19,8 +19,8 @@ import
    Logout as LogoutIcon,
    Person as ProfileIcon,
 } from "@mui/icons-material";
-import { useAuth } from "../../hooks/useAuth";
-import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../hooks/useAuth.js";
+import { useCart } from "../../contexts/CartContext.js";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 

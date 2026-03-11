@@ -6,10 +6,10 @@ import {
   Select, MenuItem, CircularProgress
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import storeProductService from '../../../services/storeProductService';
-import examSessionSubjectService from '../../../services/examSessionSubjectService';
-import productProductVariationService from '../../../services/productProductVariationService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import storeProductService from '../../../services/storeProductService.js';
+import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
+import productProductVariationService from '../../../services/productProductVariationService.js';
 
 const AdminStoreProductForm = () => {
     const { isSuperuser } = useAuth();

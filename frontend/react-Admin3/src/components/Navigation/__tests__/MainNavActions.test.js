@@ -3,15 +3,15 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import MainNavActions from '../MainNavActions';
+import MainNavActions from '../MainNavActions.js';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme';
+import theme from '../../../theme/theme.js';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Create mock logout function that can be accessed in tests
@@ -24,13 +24,13 @@ let mockAuthState = {
   logout: mockLogout,
 };
 
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock the useCart hook
 let mockCartCount = 3;
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },

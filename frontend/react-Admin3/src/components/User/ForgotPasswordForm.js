@@ -22,7 +22,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import authService from "../../services/authService";
+import authService from "../../services/authService.js";
 
 // For reCAPTCHA v2 checkbox alternative, you would import:
 // import ReCAPTCHA from 'react-google-recaptcha';
@@ -43,8 +43,8 @@ const ForgotPasswordForm = () => {
 
    // Set to true to disable reCAPTCHA during development (to avoid signaling errors)
    const DISABLE_RECAPTCHA_IN_DEV =
-      import.meta.env.DEV &&
-      import.meta.env.VITE_DISABLE_RECAPTCHA === "true";
+      import.meta.env?.DEV &&
+      import.meta.env?.VITE_DISABLE_RECAPTCHA === "true";
 
    // Handle automatic redirect after email is sent
    useEffect(() => {

@@ -17,7 +17,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartItemWithVAT from '../CartItemWithVAT';
+import CartItemWithVAT from '../CartItemWithVAT.js';
 
 describe('CartItemWithVAT Component', () => {
   const mockCartItem = {

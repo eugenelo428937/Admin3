@@ -10,40 +10,22 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../store/slices/filtersSlice';
-import { urlSyncMiddleware } from '../store/middleware/urlSyncMiddleware';
+import filtersReducer from '../store/slices/filtersSlice.js';
+import { urlSyncMiddleware, setupUrlToReduxSync } from '../store/middleware/urlSyncMiddleware.js';
 
 // Import MemoryRouter - Jest will use manual mock from __mocks__/react-router-dom.js
 import { MemoryRouter } from 'react-router-dom';
 
-// Lazy load catalogApi to avoid ESM issues in tests
-let catalogApi;
+// Import catalogApi directly (ESM compatible)
+import { catalogApi } from '../store/api/catalogApi.js';
+import * as mockHandlersModule from './mockHandlers.js';
+
 function getCatalogApi() {
-  if (!catalogApi) {
-    try {
-      catalogApi = require('../store/api/catalogApi').catalogApi;
-    } catch (error) {
-      // Fallback to mock if ESM import fails
-      console.warn('Using mock catalogApi due to ESM import error');
-      catalogApi = require('../__mocks__/catalogApiMock').catalogApi;
-    }
-  }
   return catalogApi;
 }
 
-// Lazy load mockHandlers to avoid MSW ESM issues
-let mockHandlers;
 function getMockHandlers() {
-  if (!mockHandlers) {
-    try {
-      mockHandlers = require('./mockHandlers');
-    } catch (error) {
-      // Fallback to mock if MSW ESM import fails
-      console.warn('Using mock mockHandlers due to ESM import error');
-      mockHandlers = require('../__mocks__/mockHandlersMock');
-    }
-  }
-  return mockHandlers;
+  return mockHandlersModule;
 }
 
 /**
@@ -108,7 +90,6 @@ export function renderWithProviders(
 
     // Setup URL → Redux sync for this store
     try {
-      const { setupUrlToReduxSync } = require('../store/middleware/urlSyncMiddleware');
       setupUrlToReduxSync(store.dispatch);
     } catch (error) {
       console.warn('Could not setup URL → Redux sync:', error.message);
@@ -199,9 +180,7 @@ export function createMockStore(options = {}) {
   });
 
   // Setup URL → Redux sync for test stores (Story 1.16)
-  // Import setupUrlToReduxSync dynamically to avoid circular dependency issues
   try {
-    const { setupUrlToReduxSync } = require('../store/middleware/urlSyncMiddleware');
     setupUrlToReduxSync(store.dispatch);
   } catch (error) {
     console.warn('Could not setup URL → Redux sync for mock store:', error.message);

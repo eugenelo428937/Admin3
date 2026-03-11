@@ -7,12 +7,15 @@ import { vi } from 'vitest';
  */
 
 // Mock httpService before importing
-vi.mock('../httpService', () => ({
-    post: vi.fn()
+vi.mock('../httpService.js', () => ({
+    __esModule: true,
+    default: {
+        post: vi.fn()
+    },
 }));
 
-import rulesEngineService from '../rulesEngineService';
-import httpService from '../httpService';
+import rulesEngineService from '../rulesEngineService.js';
+import httpService from '../httpService.js';
 
 describe('rulesEngineService', () => {
     const mockContext = {

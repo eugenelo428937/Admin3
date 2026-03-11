@@ -6,10 +6,10 @@ import {
   Select, MenuItem
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import examSessionSubjectService from '../../../services/examSessionSubjectService';
-import examSessionService from '../../../services/examSessionService';
-import subjectService from '../../../services/subjectService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
+import examSessionService from '../../../services/examSessionService.js';
+import subjectService from '../../../services/subjectService.js';
 
 const AdminExamSessionSubjectForm = () => {
     const { isSuperuser } = useAuth();

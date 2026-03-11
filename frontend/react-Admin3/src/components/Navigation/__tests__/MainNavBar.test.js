@@ -2,8 +2,8 @@ import { vi } from 'vitest';
 // src/components/Navigation/__tests__/MainNavBar.test.js
 
 // Mock Chakra UI to prevent @ark-ui/react import errors
-vi.mock('@chakra-ui/react', () => {
-  const React = require('react');
+vi.mock('@chakra-ui/react', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     NumberInput: React.forwardRef(({ children, ...props }, ref) =>
@@ -19,7 +19,7 @@ vi.mock('@chakra-ui/react', () => {
 });
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('../../../services/httpService', () => ({
   },
 }));
 
-vi.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -47,17 +47,20 @@ vi.mock('../../../services/cartService', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../services/productService', () => ({
-  getNavigationData: vi.fn(() => Promise.resolve({
-    subjects: [],
-    navbarProductGroups: [],
-    distanceLearningData: [],
-    tutorialData: null,
-  })),
+vi.mock('../../../services/productService.js', () => ({
+  __esModule: true,
+  default: {
+    getNavigationData: vi.fn(() => Promise.resolve({
+      subjects: [],
+      navbarProductGroups: [],
+      distanceLearningData: [],
+      tutorialData: null,
+    })),
+  },
 }));
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -69,7 +72,7 @@ vi.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock the useCart hook
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
@@ -84,7 +87,7 @@ vi.mock('../../../contexts/CartContext', () => ({
 }));
 
 // Mock TutorialChoiceContext
-vi.mock('../../../contexts/TutorialChoiceContext', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
   useTutorialChoice: () => ({
     getTutorialChoice: vi.fn(),
     addTutorialChoice: vi.fn(),
@@ -102,8 +105,8 @@ vi.mock('../../../contexts/TutorialChoiceContext', () => ({
 
 // Mock useNavigate for navigation tests
 const mockNavigate = vi.fn();
-vi.mock('react-router-dom', () => {
-  const React = require('react');
+vi.mock('react-router-dom', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     BrowserRouter: ({ children }) => React.createElement('div', { 'data-testid': 'browser-router' }, children),
@@ -114,11 +117,11 @@ vi.mock('react-router-dom', () => {
     NavLink: React.forwardRef(({ to, children, ...props }, ref) =>
       React.createElement('a', { href: typeof to === 'string' ? to : (to?.pathname || '/'), ref, ...props }, children)
     ),
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
-    useParams: () => ({}),
-    useSearchParams: () => [new URLSearchParams(), vi.fn()],
-    useMatch: () => null,
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' })),
+    useParams: vi.fn(() => ({})),
+    useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
+    useMatch: vi.fn(() => null),
   };
 });
 
@@ -127,11 +130,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import MainNavBar from '../MainNavBar';
-import filtersReducer from '../../../store/slices/filtersSlice';
-import theme from '../../../theme/theme';
+import MainNavBar from '../MainNavBar.js';
+import filtersReducer from '../../../store/slices/filtersSlice.js';
+import theme from '../../../theme/theme.js';
 import { ThemeProvider } from '@mui/material/styles';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
 
 const createTestStore = () => {
   return configureStore({
@@ -193,7 +196,7 @@ describe('MainNavBar Mobile Layout Structure', () => {
     // Hamburger menu toggle should exist
     const menuToggle = container.querySelector('#navbar-menu-toggle');
     expect(menuToggle).toBeInTheDocument();
-    expect(menuToggle).toHaveClass('navbar-toggler');
+    expect(menuToggle).toHaveClass('menu-button');
   });
 });
 

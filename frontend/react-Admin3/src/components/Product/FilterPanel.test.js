@@ -16,20 +16,26 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import filtersReducer from '../../store/slices/filtersSlice';
-import FilterPanel from './FilterPanel';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import FilterPanel from './FilterPanel.js';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 // Mock Material-UI's useMediaQuery
-vi.mock('@mui/material/useMediaQuery');
+import useMediaQuery from '@mui/material/useMediaQuery';
+vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn() }));
+// Also patch through @mui/material barrel export
+vi.mock('@mui/material', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, useMediaQuery: (...args) => useMediaQuery(...args) };
+});
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 const mockLocation = { search: '' };
 
 vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockNavigate,
-    useLocation: () => mockLocation,
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => mockLocation),
 }));
 
 // Mock Redux actions
@@ -116,14 +122,14 @@ const mockFilterCounts = {
 };
 
 describe('FilterPanel Component', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         // Mock useMediaQuery to return desktop by default
-        require('@mui/material/useMediaQuery').default = vi.fn(() => false);
+        useMediaQuery.mockReturnValue(false);
     });
 
     describe('Rendering and Initial State', () => {
-        test('renders desktop filter panel with default state', () => {
+        test('renders desktop filter panel with default state', async () => {
             // Provide minimal filterCounts so sections render (registry-based implementation)
             const initialState = {
                 filterCounts: {
@@ -145,16 +151,16 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('Modes of Delivery')).toBeInTheDocument();  // Updated to match registry pluralLabel
         });
 
-        test('renders mobile filter panel button when isMobile is true', () => {
+        test('renders mobile filter panel button when isMobile is true', async () => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
+            useMediaQuery.mockReturnValue(true);
             
             renderWithProviders(<FilterPanel />);
             
             expect(screen.getByRole('button', { name: /filters/i })).toBeInTheDocument();
         });
 
-        test('renders with filter counts when available', () => {
+        test('renders with filter counts when available', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -166,7 +172,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('(45)')).toBeInTheDocument(); // Materials count
         });
 
-        test('shows loading skeleton when isLoading is true', () => {
+        test('shows loading skeleton when isLoading is true', async () => {
             const initialState = {
                 isLoading: true,
                 filterCounts: {
@@ -185,7 +191,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText(/filters/i)).toBeInTheDocument();
         });
 
-        test('shows error message when error exists', () => {
+        test('shows error message when error exists', async () => {
             const initialState = {
                 error: 'Failed to load filters',
             };
@@ -246,7 +252,7 @@ describe('FilterPanel Component', () => {
             );
         });
 
-        test('shows active filter badges when filters are selected', () => {
+        test('shows active filter badges when filters are selected', async () => {
             const initialState = {
                 subjects: ['CM2', 'SA1'],
                 categories: ['Materials'],
@@ -261,7 +267,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('1')).toBeInTheDocument();
         });
 
-        test('shows "Clear All" button when filters are active', () => {
+        test('shows "Clear All" button when filters are active', async () => {
             const initialState = {
                 subjects: ['CM2'],
                 categories: ['Materials'],
@@ -324,9 +330,9 @@ describe('FilterPanel Component', () => {
     });
 
     describe('Mobile Drawer Functionality', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
+            useMediaQuery.mockReturnValue(true);
         });
 
         test('opens drawer when filter button is clicked on mobile', async () => {
@@ -341,7 +347,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByRole('presentation')).toBeInTheDocument();
         });
 
-        test('shows filter count badge on mobile filter button when filters are active', () => {
+        test('shows filter count badge on mobile filter button when filters are active', async () => {
             const initialState = {
                 subjects: ['CM2'],
                 categories: ['Materials'],
@@ -394,7 +400,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByRole('checkbox', { name: /Materials/i })).toBeInTheDocument();
         });
 
-        test('subjects section is expanded by default', () => {
+        test('subjects section is expanded by default', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -407,7 +413,7 @@ describe('FilterPanel Component', () => {
     });
 
     describe('Search Mode', () => {
-        test('behaves correctly in search mode', () => {
+        test('behaves correctly in search mode', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -441,7 +447,7 @@ describe('FilterPanel Component', () => {
             await expectNoA11yViolations(container, wcag21AAConfig);
         });
 
-        test('has proper checkbox roles for filter options', () => {
+        test('has proper checkbox roles for filter options', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -453,7 +459,7 @@ describe('FilterPanel Component', () => {
             expect(checkboxes.length).toBeGreaterThan(0);
         });
 
-        test('has proper button roles for interactive elements', () => {
+        test('has proper button roles for interactive elements', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -465,7 +471,7 @@ describe('FilterPanel Component', () => {
             expect(buttons.length).toBeGreaterThan(0);
         });
 
-        test('checkboxes have accessible names', () => {
+        test('checkboxes have accessible names', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -505,7 +511,7 @@ describe('FilterPanel Component', () => {
     });
 
     describe('Edge Cases', () => {
-        test('handles empty filter counts gracefully', () => {
+        test('handles empty filter counts gracefully', async () => {
             const initialState = {
                 filterCounts: {},
             };
@@ -519,14 +525,14 @@ describe('FilterPanel Component', () => {
             expect(screen.queryByText('(15)')).not.toBeInTheDocument();
         });
 
-        test('handles undefined filter counts gracefully', () => {
+        test('handles undefined filter counts gracefully', async () => {
             renderWithProviders(<FilterPanel />);
             
             // Should render without errors
             expect(screen.getByText('Filters')).toBeInTheDocument();
         });
 
-        test('handles very long filter names', () => {
+        test('handles very long filter names', async () => {
             const longFilterCounts = {
                 subjects: {
                     'Very Long Subject Name That Should Be Truncated Properly': 5,
@@ -546,9 +552,13 @@ describe('FilterPanel Component', () => {
 
     describe('FilterRegistry Integration (Story 1.11)', () => {
         // Import FilterRegistry for testing
-        const { FilterRegistry } = require('../../store/filters/filterRegistry');
+        let FilterRegistry;
+        beforeAll(async () => {
+            const mod = await import('../../store/filters/filterRegistry.js');
+            FilterRegistry = mod.FilterRegistry;
+        });
 
-        beforeEach(() => {
+        beforeEach(async () => {
             // Reset registry before each test to ensure clean state
             FilterRegistry.clear();
 
@@ -578,7 +588,7 @@ describe('FilterPanel Component', () => {
             });
         });
 
-        test('uses FilterRegistry.getAll() to render filter sections', () => {
+        test('uses FilterRegistry.getAll() to render filter sections', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
@@ -590,7 +600,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('Categories')).toBeInTheDocument();
         });
 
-        test('automatically renders new filter types added to registry', () => {
+        test('automatically renders new filter types added to registry', async () => {
             // Add a new filter type to the registry
             FilterRegistry.register({
                 type: 'test_filter',
@@ -621,7 +631,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('Test Filters')).toBeInTheDocument();
         });
 
-        test('renders filter sections in order specified by registry', () => {
+        test('renders filter sections in order specified by registry', async () => {
             // Clear and re-register with specific order
             FilterRegistry.clear();
 
@@ -670,7 +680,7 @@ describe('FilterPanel Component', () => {
             expect(sectionTexts).toEqual(['Filter A', 'Filter M', 'Filter Z']);
         });
 
-        test('uses registry color configuration for filter badges', () => {
+        test('uses registry color configuration for filter badges', async () => {
             const initialState = {
                 subjects: ['CM2'],
                 categories: ['Materials'],
@@ -690,7 +700,7 @@ describe('FilterPanel Component', () => {
             expect(primaryBadge).toBeTruthy();
         });
 
-        test('uses registry pluralLabel for section titles', () => {
+        test('uses registry pluralLabel for section titles', async () => {
             // Register filter with custom pluralLabel
             FilterRegistry.register({
                 type: 'custom_filter',
@@ -715,7 +725,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('Custom Items Collection')).toBeInTheDocument();
         });
 
-        test('skips rendering searchQuery filter (order:0) in filter panel', () => {
+        test('skips rendering searchQuery filter (order:0) in filter panel', async () => {
             FilterRegistry.register({
                 type: 'searchQuery',
                 label: 'Search',
@@ -739,7 +749,7 @@ describe('FilterPanel Component', () => {
             expect(screen.queryByText('Search')).not.toBeInTheDocument();
         });
 
-        test('handles boolean filters from registry correctly', () => {
+        test('handles boolean filters from registry correctly', async () => {
             FilterRegistry.register({
                 type: 'distance_learning',
                 label: 'Distance Learning',
@@ -766,7 +776,7 @@ describe('FilterPanel Component', () => {
             expect(screen.getByText('Distance Learning')).toBeInTheDocument();
         });
 
-        test('adding new filter requires only registry entry (AC8 - Story 1.11)', () => {
+        test('adding new filter requires only registry entry (AC8 - Story 1.11)', async () => {
             // This test verifies the main goal of Story 1.11:
             // Adding a new filter type should require ONLY a registry entry
 

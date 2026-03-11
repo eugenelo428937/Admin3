@@ -15,14 +15,15 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ProductGrid from './ProductGrid';
+import ProductGrid from './ProductGrid.js';
 
 // Mock MaterialProductCard component
-vi.mock('./ProductCard/MaterialProductCard', () => {
-    return function MockMaterialProductCard({ product }) {
+vi.mock('./ProductCard/MaterialProductCard.js', () => ({
+    __esModule: true,
+    default: function MockMaterialProductCard({ product }) {
         return <div data-testid="product-card">{product.product_name || product.name || product.id}</div>;
-    };
-});
+    },
+}));
 
 // Mock Material-UI's useMediaQuery
 vi.mock('@mui/material/useMediaQuery');

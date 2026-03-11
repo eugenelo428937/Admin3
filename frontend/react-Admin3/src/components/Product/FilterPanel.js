@@ -66,8 +66,8 @@ import {
     clearAllFilters,
     clearFilterType,
     clearValidationErrors
-} from '../../store/slices/filtersSlice';
-import { FilterRegistry } from '../../store/filters/filterRegistry';
+} from '../../store/slices/filtersSlice.js';
+import { FilterRegistry } from '../../store/filters/filterRegistry.js';
 
 // Deep equality check for objects (simple implementation)
 const deepEqual = (obj1, obj2) => {

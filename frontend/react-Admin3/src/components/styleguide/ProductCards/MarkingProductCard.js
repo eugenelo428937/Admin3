@@ -33,7 +33,7 @@ import {
    FolderCopyOutlined,
    CheckCircle,
 } from "@mui/icons-material";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 
 // Enhanced Marking Product Card - Deadline Scenarios with Pagination
 const MarkingProductCard = ({ producttype = "marking" }) => {

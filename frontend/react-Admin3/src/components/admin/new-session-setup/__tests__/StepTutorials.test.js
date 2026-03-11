@@ -1,10 +1,11 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import StepTutorials from '../StepTutorials';
+import { ThemeProvider } from '@mui/material/styles';
+import StepTutorials from '../StepTutorials.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);

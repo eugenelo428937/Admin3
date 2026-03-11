@@ -10,11 +10,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FilterPanel from '../Product/FilterPanel';
-import filtersReducer from '../../store/slices/filtersSlice';
-import { FilterRegistry } from '../../store/filters/filterRegistry';
+import { ThemeProvider } from '@mui/material/styles';
+import FilterPanel from '../Product/FilterPanel.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import { FilterRegistry } from '../../store/filters/filterRegistry.js';
 
+import appTheme from '../../theme';
 // Mock sessionStorage
 const mockSessionStorage = {};
 Object.defineProperty(window, 'sessionStorage', {
@@ -27,7 +28,7 @@ Object.defineProperty(window, 'sessionStorage', {
 });
 
 // Mock PerformanceTracker
-vi.mock('../../utils/PerformanceTracker', () => ({
+vi.mock('../../utils/PerformanceTracker.js', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,
@@ -37,7 +38,7 @@ vi.mock('../../utils/PerformanceTracker', () => ({
   },
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 function createStoreWithError(error) {
   return configureStore({

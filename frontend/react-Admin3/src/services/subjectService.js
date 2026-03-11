@@ -1,7 +1,7 @@
 // src/services/subjectService.js
-import config from "../config";
-import httpService from "./httpService";
-import { parsePaginatedResponse } from "./paginationHelper";
+import config from "../config.js";
+import httpService from "./httpService.js";
+import { parsePaginatedResponse } from "./paginationHelper.js";
 // Use catalog API endpoint (legacy /api/subjects/ was removed during catalog consolidation)
 const API_URL = `${config.catalogUrl}/admin-subjects`;
 

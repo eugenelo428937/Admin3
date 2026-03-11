@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`CheckoutSteps Snapshot Tests (T033 - Regression Detection) renders step 1 - cart review 1`] = `
 <div

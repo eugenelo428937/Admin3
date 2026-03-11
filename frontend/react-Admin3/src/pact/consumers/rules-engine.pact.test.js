@@ -14,7 +14,7 @@
  * - GET  /api/rules/engine/checkout-terms-status/
  * These are covered by integration tests.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -24,7 +24,7 @@ const {
   decimal,
   JSON_REQUEST_HEADERS,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Rules Engine Service - Pact Consumer Tests', () => {

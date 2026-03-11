@@ -21,10 +21,10 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart as CartIcon } from '@mui/icons-material';
-import CartItemWithVAT from '../components/Cart/CartItemWithVAT';
-import CartTotals from '../components/Cart/CartTotals';
-import CartVATError from '../components/Cart/CartVATError';
-import cartService from '../services/cartService';
+import CartItemWithVAT from '../components/Cart/CartItemWithVAT.js';
+import CartTotals from '../components/Cart/CartTotals.js';
+import CartVATError from '../components/Cart/CartVATError.js';
+import cartService from '../services/cartService.js';
 
 const Cart = () => {
   const navigate = useNavigate();

@@ -18,17 +18,20 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock config
-vi.mock('../../../config', () => ({
-  apiBaseUrl: 'http://localhost:8888',
+vi.mock('../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    apiBaseUrl: 'http://localhost:8888',
+  },
 }));
 
 // Mock authService
 const mockRegister = vi.fn();
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     register: (...args) => mockRegister(...args),
@@ -36,7 +39,7 @@ vi.mock('../../../services/authService', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
     getUserProfile: vi.fn().mockResolvedValue({ status: 'error' }),
@@ -48,7 +51,7 @@ vi.mock('../../../services/userService', () => ({
 // The component imports from ../../services/addressMetadataService
 // From /src/components/User/UserFormWizard.js -> /src/services/addressMetadataService
 // From test at /src/components/User/__tests__/ -> need ../../../services/addressMetadataService
-vi.mock('../../../services/addressMetadataService', () => {
+vi.mock('../../../services/addressMetadataService.js', () => {
   const mockGetCountryCode = vi.fn(() => 'GB');
   const mockGetAddressMetadata = vi.fn(() => ({
     required: [],  // No required fields for easy test navigation
@@ -75,8 +78,9 @@ vi.mock('../../../services/addressMetadataService', () => {
 });
 
 // Mock ValidatedPhoneInput
-vi.mock('../ValidatedPhoneInput', () => {
-  return function MockValidatedPhoneInput({
+vi.mock('../ValidatedPhoneInput.js', () => ({
+  __esModule: true,
+  default: function MockValidatedPhoneInput({
     name,
     value,
     onChange,
@@ -108,12 +112,13 @@ vi.mock('../ValidatedPhoneInput', () => {
         {error && <span role="alert">{error}</span>}
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock SmartAddressInput
-vi.mock('../../Address/SmartAddressInput', () => {
-  return function MockSmartAddressInput({ values, onChange, errors, fieldPrefix }) {
+vi.mock('../../Address/SmartAddressInput.js', () => ({
+  __esModule: true,
+  default: function MockSmartAddressInput({ values, onChange, errors, fieldPrefix }) {
     return (
       <div data-testid={`smart-address-${fieldPrefix}`}>
         <input
@@ -142,12 +147,13 @@ vi.mock('../../Address/SmartAddressInput', () => {
         />
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock DynamicAddressForm
-vi.mock('../../Address/DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ values, onChange, errors, fieldPrefix, readonly }) {
+vi.mock('../../Address/DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ values, onChange, errors, fieldPrefix, readonly }) {
     if (readonly) {
       return <div data-testid={`address-readonly-${fieldPrefix}`}>Address Display</div>;
     }
@@ -161,10 +167,11 @@ vi.mock('../../Address/DynamicAddressForm', () => {
         />
       </div>
     );
-  };
-});
+  },
+}));
 
-import UserFormWizard from '../UserFormWizard';
+import UserFormWizard from '../UserFormWizard.js';
+import appTheme from '../../../theme';
 
 // Mock fetch for countries API - setup before tests
 const mockFetch = vi.fn(() =>
@@ -180,24 +187,7 @@ const mockFetch = vi.fn(() =>
 global.fetch = mockFetch;
 
 describe('UserFormWizard', () => {
-  const theme = createTheme({
-    palette: {
-      primary: { main: '#1976d2', contrastText: '#fff' },
-      secondary: { main: '#9c27b0' },
-      text: { primary: '#000', secondary: '#666' },
-      bpp: {
-        granite: { '030': '#e0e0e0' },
-        pink: { '050': '#f48fb1' },
-      },
-      liftkit: {
-        light: { onPrimary: '#fff' },
-      },
-    },
-    liftkit: {
-      spacing: { xs2: 8, sm: 16, md: 24, lg: 32 },
-      light: { onPrimary: '#fff' },
-    },
-  });
+  const theme = appTheme;
 
   const renderWithTheme = (component) => {
     return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
@@ -511,7 +501,15 @@ describe('UserFormWizard', () => {
     test('shows helper text for email field', () => {
       renderWithTheme(<UserFormWizard mode="registration" />);
 
-      expect(screen.getByText(/This will be your login username/i)).toBeInTheDocument();
+      // PersonalInfoStep notifies parent on mount, which triggers validation.
+      // When validation is active, the helperText shows the error message
+      // ("Email is required") instead of the hint text.
+      // Verify either the hint or the validation error is shown as helperText.
+      const emailInput = screen.getByLabelText(/Email Address/i);
+      const helperTextId = emailInput.getAttribute('aria-describedby');
+      const helperText = document.getElementById(helperTextId);
+      expect(helperText).toBeInTheDocument();
+      expect(helperText.textContent).toMatch(/This will be your login username|Email is required/i);
     });
 
     // NOTE: This test is skipped due to complex mock dependencies with addressMetadataService

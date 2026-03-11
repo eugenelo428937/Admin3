@@ -2,19 +2,19 @@ import { vi } from 'vitest';
 const mockNavigate = vi.fn();
 const mockSearchParams = new URLSearchParams('uid=test-uid&token=test-token');
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-  useSearchParams: () => [mockSearchParams],
+  useNavigate: vi.fn(() => mockNavigate),
+  useSearchParams: vi.fn(() => [mockSearchParams]),
 }));
 
 const mockActivateAccount = vi.fn();
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: { activateAccount: (...args) => mockActivateAccount(...args) },
 }));
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import AccountActivation from '../AccountActivation';
+import AccountActivation from '../AccountActivation.js';
 
 describe('AccountActivation', () => {
   beforeEach(() => {

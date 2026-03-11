@@ -3,11 +3,11 @@ import {
   Container, Stepper, Step, StepLabel, Typography, Box, Paper
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import StepExamSession from './StepExamSession';
-import StepSubjects from './StepSubjects';
-import StepMaterials from './StepMaterials';
-import StepTutorials from './StepTutorials';
+import { useAuth } from '../../../hooks/useAuth.js';
+import StepExamSession from './StepExamSession.js';
+import StepSubjects from './StepSubjects.js';
+import StepMaterials from './StepMaterials.js';
+import StepTutorials from './StepTutorials.js';
 
 const STEPS = ['Exam Session', 'Subjects', 'Materials & Marking', 'Tutorials'];
 

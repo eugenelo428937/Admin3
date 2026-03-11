@@ -2,12 +2,14 @@ import { vi } from 'vitest';
 // frontend/react-Admin3/src/components/__tests__/PersonalInfoStep.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PersonalInfoStep from '../User/steps/PersonalInfoStep';
+import { ThemeProvider } from '@mui/material/styles';
+import PersonalInfoStep from '../User/steps/PersonalInfoStep.js';
 
+import appTheme from '../../theme';
 // Mock ValidatedPhoneInput to avoid complex phone validation in tests
-vi.mock('../User/ValidatedPhoneInput', () => {
-  return function MockValidatedPhoneInput({ name, value, onChange, label }) {
+vi.mock('../User/ValidatedPhoneInput.js', () => ({
+  __esModule: true,
+  default: function MockValidatedPhoneInput({ name, value, onChange, label }) {
     return (
       <input
         data-testid={`phone-${name}`}
@@ -17,10 +19,10 @@ vi.mock('../User/ValidatedPhoneInput', () => {
         aria-label={label}
       />
     );
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);

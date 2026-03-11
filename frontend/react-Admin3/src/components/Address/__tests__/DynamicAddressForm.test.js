@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import DynamicAddressForm from '../DynamicAddressForm';
+import DynamicAddressForm from '../DynamicAddressForm.js';
 
 // Mock data
 const ukMetadata = {
@@ -40,7 +40,7 @@ const usMetadata = {
 };
 
 // Mock addressMetadataService
-vi.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService.js', () => ({
   __esModule: true,
   default: {
     getCountryCode: vi.fn(),
@@ -51,13 +51,10 @@ vi.mock('../../../services/addressMetadataService', () => ({
   },
 }));
 
-import addressMetadataService from '../../../services/addressMetadataService';
+import addressMetadataService from '../../../services/addressMetadataService.js';
+import appTheme from '../../../theme';
 
-const theme = createTheme({
-  liftkit: {
-    spacing: { sm: 8, md: 16 },
-  },
-});
+const theme = appTheme;
 
 const renderComponent = async (props = {}) => {
   const defaultProps = {

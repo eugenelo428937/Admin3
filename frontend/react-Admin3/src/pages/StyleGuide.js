@@ -14,16 +14,16 @@ import {
 import { Add } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 // Import sub-components
-import TypographySection from "../components/styleguide/TypographySection";
-import ColorSystemSection from "../components/styleguide/ColorSystemSection";
-import ButtonsSection from "../components/styleguide/ButtonsSection";
-import FormElementsSection from "../components/styleguide/FormElementsSection";
-import FeedbackSection from "../components/styleguide/FeedbackSection";
-import NavigationSection from "../components/styleguide/NavigationSection";
-import LayoutSection from "../components/styleguide/LayoutSection";
-import TablesSection from "../components/styleguide/TablesSection";
-import ProductCardsSection from "../components/styleguide/ProductCardsSection";
-import Sandbox from "../components/styleguide/Sandbox";
+import TypographySection from "../components/styleguide/TypographySection.js";
+import ColorSystemSection from "../components/styleguide/ColorSystemSection.js";
+import ButtonsSection from "../components/styleguide/ButtonsSection.js";
+import FormElementsSection from "../components/styleguide/FormElementsSection.js";
+import FeedbackSection from "../components/styleguide/FeedbackSection.js";
+import NavigationSection from "../components/styleguide/NavigationSection.js";
+import LayoutSection from "../components/styleguide/LayoutSection.js";
+import TablesSection from "../components/styleguide/TablesSection.js";
+import ProductCardsSection from "../components/styleguide/ProductCardsSection.js";
+import Sandbox from "../components/styleguide/Sandbox.js";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 

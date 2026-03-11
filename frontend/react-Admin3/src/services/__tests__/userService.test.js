@@ -16,12 +16,12 @@ describe('userService', () => {
   let httpService;
   let logger;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset modules to get fresh instances
     vi.resetModules();
 
     // Mock config
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         userUrl: 'http://test-api/users',
@@ -29,7 +29,7 @@ describe('userService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -39,7 +39,7 @@ describe('userService', () => {
     }));
 
     // Mock logger
-    vi.doMock('../loggerService', () => ({
+    vi.doMock('../loggerService.js', () => ({
       __esModule: true,
       default: {
         debug: vi.fn(),
@@ -49,9 +49,9 @@ describe('userService', () => {
     }));
 
     // Import after mocks are set up
-    userService = require('../userService').default;
-    httpService = require('../httpService').default;
-    logger = require('../loggerService').default;
+    { const _mod_userService = await import('../userService.js'); userService = _mod_userService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_logger = await import('../loggerService.js'); logger = _mod_logger.default; }
   });
 
   afterEach(() => {

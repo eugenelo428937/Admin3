@@ -14,7 +14,7 @@ import { vi } from 'vitest';
  * - getValidationErrorMessage: Get validation error (async)
  */
 
-import phoneValidationService from '../phoneValidationService';
+import phoneValidationService from '../phoneValidationService.js';
 
 // Mock global fetch
 global.fetch = vi.fn();

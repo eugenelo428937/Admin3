@@ -3,14 +3,15 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import appTheme from '../theme';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../store/slices/filtersSlice';
+import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Import context providers for optional use
-import { CartContext } from '../contexts/CartContext';
-import { ProductContext } from '../contexts/ProductContext';
-import { TutorialChoiceContext } from '../contexts/TutorialChoiceContext';
+import { CartContext } from '../contexts/CartContext.js';
+import { ProductContext } from '../contexts/ProductContext.js';
+import { TutorialChoiceContext } from '../contexts/TutorialChoiceContext.js';
 
 /**
  * Default mock values for CartContext
@@ -111,7 +112,7 @@ export function renderWithProviders(
       },
       preloadedState,
     }),
-    theme = createTheme(),
+    theme = appTheme,
     route = '/',
     useMemoryRouter = false,
     // Context configuration

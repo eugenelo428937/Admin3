@@ -12,11 +12,11 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../theme/theme';
-import filtersReducer from '../store/slices/filtersSlice';
+import theme from '../theme/theme.js';
+import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Mock all services before component imports
-vi.mock('../services/httpService', () => ({
+vi.mock('../services/httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -26,7 +26,7 @@ vi.mock('../services/httpService', () => ({
   },
 }));
 
-vi.mock('../services/cartService', () => ({
+vi.mock('../services/cartService.js', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({ data: { items: [] } })),
@@ -37,19 +37,22 @@ vi.mock('../services/cartService', () => ({
   },
 }));
 
-vi.mock('../services/productService', () => ({
-  getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
-  getDistanceLearningDropdown: vi.fn(() => Promise.resolve([])),
-  getTutorialDropdown: vi.fn(() => Promise.resolve(null)),
-  getProductById: vi.fn(() => Promise.resolve(null)),
-  searchProducts: vi.fn(() => Promise.resolve({ data: { results: [] } })),
+vi.mock('../services/productService.js', () => ({
+  __esModule: true,
+  default: {
+    getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
+    getDistanceLearningDropdown: vi.fn(() => Promise.resolve([])),
+    getTutorialDropdown: vi.fn(() => Promise.resolve(null)),
+    getProductById: vi.fn(() => Promise.resolve(null)),
+    searchProducts: vi.fn(() => Promise.resolve({ data: { results: [] } })),
+  },
 }));
 
-vi.mock('../services/subjectService', () => ({
+vi.mock('../services/subjectService.js', () => ({
   getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock('../services/rulesEngineService', () => ({
+vi.mock('../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
@@ -61,7 +64,7 @@ vi.mock('../services/rulesEngineService', () => ({
   }
 }));
 
-vi.mock('../hooks/useAuth', () => ({
+vi.mock('../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -73,95 +76,110 @@ vi.mock('../hooks/useAuth', () => ({
 }));
 
 // Mock page components to make routing tests fast and focused
-vi.mock('../pages/Home', () => {
-  return function MockHome() {
+vi.mock('../pages/Home.js', () => ({
+  __esModule: true,
+  default: function MockHome() {
     return <div data-testid="home-page">Home Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/Product/ProductList', () => {
-  return function MockProductList() {
+vi.mock('../components/Product/ProductList.js', () => ({
+  __esModule: true,
+  default: function MockProductList() {
     return <div data-testid="product-list-page">Product List Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/Ordering/CheckoutPage', () => {
-  return function MockCheckoutPage() {
+vi.mock('../components/Ordering/CheckoutPage.js', () => ({
+  __esModule: true,
+  default: function MockCheckoutPage() {
     return <div data-testid="checkout-page">Checkout Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../pages/ProfilePage', () => {
-  return function MockProfilePage() {
+vi.mock('../pages/ProfilePage.js', () => ({
+  __esModule: true,
+  default: function MockProfilePage() {
     return <div data-testid="profile-page">Profile Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/OrderHistory', () => {
-  return function MockOrderHistory() {
+vi.mock('../components/User/OrderHistory.js', () => ({
+  __esModule: true,
+  default: function MockOrderHistory() {
     return <div data-testid="orders-page">Order History Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/NoMatch', () => {
-  return function MockNoMatch() {
+vi.mock('../components/NoMatch.js', () => ({
+  __esModule: true,
+  default: function MockNoMatch() {
     return <div data-testid="no-match-page">404 - Not Found</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../pages/Registration', () => {
-  return function MockRegistration() {
+vi.mock('../pages/Registration.js', () => ({
+  __esModule: true,
+  default: function MockRegistration() {
     return <div data-testid="registration-page">Registration Page</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/StyleGuide', () => {
-  return function MockStyleGuide() {
+vi.mock('../pages/StyleGuide.js', () => ({
+  __esModule: true,
+  default: function MockStyleGuide() {
     return <div data-testid="style-guide-page">Style Guide</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/ForgotPasswordForm', () => {
-  return function MockForgotPassword() {
+vi.mock('../components/User/ForgotPasswordForm.js', () => ({
+  __esModule: true,
+  default: function MockForgotPassword() {
     return <div data-testid="forgot-password-page">Forgot Password</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/ResetPasswordForm', () => {
-  return function MockResetPassword() {
+vi.mock('../components/User/ResetPasswordForm.js', () => ({
+  __esModule: true,
+  default: function MockResetPassword() {
     return <div data-testid="reset-password-page">Reset Password</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/AccountActivation', () => {
-  return function MockAccountActivation() {
+vi.mock('../components/User/AccountActivation.js', () => ({
+  __esModule: true,
+  default: function MockAccountActivation() {
     return <div data-testid="account-activation-page">Account Activation</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/ResendActivation', () => {
-  return function MockResendActivation() {
+vi.mock('../components/User/ResendActivation.js', () => ({
+  __esModule: true,
+  default: function MockResendActivation() {
     return <div data-testid="resend-activation-page">Resend Activation</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/User/EmailVerification', () => {
-  return function MockEmailVerification() {
+vi.mock('../components/User/EmailVerification.js', () => ({
+  __esModule: true,
+  default: function MockEmailVerification() {
     return <div data-testid="email-verification-page">Email Verification</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/Navigation/MainNavBar', () => {
-  return function MockMainNavBar() {
+vi.mock('../components/Navigation/MainNavBar.js', () => ({
+  __esModule: true,
+  default: function MockMainNavBar() {
     return <nav data-testid="main-navbar">Navigation</nav>;
-  };
-});
+  },
+}));
 
-vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => {
-  return function MockTutorialSummaryBar() {
+vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js', () => ({
+  __esModule: true,
+  default: function MockTutorialSummaryBar() {
     return null;
-  };
-});
+  },
+}));
 
 // Create mock store
 const createTestStore = () => {
@@ -175,25 +193,25 @@ const createTestStore = () => {
 // Import the Navigate component from react-router-dom for redirect testing
 import { Navigate } from 'react-router-dom';
 
+// Import mocked components at top level
+import Home from '../pages/Home.js';
+import ProductList from '../components/Product/ProductList.js';
+import CheckoutPage from '../components/Ordering/CheckoutPage.js';
+import ProfilePage from '../pages/ProfilePage.js';
+import OrderHistory from '../components/User/OrderHistory.js';
+import NoMatch from '../components/NoMatch.js';
+import Registration from '../pages/Registration.js';
+import StyleGuide from '../pages/StyleGuide.js';
+import ForgotPasswordForm from '../components/User/ForgotPasswordForm.js';
+import ResetPasswordForm from '../components/User/ResetPasswordForm.js';
+import AccountActivation from '../components/User/AccountActivation.js';
+import ResendActivation from '../components/User/ResendActivation.js';
+import EmailVerification from '../components/User/EmailVerification.js';
+import MainNavBar from '../components/Navigation/MainNavBar.js';
+
 // Simple test router setup matching App.js routes
 const TestRouter = ({ initialEntries = ['/'] }) => {
   const store = createTestStore();
-
-  // Import mocked components
-  const Home = require('../pages/Home');
-  const ProductList = require('../components/Product/ProductList');
-  const CheckoutPage = require('../components/Ordering/CheckoutPage');
-  const ProfilePage = require('../pages/ProfilePage');
-  const OrderHistory = require('../components/User/OrderHistory');
-  const NoMatch = require('../components/NoMatch');
-  const Registration = require('../pages/Registration');
-  const StyleGuide = require('../components/StyleGuide');
-  const ForgotPasswordForm = require('../components/User/ForgotPasswordForm');
-  const ResetPasswordForm = require('../components/User/ResetPasswordForm');
-  const AccountActivation = require('../components/User/AccountActivation');
-  const ResendActivation = require('../components/User/ResendActivation');
-  const EmailVerification = require('../components/User/EmailVerification');
-  const MainNavBar = require('../components/Navigation/MainNavBar');
 
   return (
     <Provider store={store}>
@@ -280,7 +298,8 @@ describe('App Routing (T062)', () => {
       });
     });
 
-    it('should render StyleGuide page on /style-guide route', async () => {
+    it('should render StyleGuide page on /styleguide route', async () => {
+      render(<TestRouter initialEntries={['/styleguide']} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('style-guide-page')).toBeInTheDocument();

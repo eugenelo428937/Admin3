@@ -16,19 +16,18 @@ describe('examSessionService', () => {
   let examSessionService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
-        examSessionUrl: 'http://test-api/exam-sessions',
-        examSessionSubjectUrl: 'http://test-api/exam-session-subjects',
+        catalogUrl: 'http://test-api/catalog',
       },
     }));
 
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -38,8 +37,8 @@ describe('examSessionService', () => {
       },
     }));
 
-    examSessionService = require('../examSessionService').default;
-    httpService = require('../httpService').default;
+    { const _mod_examSessionService = await import('../examSessionService.js'); examSessionService = _mod_examSessionService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -58,7 +57,7 @@ describe('examSessionService', () => {
       const result = await examSessionService.getAll();
 
       expect(result).toEqual(mockSessions);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/exam-sessions/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/catalog/exam-sessions/');
     });
 
     test('should return results from paginated response', async () => {
@@ -114,7 +113,7 @@ describe('examSessionService', () => {
       const result = await examSessionService.getById(123);
 
       expect(result).toEqual(mockSession);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/exam-sessions/123/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/catalog/exam-sessions/123/');
     });
 
     test('should throw error on API failure', async () => {
@@ -127,18 +126,14 @@ describe('examSessionService', () => {
   describe('create', () => {
     const mockSession = { name: 'April 2025', start_date: '2025-04-01' };
 
-    test('should create exam session and insert subjects', async () => {
+    test('should create exam session', async () => {
       httpService.post.mockResolvedValue({ data: { id: 1, ...mockSession } });
 
       const result = await examSessionService.create(mockSession);
 
       expect(result).toEqual({ id: 1, ...mockSession });
       expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/exam-sessions/',
-        mockSession
-      );
-      expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/exam-session-subjects/insert-subjects/',
+        'http://test-api/catalog/exam-sessions/',
         mockSession
       );
     });
@@ -160,7 +155,7 @@ describe('examSessionService', () => {
 
       expect(result).toEqual({ id: 1, ...mockSession });
       expect(httpService.put).toHaveBeenCalledWith(
-        'http://test-api/exam-sessions/1/',
+        'http://test-api/catalog/exam-sessions/1/',
         mockSession
       );
     });
@@ -178,7 +173,7 @@ describe('examSessionService', () => {
 
       await examSessionService.delete(1);
 
-      expect(httpService.delete).toHaveBeenCalledWith('http://test-api/exam-sessions1/');
+      expect(httpService.delete).toHaveBeenCalledWith('http://test-api/catalog/exam-sessions/1/');
     });
 
     test('should throw error on delete failure', async () => {

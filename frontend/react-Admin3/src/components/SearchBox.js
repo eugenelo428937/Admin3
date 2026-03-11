@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { TextField, Alert, CircularProgress, Box, InputAdornment, useTheme } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
-import searchService from '../services/searchService';
+import searchService from '../services/searchService.js';
 import {
     setSearchQuery as setSearchQueryAction,
     selectSearchQuery
-} from '../store/slices/filtersSlice';
+} from '../store/slices/filtersSlice.js';
 import { searchBoxContainerStyles, searchInputStyles } from '../theme/styles';
 
 const SearchBox = ({

@@ -5,16 +5,16 @@ import React from 'react';
 import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import NavigationMenu from '../NavigationMenu';
+import NavigationMenu from '../NavigationMenu.js';
 import theme from '../../../theme';
 
 // Mock useAuth
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 
 const defaultProps = {
   subjects: [],

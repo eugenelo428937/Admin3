@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ProductVariationsPanel from "./ProductVariationsPanel";
+import ProductVariationsPanel from "./ProductVariationsPanel.js";
 
 const AdminProductTable = ({ products, onDelete }) => {
     const [expandedId, setExpandedId] = useState(null);

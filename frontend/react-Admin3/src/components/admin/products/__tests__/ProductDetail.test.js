@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductDetail.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminProductDetail from '../ProductDetail';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminProductDetail from '../ProductDetail.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,15 +19,15 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({ id: '1' }),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({ id: '1' })),
     Link: ({ children, to }) => <a href={to}>{children}</a>,
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock catalogProductService
-vi.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,9 +35,10 @@ vi.mock('../../../../services/catalogProductService', () => ({
   },
 }));
 
-import catalogProductService from '../../../../services/catalogProductService';
+import catalogProductService from '../../../../services/catalogProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockProduct = {
   id: '1',

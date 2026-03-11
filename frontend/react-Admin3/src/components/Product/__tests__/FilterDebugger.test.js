@@ -1,10 +1,11 @@
 // src/components/Product/__tests__/FilterDebugger.test.js
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FilterDebugger from '../FilterDebugger';
+import { ThemeProvider } from '@mui/material/styles';
+import FilterDebugger from '../FilterDebugger.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const renderComponent = (props = {}) => {
   const defaultProps = {

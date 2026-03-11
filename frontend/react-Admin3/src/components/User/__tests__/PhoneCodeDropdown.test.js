@@ -2,10 +2,11 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/PhoneCodeDropdown.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PhoneCodeDropdown from '../PhoneCodeDropdown';
+import { ThemeProvider } from '@mui/material/styles';
+import PhoneCodeDropdown from '../PhoneCodeDropdown.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const mockCountries = [
   { name: 'United Kingdom', phone_code: '+44', iso_code: 'GB' },

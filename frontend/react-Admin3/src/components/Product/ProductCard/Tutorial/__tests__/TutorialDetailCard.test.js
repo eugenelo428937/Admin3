@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import TutorialDetailCard from '../TutorialDetailCard';
+import TutorialDetailCard from '../TutorialDetailCard.js';
 
 describe('TutorialDetailCard', () => {
   const mockEvent = {

@@ -3,8 +3,8 @@ import {
   Box, Typography, Button, Alert, Divider,
 } from "@mui/material";
 import { Home, Edit as EditIcon } from "@mui/icons-material";
-import SmartAddressInput from "../../Address/SmartAddressInput";
-import DynamicAddressForm from "../../Address/DynamicAddressForm";
+import SmartAddressInput from "../../Address/SmartAddressInput.js";
+import DynamicAddressForm from "../../Address/DynamicAddressForm.js";
 import { useTheme } from "@mui/material/styles";
 
 const HomeAddressStep = ({

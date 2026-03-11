@@ -1,6 +1,6 @@
 // src/services/productService.js
-import config from "../config";
-import httpService from "./httpService";
+import config from "../config.js";
+import httpService from "./httpService.js";
 
 // Use fallback if productsUrl is not defined
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;

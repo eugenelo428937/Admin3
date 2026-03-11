@@ -18,8 +18,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { CartCheck } from "react-bootstrap-icons";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
-import { touchButtonStyle, touchIconButtonStyle } from "./tutorialStyles";
+import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext.js";
+import { touchButtonStyle, touchIconButtonStyle } from "./tutorialStyles.js";
 
 /**
  * TutorialSelectionSummaryBar - Persistent summary bar for tutorial choices

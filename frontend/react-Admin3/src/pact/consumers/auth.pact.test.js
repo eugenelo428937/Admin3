@@ -13,7 +13,7 @@
  * - POST /api/auth/password_reset_request/ (requires reCAPTCHA bypass)
  * These are covered by integration tests instead.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   string,
@@ -21,7 +21,7 @@ const {
   boolean,
   JSON_REQUEST_HEADERS,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Auth Service - Pact Consumer Tests', () => {

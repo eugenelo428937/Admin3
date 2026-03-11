@@ -29,7 +29,7 @@ import {
   selectHasActiveFilters,
   selectActiveFilterCount,
   selectActiveFilterSummary
-} from '../../../store/slices/filterSelectors';
+} from '../../../store/slices/filterSelectors.js';
 
 describe('Filter Selectors Module', () => {
   let mockState;

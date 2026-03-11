@@ -1,15 +1,16 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm';
+import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm.js';
 
-vi.mock('../../hooks/useAuth', () => ({
+import appTheme from '../../theme';
+vi.mock('../../hooks/useAuth.js', () => ({
   useAuth: () => ({ isSuperuser: true }),
 }));
 
-vi.mock('../../services/userProfileService', () => ({
+vi.mock('../../services/userProfileService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn().mockResolvedValue({
@@ -34,7 +35,7 @@ vi.mock('../User/steps', () => ({
   PreferencesStep: ({ mode }) => <div data-testid="preferences-step" data-mode={mode}>PreferencesStep</div>,
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 const renderWithProviders = (ui, { route = '/admin/user-profiles/1/edit' } = {}) =>
   render(
     <ThemeProvider theme={theme}>

@@ -15,7 +15,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartVATError from '../CartVATError';
+import CartVATError from '../CartVATError.js';
 
 describe('CartVATError Component', () => {
   const mockErrorData = {

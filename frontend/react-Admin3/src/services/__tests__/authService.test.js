@@ -6,10 +6,10 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../authService');
+vi.unmock('../authService.js');
 
 // Mock dependencies BEFORE imports
-vi.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('../httpService', () => ({
   },
 }));
 
-vi.mock('../loggerService', () => ({
+vi.mock('../loggerService.js', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('../loggerService', () => ({
   },
 }));
 
-vi.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     authUrl: '/api/auth',
@@ -37,9 +37,9 @@ vi.mock('../../config', () => ({
   },
 }));
 
-import authService from '../authService';
-import httpService from '../httpService';
-import logger from '../loggerService';
+import authService from '../authService.js';
+import httpService from '../httpService.js';
+import logger from '../loggerService.js';
 
 describe('authService', () => {
   beforeEach(() => {

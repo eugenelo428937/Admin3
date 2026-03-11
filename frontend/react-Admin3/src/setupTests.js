@@ -124,7 +124,65 @@ vi.mock('react-router-dom', () => {
   };
 });
 
-vi.mock('./services/httpService', () => ({
+// =============================================================================
+// GLOBAL THEME WRAPPER - Wrap all RTL renders with ThemeProvider
+// =============================================================================
+// Components use custom theme properties (productCards, semantic, navigation).
+// Without ThemeProvider, MUI useTheme() returns bare default theme.
+vi.mock('@testing-library/react', async (importOriginal) => {
+  const actual = await importOriginal();
+  const React = await import('react');
+  const { ThemeProvider } = await import('@mui/material/styles');
+  const { default: appTheme } = await import('./theme');
+
+  return {
+    ...actual,
+    render: (ui, options = {}) => {
+      const { wrapper: UserWrapper, ...restOptions } = options;
+      const ThemeWrapper = ({ children }) => {
+        const content = React.createElement(ThemeProvider, { theme: appTheme }, children);
+        return UserWrapper ? React.createElement(UserWrapper, null, content) : content;
+      };
+      return actual.render(ui, { wrapper: ThemeWrapper, ...restOptions });
+    },
+  };
+});
+
+// Mock @sentry/react (not installed as dependency)
+vi.mock('@sentry/react', () => ({
+  __esModule: true,
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  setTag: vi.fn(),
+  withScope: vi.fn((cb) => cb({ setExtra: vi.fn(), setLevel: vi.fn() })),
+  Severity: { Error: 'error', Warning: 'warning', Info: 'info' },
+}));
+
+vi.mock('./config.js', () => ({
+  __esModule: true,
+  default: {
+    apiBaseUrl: 'http://localhost:8888',
+    authUrl: 'http://localhost:8888/api/auth',
+    userUrl: 'http://localhost:8888/api/users',
+    examSessionUrl: 'http://localhost:8888/api/exam-sessions',
+    productsUrl: 'http://localhost:8888/api/products',
+    catalogUrl: 'http://localhost:8888/api/catalog',
+    subjectUrl: 'http://localhost:8888/api/subjects',
+    examSessionSubjectUrl: 'http://localhost:8888/api/exam-session-subjects',
+    cartUrl: 'http://localhost:8888/api/cart',
+    countryUrl: 'http://localhost:8888/api/countries',
+    markingUrl: 'http://localhost:8888/api/marking',
+    tutorialUrl: 'http://localhost:8888/api/tutorials',
+    isDevelopment: false,
+    isUAT: false,
+    pageSize: 20,
+    enableDebugLogs: false,
+  },
+}));
+
+vi.mock('./services/httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -150,7 +208,7 @@ vi.mock('./services/httpService', () => ({
   },
 }));
 
-vi.mock('./services/cartService', () => ({
+vi.mock('./services/cartService.js', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -180,7 +238,7 @@ vi.mock('./services/cartService', () => ({
   },
 }));
 
-vi.mock('./services/authService', () => ({
+vi.mock('./services/authService.js', () => ({
   __esModule: true,
   default: {
     login: vi.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
@@ -197,7 +255,7 @@ vi.mock('./services/authService', () => ({
 // =============================================================================
 
 // Mock TutorialChoiceContext - used by CartPanel, TutorialSelectionDialog, etc.
-vi.mock('./contexts/TutorialChoiceContext', () => {
+vi.mock('./contexts/TutorialChoiceContext.js', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -251,7 +309,7 @@ vi.mock('./contexts/TutorialChoiceContext', () => {
 });
 
 // Mock CartContext - used by navigation, checkout, product cards, etc.
-vi.mock('./contexts/CartContext', () => {
+vi.mock('./contexts/CartContext.js', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -370,3 +428,4 @@ if (typeof performance !== 'undefined') {
 
 // Mock scrollIntoView (not implemented in JSDOM)
 Element.prototype.scrollIntoView = vi.fn();
+

@@ -2,17 +2,17 @@ import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/TermsConditionsStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
 // Mock useAuth hook
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
   }),
 }));
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('../../../../services/rulesEngineService', () => ({
 }));
 
 // Mock rulesEngineUtils
-vi.mock('../../../../utils/rulesEngineUtils', () => ({
+vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
   rulesEngineHelpers: {
     executeCheckoutTerms: vi.fn(),
   },
@@ -35,20 +35,22 @@ vi.mock('../../../../utils/rulesEngineUtils', () => ({
   })),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService';
-import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils';
+import rulesEngineService from '../../../../services/rulesEngineService.js';
+import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils.js';
 
 // Mock RulesEngineAcknowledgmentModal
-vi.mock('../../../Common/RulesEngineAcknowledgmentModal', () => {
-  return function MockRulesEngineAcknowledgmentModal({ open }) {
+vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
+  __esModule: true,
+  default: function MockRulesEngineAcknowledgmentModal({ open }) {
     if (!open) return null;
     return <div data-testid="acknowledgment-modal">Modal</div>;
-  };
-});
+  },
+}));
 
-import TermsConditionsStep from '../TermsConditionsStep';
+import TermsConditionsStep from '../TermsConditionsStep.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockCartData = {
   id: 'cart-123',

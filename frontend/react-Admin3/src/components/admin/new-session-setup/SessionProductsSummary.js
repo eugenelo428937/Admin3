@@ -4,7 +4,7 @@ import {
   Paper, Typography, CircularProgress, Alert, Box, Button
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import storeProductService from '../../../services/storeProductService';
+import storeProductService from '../../../services/storeProductService.js';
 
 const SessionProductsSummary = ({ sessionId }) => {
   const [products, setProducts] = useState([]);

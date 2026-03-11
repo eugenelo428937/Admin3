@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Container, Nav, Tab, Alert } from 'react-bootstrap';
-import MessageClassificationDemo from './MessageClassificationDemo';
-import ContentParsingDemo from './ContentParsingDemo';
-import ContextBuildingDemo from './ContextBuildingDemo';
-import ProcessingPipelineDemo from './ProcessingPipelineDemo';
+import MessageClassificationDemo from './MessageClassificationDemo.js';
+import ContentParsingDemo from './ContentParsingDemo.js';
+import ContextBuildingDemo from './ContextBuildingDemo.js';
+import ProcessingPipelineDemo from './ProcessingPipelineDemo.js';
 
 /**
  * Combined demo component for all rules engine utilities

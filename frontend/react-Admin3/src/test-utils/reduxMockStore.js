@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../store/slices/filtersSlice';
+import filtersReducer from '../store/slices/filtersSlice.js';
 
 /**
  * Create a mock Redux store for testing

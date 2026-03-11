@@ -9,19 +9,19 @@ import { vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import useProductsSearch from '../useProductsSearch';
-import filtersReducer from '../../store/slices/filtersSlice';
+import useProductsSearch from '../useProductsSearch.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
 
 // Mock the RTK Query API
 let mockTriggerSearch;
 let mockSearchResult;
 
-vi.mock('../../store/api/catalogApi', () => ({
+vi.mock('../../store/api/catalogApi.js', () => ({
   useLazyUnifiedSearchQuery: vi.fn(),
 }));
 
 // Get the mocked module
-const { useLazyUnifiedSearchQuery } = require('../../store/api/catalogApi');
+const _reqmod_______store_api_catalogApi_js = await import('../../store/api/catalogApi.js'); const { useLazyUnifiedSearchQuery } = _reqmod_______store_api_catalogApi_js;
 
 /**
  * Create a test Redux store with initial state
@@ -70,7 +70,7 @@ const createWrapper = (store) => {
 };
 
 describe('useProductsSearch - Navbar Filter Consolidation (Story 1.4)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     // Initialize mock functions
@@ -306,7 +306,7 @@ describe('useProductsSearch - Navbar Filter Consolidation (Story 1.4)', () => {
 });
 
 describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     // Initialize mock functions with default success response
@@ -886,7 +886,7 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
   });
 
   describe('Debounce Behavior', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.useFakeTimers();
     });
 
@@ -918,12 +918,10 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
       expect(mockTriggerSearch).not.toHaveBeenCalled();
 
       // Complete the debounce
-      vi.advanceTimersByTime(100);
+      await vi.advanceTimersByTimeAsync(100);
 
       // Now should be called once
-      await waitFor(() => {
-        expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
-      });
+      expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
     });
   });
 });

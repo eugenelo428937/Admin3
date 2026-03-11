@@ -2,11 +2,11 @@ import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/BundleProductsPanel.test.js
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import BundleProductsPanel from '../BundleProductsPanel';
+import { ThemeProvider } from '@mui/material/styles';
+import BundleProductsPanel from '../BundleProductsPanel.js';
 
 // Mock services
-vi.mock('../../../../services/catalogBundleProductService', () => ({
+vi.mock('../../../../services/catalogBundleProductService.js', () => ({
   __esModule: true,
   default: {
     getByBundleId: vi.fn(),
@@ -16,25 +16,26 @@ vi.mock('../../../../services/catalogBundleProductService', () => ({
   },
 }));
 
-vi.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-vi.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService.js', () => ({
   __esModule: true,
   default: {
     getByProduct: vi.fn(),
   },
 }));
 
-import catalogBundleProductService from '../../../../services/catalogBundleProductService';
-import catalogProductService from '../../../../services/catalogProductService';
-import productProductVariationService from '../../../../services/productProductVariationService';
+import catalogBundleProductService from '../../../../services/catalogBundleProductService.js';
+import catalogProductService from '../../../../services/catalogProductService.js';
+import productProductVariationService from '../../../../services/productProductVariationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockBundleProducts = [
   {
