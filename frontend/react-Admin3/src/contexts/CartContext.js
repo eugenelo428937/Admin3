@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import cartService from "../services/cartService.js";
+import { useConfig } from "./ConfigContext.js";
 
 const CartContext = createContext();
 
@@ -7,9 +8,17 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartData, setCartData] = useState(null); // Store full cart object
   const [loading, setLoading] = useState(true);
+  const { isInternal, configLoaded } = useConfig();
 
-  // Fetch cart from backend on mount
+  // Fetch cart from backend on mount (skip in internal mode)
   useEffect(() => {
+    if (!configLoaded) return;
+
+    if (isInternal) {
+      setLoading(false);
+      return;
+    }
+
     const fetchCart = async () => {
       try {
         const res = await cartService.fetchCart();
@@ -25,7 +34,7 @@ export const CartProvider = ({ children }) => {
       }
     };
     fetchCart();
-  }, []);
+  }, [configLoaded, isInternal]);
   const addToCart = async (product, priceInfo = {}) => {
     try {
       // Extract quantity from priceInfo or metadata, default to 1
