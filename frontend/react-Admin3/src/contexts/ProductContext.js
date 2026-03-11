@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import productService from "../services/productService.js";
+import { useConfig } from "./ConfigContext.js";
 
 const ProductContext = createContext();
 
@@ -7,8 +8,16 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isInternal, configLoaded } = useConfig();
 
   useEffect(() => {
+    if (!configLoaded) return;
+
+    if (isInternal) {
+      setLoading(false);
+      return;
+    }
+
     productService.getAvailableProducts().then(
       (response) => {
         setProducts(response.products || []);
@@ -19,7 +28,7 @@ export const ProductProvider = ({ children }) => {
         setLoading(false);
       }
     );
-  }, []);
+  }, [configLoaded, isInternal]);
 
   const value = {
     products,
