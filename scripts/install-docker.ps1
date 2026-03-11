@@ -344,7 +344,9 @@ if ($osType -eq 'linux') {
     $wsl2KernelInstalled = Test-Path "$env:SystemRoot\System32\lxss\tools\kernel"
 
     if (-not $wsl2KernelInstalled) {
-        $downloaded = Invoke-Download -Url $wsl2KernelUrl -OutFile $wsl2KernelMsi -Description "WSL2 kernel update"
+        $downloaded = 
+        
+        Invoke-Download -Url $wsl2KernelUrl -OutFile $wsl2KernelMsi -Description "WSL2 kernel update"
         if ($downloaded) {
             Write-OK "Downloaded wsl_update_x64.msi"
 
@@ -385,10 +387,10 @@ if ($osType -eq 'linux') {
 
     if (-not $hasDistro) {
         $ubuntuAppxUrl = "https://aka.ms/wslubuntu"
-        $ubuntuAppxPath = Join-Path $env:TEMP "Ubuntu_2204.appx"
-        $ubuntuInstallDir = Join-Path $env:LOCALAPPDATA "Ubuntu"
+        $ubuntuAppxPath = "D:\Docker Setup\Ubuntu.appx"
+        $ubuntuInstallDir = "D:\Docker Setup\Ubuntu"
 
-        $downloaded = Invoke-Download -Url $ubuntuAppxUrl -OutFile $ubuntuAppxPath -Description "Ubuntu 22.04"
+        $downloaded = Invoke-Download -Url $ubuntuAppxUrl -OutFile $ubuntuAppxPath -Description "Ubuntu 22"
         if ($downloaded) {
             Write-OK "Downloaded Ubuntu 22.04 appx"
         } else {
@@ -446,11 +448,12 @@ if ($osType -eq 'linux') {
             Write-Host "   # Inside the Ubuntu terminal:" -ForegroundColor Gray
             Write-Host "   curl -fsSL https://get.docker.com | sh" -ForegroundColor Cyan
             Write-Host "   sudo usermod -aG docker `$USER" -ForegroundColor Cyan
+            Write-Host "   # Close and reopen Ubuntu for group change to take effect" -ForegroundColor Gray
             Write-Host "   sudo service docker start" -ForegroundColor Cyan
             Write-Host "" -ForegroundColor White
-            Write-Host " Then run docker compose from WSL2:" -ForegroundColor White
-            Write-Host "   cd /mnt/h/path/to/Admin3" -ForegroundColor Cyan
-            Write-Host "   docker compose -f docker-compose.yml up -d" -ForegroundColor Cyan
+            Write-Host " Then ensure D:\AMS has the repo files (see summary below) and run:" -ForegroundColor White
+            Write-Host "   cd /mnt/d/AMS" -ForegroundColor Cyan
+            Write-Host "   docker compose up -d" -ForegroundColor Cyan
             Write-Host ""
         } else {
             Write-Warn "Could not find Ubuntu launcher in $ubuntuInstallDir"
@@ -464,7 +467,7 @@ if ($osType -eq 'linux') {
             Write-OK "Docker Engine is running inside WSL2"
             Write-Host ""
             Write-Host "  To run Admin3 staging stack:" -ForegroundColor White
-            Write-Host "    wsl -e bash -c 'cd /mnt/h/path/to/Admin3 && docker compose up -d'" -ForegroundColor Cyan
+            Write-Host "    wsl -e bash -c 'cd /mnt/d/AMS && docker compose up -d'" -ForegroundColor Cyan
         } else {
             Write-Warn "Docker Engine not found inside WSL2 distro."
             Write-Host "  Install Docker Engine inside your WSL2 Ubuntu:" -ForegroundColor Yellow
@@ -566,7 +569,74 @@ Write-Host " INSTALLATION COMPLETE" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
+Write-Host "----------------------------------------" -ForegroundColor Green
+Write-Host " DEPLOYMENT FOLDER SETUP" -ForegroundColor Green
+Write-Host "----------------------------------------" -ForegroundColor Green
+Write-Host ""
+Write-Host "Step A: Create deployment folder on the server:" -ForegroundColor White
+Write-Host "  mkdir D:\AMS" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Step B: Copy the following files/folders from the repo to D:\AMS:" -ForegroundColor White
+Write-Host ""
+Write-Host "  D:\AMS\" -ForegroundColor Gray
+Write-Host "  |-- docker-compose.yml          # Main compose stack definition" -ForegroundColor Gray
+Write-Host "  |-- .env                         # Created from .env.example (see Step C)" -ForegroundColor Gray
+Write-Host "  |-- .dockerignore                # Build context exclusions" -ForegroundColor Gray
+Write-Host "  |" -ForegroundColor Gray
+Write-Host "  |-- docker\" -ForegroundColor Gray
+Write-Host "  |   |-- init.sql                 # PostgreSQL schema init (acted, adm)" -ForegroundColor Gray
+Write-Host "  |" -ForegroundColor Gray
+Write-Host "  |-- backend\" -ForegroundColor Gray
+Write-Host "  |   |-- django_Admin3\" -ForegroundColor Gray
+Write-Host "  |       |-- Dockerfile           # Django multi-stage build" -ForegroundColor Gray
+Write-Host "  |       |-- requirements.txt     # Python dependencies" -ForegroundColor Gray
+Write-Host "  |       |-- manage.py            # Django management" -ForegroundColor Gray
+Write-Host "  |       |-- django_Admin3\        # Django settings package" -ForegroundColor Gray
+Write-Host "  |       |-- apps\                 # All Django apps" -ForegroundColor Gray
+Write-Host "  |       |-- railway-start.sh     # Container entrypoint script" -ForegroundColor Gray
+Write-Host "  |       |-- .dockerignore        # Backend build exclusions" -ForegroundColor Gray
+Write-Host "  |" -ForegroundColor Gray
+Write-Host "  |-- frontend\" -ForegroundColor Gray
+Write-Host "  |   |-- react-Admin3\" -ForegroundColor Gray
+Write-Host "  |       |-- package.json         # Node dependencies" -ForegroundColor Gray
+Write-Host "  |       |-- package-lock.json    # Lock file for reproducible builds" -ForegroundColor Gray
+Write-Host "  |       |-- public\               # Static assets" -ForegroundColor Gray
+Write-Host "  |       |-- src\                  # React source code" -ForegroundColor Gray
+Write-Host "  |       |-- .env.staging         # Frontend staging env vars" -ForegroundColor Gray
+Write-Host "  |" -ForegroundColor Gray
+Write-Host "  |-- nginx\" -ForegroundColor Gray
+Write-Host "      |-- Dockerfile               # Nginx multi-stage build (builds React)" -ForegroundColor Gray
+Write-Host "      |-- nginx.conf               # Reverse proxy + SSL config" -ForegroundColor Gray
+Write-Host "      |-- generate-cert.sh         # Self-signed SSL cert generator" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  Easiest method (from a machine with Git access):" -ForegroundColor White
+Write-Host "    git clone -b staging https://github.com/eugenelo428937/Admin3.git D:\AMS" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Or copy via network share / USB / RDP file transfer." -ForegroundColor Gray
+Write-Host "  NOTE: Do NOT copy node_modules, .venv, __pycache__, or .git (saves ~1GB)." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Step C: Create the .env file:" -ForegroundColor White
+Write-Host "  copy D:\AMS\.env.example D:\AMS\.env" -ForegroundColor Cyan
+Write-Host "  notepad D:\AMS\.env" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Required edits in .env:" -ForegroundColor White
+Write-Host "    POSTGRES_PASSWORD=<strong-password>" -ForegroundColor Gray
+Write-Host "    REDIS_PASSWORD=<strong-password>" -ForegroundColor Gray
+Write-Host "    DJANGO_SECRET_KEY=<random-50-char-string>" -ForegroundColor Gray
+Write-Host "    SERVER_NAME=7.0.240.83" -ForegroundColor Gray
+Write-Host "    ALLOWED_HOSTS=7.0.240.83,localhost,127.0.0.1" -ForegroundColor Gray
+Write-Host "    CORS_ALLOWED_ORIGINS=https://7.0.240.83:8443,https://localhost:8443" -ForegroundColor Gray
+Write-Host "    CSRF_TRUSTED_ORIGINS=https://7.0.240.83:8443,https://localhost:8443" -ForegroundColor Gray
+Write-Host "    FRONTEND_URL=https://7.0.240.83:8443" -ForegroundColor Gray
+Write-Host "    HTTP_PORT=8080" -ForegroundColor Gray
+Write-Host "    HTTPS_PORT=8443" -ForegroundColor Gray
+Write-Host ""
+
 if ($osType -ne 'linux') {
+    Write-Host "----------------------------------------" -ForegroundColor Yellow
+    Write-Host " WSL2 SETUP (Server 2019)" -ForegroundColor Yellow
+    Write-Host "----------------------------------------" -ForegroundColor Yellow
+    Write-Host ""
     Write-Host "IMPORTANT: Linux containers run inside WSL2 on Server 2019." -ForegroundColor Yellow
     Write-Host "The Windows Docker service only runs Windows containers." -ForegroundColor Yellow
     Write-Host ""
@@ -580,14 +650,18 @@ if ($osType -ne 'linux') {
     Write-Host "     curl -fsSL https://get.docker.com | sh" -ForegroundColor Cyan
     Write-Host "     sudo usermod -aG docker `$USER" -ForegroundColor Cyan
     Write-Host "     sudo service docker start" -ForegroundColor Cyan
-    Write-Host "  6. Run Admin3 from WSL2:" -ForegroundColor White
-    Write-Host "     cd /mnt/<drive>/path/to/Admin3 && docker compose up -d" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Step D: Start the Admin3 stack from WSL2:" -ForegroundColor White
+    Write-Host "  wsl" -ForegroundColor Cyan
+    Write-Host "  cd /mnt/d/AMS && docker compose up -d" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Step E: Verify at https://7.0.240.83:8443" -ForegroundColor White
     Write-Host ""
 } else {
-    Write-Host "Next steps:" -ForegroundColor White
-    Write-Host "  1. Install Git (if needed): https://git-scm.com/download/win" -ForegroundColor Gray
-    Write-Host "  2. Clone the Admin3 repo" -ForegroundColor Gray
-    Write-Host "  3. Deploy with: docker compose -f docker-compose.yml up -d" -ForegroundColor Gray
-    Write-Host "  4. Access site at https://<server-ip>:8443" -ForegroundColor Gray
+    Write-Host "Step D: Start the Admin3 stack:" -ForegroundColor White
+    Write-Host "  cd D:\AMS" -ForegroundColor Cyan
+    Write-Host "  docker compose up -d" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Step E: Verify at https://7.0.240.83:8443" -ForegroundColor White
     Write-Host ""
 }
