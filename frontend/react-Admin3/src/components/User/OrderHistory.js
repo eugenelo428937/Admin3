@@ -1,7 +1,7 @@
 // src/components/OrderHistory.js
 import React, { useEffect, useState } from "react";
-import cartService from "../../services/cartService";
-import { generateProductCode } from "../../utils/productCodeGenerator";
+import cartService from "../../services/cartService.js";
+import { generateProductCode } from "../../utils/productCodeGenerator.js";
 import {
   Container,
   Table,

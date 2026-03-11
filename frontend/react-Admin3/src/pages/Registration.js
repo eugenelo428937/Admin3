@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import UserFormWizard from "../components/User/UserFormWizard";
+import { useAuth } from "../hooks/useAuth.js";
+import UserFormWizard from "../components/User/UserFormWizard.js";
 import {
 	Alert,
 	Typography,

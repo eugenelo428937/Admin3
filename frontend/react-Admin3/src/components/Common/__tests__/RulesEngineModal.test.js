@@ -1,12 +1,13 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import RulesEngineModal from '../RulesEngineModal';
+import RulesEngineModal from '../RulesEngineModal.js';
 
 describe('RulesEngineModal', () => {
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should not render when open is false', () => {

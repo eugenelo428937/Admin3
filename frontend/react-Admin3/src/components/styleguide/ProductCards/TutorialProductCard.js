@@ -28,7 +28,7 @@ import {
    Close,
    ErrorOutline,
 } from "@mui/icons-material";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 const actions = [
    { icon: <ViewModule />, name: "View Selection" },
    { icon: <CalendarMonthOutlined />, name: "Select Tutorial" },

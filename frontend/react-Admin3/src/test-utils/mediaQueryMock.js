@@ -6,7 +6,7 @@
  * for testing responsive behavior in components.
  *
  * Usage:
- *   import { mockMobile, mockDesktop } from '../test-utils/mediaQueryMock';
+ *   import { mockMobile, mockDesktop } from '../test-utils/mediaQueryMock.js';
  *
  *   // In test setup
  *   mockMobile(); // Simulates mobile viewport (< 900px)

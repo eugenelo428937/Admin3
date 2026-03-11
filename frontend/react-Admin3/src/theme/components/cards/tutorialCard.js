@@ -1,9 +1,9 @@
 // Tutorial Product Card Variant Styles
-import { spacing } from '../../tokens/spacing';
-import { fontWeights } from '../../tokens/typography';
-import { tutorial } from '../../semantic/productCards';
-import { semantic, status } from '../../semantic/common';
-import { md3 } from '../../tokens/colors';
+import { spacing } from '../../tokens/spacing.js';
+import { fontWeights } from '../../tokens/typography.js';
+import { tutorial } from '../../semantic/productCards.js';
+import { semantic, status } from '../../semantic/common.js';
+import { md3 } from '../../tokens/colors.js';
 
 /**
  * Tutorial card variant - Purple theme

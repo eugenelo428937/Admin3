@@ -1,8 +1,9 @@
+import { vi } from 'vitest';
 // src/components/Address/__tests__/DynamicAddressForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import DynamicAddressForm from '../DynamicAddressForm';
+import DynamicAddressForm from '../DynamicAddressForm.js';
 
 // Mock data
 const ukMetadata = {
@@ -39,30 +40,27 @@ const usMetadata = {
 };
 
 // Mock addressMetadataService
-jest.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService.js', () => ({
   __esModule: true,
   default: {
-    getCountryCode: jest.fn(),
-    getAddressMetadata: jest.fn(),
-    fetchAddressMetadata: jest.fn(),
-    transformFieldValue: jest.fn(),
-    validateAddressField: jest.fn(),
+    getCountryCode: vi.fn(),
+    getAddressMetadata: vi.fn(),
+    fetchAddressMetadata: vi.fn(),
+    transformFieldValue: vi.fn(),
+    validateAddressField: vi.fn(),
   },
 }));
 
-import addressMetadataService from '../../../services/addressMetadataService';
+import addressMetadataService from '../../../services/addressMetadataService.js';
+import appTheme from '../../../theme';
 
-const theme = createTheme({
-  liftkit: {
-    spacing: { sm: 8, md: 16 },
-  },
-});
+const theme = appTheme;
 
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     country: 'United Kingdom',
     values: {},
-    onChange: jest.fn(),
+    onChange: vi.fn(),
     errors: {},
   };
 
@@ -85,7 +83,7 @@ const renderComponent = async (props = {}) => {
 
 describe('DynamicAddressForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Set up default mock implementations
     addressMetadataService.getCountryCode.mockImplementation((country) =>
@@ -191,7 +189,7 @@ describe('DynamicAddressForm', () => {
 
   describe('field interactions', () => {
     test('calls onChange when field value changes', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       await renderComponent({ country: 'United Kingdom', onChange: mockOnChange });
 
       const addressInput = screen.getByRole('textbox', { name: /Address/i });
@@ -210,7 +208,7 @@ describe('DynamicAddressForm', () => {
     });
 
     test('transforms postcode to uppercase for UK', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       await renderComponent({ country: 'United Kingdom', onChange: mockOnChange });
 
       const postcodeInput = screen.getByRole('textbox', { name: /Postcode/i });
@@ -325,7 +323,7 @@ describe('DynamicAddressForm', () => {
     });
 
     test('handles select field changes', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       await renderComponent({ country: 'United States', onChange: mockOnChange });
 
       // Get the select element (MUI Select has combobox role)

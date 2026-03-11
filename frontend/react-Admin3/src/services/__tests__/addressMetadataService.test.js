@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Address Metadata Service
  * Tests integration of Google dynamic metadata with custom configs
@@ -14,23 +15,23 @@ import addressMetadataService, {
   isRequiredField,
   getCountryCode,
   ADDRESS_METADATA
-} from '../addressMetadataService';
+} from '../addressMetadataService.js';
 
 // Mock the Google metadata service
-jest.mock('../googleAddressMetadata', () => ({
-  fetchGoogleAddressMetadata: jest.fn(),
-  transformGoogleMetadata: jest.fn(),
-  clearMetadataCache: jest.fn()
+vi.mock('../googleAddressMetadata.js', () => ({
+  fetchGoogleAddressMetadata: vi.fn(),
+  transformGoogleMetadata: vi.fn(),
+  clearMetadataCache: vi.fn()
 }));
 
 import {
   fetchGoogleAddressMetadata,
   transformGoogleMetadata
-} from '../googleAddressMetadata';
+} from '../googleAddressMetadata.js';
 
 describe('Address Metadata Service', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getAddressMetadata (synchronous)', () => {
@@ -161,7 +162,7 @@ describe('Address Metadata Service', () => {
     it('should fall back to hardcoded metadata on error', async () => {
       fetchGoogleAddressMetadata.mockRejectedValue(new Error('Network error'));
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
 
       const result = await fetchAddressMetadata('US');
 

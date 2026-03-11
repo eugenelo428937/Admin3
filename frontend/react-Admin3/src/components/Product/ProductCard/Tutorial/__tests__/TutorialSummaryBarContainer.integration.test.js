@@ -1,18 +1,22 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
 }));
 
 // Mock CartContext
 const mockCartState = {
-  addToCart: jest.fn(),
+  addToCart: vi.fn(),
 };
 
-jest.mock('../../../../../contexts/CartContext', () => {
+vi.mock('../../../../../contexts/CartContext.js', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -27,9 +31,9 @@ jest.mock('../../../../../contexts/CartContext', () => {
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider } from '../../../../../contexts/CartContext';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider } from '../../../../../contexts/CartContext.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 /**
  * Integration Test Suite: TutorialSummaryBarContainer

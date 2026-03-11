@@ -4,8 +4,8 @@
  * @module utils/__tests__/priceFormatter.test
  */
 
-import { formatPrice } from '../priceFormatter';
-import defaultExport from '../priceFormatter';
+import { formatPrice } from '../priceFormatter.js';
+import defaultExport from '../priceFormatter.js';
 
 describe('priceFormatter', () => {
   describe('formatPrice', () => {

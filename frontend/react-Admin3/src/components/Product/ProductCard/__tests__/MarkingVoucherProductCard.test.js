@@ -1,13 +1,14 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/MarkingVoucherProductCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
 // Mock addVoucherToCart function
-const mockAddVoucherToCart = jest.fn().mockResolvedValue({});
+const mockAddVoucherToCart = vi.fn().mockResolvedValue({});
 
 // Mock CartContext
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   __esModule: true,
   useCart: () => ({
     addVoucherToCart: mockAddVoucherToCart,
@@ -18,8 +19,8 @@ jest.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock Chakra UI components to avoid ESM module resolution issues
-jest.mock('@chakra-ui/react', () => {
-  const React = require('react');
+vi.mock('@chakra-ui/react', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     NumberInput: {
@@ -42,8 +43,8 @@ jest.mock('@chakra-ui/react', () => {
 });
 
 // Mock react-icons
-jest.mock('react-icons/lu', () => {
-  const React = require('react');
+vi.mock('react-icons/lu', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     LuMinus: () => React.createElement('span', null, '-'),
@@ -51,9 +52,10 @@ jest.mock('react-icons/lu', () => {
   };
 });
 
-import MarkingVoucherProductCard from '../MarkingVoucherProductCard';
+import MarkingVoucherProductCard from '../MarkingVoucherProductCard.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockVoucher = {
   id: 'voucher-2', // String ID format from unified search (voucher-{numeric_id})
@@ -63,7 +65,7 @@ const mockVoucher = {
   exam_session_code: '2024-04',
   description: 'Get your CM2 exam marked by our expert tutors',
   is_active: true,
-  expiry_date: '2025-12-31',
+  expiry_date: '2030-12-31',
   price: 75.00,
   variations: [
     {
@@ -358,7 +360,7 @@ describe('MarkingVoucherProductCard', () => {
     });
 
     test('handles add to cart error gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       mockAddVoucherToCart.mockRejectedValueOnce(new Error('Cart error'));
       await renderComponent();
 

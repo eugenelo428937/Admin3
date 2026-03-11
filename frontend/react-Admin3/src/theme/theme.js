@@ -11,4 +11,4 @@ export {
   semanticSpacing,
   createGradientStyle,
   gradientColorSchemes,
-} from './index';
+} from './index.js';

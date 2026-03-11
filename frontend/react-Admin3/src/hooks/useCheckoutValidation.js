@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import acknowledgmentService from '../services/acknowledgmentService';
+import acknowledgmentService from '../services/acknowledgmentService.js';
 import { parsePhoneNumber } from 'libphonenumber-js';
 
 /**

@@ -1,22 +1,24 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/ValidatedPhoneInput.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ValidatedPhoneInput from '../ValidatedPhoneInput';
+import { ThemeProvider } from '@mui/material/styles';
+import ValidatedPhoneInput from '../ValidatedPhoneInput.js';
 
 // Mock phoneValidationService
-jest.mock('../../../services/phoneValidationService', () => ({
+vi.mock('../../../services/phoneValidationService.js', () => ({
   __esModule: true,
   default: {
-    getCountryCodeFromName: jest.fn(),
-    validatePhoneNumber: jest.fn(),
-    formatPhoneNumber: jest.fn(),
+    getCountryCodeFromName: vi.fn(),
+    validatePhoneNumber: vi.fn(),
+    formatPhoneNumber: vi.fn(),
   },
 }));
 
-import phoneValidationService from '../../../services/phoneValidationService';
+import phoneValidationService from '../../../services/phoneValidationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const mockCountries = [
   { name: 'United Kingdom', phone_code: '+44', iso_code: 'GB' },
@@ -28,8 +30,8 @@ const mockCountries = [
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     name: 'phone',
-    onChange: jest.fn(),
-    onCountryChange: jest.fn(),
+    onChange: vi.fn(),
+    onCountryChange: vi.fn(),
     countries: mockCountries,
   };
 
@@ -46,7 +48,7 @@ const renderComponent = async (props = {}) => {
 
 describe('ValidatedPhoneInput', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     phoneValidationService.getCountryCodeFromName.mockResolvedValue('GB');
     phoneValidationService.validatePhoneNumber.mockResolvedValue({
       isValid: true,
@@ -100,7 +102,7 @@ describe('ValidatedPhoneInput', () => {
     });
 
     test('calls onChange when phone input changes', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       await renderComponent({ onChange: mockOnChange });
 
       const input = screen.getByLabelText(/phone number/i);
@@ -115,7 +117,7 @@ describe('ValidatedPhoneInput', () => {
     });
 
     test('calls onCountryChange prop is passed', async () => {
-      const mockOnCountryChange = jest.fn();
+      const mockOnCountryChange = vi.fn();
       await renderComponent({ onCountryChange: mockOnCountryChange });
 
       // Just verify the country code autocomplete is present
@@ -161,7 +163,7 @@ describe('ValidatedPhoneInput', () => {
     });
 
     test('calls onValidationChange with validation result', async () => {
-      const mockOnValidationChange = jest.fn();
+      const mockOnValidationChange = vi.fn();
       phoneValidationService.validatePhoneNumber.mockResolvedValue({
         isValid: true,
         error: null,
@@ -208,7 +210,7 @@ describe('ValidatedPhoneInput', () => {
 
   describe('formatting', () => {
     test('formats phone number on blur', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       phoneValidationService.formatPhoneNumber.mockReturnValue('020 1234 5678');
 
       await renderComponent({

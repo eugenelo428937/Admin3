@@ -1,6 +1,6 @@
-import httpService from "./httpService";
-import config from "../config";
-import { parsePaginatedResponse } from "./paginationHelper";
+import httpService from "./httpService.js";
+import config from "../config.js";
+import { parsePaginatedResponse } from "./paginationHelper.js";
 // Use catalog API endpoint (legacy /api/exam-sessions/ was removed during catalog consolidation)
 const API_URL = `${config.catalogUrl}/exam-sessions`;
 const examSessionService = {

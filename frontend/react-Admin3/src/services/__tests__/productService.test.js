@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for productService
  *
@@ -5,20 +6,20 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../productService');
+vi.unmock('../productService.js');
 
 // Mock dependencies BEFORE imports
-jest.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     productsUrl: '/api/products',
@@ -28,13 +29,13 @@ jest.mock('../../config', () => ({
   },
 }));
 
-import productService from '../productService';
-import httpService from '../httpService';
+import productService from '../productService.js';
+import httpService from '../httpService.js';
 
 describe('productService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {

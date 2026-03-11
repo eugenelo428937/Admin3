@@ -1,45 +1,46 @@
+import { vi } from 'vitest';
 /**
  * Unit Tests for CartPanel Clear Cart Navigation
  * Tests that clearing the cart navigates to /products page
  */
 
 // Mock react-router-dom before importing
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => mockNavigate),
   BrowserRouter: ({ children }) => children
 }));
 
 // Mock useAuth
-jest.mock('../../../hooks/useAuth', () => ({
-  useAuth: jest.fn()
+vi.mock('../../../hooks/useAuth.js', () => ({
+  useAuth: vi.fn()
 }));
 
 // Mock useCart
-jest.mock('../../../contexts/CartContext', () => ({
-  useCart: jest.fn()
+vi.mock('../../../contexts/CartContext.js', () => ({
+  useCart: vi.fn()
 }));
 
 // Mock useTutorialChoice
-jest.mock('../../../contexts/TutorialChoiceContext', () => ({
-  useTutorialChoice: jest.fn()
+vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+  useTutorialChoice: vi.fn()
 }));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import CartPanel from '../CartPanel';
-import { useCart } from '../../../contexts/CartContext';
-import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext';
-import { useAuth } from '../../../hooks/useAuth';
+import CartPanel from '../CartPanel.js';
+import { useCart } from '../../../contexts/CartContext.js';
+import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 
 describe('CartPanel Clear Cart Navigation', () => {
-  const mockClearCart = jest.fn();
-  const mockRemoveAllChoices = jest.fn();
-  const mockHandleClose = jest.fn();
+  const mockClearCart = vi.fn();
+  const mockRemoveAllChoices = vi.fn();
+  const mockHandleClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup useAuth mock
     useAuth.mockReturnValue({
@@ -61,12 +62,12 @@ describe('CartPanel Clear Cart Navigation', () => {
       ],
       cartData: { fees: [], items: [] },
       clearCart: mockClearCart,
-      removeFromCart: jest.fn()
+      removeFromCart: vi.fn()
     });
 
     useTutorialChoice.mockReturnValue({
       removeAllChoices: mockRemoveAllChoices,
-      restoreChoicesToDraft: jest.fn(),
+      restoreChoicesToDraft: vi.fn(),
       tutorialChoices: {}
     });
   });

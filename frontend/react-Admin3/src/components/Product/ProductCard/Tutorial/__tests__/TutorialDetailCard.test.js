@@ -1,7 +1,8 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import TutorialDetailCard from '../TutorialDetailCard';
+import TutorialDetailCard from '../TutorialDetailCard.js';
 
 describe('TutorialDetailCard', () => {
   const mockEvent = {
@@ -20,11 +21,11 @@ describe('TutorialDetailCard', () => {
     prices: [{ price_type: 'Standard', amount: 49.99 }],
   };
 
-  const mockOnSelectChoice = jest.fn();
+  const mockOnSelectChoice = vi.fn();
   const subjectCode = 'CS2';
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   // ========================================

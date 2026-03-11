@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for US5/T047: FilterPanel shows "Filters unavailable" on API failure.
  *
@@ -9,34 +10,35 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FilterPanel from '../Product/FilterPanel';
-import filtersReducer from '../../store/slices/filtersSlice';
-import { FilterRegistry } from '../../store/filters/filterRegistry';
+import { ThemeProvider } from '@mui/material/styles';
+import FilterPanel from '../Product/FilterPanel.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import { FilterRegistry } from '../../store/filters/filterRegistry.js';
 
+import appTheme from '../../theme';
 // Mock sessionStorage
 const mockSessionStorage = {};
 Object.defineProperty(window, 'sessionStorage', {
   value: {
-    getItem: jest.fn((key) => mockSessionStorage[key] || null),
-    setItem: jest.fn((key, value) => { mockSessionStorage[key] = value; }),
-    removeItem: jest.fn((key) => { delete mockSessionStorage[key]; }),
+    getItem: vi.fn((key) => mockSessionStorage[key] || null),
+    setItem: vi.fn((key, value) => { mockSessionStorage[key] = value; }),
+    removeItem: vi.fn((key) => { delete mockSessionStorage[key]; }),
   },
   writable: true,
 });
 
 // Mock PerformanceTracker
-jest.mock('../../utils/PerformanceTracker', () => ({
+vi.mock('../../utils/PerformanceTracker.js', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,
-    startMeasure: jest.fn(),
-    endMeasure: jest.fn(),
-    checkBudget: jest.fn(),
+    startMeasure: vi.fn(),
+    endMeasure: vi.fn(),
+    checkBudget: vi.fn(),
   },
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 function createStoreWithError(error) {
   return configureStore({
@@ -85,7 +87,7 @@ function renderFilterPanel(store) {
 describe('FilterPanel fallback (T047, FR-012)', () => {
   afterEach(() => {
     FilterRegistry.clear();
-    jest.resetModules();
+    vi.resetModules();
   });
 
   test('displays error message when filters have error state', () => {

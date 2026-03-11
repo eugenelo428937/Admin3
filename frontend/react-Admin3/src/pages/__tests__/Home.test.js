@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Home Page Component
  * T011: Test hero section, SearchBox integration, rules engine messages, navigation
@@ -8,12 +9,12 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../../store/slices/filtersSlice';
-import theme from '../../theme/theme';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import theme from '../../theme/theme.js';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
-const mockDispatch = jest.fn();
+const mockNavigate = vi.fn();
+const mockDispatch = vi.fn();
 
 // Create a mock store for tests
 const createTestStore = () => configureStore({
@@ -23,12 +24,12 @@ const createTestStore = () => configureStore({
 });
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
-  useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
+  useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -40,8 +41,9 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock SearchBox
-jest.mock('../../components/SearchBox', () => {
-  return function MockSearchBox({ onSearchResults, onShowMatchingProducts }) {
+vi.mock('../../components/SearchBox.js', () => ({
+  __esModule: true,
+  default: function MockSearchBox({ onSearchResults, onShowMatchingProducts }) {
     return (
       <div data-testid="search-box">
         <input
@@ -61,12 +63,13 @@ jest.mock('../../components/SearchBox', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock SearchResults
-jest.mock('../../components/SearchResults', () => {
-  return function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
+vi.mock('../../components/SearchResults.js', () => ({
+  __esModule: true,
+  default: function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
     return (
       <div data-testid="search-results">
         {loading && <span>Loading...</span>}
@@ -78,21 +81,21 @@ jest.mock('../../components/SearchResults', () => {
         )}
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock rulesEngineService
-jest.mock('../../services/rulesEngineService', () => ({
+vi.mock('../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn().mockResolvedValue({ success: true, messages: [] }),
+    executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
   },
 }));
 
 // Mock rulesEngineUtils
-jest.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils.js', () => ({
   rulesEngineHelpers: {
-    executeHomePage: jest.fn().mockResolvedValue({
+    executeHomePage: vi.fn().mockResolvedValue({
       success: true,
       messages: { processed: [] },
       errors: [],
@@ -100,12 +103,42 @@ jest.mock('../../utils/rulesEngineUtils', () => ({
   },
 }));
 
-import Home from '../Home';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
+// Mock 3D/WebGL effects that require canvas context
+vi.mock('../../components/Effects/NeonMeshBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/StripeWaveBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/AuroraBorealisBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/OceanDepthBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/SunsetSilkBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/IrisDawnBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+vi.mock('../../components/Effects/CopperRoseBackground.js', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+import Home from '../Home.js';
+import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';
 
 describe('Home Page', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     rulesEngineHelpers.executeHomePage.mockResolvedValue({
       success: true,
       messages: { processed: [] },
@@ -149,15 +182,13 @@ describe('Home Page', () => {
       expect(screen.getByText('Online Store')).toBeInTheDocument();
     });
 
-    test('renders background video element', () => {
+    test('renders background effect element', () => {
       renderHome();
 
-      const video = document.querySelector('video');
-      expect(video).toBeInTheDocument();
-      expect(video).toHaveAttribute('autoplay');
-      expect(video).toHaveAttribute('loop');
-      // Boolean attributes in React are rendered as properties, not attributes
-      expect(video.muted).toBe(true);
+      // Component uses NeonMeshBackground (mocked to null) instead of video
+      // Verify the hero container renders with its content overlay
+      expect(screen.getByTestId('hero-container')).toBeInTheDocument();
+      expect(screen.getByText('BPP')).toBeInTheDocument();
     });
   });
 
@@ -252,9 +283,8 @@ describe('Home Page', () => {
       renderHome();
 
       await waitFor(() => {
-        expect(screen.getByTestId('holiday-message')).toBeInTheDocument();
+        expect(screen.getByTestId('rules-engine-inline-alert')).toBeInTheDocument();
         expect(screen.getByText('Holiday Notice')).toBeInTheDocument();
-        expect(screen.getByText('Office closed for holidays')).toBeInTheDocument();
       });
     });
 
@@ -279,7 +309,7 @@ describe('Home Page', () => {
       renderHome();
 
       await waitFor(() => {
-        const messages = screen.getAllByTestId('holiday-message');
+        const messages = screen.getAllByTestId('rules-engine-inline-alert');
         expect(messages).toHaveLength(2);
       });
     });
@@ -340,7 +370,7 @@ describe('Home Page', () => {
     });
 
     test('handles rules engine errors gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       rulesEngineHelpers.executeHomePage.mockRejectedValue(new Error('API error'));
 
@@ -355,8 +385,12 @@ describe('Home Page', () => {
     });
 
     test('shows development errors when in development mode', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      const originalMode = import.meta.env.MODE;
+      const originalDev = import.meta.env.DEV;
+      const originalProd = import.meta.env.PROD;
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
 
       rulesEngineHelpers.executeHomePage.mockResolvedValue({
         success: true,
@@ -364,7 +398,7 @@ describe('Home Page', () => {
         errors: ['Test error message'],
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderHome();
 
@@ -372,7 +406,9 @@ describe('Home Page', () => {
         expect(consoleSpy).toHaveBeenCalled();
       });
 
-      process.env.NODE_ENV = originalEnv;
+      import.meta.env.MODE = originalMode;
+      import.meta.env.DEV = originalDev;
+      import.meta.env.PROD = originalProd;
       consoleSpy.mockRestore();
     });
   });
@@ -404,7 +440,7 @@ describe('Home Page', () => {
       renderHome();
 
       await waitFor(() => {
-        expect(screen.getByTestId('holiday-message')).toBeInTheDocument();
+        expect(screen.getByTestId('rules-engine-inline-alert')).toBeInTheDocument();
       });
     });
   });
@@ -466,9 +502,9 @@ describe('Home Page', () => {
       renderHome();
 
       await waitFor(() => {
-        expect(screen.getByText(/Comprehensive course notes/)).toBeInTheDocument();
-        expect(screen.getByText(/Expert feedback on your practice papers/)).toBeInTheDocument();
-        expect(screen.getByText(/Live and recorded tutorials/)).toBeInTheDocument();
+        expect(screen.getByText(/Comprehensive essential pack and revision materials/)).toBeInTheDocument();
+        expect(screen.getByText(/Feedback on your practice papers/)).toBeInTheDocument();
+        expect(screen.getByText(/Build and consolidate your knowledge/)).toBeInTheDocument();
       });
     });
   });

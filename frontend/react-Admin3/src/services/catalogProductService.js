@@ -1,6 +1,6 @@
-import httpService from "./httpService";
-import config from "../config";
-import { parsePaginatedResponse } from "./paginationHelper";
+import httpService from "./httpService.js";
+import config from "../config.js";
+import { parsePaginatedResponse } from "./paginationHelper.js";
 
 // Catalog product CRUD — uses /api/catalog/products/ (the consolidated catalog API)
 const API_URL = `${config.catalogUrl}/products`;

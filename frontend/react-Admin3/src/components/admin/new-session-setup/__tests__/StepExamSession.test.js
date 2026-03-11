@@ -1,20 +1,22 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import StepExamSession from '../StepExamSession';
+import { ThemeProvider } from '@mui/material/styles';
+import StepExamSession from '../StepExamSession.js';
 
 // Mock examSessionService
-jest.mock('../../../../services/examSessionService', () => ({
+vi.mock('../../../../services/examSessionService.js', () => ({
   __esModule: true,
   default: {
-    create: jest.fn(),
-    getAll: jest.fn(),
+    create: vi.fn(),
+    getAll: vi.fn(),
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService';
+import examSessionService from '../../../../services/examSessionService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
@@ -25,10 +27,10 @@ const mockSessions = [
 ];
 
 describe('StepExamSession', () => {
-  const mockOnSessionCreated = jest.fn();
+  const mockOnSessionCreated = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     examSessionService.getAll.mockResolvedValue(mockSessions);
   });
 

@@ -1,16 +1,18 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import MarkingProductCard from '../MarkingProductCard';
-import productService from '../../../../services/productService';
+import MarkingProductCard from '../MarkingProductCard.js';
+import productService from '../../../../services/productService.js';
+import appTheme from '../../../../theme';
 
 // Mock productService
-jest.mock('../../../../services/productService', () => ({
+vi.mock('../../../../services/productService.js', () => ({
   __esModule: true,
   default: {
-    getMarkingDeadlines: jest.fn()
+    getMarkingDeadlines: vi.fn()
   }
 }));
 
@@ -23,23 +25,14 @@ const mockCartData = {
   }
 };
 
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: mockCartData
   })
 }));
 
 // Create theme with required palette
-const theme = createTheme({
-  palette: {
-    bpp: {
-      pink: {
-        '040': '#e91e63',
-        '060': '#c2185b'
-      }
-    }
-  }
-});
+const theme = appTheme;
 
 const renderWithTheme = (component) => {
   return render(
@@ -56,6 +49,7 @@ describe('MarkingProductCard', () => {
     product_code: 'MARK-CM2',
     product_name: 'CM2 Marking',
     subject_code: 'CM2',
+    exam_session_code: '25S',
     type: 'Marking',
     vat_status_display: 'Price excludes VAT',
     variations: [
@@ -98,7 +92,7 @@ describe('MarkingProductCard', () => {
     ]
   };
 
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
 
   // Helper to create deadline dates
   const createFutureDate = (daysFromNow) => {
@@ -161,13 +155,13 @@ describe('MarkingProductCard', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     productService.getMarkingDeadlines.mockResolvedValue([]);
   });
 
   describe('Basic Rendering', () => {
     test('should render product name and subject code', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -181,7 +175,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should render session badge', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -194,7 +188,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should render marking avatar icon', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -207,7 +201,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should render discount options section', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -222,7 +216,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should display VAT status', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -251,7 +245,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should display deadlines from bulkDeadlines prop', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -276,12 +270,12 @@ describe('MarkingProductCard', () => {
       );
 
       await waitFor(() => {
-        expect(productService.getMarkingDeadlines).toHaveBeenCalledWith('ESSP001');
+        expect(productService.getMarkingDeadlines).toHaveBeenCalledWith(1);
       });
     });
 
     test('should show "No upcoming deadlines" when deadlines array is empty', () => {
-      const bulkDeadlines = { ESSP001: [] };
+      const bulkDeadlines = { 1: [] };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -297,7 +291,7 @@ describe('MarkingProductCard', () => {
 
   describe('Deadline Scenarios', () => {
     test('should display next deadline date for upcoming deadlines', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -310,7 +304,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should show warning when deadline is within 7 days', () => {
-      const bulkDeadlines = { ESSP001: mockSoonDeadlines };
+      const bulkDeadlines = { 1: mockSoonDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -324,7 +318,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should show error when all deadlines are expired', () => {
-      const bulkDeadlines = { ESSP001: mockExpiredDeadlines };
+      const bulkDeadlines = { 1: mockExpiredDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -338,7 +332,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should show warning when some deadlines are expired', () => {
-      const bulkDeadlines = { ESSP001: mockMixedDeadlines };
+      const bulkDeadlines = { 1: mockMixedDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -351,7 +345,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should display submission deadlines button with correct text', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -366,7 +360,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should show "All Deadlines Expired" button when all expired', () => {
-      const bulkDeadlines = { ESSP001: mockExpiredDeadlines };
+      const bulkDeadlines = { 1: mockExpiredDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -382,7 +376,7 @@ describe('MarkingProductCard', () => {
   describe('Deadline Modal', () => {
     test('should open deadline modal when button is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -401,7 +395,7 @@ describe('MarkingProductCard', () => {
 
     test('should display deadline table with correct columns', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -419,7 +413,7 @@ describe('MarkingProductCard', () => {
 
     test('should close deadline modal when close button is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -443,7 +437,7 @@ describe('MarkingProductCard', () => {
 
     test('should show add to cart button in deadline modal', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -461,7 +455,7 @@ describe('MarkingProductCard', () => {
 
     test('should disable add to cart button in modal when all deadlines expired', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockExpiredDeadlines };
+      const bulkDeadlines = { 1: mockExpiredDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -481,7 +475,7 @@ describe('MarkingProductCard', () => {
   describe('Price Type Selection', () => {
     test('should select retaker price type when radio is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -499,7 +493,7 @@ describe('MarkingProductCard', () => {
 
     test('should select additional price type when radio is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -517,7 +511,7 @@ describe('MarkingProductCard', () => {
 
     test('should deselect price type when clicked again', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -549,7 +543,7 @@ describe('MarkingProductCard', () => {
         }]
       };
 
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={productWithLimitedPrices}
@@ -569,7 +563,7 @@ describe('MarkingProductCard', () => {
   describe('Price Modal', () => {
     test('should open price modal when info icon is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -588,7 +582,7 @@ describe('MarkingProductCard', () => {
 
     test('should display all price types in price modal', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -608,7 +602,7 @@ describe('MarkingProductCard', () => {
 
     test('should display product info in price modal', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -627,7 +621,7 @@ describe('MarkingProductCard', () => {
 
     test('should close price modal when close button is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -654,7 +648,7 @@ describe('MarkingProductCard', () => {
   describe('Add to Cart', () => {
     test('should call onAddToCart when add to cart button is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -684,7 +678,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should disable add to cart button when all deadlines are expired', () => {
-      const bulkDeadlines = { ESSP001: mockExpiredDeadlines };
+      const bulkDeadlines = { 1: mockExpiredDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -699,7 +693,7 @@ describe('MarkingProductCard', () => {
 
     test('should show expired warning modal when adding product with some expired deadlines', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockMixedDeadlines };
+      const bulkDeadlines = { 1: mockMixedDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -717,7 +711,7 @@ describe('MarkingProductCard', () => {
 
     test('should proceed to add to cart when warning is confirmed', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockMixedDeadlines };
+      const bulkDeadlines = { 1: mockMixedDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -737,7 +731,7 @@ describe('MarkingProductCard', () => {
 
     test('should close warning modal when cancel is clicked', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockMixedDeadlines };
+      const bulkDeadlines = { 1: mockMixedDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -762,7 +756,7 @@ describe('MarkingProductCard', () => {
 
   describe('SpeedDial with Recommended Product', () => {
     test('should render SpeedDial when product has recommended product', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProductWithRecommendation}
@@ -776,7 +770,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should render standard button when product has no recommended product', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -791,7 +785,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should have correct SpeedDial structure', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProductWithRecommendation}
@@ -810,7 +804,7 @@ describe('MarkingProductCard', () => {
     });
 
     test('should have disabled SpeedDial when all deadlines expired', () => {
-      const bulkDeadlines = { ESSP001: mockExpiredDeadlines };
+      const bulkDeadlines = { 1: mockExpiredDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProductWithRecommendation}
@@ -827,7 +821,7 @@ describe('MarkingProductCard', () => {
   describe('Hover Effects', () => {
     test('should scale card on hover', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       const { container } = renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -848,7 +842,7 @@ describe('MarkingProductCard', () => {
 
     test('should reset scale on mouse leave', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       const { container } = renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -874,7 +868,7 @@ describe('MarkingProductCard', () => {
 
   describe('Multiple Variations', () => {
     test('should auto-select single variation', () => {
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -907,7 +901,7 @@ describe('MarkingProductCard', () => {
         ]
       };
 
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={multiVariationProduct}
@@ -930,7 +924,7 @@ describe('MarkingProductCard', () => {
         variations: []
       };
 
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={productWithoutVariations}
@@ -957,7 +951,7 @@ describe('MarkingProductCard', () => {
   describe('Add to Cart from Deadline Modal', () => {
     test('should add to cart from deadline modal', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockUpcomingDeadlines };
+      const bulkDeadlines = { 1: mockUpcomingDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}
@@ -979,7 +973,7 @@ describe('MarkingProductCard', () => {
 
     test('should show expired warning from deadline modal when some deadlines expired', async () => {
       const user = userEvent.setup();
-      const bulkDeadlines = { ESSP001: mockMixedDeadlines };
+      const bulkDeadlines = { 1: mockMixedDeadlines };
       renderWithTheme(
         <MarkingProductCard
           product={mockProduct}

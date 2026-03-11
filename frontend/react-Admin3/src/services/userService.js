@@ -1,6 +1,6 @@
-import httpService from "./httpService";
-import config from "../config";
-import logger from "./loggerService";
+import httpService from "./httpService.js";
+import config from "../config.js";
+import logger from "./loggerService.js";
 
 const API_USER_URL = config.userUrl;
 

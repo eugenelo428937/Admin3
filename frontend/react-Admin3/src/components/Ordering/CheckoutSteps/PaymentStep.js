@@ -17,8 +17,8 @@ import {
    Snackbar,
    Alert as MuiAlert,
 } from "@mui/material";
-import { useCart } from "../../../contexts/CartContext";
-import rulesEngineService from "../../../services/rulesEngineService";
+import { useCart } from "../../../contexts/CartContext.js";
+import rulesEngineService from "../../../services/rulesEngineService.js";
 
 const PaymentStep = ({
    paymentMethod,

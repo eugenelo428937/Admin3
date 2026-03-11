@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Registration Page Component
  * T014: Test form render, success/error states, authentication redirect
@@ -6,18 +7,18 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme';
+import theme from '../../theme/theme.js';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/register', search: '', hash: '', state: null }),
-  useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/register', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
+  useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -29,14 +30,15 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-const mockUseAuth = jest.fn();
-jest.mock('../../hooks/useAuth', () => ({
+const mockUseAuth = vi.fn();
+vi.mock('../../hooks/useAuth.js', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-jest.mock('../../components/User/UserFormWizard', () => {
-  return function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
+vi.mock('../../components/User/UserFormWizard.js', () => ({
+  __esModule: true,
+  default: function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
     return (
       <div data-testid="user-form-wizard">
         <button
@@ -59,14 +61,14 @@ jest.mock('../../components/User/UserFormWizard', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-import Registration from '../Registration';
+import Registration from '../Registration.js';
 
 describe('Registration Page', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: false });
   });
 

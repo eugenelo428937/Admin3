@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useAuth Hook and AuthProvider
  *
@@ -11,32 +12,32 @@
 
 // Mock react-router-dom BEFORE any imports
 // This overrides the global mock in setupTests.js for this test file
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => {
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => {
   const React = require('react');
   return {
     __esModule: true,
     BrowserRouter: ({ children }) => React.createElement('div', { 'data-testid': 'browser-router' }, children),
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' })),
   };
 });
 
-// Mock authService - using jest.fn() directly in the mock factory
-jest.mock('../../services/authService', () => ({
+// Mock authService - using vi.fn() directly in the mock factory
+vi.mock('../../services/authService.js', () => ({
   __esModule: true,
   default: {
-    login: jest.fn(),
-    logout: jest.fn(),
-    register: jest.fn(),
-    getUserDetails: jest.fn(),
+    login: vi.fn(),
+    logout: vi.fn(),
+    register: vi.fn(),
+    getUserDetails: vi.fn(),
   },
 }));
 
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../useAuth';
-import authService from '../../services/authService';
+import { AuthProvider, useAuth } from '../useAuth.js';
+import authService from '../../services/authService.js';
 
 // Helper to render hook with AuthProvider
 const renderUseAuth = () => {
@@ -48,7 +49,7 @@ const renderUseAuth = () => {
 
 describe('useAuth Hook', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
 
     // Default mock implementations - use authService directly
@@ -414,7 +415,7 @@ describe('useAuth Hook', () => {
     it('should throw error when useAuth is used outside AuthProvider', () => {
       // This test needs special handling since we expect an error to be thrown
       const consoleError = console.error;
-      console.error = jest.fn(); // Suppress error output
+      console.error = vi.fn(); // Suppress error output
 
       expect(() => {
         renderHook(() => useAuth());

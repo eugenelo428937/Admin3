@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Google Address Metadata Service
  * Tests dynamic fetching from Google's libaddressinput API
@@ -9,10 +10,10 @@ import {
   parseGoogleRequiredFields,
   transformGoogleMetadata,
   clearMetadataCache
-} from '../googleAddressMetadata';
+} from '../googleAddressMetadata.js';
 
 // Mock fetch globally
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('Google Address Metadata Service', () => {
   beforeEach(() => {

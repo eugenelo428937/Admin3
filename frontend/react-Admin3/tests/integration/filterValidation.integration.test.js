@@ -19,17 +19,22 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { BrowserRouter } from 'react-router-dom';
-import filtersReducer from '../../src/store/slices/filtersSlice';
+import filtersReducer, {
+  selectValidationErrors,
+  selectHasValidationErrors,
+  setSubjects,
+  setCategories,
+  setProductTypes,
+  toggleSubjectFilter,
+  removeSubjectFilter,
+  navSelectSubject,
+  clearAllFilters,
+  clearValidationErrors,
+} from '../../src/store/slices/filtersSlice.js';
+import { useSelector, useDispatch } from 'react-redux';
 
 // Mock component that uses validation
 const ValidationTestComponent = () => {
-  const { useSelector, useDispatch } = require('react-redux');
-  const {
-    selectValidationErrors,
-    selectHasValidationErrors,
-    setSubjects,
-    clearValidationErrors,
-  } = require('../../src/store/slices/filtersSlice');
 
   const validationErrors = useSelector(selectValidationErrors);
   const hasValidationErrors = useSelector(selectHasValidationErrors);
@@ -180,7 +185,7 @@ describe('Filter Validation Integration Tests', () => {
 
     test('multiple filter changes maintain validation state correctly', async () => {
       const store = createTestStore();
-      const { setCategories, setProductTypes } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setCategories, setProductTypes
 
       // Apply multiple filter changes
       store.dispatch(setSubjects(['CM2', 'SA1']));
@@ -201,9 +206,9 @@ describe('Filter Validation Integration Tests', () => {
   });
 
   describe('T017: API Blocking Integration', () => {
-    test('selectHasValidationErrors selector works correctly with empty errors', () => {
+    test('selectHasValidationErrors selector works correctly with empty errors', async () => {
       const store = createTestStore();
-      const { selectHasValidationErrors } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: selectHasValidationErrors
 
       const state = store.getState();
       const hasErrors = selectHasValidationErrors({ filters: state.filters });
@@ -212,7 +217,7 @@ describe('Filter Validation Integration Tests', () => {
       expect(hasErrors).toBe(false);
     });
 
-    test('selectHasValidationErrors returns true when error-severity issues exist', () => {
+    test('selectHasValidationErrors returns true when error-severity issues exist', async () => {
       const store = createTestStore({
         filters: {
           subjects: [],
@@ -239,14 +244,14 @@ describe('Filter Validation Integration Tests', () => {
         },
       });
 
-      const { selectHasValidationErrors } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: selectHasValidationErrors
       const state = store.getState();
       const hasErrors = selectHasValidationErrors({ filters: state.filters });
 
       expect(hasErrors).toBe(true);
     });
 
-    test('selectHasValidationErrors returns false when only warnings exist', () => {
+    test('selectHasValidationErrors returns false when only warnings exist', async () => {
       const store = createTestStore({
         filters: {
           subjects: [],
@@ -273,7 +278,7 @@ describe('Filter Validation Integration Tests', () => {
         },
       });
 
-      const { selectHasValidationErrors } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: selectHasValidationErrors
       const state = store.getState();
       const hasErrors = selectHasValidationErrors({ filters: state.filters });
 
@@ -281,9 +286,9 @@ describe('Filter Validation Integration Tests', () => {
       expect(hasErrors).toBe(false);
     });
 
-    test('validation state persists across filter changes', () => {
+    test('validation state persists across filter changes', async () => {
       const store = createTestStore();
-      const { setSubjects, setCategories } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setSubjects, setCategories
 
       // Apply multiple filter changes
       store.dispatch(setSubjects(['CM2']));
@@ -303,15 +308,9 @@ describe('Filter Validation Integration Tests', () => {
   });
 
   describe('Framework Integration Verification', () => {
-    test('auto-validation runs on all filter-changing actions', () => {
+    test('auto-validation runs on all filter-changing actions', async () => {
       const store = createTestStore();
-      const {
-        setSubjects,
-        toggleSubjectFilter,
-        removeSubjectFilter,
-        navSelectSubject,
-        clearAllFilters,
-      } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setSubjects, toggleSubjectFilter, removeSubjectFilter, navSelectSubject, clearAllFilters,
 
       // Test various filter actions
       const actions = [
@@ -332,9 +331,9 @@ describe('Filter Validation Integration Tests', () => {
       });
     });
 
-    test('validation framework ready for future rules', () => {
+    test('validation framework ready for future rules', async () => {
       const store = createTestStore();
-      const { setSubjects } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setSubjects
 
       // Apply filter that could trigger validation (when rules are added)
       store.dispatch(setSubjects(['CM2']));
@@ -352,7 +351,7 @@ describe('Filter Validation Integration Tests', () => {
       // When validation rules are added, this same code will produce errors
     });
 
-    test('validation error structure contract enforced', () => {
+    test('validation error structure contract enforced', async () => {
       const store = createTestStore({
         filters: {
           subjects: [],
@@ -399,11 +398,7 @@ describe('Filter Validation Integration Tests', () => {
   describe('Performance and Stability', () => {
     test('rapid filter changes do not cause errors', async () => {
       const store = createTestStore();
-      const {
-        setSubjects,
-        setCategories,
-        setProductTypes,
-      } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setSubjects, setCategories, setProductTypes,
 
       // Rapid filter changes (simulating user clicking multiple filters quickly)
       const rapidChanges = [
@@ -423,9 +418,9 @@ describe('Filter Validation Integration Tests', () => {
       expect(Array.isArray(state.filters.validationErrors)).toBe(true);
     });
 
-    test('validation state remains consistent across many operations', () => {
+    test('validation state remains consistent across many operations', async () => {
       const store = createTestStore();
-      const { setSubjects, clearAllFilters } = require('../../src/store/slices/filtersSlice');
+      // Using top-level imports: setSubjects, clearAllFilters
 
       // Perform 50 operations
       for (let i = 0; i < 50; i++) {

@@ -1,12 +1,14 @@
+import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/PaymentStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import PaymentStep from '../PaymentStep';
+import PaymentStep from '../PaymentStep.js';
 
+import appTheme from '../../../../theme';
 // Create theme
-const theme = createTheme();
+const theme = appTheme;
 
 // Mock cart data
 const mockCartData = {
@@ -24,10 +26,10 @@ const mockCartItems = [
   { id: 'item-1', product_id: 'prod-1', name: 'Test Product', actual_price: 99.99, quantity: 1 }
 ];
 
-const mockRefreshCart = jest.fn(() => Promise.resolve());
+const mockRefreshCart = vi.fn(() => Promise.resolve());
 
 // Mock useCart
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: mockCartData,
     cartItems: mockCartItems,
@@ -36,10 +38,10 @@ jest.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock rulesEngineService
-const mockExecuteRules = jest.fn();
-const mockAcknowledgeRule = jest.fn();
+const mockExecuteRules = vi.fn();
+const mockAcknowledgeRule = vi.fn();
 
-jest.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: (...args) => mockExecuteRules(...args),
@@ -54,25 +56,25 @@ jest.mock('../../../../services/rulesEngineService', () => ({
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     paymentMethod: '',
-    setPaymentMethod: jest.fn(),
+    setPaymentMethod: vi.fn(),
     cardNumber: '',
-    setCardNumber: jest.fn(),
+    setCardNumber: vi.fn(),
     cardholderName: '',
-    setCardholderName: jest.fn(),
+    setCardholderName: vi.fn(),
     expiryMonth: '',
-    setExpiryMonth: jest.fn(),
+    setExpiryMonth: vi.fn(),
     expiryYear: '',
-    setExpiryYear: jest.fn(),
+    setExpiryYear: vi.fn(),
     cvv: '',
-    setCvv: jest.fn(),
+    setCvv: vi.fn(),
     employerCode: '',
-    setEmployerCode: jest.fn(),
+    setEmployerCode: vi.fn(),
     isDevelopment: false,
     isUAT: false,
     acknowledgmentStates: {},
-    setAcknowledgmentStates: jest.fn(),
+    setAcknowledgmentStates: vi.fn(),
     requiredAcknowledgments: [],
-    setRequiredAcknowledgments: jest.fn()
+    setRequiredAcknowledgments: vi.fn()
   };
 
   let result;
@@ -93,7 +95,7 @@ const renderComponent = async (props = {}) => {
 
 describe('PaymentStep', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockExecuteRules.mockResolvedValue({ messages: [] });
     mockAcknowledgeRule.mockResolvedValue({ success: true });
   });
@@ -123,7 +125,7 @@ describe('PaymentStep', () => {
 
   describe('Payment Method Selection', () => {
     test('calls setPaymentMethod when card is selected', async () => {
-      const setPaymentMethod = jest.fn();
+      const setPaymentMethod = vi.fn();
       await renderComponent({ setPaymentMethod });
 
       const cardOption = screen.getByLabelText('Credit/Debit Card');
@@ -135,7 +137,7 @@ describe('PaymentStep', () => {
     });
 
     test('calls setPaymentMethod when invoice is selected', async () => {
-      const setPaymentMethod = jest.fn();
+      const setPaymentMethod = vi.fn();
       await renderComponent({ setPaymentMethod });
 
       const invoiceOption = screen.getByLabelText('Invoice (Corporate accounts only)');
@@ -153,13 +155,15 @@ describe('PaymentStep', () => {
 
       expect(screen.getByText('Card Number')).toBeInTheDocument();
       expect(screen.getByText('Cardholder Name')).toBeInTheDocument();
-      expect(screen.getByText('Expiry Month')).toBeInTheDocument();
-      expect(screen.getByText('Expiry Year')).toBeInTheDocument();
+      // MUI Select with variant="standard" renders label differently than TextField
+      // Check for the placeholder text in the Select instead
+      expect(screen.getByText('Select Month')).toBeInTheDocument();
+      expect(screen.getByText('Select Year')).toBeInTheDocument();
       expect(screen.getByText('CVV')).toBeInTheDocument();
     });
 
     test('updates card number on input', async () => {
-      const setCardNumber = jest.fn();
+      const setCardNumber = vi.fn();
       await renderComponent({ paymentMethod: 'card', setCardNumber });
 
       const cardNumberInput = screen.getByPlaceholderText('1234 5678 9012 3456');
@@ -171,7 +175,7 @@ describe('PaymentStep', () => {
     });
 
     test('updates cardholder name on input', async () => {
-      const setCardholderName = jest.fn();
+      const setCardholderName = vi.fn();
       await renderComponent({ paymentMethod: 'card', setCardholderName });
 
       const nameInput = screen.getByPlaceholderText('John Doe');
@@ -183,7 +187,7 @@ describe('PaymentStep', () => {
     });
 
     test('updates CVV on input', async () => {
-      const setCvv = jest.fn();
+      const setCvv = vi.fn();
       await renderComponent({ paymentMethod: 'card', setCvv });
 
       const cvvInput = screen.getByPlaceholderText('123');
@@ -224,7 +228,7 @@ describe('PaymentStep', () => {
     });
 
     test('updates employer code on input', async () => {
-      const setEmployerCode = jest.fn();
+      const setEmployerCode = vi.fn();
       await renderComponent({ paymentMethod: 'invoice', setEmployerCode });
 
       const employerInput = screen.getByPlaceholderText('Enter your employer code');
@@ -269,11 +273,11 @@ describe('PaymentStep', () => {
     });
 
     test('fills card details when VISA test card is clicked', async () => {
-      const setCardNumber = jest.fn();
-      const setCvv = jest.fn();
-      const setExpiryMonth = jest.fn();
-      const setExpiryYear = jest.fn();
-      const setCardholderName = jest.fn();
+      const setCardNumber = vi.fn();
+      const setCvv = vi.fn();
+      const setExpiryMonth = vi.fn();
+      const setExpiryYear = vi.fn();
+      const setCardholderName = vi.fn();
 
       await renderComponent({
         paymentMethod: 'card',
@@ -298,8 +302,8 @@ describe('PaymentStep', () => {
     });
 
     test('fills Mastercard details when clicked', async () => {
-      const setCardNumber = jest.fn();
-      const setCvv = jest.fn();
+      const setCardNumber = vi.fn();
+      const setCvv = vi.fn();
 
       await renderComponent({
         paymentMethod: 'card',
@@ -381,7 +385,7 @@ describe('PaymentStep', () => {
 
   describe('Acknowledgment Messages', () => {
     test('displays acknowledgment messages from rules', async () => {
-      const setAcknowledgmentStates = jest.fn();
+      const setAcknowledgmentStates = vi.fn();
 
       mockExecuteRules.mockResolvedValueOnce({
         messages: [
@@ -428,7 +432,7 @@ describe('PaymentStep', () => {
     });
 
     test('handles acknowledgment checkbox change', async () => {
-      const setAcknowledgmentStates = jest.fn();
+      const setAcknowledgmentStates = vi.fn();
 
       mockExecuteRules.mockResolvedValueOnce({
         messages: [
@@ -470,7 +474,7 @@ describe('PaymentStep', () => {
     });
 
     test('handles acknowledgment API error gracefully', async () => {
-      const setAcknowledgmentStates = jest.fn();
+      const setAcknowledgmentStates = vi.fn();
 
       mockExecuteRules.mockResolvedValueOnce({
         messages: [
@@ -506,7 +510,7 @@ describe('PaymentStep', () => {
     });
 
     test('updates required acknowledgments from rules', async () => {
-      const setRequiredAcknowledgments = jest.fn();
+      const setRequiredAcknowledgments = vi.fn();
 
       mockExecuteRules.mockResolvedValueOnce({
         messages: [
@@ -532,8 +536,8 @@ describe('PaymentStep', () => {
     });
 
     test('clears acknowledgments when no messages', async () => {
-      const setAcknowledgmentStates = jest.fn();
-      const setRequiredAcknowledgments = jest.fn();
+      const setAcknowledgmentStates = vi.fn();
+      const setRequiredAcknowledgments = vi.fn();
 
       mockExecuteRules.mockResolvedValueOnce({});
 
@@ -581,7 +585,7 @@ describe('PaymentStep', () => {
 
   describe('Select Components', () => {
     test('updates expiry month when selected', async () => {
-      const setExpiryMonth = jest.fn();
+      const setExpiryMonth = vi.fn();
       await renderComponent({ paymentMethod: 'card', setExpiryMonth });
 
       const monthSelect = screen.getAllByRole('combobox')[0];
@@ -598,7 +602,7 @@ describe('PaymentStep', () => {
     });
 
     test('updates expiry year when selected', async () => {
-      const setExpiryYear = jest.fn();
+      const setExpiryYear = vi.fn();
       await renderComponent({ paymentMethod: 'card', setExpiryYear });
 
       const yearSelect = screen.getAllByRole('combobox')[1];

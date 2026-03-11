@@ -1,10 +1,12 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/PhoneCodeDropdown.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PhoneCodeDropdown from '../PhoneCodeDropdown';
+import { ThemeProvider } from '@mui/material/styles';
+import PhoneCodeDropdown from '../PhoneCodeDropdown.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const mockCountries = [
   { name: 'United Kingdom', phone_code: '+44', iso_code: 'GB' },
@@ -16,7 +18,7 @@ const mockCountries = [
 const renderComponent = (props = {}) => {
   const defaultProps = {
     countries: mockCountries,
-    onChange: jest.fn(),
+    onChange: vi.fn(),
   };
 
   return render(
@@ -57,7 +59,7 @@ describe('PhoneCodeDropdown', () => {
 
   describe('selection', () => {
     test('calls onChange when country is selected', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       renderComponent({ onChange: mockOnChange });
 
       // Open the dropdown
@@ -76,7 +78,7 @@ describe('PhoneCodeDropdown', () => {
     });
 
     test('does not call onChange when selecting same country', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       renderComponent({ onChange: mockOnChange, selectedCountry: null });
 
       const select = screen.getByRole('combobox');

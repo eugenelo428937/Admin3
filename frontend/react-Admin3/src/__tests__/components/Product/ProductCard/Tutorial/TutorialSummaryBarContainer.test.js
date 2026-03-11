@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * TutorialSummaryBarContainer Component Tests
  * Epic 4 - Story 3: Mobile Responsive Summary Bar
@@ -9,17 +10,18 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider } from '../../../../../contexts/CartContext';
+import { ThemeProvider } from '@mui/material/styles';
+import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider } from '../../../../../contexts/CartContext.js';
 
 // Mock Material-UI useMediaQuery hook
 import useMediaQuery from '@mui/material/useMediaQuery';
-jest.mock('@mui/material/useMediaQuery', () => jest.fn());
+import appTheme from '../../../../../theme';
+vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn() }));
 
 // Test helpers
-const theme = createTheme();
+const theme = appTheme;
 
 const mockTutorialChoices = {
   CM2: {
@@ -57,7 +59,7 @@ const renderWithProviders = (component, { isMobile = false } = {}) => {
 // Skip until Epic 4 - Story 3 mobile responsiveness is implemented
 describe.skip('TutorialSummaryBarContainer - Responsive Positioning', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Setup Phase', () => {

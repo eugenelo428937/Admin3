@@ -1,31 +1,33 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CartPanel from '../CartPanel';
-import { CartContext } from '../../../contexts/CartContext';
-import { useAuth } from '../../../hooks/useAuth';
+import { ThemeProvider } from '@mui/material/styles';
+import CartPanel from '../CartPanel.js';
+import { CartContext } from '../../../contexts/CartContext.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 
+import appTheme from '../../../theme';
 // Mock dependencies
-jest.mock('../../../hooks/useAuth');
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn()
+vi.mock('../../../hooks/useAuth.js');
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => vi.fn())
 }));
 
 // Mock cart context values
 const mockCartContextValue = {
   cartItems: [],
   cartData: { fees: [] },
-  clearCart: jest.fn(),
-  removeFromCart: jest.fn()
+  clearCart: vi.fn(),
+  removeFromCart: vi.fn()
 };
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderCartPanel = (props = {}) => {
   return render(
     <ThemeProvider theme={theme}>
       <CartContext.Provider value={mockCartContextValue}>
-        <CartPanel show={true} handleClose={jest.fn()} {...props} />
+        <CartPanel show={true} handleClose={vi.fn()} {...props} />
       </CartContext.Provider>
     </ThemeProvider>
   );
@@ -40,12 +42,12 @@ describe('CartPanel Accessibility', () => {
     });
 
     // Clear all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('should dispatch login modal event when checkout clicked without authentication', async () => {
     // Mock window.dispatchEvent to track custom events
-    const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
+    const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
 
     // Render CartPanel
     renderCartPanel();
@@ -79,7 +81,7 @@ describe('CartPanel Accessibility', () => {
 
   test('should properly manage focus when login modal is shown from cart panel', async () => {
     // Mock window.dispatchEvent
-    const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
+    const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
 
     renderCartPanel();
 

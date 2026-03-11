@@ -1,13 +1,16 @@
+import { vi } from 'vitest';
 // src/components/Address/__tests__/AddressSelectionPanel.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AddressSelectionPanel from '../AddressSelectionPanel';
+import { ThemeProvider } from '@mui/material/styles';
+import AddressSelectionPanel from '../AddressSelectionPanel.js';
 
+import appTheme from '../../../theme';
 // Mock AddressEditModal - capture props for verification
 let capturedModalProps = {};
-jest.mock('../AddressEditModal', () => {
-  return function MockAddressEditModal({ open, onClose, onAddressUpdate, selectedAddressType, addressType }) {
+vi.mock('../AddressEditModal.js', () => ({
+  __esModule: true,
+  default: function MockAddressEditModal({ open, onClose, onAddressUpdate, selectedAddressType, addressType }) {
     // Capture props for test verification
     capturedModalProps = { selectedAddressType, addressType, open };
 
@@ -23,17 +26,18 @@ jest.mock('../AddressEditModal', () => {
         <button onClick={onClose}>Close</button>
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock DynamicAddressForm
-jest.mock('../DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ address }) {
+vi.mock('../DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ address }) {
     return <div data-testid="dynamic-address-form">{JSON.stringify(address)}</div>;
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 const mockUserProfile = {
   profile: {
@@ -59,7 +63,7 @@ const renderComponent = (props = {}) => {
   const defaultProps = {
     addressType: 'delivery',
     userProfile: mockUserProfile,
-    onAddressChange: jest.fn(),
+    onAddressChange: vi.fn(),
   };
 
   return render(
@@ -73,7 +77,7 @@ describe('AddressSelectionPanel', () => {
   describe('rendering', () => {
     test('renders address selection dropdown', () => {
       renderComponent();
-      expect(screen.getByLabelText(/select address/i)).toBeInTheDocument();
+      expect(screen.getByTestId('delivery-address-dropdown')).toBeInTheDocument();
     });
 
     test('renders home and work options in dropdown', async () => {
@@ -152,7 +156,7 @@ describe('AddressSelectionPanel', () => {
     });
 
     test('calls onAddressChange when selection changes', async () => {
-      const mockOnAddressChange = jest.fn();
+      const mockOnAddressChange = vi.fn();
       renderComponent({ onAddressChange: mockOnAddressChange });
 
       const dropdown = screen.getByRole('combobox');
@@ -214,7 +218,7 @@ describe('AddressSelectionPanel', () => {
     });
 
     test('calls onAddressUpdate when saving to profile', async () => {
-      const mockOnAddressUpdate = jest.fn();
+      const mockOnAddressUpdate = vi.fn();
       renderComponent({ onAddressUpdate: mockOnAddressUpdate });
 
       fireEvent.click(screen.getByRole('button', { name: /edit address/i }));

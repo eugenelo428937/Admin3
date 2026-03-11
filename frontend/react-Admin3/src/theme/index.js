@@ -4,18 +4,18 @@
 import { createTheme } from "@mui/material/styles";
 
 // Import from consolidated token layer (single source of truth)
-import { md3, scales, staticColors } from './tokens/colors';
+import { md3, scales, staticColors } from './tokens/colors.js';
 
-import { typographyConfig, responsiveTypography } from './typography';
-import componentOverrides from './components';
-import { createGradientStyle, gradientColorSchemes } from './utils';
-import { spacing, semanticSpacing, gaps, formulatedSpacing } from './spacing';
-import {shadows } from './styles/shadows'
+import { typographyConfig, responsiveTypography } from './typography/index.js';
+import componentOverrides from './components/index.js';
+import { createGradientStyle, gradientColorSchemes } from './utils/index.js';
+import { spacing, semanticSpacing, gaps, formulatedSpacing } from './spacing/index.js';
+import {shadows } from './styles/shadows.js'
 
 // Import semantic layer
-import { semantic } from './semantic/common';
-import productCards from './semantic/productCards';
-import navigation from './semantic/navigation';
+import { semantic } from './semantic/common.js';
+import productCards from './semantic/productCards.js';
+import navigation from './semantic/navigation.js';
 
 // Base theme with breakpoints
 const baseTheme = createTheme({

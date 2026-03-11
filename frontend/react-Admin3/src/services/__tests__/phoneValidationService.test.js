@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for phoneValidationService
  *
@@ -13,14 +14,14 @@
  * - getValidationErrorMessage: Get validation error (async)
  */
 
-import phoneValidationService from '../phoneValidationService';
+import phoneValidationService from '../phoneValidationService.js';
 
 // Mock global fetch
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('PhoneValidationService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Clear cache between tests
     phoneValidationService.countriesCache = null;
     phoneValidationService.countriesFetchPromise = null;
@@ -233,7 +234,7 @@ describe('PhoneValidationService', () => {
 
     test('returns empty array on fetch error', async () => {
       global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await phoneValidationService.fetchCountries();
 
@@ -273,7 +274,7 @@ describe('PhoneValidationService', () => {
 
     test('returns null on fetch error', async () => {
       global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const code = await phoneValidationService.getCountryCodeFromName('United Kingdom');
 
@@ -304,7 +305,7 @@ describe('PhoneValidationService', () => {
 
     test('returns ISO code on error', async () => {
       global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const name = await phoneValidationService.getCountryName('GB');
 

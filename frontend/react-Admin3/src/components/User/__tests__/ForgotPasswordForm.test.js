@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * ForgotPasswordForm Component Tests (T016)
  * User Story: US1 - Component Coverage Achievement
@@ -6,20 +7,20 @@
  */
 
 // Mock react-router-dom before importing
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock react-google-recaptcha-v3
-const mockExecuteRecaptcha = jest.fn();
-jest.mock('react-google-recaptcha-v3', () => ({
+const mockExecuteRecaptcha = vi.fn();
+vi.mock('react-google-recaptcha-v3', () => ({
   useGoogleReCaptcha: () => ({ executeRecaptcha: mockExecuteRecaptcha }),
 }));
 
 // Mock authService
-const mockRequestPasswordReset = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockRequestPasswordReset = vi.fn();
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     requestPasswordReset: (...args) => mockRequestPasswordReset(...args),
@@ -27,39 +28,25 @@ jest.mock('../../../services/authService', () => ({
 }));
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ForgotPasswordForm from '../ForgotPasswordForm';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers';
+import ForgotPasswordForm from '../ForgotPasswordForm.js';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
+import appTheme from '../../../theme';
 
 describe('ForgotPasswordForm', () => {
   const renderWithTheme = (component) => {
-    const theme = createTheme({
-      palette: {
-        bpp: {
-          granite: {
-            '010': '#f5f5f5',
-            '080': '#424242',
-            '090': '#212121',
-          },
-        },
-      },
-      liftkit: {
-        spacing: {
-          md: 16,
-          lg: 24,
-        },
-      },
-    });
+    const theme = appTheme;
     return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockExecuteRecaptcha.mockResolvedValue('test-recaptcha-token');
-    process.env.NODE_ENV = 'development';
-    process.env.REACT_APP_DISABLE_RECAPTCHA = 'true';
+    import.meta.env.MODE = 'development';
+    import.meta.env.DEV = true;
+    import.meta.env.VITE_DISABLE_RECAPTCHA = 'true';
   });
 
   describe('Rendering', () => {
@@ -96,8 +83,9 @@ describe('ForgotPasswordForm', () => {
       const emailInput = screen.getByPlaceholderText(/enter your email/i);
       await user.type(emailInput, 'invalid-email');
 
-      const submitButton = screen.getByRole('button', { name: /send reset email/i });
-      await user.click(submitButton);
+      // Use fireEvent.submit to bypass HTML5 native validation (type="email" blocks onSubmit in jsdom)
+      const form = emailInput.closest('form');
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
@@ -105,11 +93,12 @@ describe('ForgotPasswordForm', () => {
     });
 
     test('shows error for empty email', async () => {
-      const user = userEvent.setup({ delay: null });
       renderWithTheme(<ForgotPasswordForm />);
 
-      const submitButton = screen.getByRole('button', { name: /send reset email/i });
-      await user.click(submitButton);
+      // Use fireEvent.submit to bypass HTML5 native validation (required attr blocks onSubmit in jsdom)
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const form = emailInput.closest('form');
+      fireEvent.submit(form);
 
       await waitFor(() => {
         expect(screen.getByText(/email is required/i)).toBeInTheDocument();
@@ -218,12 +207,11 @@ describe('ForgotPasswordForm', () => {
     });
 
     test('has no accessibility violations with validation error', async () => {
-      const user = userEvent.setup({ delay: null });
       const { container } = renderWithTheme(<ForgotPasswordForm />);
 
-      // Trigger validation error
-      const submitButton = screen.getByRole('button', { name: /send reset email/i });
-      await user.click(submitButton);
+      // Trigger validation error via fireEvent.submit to bypass HTML5 native validation
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      fireEvent.submit(emailInput.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/email is required/i)).toBeInTheDocument();

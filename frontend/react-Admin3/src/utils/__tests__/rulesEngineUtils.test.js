@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for rulesEngineUtils
  *
@@ -28,7 +29,7 @@ import {
   processForUI,
   executeAndProcessRules,
   rulesEngineHelpers,
-} from '../rulesEngineUtils';
+} from '../rulesEngineUtils.js';
 
 describe('rulesEngineUtils', () => {
   describe('MessageTypes', () => {
@@ -851,7 +852,7 @@ describe('rulesEngineUtils', () => {
   describe('executeAndProcessRules', () => {
     test('should validate context and execute rules', async () => {
       const mockService = {
-        executeRules: jest.fn().mockResolvedValue({
+        executeRules: vi.fn().mockResolvedValue({
           success: true,
           messages: [{ type: 'display' }],
         }),
@@ -866,7 +867,7 @@ describe('rulesEngineUtils', () => {
 
     test('should throw on invalid context with strict validation', async () => {
       const mockService = {
-        executeRules: jest.fn(),
+        executeRules: vi.fn(),
       };
 
       const context = {}; // Missing required cart
@@ -881,7 +882,7 @@ describe('rulesEngineUtils', () => {
 
     test('should handle service errors', async () => {
       const mockService = {
-        executeRules: jest.fn().mockRejectedValue(new Error('Service error')),
+        executeRules: vi.fn().mockRejectedValue(new Error('Service error')),
       };
 
       const context = { cart: { id: 1, items: [] } };
@@ -908,7 +909,7 @@ describe('rulesEngineUtils', () => {
 
     test('executeCheckoutTerms should build context and execute', async () => {
       const mockService = {
-        executeRules: jest.fn().mockResolvedValue({ success: true, messages: [] }),
+        executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
       };
 
       const cartData = { id: 1 };
@@ -923,7 +924,7 @@ describe('rulesEngineUtils', () => {
 
     test('executeHomePage should build context and execute', async () => {
       const mockService = {
-        executeRules: jest.fn().mockResolvedValue({ success: true, messages: [] }),
+        executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
       };
 
       await rulesEngineHelpers.executeHomePage(null, mockService);
@@ -936,7 +937,7 @@ describe('rulesEngineUtils', () => {
 
     test('executeProductCard should build context and execute', async () => {
       const mockService = {
-        executeRules: jest.fn().mockResolvedValue({ success: true, messages: [] }),
+        executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
       };
 
       const product = { id: 1, name: 'Test' };

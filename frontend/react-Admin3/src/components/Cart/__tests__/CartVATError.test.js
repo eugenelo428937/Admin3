@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Test suite for CartVATError component (Phase 4, Task T039)
  *
@@ -14,7 +15,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartVATError from '../CartVATError';
+import CartVATError from '../CartVATError.js';
 
 describe('CartVATError Component', () => {
   const mockErrorData = {
@@ -23,11 +24,11 @@ describe('CartVATError Component', () => {
   };
 
   const mockHandlers = {
-    onRetry: jest.fn()
+    onRetry: vi.fn()
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('displays error message', () => {
@@ -67,7 +68,7 @@ describe('CartVATError Component', () => {
 
   it('shows loading state during retry', async () => {
     // Mock async onRetry handler
-    const asyncRetry = jest.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+    const asyncRetry = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<CartVATError {...mockErrorData} onRetry={asyncRetry} />);
 
@@ -86,7 +87,7 @@ describe('CartVATError Component', () => {
   });
 
   it('disables retry button while loading', async () => {
-    const asyncRetry = jest.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+    const asyncRetry = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<CartVATError {...mockErrorData} onRetry={asyncRetry} />);
 
@@ -100,7 +101,7 @@ describe('CartVATError Component', () => {
   });
 
   it('handles successful retry (error cleared)', async () => {
-    const onRetry = jest.fn(() => Promise.resolve({ success: true }));
+    const onRetry = vi.fn(() => Promise.resolve({ success: true }));
 
     const { rerender } = render(
       <CartVATError {...mockErrorData} onRetry={onRetry} />
@@ -120,7 +121,7 @@ describe('CartVATError Component', () => {
   });
 
   it('handles retry failure', async () => {
-    const onRetry = jest.fn(() => Promise.reject(new Error('Retry failed')));
+    const onRetry = vi.fn(() => Promise.reject(new Error('Retry failed')));
 
     render(<CartVATError {...mockErrorData} onRetry={onRetry} />);
 
@@ -195,7 +196,7 @@ describe('CartVATError Component', () => {
   });
 
   it('allows dismissing error if onDismiss handler provided', () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     render(
       <CartVATError

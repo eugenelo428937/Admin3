@@ -1,4 +1,4 @@
-import httpService from './httpService';
+import httpService from './httpService.js';
 
 // Entry point constants for consistency across the application
 const ENTRY_POINTS = {

@@ -34,7 +34,7 @@ import {
 	LocationOn,
 	AccessTime,
 } from "@mui/icons-material";
-import { scales } from "../theme/tokens/colors";
+import { scales } from "../theme/tokens/colors.js";
 
 // Helper function to convert hex to RGB values
 const hexToRgb = (hex) => {

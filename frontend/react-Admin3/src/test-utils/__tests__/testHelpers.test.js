@@ -26,8 +26,8 @@ import {
   mockProductsApi,
   createMockHistory,
   flushPromises
-} from '../testHelpers';
-import { setSubjects, setCategories } from '../../store/slices/filtersSlice';
+} from '../testHelpers.js';
+import { setSubjects, setCategories } from '../../store/slices/filtersSlice.js';
 
 // Simple test component
 const TestComponent = () => {

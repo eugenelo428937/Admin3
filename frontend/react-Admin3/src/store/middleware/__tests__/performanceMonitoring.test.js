@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Contract Tests for Performance Monitoring Middleware (Story 1.15)
  *
@@ -14,12 +15,12 @@
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../../slices/filtersSlice';
-import performanceMonitoringMiddleware from '../performanceMonitoring';
-import PerformanceTracker from '../../../utils/PerformanceTracker';
+import filtersReducer from '../../slices/filtersSlice.js';
+import performanceMonitoringMiddleware from '../performanceMonitoring.js';
+import PerformanceTracker from '../../../utils/PerformanceTracker.js';
 
 // Mock PerformanceTracker for middleware tests
-jest.mock('../../../utils/PerformanceTracker');
+vi.mock('../../../utils/PerformanceTracker.js');
 
 describe('Performance Monitoring Middleware', () => {
   let store;
@@ -27,22 +28,22 @@ describe('Performance Monitoring Middleware', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Spy on console.warn
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
 
     // Mock PerformanceTracker methods
-    PerformanceTracker.startMeasure = jest.fn();
-    PerformanceTracker.endMeasure = jest.fn(() => ({
+    PerformanceTracker.startMeasure = vi.fn();
+    PerformanceTracker.endMeasure = vi.fn(() => ({
       name: 'redux.setSubjects',
       duration: 2.5,
       timestamp: Date.now(),
       exceeded: false,
       metadata: {}
     }));
-    PerformanceTracker.checkBudget = jest.fn(() => true);
-    PerformanceTracker.isSupported = jest.fn(() => true);
+    PerformanceTracker.checkBudget = vi.fn(() => true);
+    PerformanceTracker.isSupported = vi.fn(() => true);
 
     // Create store with middleware
     store = configureStore({
@@ -158,10 +159,11 @@ describe('Performance Monitoring Middleware', () => {
       );
     });
 
-    it('should log warning when budget exceeded', () => {
+    it('should log warning when budget exceeded', async () => {
       // Use real checkBudget implementation to get warning
       PerformanceTracker.checkBudget.mockRestore();
-      PerformanceTracker.checkBudget = jest.requireActual('../../../utils/PerformanceTracker').default.checkBudget;
+      const actualModule = await vi.importActual('../../../utils/PerformanceTracker');
+      PerformanceTracker.checkBudget = actualModule.default.checkBudget;
 
       PerformanceTracker.endMeasure.mockReturnValueOnce({
         name: 'redux.setSubjects',
@@ -177,7 +179,7 @@ describe('Performance Monitoring Middleware', () => {
       expect(consoleWarnSpy.mock.calls[0][0]).toContain('Performance budget exceeded');
 
       // Re-mock for other tests
-      PerformanceTracker.checkBudget = jest.fn(() => true);
+      PerformanceTracker.checkBudget = vi.fn(() => true);
     });
 
     it('should not log warning when within budget', () => {
@@ -205,7 +207,7 @@ describe('Performance Monitoring Middleware', () => {
 
     it('should not track when Performance API unavailable', () => {
       // Clear any calls from store initialization
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       // Mock isSupported to always return false for this test
       PerformanceTracker.isSupported.mockReturnValue(false);
@@ -221,18 +223,24 @@ describe('Performance Monitoring Middleware', () => {
     });
 
     it('should only operate in development mode', () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+      const originalMode = import.meta.env.MODE;
+      const originalDev = import.meta.env.DEV;
+      const originalProd = import.meta.env.PROD;
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
 
       // In production, middleware should be no-op or not loaded
-      // This test verifies the middleware respects NODE_ENV
+      // This test verifies the middleware respects import.meta.env
 
       store.dispatch({ type: 'filters/setSubjects', payload: ['CM2'] });
 
       // In production, should not call PerformanceTracker
       // (This test will be refined once we see actual implementation)
 
-      process.env.NODE_ENV = originalEnv;
+      import.meta.env.MODE = originalMode;
+      import.meta.env.DEV = originalDev;
+      import.meta.env.PROD = originalProd;
     });
   });
 
@@ -248,7 +256,7 @@ describe('Performance Monitoring Middleware', () => {
 
     it('should handle multiple sequential actions', () => {
       // Clear any calls from store initialization or previous tests
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       store.dispatch({ type: 'filters/setSubjects', payload: ['CM2'] });
       store.dispatch({ type: 'filters/setCategories', payload: ['Bundle'] });

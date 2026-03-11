@@ -1,32 +1,34 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductVariationsPanel.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ProductVariationsPanel from '../ProductVariationsPanel';
+import { ThemeProvider } from '@mui/material/styles';
+import ProductVariationsPanel from '../ProductVariationsPanel.js';
 
 // Mock productProductVariationService
-jest.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService.js', () => ({
   __esModule: true,
   default: {
-    getByProduct: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+    getByProduct: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 // Mock productVariationService
-jest.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
+    getAll: vi.fn(),
   },
 }));
 
-import productProductVariationService from '../../../../services/productProductVariationService';
-import productVariationService from '../../../../services/productVariationService';
+import productProductVariationService from '../../../../services/productProductVariationService.js';
+import productVariationService from '../../../../services/productVariationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockPPVs = [
   { id: 10, product: 1, product_variation: 1, variation_name: 'eBook', variation_code: 'EB', variation_type: 'eBook' },
@@ -48,7 +50,7 @@ const renderComponent = (props = {}) => render(
 
 describe('ProductVariationsPanel', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     productProductVariationService.getByProduct.mockResolvedValue(mockPPVs);
     productVariationService.getAll.mockResolvedValue(mockAllVariations);
   });
@@ -100,7 +102,7 @@ describe('ProductVariationsPanel', () => {
 
   describe('remove variation', () => {
     test('calls delete and refreshes on confirm', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       productProductVariationService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -124,7 +126,7 @@ describe('ProductVariationsPanel', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 

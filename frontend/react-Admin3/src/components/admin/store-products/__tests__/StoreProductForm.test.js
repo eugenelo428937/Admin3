@@ -1,64 +1,67 @@
+import { vi } from 'vitest';
 // src/components/admin/store-products/__tests__/StoreProductForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminStoreProductForm from '../StoreProductForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminStoreProductForm from '../StoreProductForm.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock storeProductService
-jest.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService.js', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
 // Mock examSessionSubjectService
-jest.mock('../../../../services/examSessionSubjectService', () => ({
+vi.mock('../../../../services/examSessionSubjectService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
+    getAll: vi.fn(),
   },
 }));
 
 // Mock productProductVariationService
-jest.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
+    getAll: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService';
-import examSessionSubjectService from '../../../../services/examSessionSubjectService';
-import productProductVariationService from '../../../../services/productProductVariationService';
+import storeProductService from '../../../../services/storeProductService.js';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
+import productProductVariationService from '../../../../services/productProductVariationService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const mockEssData = [
@@ -87,7 +90,7 @@ const renderComponent = (isEditMode = false) => {
 
 describe('AdminStoreProductForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

@@ -11,8 +11,8 @@ import {
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import DynamicAddressForm from './DynamicAddressForm';
-import AddressEditModal from './AddressEditModal';
+import DynamicAddressForm from './DynamicAddressForm.js';
+import AddressEditModal from './AddressEditModal.js';
 
 const AddressSelectionPanel = ({
   addressType, // 'delivery' or 'invoice'

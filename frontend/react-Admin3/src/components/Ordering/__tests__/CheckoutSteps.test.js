@@ -1,11 +1,12 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme';
-import CheckoutSteps from '../CheckoutSteps';
-import { CartContext } from '../../../contexts/CartContext';
-import { useAuth } from '../../../hooks/useAuth';
-import rulesEngineService from '../../../services/rulesEngineService';
+import theme from '../../../theme/theme.js';
+import CheckoutSteps from '../CheckoutSteps.js';
+import { CartContext } from '../../../contexts/CartContext.js';
+import { useAuth } from '../../../hooks/useAuth.js';
+import rulesEngineService from '../../../services/rulesEngineService.js';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -16,13 +17,13 @@ const renderWithTheme = (ui, options = {}) => {
 };
 
 // Mock the rules engine service
-jest.mock('../../../services/rulesEngineService', () => {
-  const mockExecuteRules = jest.fn().mockResolvedValue({
+vi.mock('../../../services/rulesEngineService.js', () => {
+  const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
     blocked: false
   });
-  const mockAcknowledgeRule = jest.fn().mockResolvedValue({ success: true });
+  const mockAcknowledgeRule = vi.fn().mockResolvedValue({ success: true });
   const MOCK_ENTRY_POINTS = {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
@@ -44,40 +45,46 @@ jest.mock('../../../services/rulesEngineService', () => {
 });
 
 // Mock useAuth hook
-jest.mock('../../../hooks/useAuth');
+vi.mock('../../../hooks/useAuth.js');
 
 // Mock httpService
-jest.mock('../../../services/httpService', () => ({
-  post: jest.fn(),
-  get: jest.fn(),
+vi.mock('../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+  },
 }));
 
 // Mock config
-jest.mock('../../../config', () => ({
-  API_BASE_URL: 'http://localhost:8888'
+vi.mock('../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    API_BASE_URL: 'http://localhost:8888'
+  },
 }));
 
 // Mock useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
-  useCart: jest.fn()
+vi.mock('../../../contexts/CartContext.js', () => ({
+  useCart: vi.fn()
 }));
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
-    getProfile: jest.fn().mockResolvedValue({ data: {} }),
-    updateProfile: jest.fn().mockResolvedValue({ data: {} })
+    getProfile: vi.fn().mockResolvedValue({ data: {} }),
+    updateProfile: vi.fn().mockResolvedValue({ data: {} })
   }
 }));
 
 // Mock useCheckoutValidation hook
-jest.mock('../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
     errors: {},
-    validateStep: jest.fn().mockReturnValue(true)
+    validateStep: vi.fn().mockReturnValue(true)
   })
 }));
 
@@ -93,8 +100,8 @@ const mockCartItems = [
 ];
 
 describe('CheckoutSteps', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
     // Mock useAuth hook
     useAuth.mockReturnValue({
@@ -103,7 +110,7 @@ describe('CheckoutSteps', () => {
     });
 
     // Mock useCart hook
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: { id: 1, user: null, session_key: null }
@@ -118,7 +125,7 @@ describe('CheckoutSteps', () => {
   });
 
   it('should call rules engine with checkout_start entry point when component mounts', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -156,7 +163,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: asetCartItems,
       cartData: { id: 2, user: null, session_key: null }
@@ -181,7 +188,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -212,7 +219,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: nonAsetCartItems,
       cartData: { id: 3, user: null, session_key: null }
@@ -225,7 +232,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -255,7 +262,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: cartItems,
       cartData: { id: 1, user: null, session_key: null }
@@ -279,7 +286,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -310,7 +317,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: cartItems,
       cartData: { id: 1, user: null, session_key: null }
@@ -324,7 +331,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 

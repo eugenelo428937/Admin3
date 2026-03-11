@@ -4,7 +4,7 @@ import {
   Paper, Typography, CircularProgress, Alert, Box, Button
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import storeBundleService from '../../../services/storeBundleService';
+import storeBundleService from '../../../services/storeBundleService.js';
 
 const SessionBundlesSummary = ({ sessionId }) => {
   const [bundles, setBundles] = useState([]);

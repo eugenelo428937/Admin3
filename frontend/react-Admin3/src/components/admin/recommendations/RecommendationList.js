@@ -5,8 +5,8 @@ import {
   Button, Container, Alert, Paper, Typography, Box, CircularProgress, TablePagination
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import recommendationService from '../../../services/recommendationService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import recommendationService from '../../../services/recommendationService.js';
 
 const AdminRecommendationList = () => {
     const { isSuperuser } = useAuth();

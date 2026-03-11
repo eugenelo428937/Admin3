@@ -1,12 +1,12 @@
 // src/components/admin/products/ProductDetail.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 import {
   Button, Card, CardHeader, CardContent, CardActions,
   Container, Alert, Box, Typography, CircularProgress
 } from "@mui/material";
-import catalogProductService from "../../../services/catalogProductService";
+import catalogProductService from "../../../services/catalogProductService.js";
 
 const AdminProductDetail = () => {
     const { isSuperuser } = useAuth();

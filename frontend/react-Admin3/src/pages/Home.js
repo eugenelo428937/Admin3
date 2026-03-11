@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useId } from "react";
 import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import SearchBox from "../components/SearchBox";
-import SearchResults from "../components/SearchResults";
-import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
+import SearchBox from "../components/SearchBox.js";
+import SearchResults from "../components/SearchResults.js";
+import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert.js";
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
-import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
-import rulesEngineService from "../services/rulesEngineService";
+import { rulesEngineHelpers } from "../utils/rulesEngineUtils.js";
+import rulesEngineService from "../services/rulesEngineService.js";
 import { useDispatch } from "react-redux";
-import { navSelectProductGroup } from "../store/slices/filtersSlice";
+import { navSelectProductGroup } from "../store/slices/filtersSlice.js";
 import
 {
    MenuBook,
@@ -17,13 +17,13 @@ import
    School,
    ArrowForward,
 } from "@mui/icons-material";
-import StripeWaveBackground from "../components/Effects/StripeWaveBackground";
-import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground';
-import OceanDepthBackground from '../components/Effects/OceanDepthBackground';
-import NeonMeshBackground from '../components/Effects/NeonMeshBackground';
-import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground";
-import IrisDawnBackground from "../components/Effects/IrisDawnBackground";
-import CopperRoseBackground from "../components/Effects/CopperRoseBackground";
+import StripeWaveBackground from "../components/Effects/StripeWaveBackground.js";
+import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground.js';
+import OceanDepthBackground from '../components/Effects/OceanDepthBackground.js';
+import NeonMeshBackground from '../components/Effects/NeonMeshBackground.js';
+import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground.js";
+import IrisDawnBackground from "../components/Effects/IrisDawnBackground.js";
+import CopperRoseBackground from "../components/Effects/CopperRoseBackground.js";
 // import NeonMeshBackground from './Effects/NeonMeshBackground';
 
 
@@ -41,11 +41,11 @@ const Home = () =>
    const [rulesLoading, setRulesLoading] = useState(false);
 
    // Video path from public folder
-   const backgroundVideo = `${process.env.PUBLIC_URL}/video/12595751_2560_1440_30fps.mp4`;
-   const backgroundVideoPoster = `${process.env.PUBLIC_URL}/videoframe_0.png`;
-   const graphic1 = `${process.env.PUBLIC_URL}/brand020.1a983628.webp`;
-   // const graphic2 = `${process.env.PUBLIC_URL}/brand070.59c82c5e.webp`;
-   // const graphic3 = `${process.env.PUBLIC_URL}/halftone_sq.df9804eb.avif`;
+   const backgroundVideo = "/video/12595751_2560_1440_30fps.mp4";
+   const backgroundVideoPoster = "/videoframe_0.png";
+   const graphic1 = "/brand020.1a983628.webp";
+   // const graphic2 = "/brand070.59c82c5e.webp";
+   // const graphic3 = "/halftone_sq.df9804eb.avif";
    // Debug video paths
    useEffect(() => { }, [backgroundVideo, backgroundVideoPoster]);
 
@@ -81,7 +81,7 @@ const Home = () =>
             if (result.errors && result.errors.length > 0)
             {
                console.error("🚨 Rules processing errors:", result.errors);
-               if (process.env.NODE_ENV === "development")
+               if (import.meta.env?.DEV)
                {
                   setError(`Development Error: ${result.errors.join(", ")}`);
                }
@@ -99,7 +99,7 @@ const Home = () =>
                );
                console.error("🔍 Schema errors:", err.schemaErrors);
                // For development, show schema validation errors to help debugging
-               if (process.env.NODE_ENV === "development")
+               if (import.meta.env?.DEV)
                {
                   setError(
                      `Development Error: Schema validation failed - ${err.details}`

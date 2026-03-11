@@ -1,7 +1,7 @@
 // Online Classroom Product Card Variant Styles
-import { spacing } from '../../tokens/spacing';
-import { onlineClassroom } from '../../semantic/productCards';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../tokens/spacing.js';
+import { onlineClassroom } from '../../semantic/productCards.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Online Classroom card variant - Cobalt/Blue theme

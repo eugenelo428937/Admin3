@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { readString } from 'react-papaparse';
-import subjectService from "../../../services/subjectService";
+import subjectService from "../../../services/subjectService.js";
 
 const AdminSubjectImport = () => {
 	const [file, setFile] = useState(null);

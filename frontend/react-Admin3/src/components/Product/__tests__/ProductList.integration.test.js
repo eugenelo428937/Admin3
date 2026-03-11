@@ -12,8 +12,8 @@
 
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders, mockProductsApi, flushPromises } from '../../../test-utils/testHelpers';
-import ProductList from '../ProductList';
+import { renderWithProviders, mockProductsApi, flushPromises } from '../../../test-utils/testHelpers.js';
+import ProductList from '../ProductList.js';
 
 describe('ProductList Integration', () => {
   beforeEach(() => {
