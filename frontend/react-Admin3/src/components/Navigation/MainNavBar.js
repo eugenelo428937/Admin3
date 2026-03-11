@@ -10,16 +10,16 @@ import {
    Box,
    useTheme,
 } from "@mui/material";
-// import { useAuth } from "../../hooks/useAuth"; // Now used by child components
-import productService from "../../services/productService";
-import SearchModal from "./SearchModal";
-import MobileNavigation from "./MobileNavigation";
-import TopNavBar from "./TopNavBar";
-import NavbarBrand from "./NavbarBrand";
-import NavigationMenu from "./NavigationMenu";
-import MainNavActions from "./MainNavActions";
-import AuthModal from "./AuthModal";
-import CartPanel from "../Ordering/CartPanel";
+// import { useAuth } from "../../hooks/useAuth.js"; // Now used by child components
+import productService from "../../services/productService.js";
+import SearchModal from "./SearchModal.js";
+import MobileNavigation from "./MobileNavigation.js";
+import TopNavBar from "./TopNavBar.js";
+import NavbarBrand from "./NavbarBrand.js";
+import NavigationMenu from "./NavigationMenu.js";
+import MainNavActions from "./MainNavActions.js";
+import AuthModal from "./AuthModal.js";
+import CartPanel from "../Ordering/CartPanel.js";
 // Redux imports for navigation integration
 import {
    navSelectSubject,
@@ -27,7 +27,7 @@ import {
    navSelectProductGroup,
    navSelectProduct,
    resetFilters,
-} from "../../store/slices/filtersSlice";
+} from "../../store/slices/filtersSlice.js";
 
 const MainNavBar = () => {
    // Auth hook is no longer needed in MainNavBar - used by child components

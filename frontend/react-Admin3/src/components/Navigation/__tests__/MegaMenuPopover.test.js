@@ -2,13 +2,14 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import MegaMenuPopover from '../MegaMenuPopover';
+import MegaMenuPopover from '../MegaMenuPopover.js';
 
+import appTheme from '../../../theme';
 expect.extend(toHaveNoViolations);
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderWithTheme = (component) => {
   return render(

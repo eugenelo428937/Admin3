@@ -7,11 +7,11 @@
  * Development-only - tree-shaken in production builds.
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker';
+import PerformanceTracker from '../../utils/PerformanceTracker.js';
 import {
   PERFORMANCE_BUDGETS,
   PERFORMANCE_MONITORING_CONFIG
-} from '../../config/performanceBudgets';
+} from '../../config/performanceBudgets.js';
 
 /**
  * Performance monitoring middleware

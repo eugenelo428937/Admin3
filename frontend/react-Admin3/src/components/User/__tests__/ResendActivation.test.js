@@ -2,26 +2,27 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/ResendActivation.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ResendActivation from '../ResendActivation';
+import { ThemeProvider } from '@mui/material/styles';
+import ResendActivation from '../ResendActivation.js';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock authService
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     resendActivationEmail: vi.fn(),
   },
 }));
 
-import authService from '../../../services/authService';
+import authService from '../../../services/authService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const renderComponent = () => {
   return render(
@@ -63,7 +64,9 @@ describe('ResendActivation', () => {
     test('shows error for empty email', async () => {
       renderComponent();
 
-      fireEvent.click(screen.getByRole('button', { name: /send activation email/i }));
+      // Use fireEvent.submit to bypass HTML5 native validation
+      const emailInput = screen.getByPlaceholderText(/enter your email address/i);
+      fireEvent.submit(emailInput.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/please enter your email address/i)).toBeInTheDocument();
@@ -73,10 +76,12 @@ describe('ResendActivation', () => {
     test('shows error for invalid email format', async () => {
       renderComponent();
 
-      fireEvent.change(screen.getByPlaceholderText(/enter your email address/i), {
+      const emailInput = screen.getByPlaceholderText(/enter your email address/i);
+      fireEvent.change(emailInput, {
         target: { value: 'invalid-email' },
       });
-      fireEvent.click(screen.getByRole('button', { name: /send activation email/i }));
+      // Use fireEvent.submit to bypass HTML5 native validation
+      fireEvent.submit(emailInput.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();

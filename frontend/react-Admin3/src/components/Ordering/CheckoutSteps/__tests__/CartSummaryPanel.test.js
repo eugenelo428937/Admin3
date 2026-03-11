@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartSummaryPanel from '../CartSummaryPanel';
+import CartSummaryPanel from '../CartSummaryPanel.js';
 
 describe('CartSummaryPanel', () => {
   const mockCartItems = [
@@ -304,7 +304,7 @@ describe('CartSummaryPanel', () => {
       fireEvent.click(breakdownLink);
 
       // Should show per-item VAT details
-      expect(screen.getByText('VAT per Product:')).toBeInTheDocument();
+      expect(screen.getByText('VAT calculation per Product:')).toBeInTheDocument();
     });
 
     it('should indicate mixed VAT rates when items have different rates', () => {
@@ -330,8 +330,13 @@ describe('CartSummaryPanel', () => {
         />
       );
 
-      // Should indicate mixed rates
-      expect(screen.getByText(/mixed rates/i)).toBeInTheDocument();
+      // Click to expand VAT breakdown to see individual rates
+      const breakdownLink = screen.getByText(/View VAT breakdown/);
+      fireEvent.click(breakdownLink);
+
+      // Should show both rates (20% and 0%) indicating mixed VAT rates
+      expect(screen.getByText('20%')).toBeInTheDocument();
+      expect(screen.getByText('0%')).toBeInTheDocument();
     });
 
     it('should not show breakdown link when no per-item VAT data', () => {

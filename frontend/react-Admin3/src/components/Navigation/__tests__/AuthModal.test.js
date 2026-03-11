@@ -6,23 +6,24 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AuthModal from '../AuthModal';
+import { ThemeProvider } from '@mui/material/styles';
+import AuthModal from '../AuthModal.js';
 
+import appTheme from '../../../theme';
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
-  useParams: () => ({}),
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
 }));
 
 // Mock useAuth hook
 const mockLogin = vi.fn();
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     login: mockLogin,
     isLoading: false,
@@ -32,8 +33,9 @@ vi.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock LoginFormContent
-vi.mock('../../User/LoginFormContent', () => {
-  return function MockLoginFormContent({
+vi.mock('../../User/LoginFormContent.js', () => ({
+  __esModule: true,
+  default: function MockLoginFormContent({
     formData,
     handleInputChange,
     handleLogin,
@@ -71,10 +73,10 @@ vi.mock('../../User/LoginFormContent', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('AuthModal', () => {
   const mockOnClose = vi.fn();

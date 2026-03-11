@@ -5,8 +5,8 @@ import {
   Button, Alert, Paper, Typography, Box, CircularProgress, TablePagination
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import staffService from '../../../services/staffService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import staffService from '../../../services/staffService.js';
 
 const AdminStaffList = () => {
   const { isSuperuser } = useAuth();

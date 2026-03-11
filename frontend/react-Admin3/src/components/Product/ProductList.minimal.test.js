@@ -4,7 +4,7 @@ import { vi } from 'vitest';
  */
 
 // Mock services BEFORE any imports
-vi.mock("../../services/httpService", () => ({
+vi.mock("../../services/httpService.js", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("../../services/httpService", () => ({
    },
 }));
 
-vi.mock("../../services/cartService", () => ({
+vi.mock("../../services/cartService.js", () => ({
    __esModule: true,
    default: {
       getCart: vi.fn(() => Promise.resolve({
@@ -32,15 +32,15 @@ vi.mock("../../services/cartService", () => ({
 }));
 
 // Mock child components
-vi.mock("./FilterPanel", () => ({ __esModule: true, default: () => null }));
-vi.mock("./ActiveFilters", () => ({ __esModule: true, default: () => null }));
-vi.mock("./ProductGrid", () => ({ __esModule: true, default: () => null }));
-vi.mock("../SearchBox", () => ({ __esModule: true, default: () => null }));
-vi.mock("./FilterDebugger", () => ({ __esModule: true, default: () => null }));
-vi.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
+vi.mock("./FilterPanel.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("./ActiveFilters.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("./ProductGrid.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("../SearchBox.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("./FilterDebugger.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("../Common/RulesEngineInlineAlert.js", () => ({ __esModule: true, default: () => null }));
 
 // Mock hooks
-vi.mock("../../hooks/useProductsSearch", () => ({
+vi.mock("../../hooks/useProductsSearch.js", () => ({
    __esModule: true,
    default: () => ({
       products: [],
@@ -53,7 +53,7 @@ vi.mock("../../hooks/useProductsSearch", () => ({
    }),
 }));
 
-vi.mock("../../hooks/useProductCardHelpers", () => ({
+vi.mock("../../hooks/useProductCardHelpers.js", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: vi.fn(),
@@ -63,8 +63,8 @@ vi.mock("../../hooks/useProductCardHelpers", () => ({
 }));
 
 describe('ProductList - Import Test', () => {
-   it('should import ProductList without errors', () => {
-      const ProductList = require('./ProductList').default;
+   it('should import ProductList without errors', async () => {
+      const { default: ProductList } = await import('./ProductList.js');
       expect(ProductList).toBeDefined();
       // ProductList is wrapped in React.memo(), so it's an object not a function
       expect(typeof ProductList).toBe('object');

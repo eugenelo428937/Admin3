@@ -1,28 +1,32 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import WorkAddressStep from '../User/steps/WorkAddressStep';
+import { ThemeProvider } from '@mui/material/styles';
+import WorkAddressStep from '../User/steps/WorkAddressStep.js';
 
-vi.mock('../Address/SmartAddressInput', () => {
-  return function MockSmartAddressInput({ fieldPrefix }) {
+import appTheme from '../../theme';
+vi.mock('../Address/SmartAddressInput.js', () => ({
+  __esModule: true,
+  default: function MockSmartAddressInput({ fieldPrefix }) {
     return <div data-testid={`smart-address-${fieldPrefix}`}>SmartAddressInput</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../Address/DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ fieldPrefix }) {
+vi.mock('../Address/DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ fieldPrefix }) {
     return <div data-testid={`dynamic-form-${fieldPrefix}`}>DynamicAddressForm</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../User/ValidatedPhoneInput', () => {
-  return function MockValidatedPhoneInput({ name, label }) {
+vi.mock('../User/ValidatedPhoneInput.js', () => ({
+  __esModule: true,
+  default: function MockValidatedPhoneInput({ name, label }) {
     return <input data-testid={`phone-${name}`} aria-label={label} />;
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 

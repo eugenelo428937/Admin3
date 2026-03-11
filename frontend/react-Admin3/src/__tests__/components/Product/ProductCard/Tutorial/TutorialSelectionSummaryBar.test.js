@@ -10,16 +10,17 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TutorialSelectionSummaryBar from '../../../../../components/Product/ProductCard/Tutorial/TutorialSelectionSummaryBar';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
+import { ThemeProvider } from '@mui/material/styles';
+import TutorialSelectionSummaryBar from '../../../../../components/Product/ProductCard/Tutorial/TutorialSelectionSummaryBar.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock Material-UI useMediaQuery hook
 import useMediaQuery from '@mui/material/useMediaQuery';
-vi.mock('@mui/material/useMediaQuery', () => vi.fn());
+import appTheme from '../../../../../theme';
+vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn() }));
 
 // Test helpers
-const theme = createTheme();
+const theme = appTheme;
 
 const mockProps = {
   subjectCode: 'CM2',

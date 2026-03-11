@@ -29,7 +29,7 @@ import {
   processForUI,
   executeAndProcessRules,
   rulesEngineHelpers,
-} from '../rulesEngineUtils';
+} from '../rulesEngineUtils.js';
 
 describe('rulesEngineUtils', () => {
   describe('MessageTypes', () => {

@@ -31,7 +31,7 @@ import {
 } from "@mui/icons-material";
 import { NumberInput, HStack, IconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 
 const MarkingVoucherProductCard = ({ producttype = "marking-voucher" }) => {
    const theme = useTheme();

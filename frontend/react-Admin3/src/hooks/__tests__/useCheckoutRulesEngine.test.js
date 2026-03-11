@@ -4,28 +4,28 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, waitFor, act } from '@testing-library/react';
-import useCheckoutRulesEngine from '../useCheckoutRulesEngine';
+import useCheckoutRulesEngine from '../useCheckoutRulesEngine.js';
 
 // Mock dependencies
-vi.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils.js', () => ({
   rulesEngineHelpers: {
     executeCheckoutTerms: vi.fn()
   },
   buildRulesContext: vi.fn()
 }));
 
-vi.mock('../../services/rulesEngineService', () => ({
+vi.mock('../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {}
 }));
 
-const { rulesEngineHelpers } = require('../../utils/rulesEngineUtils');
+const _reqmod_______utils_rulesEngineUtils_js = await import('../../utils/rulesEngineUtils.js'); const { rulesEngineHelpers } = _reqmod_______utils_rulesEngineUtils_js;
 
 describe('useCheckoutRulesEngine', () => {
   const mockCartData = { id: 1, total: 100 };
   const mockCartItems = [{ id: 1, product_id: 72, quantity: 1 }];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -35,7 +35,7 @@ describe('useCheckoutRulesEngine', () => {
   });
 
   describe('initial state', () => {
-    test('should return initial state with null result', () => {
+    test('should return initial state with null result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.rulesResult).toBeNull();
@@ -43,19 +43,19 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.error).toBeNull();
     });
 
-    test('should not execute rules when cartData is null', () => {
+    test('should not execute rules when cartData is null', async () => {
       renderHook(() => useCheckoutRulesEngine(null, mockCartItems));
 
       expect(rulesEngineHelpers.executeCheckoutTerms).not.toHaveBeenCalled();
     });
 
-    test('should not execute rules when cartItems is empty', () => {
+    test('should not execute rules when cartItems is empty', async () => {
       renderHook(() => useCheckoutRulesEngine(mockCartData, []));
 
       expect(rulesEngineHelpers.executeCheckoutTerms).not.toHaveBeenCalled();
     });
 
-    test('should not execute rules when cartItems is null', () => {
+    test('should not execute rules when cartItems is null', async () => {
       renderHook(() => useCheckoutRulesEngine(mockCartData, null));
 
       expect(rulesEngineHelpers.executeCheckoutTerms).not.toHaveBeenCalled();
@@ -153,7 +153,7 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.getInlineAcknowledgments()).toEqual([{ id: 1 }]);
     });
 
-    test('getInlineAcknowledgments should return empty array when no result', () => {
+    test('getInlineAcknowledgments should return empty array when no result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.getInlineAcknowledgments()).toEqual([]);
@@ -174,7 +174,7 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.getModalAcknowledgments()).toEqual([{ id: 2 }]);
     });
 
-    test('getModalAcknowledgments should return empty array when no result', () => {
+    test('getModalAcknowledgments should return empty array when no result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.getModalAcknowledgments()).toEqual([]);
@@ -195,7 +195,7 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.getDisplayMessages()).toEqual([{ id: 3 }]);
     });
 
-    test('getDisplayMessages should return empty array when no result', () => {
+    test('getDisplayMessages should return empty array when no result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.getDisplayMessages()).toEqual([]);
@@ -214,7 +214,7 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.hasBlockingMessages()).toBe(true);
     });
 
-    test('hasBlockingMessages should return false when no result', () => {
+    test('hasBlockingMessages should return false when no result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.hasBlockingMessages()).toBe(false);
@@ -233,7 +233,7 @@ describe('useCheckoutRulesEngine', () => {
       expect(result.current.requiresAcknowledgment()).toBe(true);
     });
 
-    test('requiresAcknowledgment should return false when no result', () => {
+    test('requiresAcknowledgment should return false when no result', async () => {
       const { result } = renderHook(() => useCheckoutRulesEngine(null, null));
 
       expect(result.current.requiresAcknowledgment()).toBe(false);

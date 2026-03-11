@@ -10,17 +10,18 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider } from '../../../../../contexts/CartContext';
+import { ThemeProvider } from '@mui/material/styles';
+import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider } from '../../../../../contexts/CartContext.js';
 
 // Mock Material-UI useMediaQuery hook
 import useMediaQuery from '@mui/material/useMediaQuery';
-vi.mock('@mui/material/useMediaQuery', () => vi.fn());
+import appTheme from '../../../../../theme';
+vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn() }));
 
 // Test helpers
-const theme = createTheme();
+const theme = appTheme;
 
 const mockTutorialChoices = {
   CM2: {

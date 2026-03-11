@@ -10,7 +10,7 @@ import {
    Grid,
    Paper,
 } from "@mui/material";
-import { md3 } from "../../theme/tokens/colors";
+import { md3 } from "../../theme/tokens/colors.js";
 
 // Wrapper for backward compatibility - palettesTheme had palettes.light.X structure
 const palettes = { light: md3 };

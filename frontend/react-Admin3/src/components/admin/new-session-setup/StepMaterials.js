@@ -3,9 +3,9 @@ import {
   Box, Button, Typography, Paper, Alert, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import sessionSetupService from '../../../services/sessionSetupService';
-import SessionProductsSummary from './SessionProductsSummary';
-import SessionBundlesSummary from './SessionBundlesSummary';
+import sessionSetupService from '../../../services/sessionSetupService.js';
+import SessionProductsSummary from './SessionProductsSummary.js';
+import SessionBundlesSummary from './SessionBundlesSummary.js';
 
 const StepMaterials = ({ sessionId, sessionCode, onComplete }) => {
   const [previousSession, setPreviousSession] = useState(null);

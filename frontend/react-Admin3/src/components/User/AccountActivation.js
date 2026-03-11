@@ -22,7 +22,7 @@ import {
   Lightbulb as LightbulbIcon,
   AddShoppingCart as AddShoppingCartIcon
 } from '@mui/icons-material';
-import authService from '../../services/authService';
+import authService from '../../services/authService.js';
 
 const AccountActivation = () => {
     const [searchParams] = useSearchParams();

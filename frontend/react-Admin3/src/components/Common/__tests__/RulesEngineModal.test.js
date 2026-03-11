@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import RulesEngineModal from '../RulesEngineModal';
+import RulesEngineModal from '../RulesEngineModal.js';
 
 describe('RulesEngineModal', () => {
   const mockOnClose = vi.fn();

@@ -2,11 +2,11 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/ValidatedPhoneInput.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ValidatedPhoneInput from '../ValidatedPhoneInput';
+import { ThemeProvider } from '@mui/material/styles';
+import ValidatedPhoneInput from '../ValidatedPhoneInput.js';
 
 // Mock phoneValidationService
-vi.mock('../../../services/phoneValidationService', () => ({
+vi.mock('../../../services/phoneValidationService.js', () => ({
   __esModule: true,
   default: {
     getCountryCodeFromName: vi.fn(),
@@ -15,9 +15,10 @@ vi.mock('../../../services/phoneValidationService', () => ({
   },
 }));
 
-import phoneValidationService from '../../../services/phoneValidationService';
+import phoneValidationService from '../../../services/phoneValidationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const mockCountries = [
   { name: 'United Kingdom', phone_code: '+44', iso_code: 'GB' },

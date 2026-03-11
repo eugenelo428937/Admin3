@@ -11,8 +11,8 @@ import { vi } from 'vitest';
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, mockProductsApi } from '../../../test-utils/testHelpers';
-import FilterPanel from '../FilterPanel';
+import { renderWithProviders, mockProductsApi } from '../../../test-utils/testHelpers.js';
+import FilterPanel from '../FilterPanel.js';
 
 // Mock scrollIntoView (not natively supported in jsdom)
 beforeEach(() => {

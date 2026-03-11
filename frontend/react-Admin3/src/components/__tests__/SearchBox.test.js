@@ -14,23 +14,27 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchBox from '../SearchBox';
-import filtersReducer from '../../store/slices/filtersSlice';
+import SearchBox from '../SearchBox.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import searchService from '../../services/searchService.js';
 
 // Mock searchService to avoid API calls during tests
-vi.mock('../../services/searchService', () => ({
-  getDefaultSearchData: vi.fn(() => Promise.resolve({
-    suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
-    suggested_products: [],
-    search_info: { query: '', type: 'default' },
-    total_count: 0
-  })),
-  fuzzySearch: vi.fn((query) => Promise.resolve({
-    suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
-    suggested_products: [],
-    search_info: { query, type: 'fuzzy' },
-    total_count: 0
-  }))
+vi.mock('../../services/searchService.js', () => ({
+  __esModule: true,
+  default: {
+    getDefaultSearchData: vi.fn(() => Promise.resolve({
+      suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
+      suggested_products: [],
+      search_info: { query: '', type: 'default' },
+      total_count: 0
+    })),
+    fuzzySearch: vi.fn((query) => Promise.resolve({
+      suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
+      suggested_products: [],
+      search_info: { query, type: 'fuzzy' },
+      total_count: 0
+    }))
+  },
 }));
 
 /**
@@ -228,7 +232,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
   test('T006: does not call API for queries shorter than 3 characters', async () => {
     // ARRANGE
     const mockOnSearchResults = vi.fn();
-    const searchService = require('../../services/searchService');
+    // searchService imported at top level
     searchService.fuzzySearch.mockClear();
 
     renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
@@ -257,7 +261,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
   test('T007: handles search API error gracefully', async () => {
     // ARRANGE: Mock API error
     const mockOnSearchResults = vi.fn();
-    const searchService = require('../../services/searchService');
+    // searchService imported at top level
     searchService.fuzzySearch.mockRejectedValueOnce(new Error('Network error'));
 
     renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
@@ -289,7 +293,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
     // ARRANGE
     const mockOnShowMatchingProducts = vi.fn();
     const mockOnSearchResults = vi.fn();
-    const searchService = require('../../services/searchService');
+    // searchService imported at top level
     searchService.fuzzySearch.mockResolvedValueOnce({
       suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
       suggested_products: [{ id: 1, name: 'Test Product' }],
@@ -369,7 +373,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
   test('T012: reloads search results on mount when query already exists in Redux', async () => {
     // ARRANGE
     const mockOnSearchResults = vi.fn();
-    const searchService = require('../../services/searchService');
+    // searchService imported at top level
     searchService.fuzzySearch.mockClear();
     searchService.fuzzySearch.mockResolvedValueOnce({
       suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },

@@ -15,26 +15,27 @@ import { vi } from 'vitest';
  */
 
 // Unmock cartService to test the actual implementation (global mock in setupTests.js)
-vi.unmock('../cartService');
+vi.unmock('../cartService.js');
 
 describe('cartService', () => {
   let cartService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset modules to get fresh instances
     vi.resetModules();
 
     // Mock config
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         cartUrl: 'http://test-api/cart',
+        apiBaseUrl: 'http://test-api',
       },
     }));
 
     // Mock httpService with controllable mocks
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -45,8 +46,8 @@ describe('cartService', () => {
     }));
 
     // Import after mocks are set up
-    cartService = require('../cartService').default;
-    httpService = require('../httpService').default;
+    { const _mod_cartService = await import('../cartService.js'); cartService = _mod_cartService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -501,7 +502,7 @@ describe('cartService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/cart/checkout/',
+        'http://test-api/api/orders/checkout/',
         {}
       );
     });
@@ -518,7 +519,7 @@ describe('cartService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/cart/checkout/',
+        'http://test-api/api/orders/checkout/',
         paymentData
       );
     });
@@ -544,7 +545,7 @@ describe('cartService', () => {
       const result = await cartService.fetchOrders();
 
       expect(result).toEqual(mockOrdersResponse);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/cart/orders/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/api/orders/');
     });
 
     test('should handle empty orders list', async () => {

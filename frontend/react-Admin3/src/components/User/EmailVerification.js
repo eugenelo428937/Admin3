@@ -21,8 +21,8 @@ import {
   Refresh as RefreshIcon,
   Lightbulb as LightbulbIcon
 } from "@mui/icons-material";
-import authService from "../../services/authService";
-import logger from "../../services/loggerService";
+import authService from "../../services/authService.js";
+import logger from "../../services/loggerService.js";
 
 const EmailVerification = () => {
     const [searchParams] = useSearchParams();

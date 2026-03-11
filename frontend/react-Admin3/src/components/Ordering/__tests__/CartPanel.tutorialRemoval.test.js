@@ -1,8 +1,11 @@
 import { vi } from 'vitest';
 // Mock httpService before importing anything else
-vi.mock('../../../services/httpService', () => ({
-  get: vi.fn(),
-  post: vi.fn(),
+vi.mock('../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
 }));
 
 // Define mockNavigate before the mock
@@ -10,7 +13,7 @@ const mockNavigate = vi.fn();
 
 // Mock react-router-dom before importing
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
   BrowserRouter: ({ children }) => children,
   Link: ({ children }) => children,
   useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
@@ -18,12 +21,12 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth before importing
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: vi.fn()
 }));
 
 // Mock cartService before importing
-vi.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(),
@@ -39,7 +42,7 @@ const mockClearCart = vi.fn();
 let mockCartItems = [];
 let mockCartData = { fees: [], items: [] };
 
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: mockCartItems,
     cartData: mockCartData,
@@ -52,7 +55,7 @@ vi.mock('../../../contexts/CartContext', () => ({
 const mockRestoreChoicesToDraft = vi.fn();
 const mockRemoveAllChoices = vi.fn();
 
-vi.mock('../../../contexts/TutorialChoiceContext', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices,
     restoreChoicesToDraft: mockRestoreChoicesToDraft,
@@ -62,15 +65,15 @@ vi.mock('../../../contexts/TutorialChoiceContext', () => ({
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import CartPanel from '../CartPanel';
-import { useAuth } from '../../../hooks/useAuth';
+import CartPanel from '../CartPanel.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('../../../utils/productCodeGenerator', () => ({
+vi.mock('../../../utils/productCodeGenerator.js', () => ({
   generateProductCode: vi.fn(() => 'MOCK-CODE')
 }));
-vi.mock('../../../utils/vatUtils', () => ({
+vi.mock('../../../utils/vatUtils.js', () => ({
   formatVatLabel: vi.fn(() => 'VAT')
 }));
 

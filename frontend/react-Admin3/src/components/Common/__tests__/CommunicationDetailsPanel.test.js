@@ -1,12 +1,14 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CommunicationDetailsPanel from '../CommunicationDetailsPanel';
+import { ThemeProvider } from '@mui/material/styles';
+import CommunicationDetailsPanel from '../CommunicationDetailsPanel.js';
 
+import appTheme from '../../../theme';
 // Mock the ValidatedPhoneInput component
-vi.mock('../../User/ValidatedPhoneInput', () => {
-  return function MockValidatedPhoneInput({ value, onChange, onValidationChange, error, ...props }) {
+vi.mock('../../User/ValidatedPhoneInput.js', () => ({
+  __esModule: true,
+  default: function MockValidatedPhoneInput({ value, onChange, onValidationChange, error, ...props }) {
     return (
       <input
         data-testid={props['data-testid']}
@@ -19,16 +21,16 @@ vi.mock('../../User/ValidatedPhoneInput', () => {
         style={{ borderColor: error ? 'red' : 'initial' }}
       />
     );
-  };
-});
+  },
+}));
 
 // Mock userService
-vi.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   updateUserProfile: vi.fn()
 }));
 
 // Mock config
-vi.mock('../../../config', () => ({
+vi.mock('../../../config.js', () => ({
   default: {
     apiBaseUrl: 'http://localhost:8000'
   }
@@ -36,7 +38,7 @@ vi.mock('../../../config', () => ({
 
 // Mock fetch for countries API will be set in beforeEach
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderWithTheme = (component) => {
   return render(
@@ -306,7 +308,7 @@ describe('CommunicationDetailsPanel', () => {
 
     test('calls onProfileUpdate callback when profile is successfully updated', async () => {
       const mockOnProfileUpdate = vi.fn();
-      const userService = require('../../../services/userService');
+      const userService = require('../../../services/userService.js');
       userService.updateUserProfile.mockResolvedValue({ status: 'success' });
 
       renderWithTheme(
@@ -332,7 +334,7 @@ describe('CommunicationDetailsPanel', () => {
     });
 
     test('handles profile update errors gracefully', async () => {
-      const userService = require('../../../services/userService');
+      const userService = require('../../../services/userService.js');
       userService.updateUserProfile.mockRejectedValue(new Error('Update failed'));
 
       renderWithTheme(
@@ -428,7 +430,7 @@ describe('CommunicationDetailsPanel', () => {
 
   describe.skip('Loading States (complex mocking)', () => {
     test('shows loading state during profile update', async () => {
-      const userService = require('../../../services/userService');
+      const userService = require('../../../services/userService.js');
       userService.updateUserProfile.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
       renderWithTheme(

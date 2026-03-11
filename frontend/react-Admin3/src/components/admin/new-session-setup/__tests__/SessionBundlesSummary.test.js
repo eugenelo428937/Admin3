@@ -1,20 +1,21 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import SessionBundlesSummary from '../SessionBundlesSummary';
+import SessionBundlesSummary from '../SessionBundlesSummary.js';
 
-vi.mock('../../../../services/storeBundleService', () => ({
+vi.mock('../../../../services/storeBundleService.js', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-import storeBundleService from '../../../../services/storeBundleService';
+import storeBundleService from '../../../../services/storeBundleService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithProviders = (ui) =>
   render(

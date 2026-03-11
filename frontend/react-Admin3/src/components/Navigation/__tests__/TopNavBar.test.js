@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 // src/components/Navigation/__tests__/TopNavBar.test.js
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('../../../services/httpService', () => ({
   },
 }));
 
-vi.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -33,45 +33,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TopNavBar from '../TopNavBar';
+import TopNavBar from '../TopNavBar.js';
+import appTheme from '../../../theme';
 
 // Create a theme with liftkit spacing and semantic navigation colors for tests
-const theme = createTheme({
-  liftkit: {
-    spacing: {
-      xs: 4,
-      xs2: 8,
-      xs3: 12,
-      sm: 16,
-      md: 24,
-      lg: 32,
-      xl: 48,
-      xxl: 64,
-    },
-  },
-  palette: {
-    liftkit: {
-      light: {
-        background: '#ffffff',
-      },
-    },
-    offwhite: {
-      '000': '#ffffff',
-      '001': '#f0edf1',
-    },
-    semantic: {
-      navigation: {
-        text: {
-          primary: '#ffffff',
-          secondary: '#f0edf1',
-        },
-      },
-    },
-  },
-});
+const theme = appTheme;
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -80,7 +49,7 @@ vi.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock the useCart hook
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
@@ -112,43 +81,46 @@ vi.mock('react-router-dom', () => {
   return {
     __esModule: true,
     Link: ({ children, to }) => React.createElement('a', { href: to }, children),
-    useNavigate: () => mockNavigate,
-    useLocation: () => mockLocation,
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => mockLocation),
   };
 });
 
 // Mock SearchModal
-vi.mock('../SearchModal', () => {
-  return function MockSearchModal({ open, onClose }) {
+vi.mock('../SearchModal.js', () => ({
+  __esModule: true,
+  default: function MockSearchModal({ open, onClose }) {
     return open ? (
       <div data-testid="search-modal">
         <button data-testid="close-search" onClick={onClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 // Mock AuthModal
-vi.mock('../AuthModal', () => {
-  return function MockAuthModal({ open, onClose }) {
+vi.mock('../AuthModal.js', () => ({
+  __esModule: true,
+  default: function MockAuthModal({ open, onClose }) {
     return open ? (
       <div data-testid="auth-modal">
         <button data-testid="close-auth" onClick={onClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 // Mock CartPanel
-vi.mock('../../Ordering/CartPanel', () => {
-  return function MockCartPanel({ show, handleClose }) {
+vi.mock('../../Ordering/CartPanel.js', () => ({
+  __esModule: true,
+  default: function MockCartPanel({ show, handleClose }) {
     return show ? (
       <div data-testid="cart-panel">
         <button data-testid="close-cart" onClick={handleClose}>Close</button>
       </div>
     ) : null;
-  };
-});
+  },
+}));
 
 describe('TopNavBar', () => {
   beforeEach(() => {
@@ -161,8 +133,8 @@ describe('TopNavBar', () => {
     test('should render navbar-top wrapper element', () => {
       const { container } = renderWithProviders(<TopNavBar />);
 
-      // TopNavBar should have a wrapper div with navbar-top class
-      const topNavWrapper = container.querySelector('.navbar-top');
+      // TopNavBar renders a Container as wrapper
+      const topNavWrapper = container.querySelector('.MuiContainer-root');
       expect(topNavWrapper).toBeInTheDocument();
     });
 

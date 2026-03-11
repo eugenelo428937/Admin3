@@ -31,8 +31,8 @@
  * @note All TextFields have marginBottom: spacing.sm by default
  */
 
-import { md3 } from '../tokens/colors';
-import { spacing } from '../tokens/spacing';
+import { md3 } from '../tokens/colors.js';
+import { spacing } from '../tokens/spacing.js';
 
 export const inputOverrides = {
   MuiTextField: {

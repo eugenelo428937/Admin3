@@ -6,18 +6,18 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import NavbarBrand from '../NavbarBrand';
+import NavbarBrand from '../NavbarBrand.js';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock image require
-vi.mock('../../../assets/ActEdlogo.png', () => 'test-logo.png', { virtual: true });
-vi.mock('../../../assets/ActEdlogo-S.png', () => 'test-logo-small.png', { virtual: true });
+vi.mock('../../../assets/ActEdlogo.png', () => ({ default: 'test-logo.png' }));
+vi.mock('../../../assets/ActEdlogo-S.png', () => ({ default: 'test-logo-small.png' }));
 
 describe('NavbarBrand', () => {
   beforeEach(() => {

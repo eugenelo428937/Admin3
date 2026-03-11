@@ -1,6 +1,6 @@
-import httpService from "./httpService";
-import config from "../config";
-import { parsePaginatedResponse } from "./paginationHelper";
+import httpService from "./httpService.js";
+import config from "../config.js";
+import { parsePaginatedResponse } from "./paginationHelper.js";
 
 const API_URL = `${config.apiBaseUrl}/api/store/products`;
 const ADMIN_API_URL = `${config.apiBaseUrl}/api/store/admin-products`;

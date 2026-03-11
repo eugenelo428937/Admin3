@@ -20,7 +20,7 @@ import {
     useMediaQuery
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import MaterialProductCard from './ProductCard/MaterialProductCard';
+import MaterialProductCard from './ProductCard/MaterialProductCard.js';
 
 // Memoized ProductGrid to prevent unnecessary re-renders
 const ProductGrid = React.memo(({

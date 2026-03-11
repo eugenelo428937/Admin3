@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { Computer, AddShoppingCart, InfoOutline } from "@mui/icons-material";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 
 const OnlineClassroomProductCard = ({
    producttype = "online-classroom",

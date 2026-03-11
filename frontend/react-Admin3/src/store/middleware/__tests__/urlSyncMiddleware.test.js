@@ -18,8 +18,8 @@ import filtersReducer, {
   setModesOfDelivery,
   setSearchQuery,
   clearAllFilters,
-} from '../../slices/filtersSlice';
-import { urlSyncMiddleware, parseUrlToFilters } from '../urlSyncMiddleware';
+} from '../../slices/filtersSlice.js';
+import { urlSyncMiddleware, parseUrlToFilters } from '../urlSyncMiddleware.js';
 
 // Mock window.history for testing
 const mockReplaceState = vi.fn();

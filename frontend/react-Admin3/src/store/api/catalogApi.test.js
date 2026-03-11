@@ -7,7 +7,7 @@ import { vi } from 'vitest';
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import { catalogApi } from './catalogApi';
+import { catalogApi } from './catalogApi.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();

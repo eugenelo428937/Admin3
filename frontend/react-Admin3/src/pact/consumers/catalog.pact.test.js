@@ -10,7 +10,7 @@
  * cannot be verified by the Pact verifier. Those are covered by
  * integration tests.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -19,7 +19,7 @@ const {
   boolean,
   regex,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Catalog Service - Pact Consumer Tests', () => {

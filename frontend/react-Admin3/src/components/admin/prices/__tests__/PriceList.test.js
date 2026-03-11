@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/prices/__tests__/PriceList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminPriceList from '../PriceList';
+import AdminPriceList from '../PriceList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock priceService
-vi.mock('../../../../services/priceService', () => ({
+vi.mock('../../../../services/priceService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,9 +24,10 @@ vi.mock('../../../../services/priceService', () => ({
   },
 }));
 
-import priceService from '../../../../services/priceService';
+import priceService from '../../../../services/priceService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockPrices = [
   {

@@ -1,5 +1,5 @@
 // Semantic Spacing Tokens
-import tokens from '../tokens'
+import tokens from '../tokens/index.js'
 
 /**
  * Semantic spacing tokens for consistent component spacing.

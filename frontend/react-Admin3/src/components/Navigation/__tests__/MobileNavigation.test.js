@@ -6,22 +6,23 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MobileNavigation from '../MobileNavigation';
+import { ThemeProvider } from '@mui/material/styles';
+import MobileNavigation from '../MobileNavigation.js';
 
+import appTheme from '../../../theme';
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
   NavLink: ({ children, to, onClick, className }) => (
     <a href={to} onClick={onClick} className={className}>{children}</a>
   ),
 }));
 
 // Mock useAuth hook
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isSuperuser: false,
     isApprentice: false,
@@ -32,13 +33,13 @@ vi.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock useCart context
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartCount: 3,
   }),
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('MobileNavigation', () => {
   const mockOnClose = vi.fn();

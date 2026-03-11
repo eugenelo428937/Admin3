@@ -8,9 +8,9 @@ import {
   Box
 } from '@mui/material';
 import { LocationOn, Receipt } from '@mui/icons-material';
-import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
-import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel';
-import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert';
+import AddressSelectionPanel from '../../Address/AddressSelectionPanel.js';
+import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel.js';
+import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert.js';
 
 const CartReviewStep = ({
   cartItems,

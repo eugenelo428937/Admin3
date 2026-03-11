@@ -19,11 +19,11 @@ import {
     useTheme,
     useMediaQuery
 } from '@mui/material';
-import { useCart } from '../../contexts/CartContext';
-import useProductsSearch from '../../hooks/useProductsSearch';
-import useProductCardHelpers from '../../hooks/useProductCardHelpers';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
-import rulesEngineService from '../../services/rulesEngineService';
+import { useCart } from '../../contexts/CartContext.js';
+import useProductsSearch from '../../hooks/useProductsSearch.js';
+import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
+import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';
+import rulesEngineService from '../../services/rulesEngineService.js';
 
 // Redux imports
 import {
@@ -42,16 +42,16 @@ import {
     resetFilters,
     setCurrentPage,
     clearError
-} from '../../store/slices/filtersSlice';
-import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware';
+} from '../../store/slices/filtersSlice.js';
+import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware.js';
 
 // Component imports
-import FilterPanel from './FilterPanel';
-import ActiveFilters from './ActiveFilters';
-import ProductGrid from './ProductGrid';
-import SearchBox from '../SearchBox';
-import FilterDebugger from './FilterDebugger';
-import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
+import FilterPanel from './FilterPanel.js';
+import ActiveFilters from './ActiveFilters.js';
+import ProductGrid from './ProductGrid.js';
+import SearchBox from '../SearchBox.js';
+import FilterDebugger from './FilterDebugger.js';
+import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert.js';
 
 const ProductList = React.memo(() => {
     const theme = useTheme();
@@ -256,7 +256,7 @@ const ProductList = React.memo(() => {
                 // Handle any processing errors
                 if (!result.success && result.error) {
                     console.error('🚨 Rules processing error:', result.error);
-                    if (import.meta.env.DEV) {
+                    if (import.meta.env?.DEV) {
                         // Show error in development
                         setRulesMessages([{
                             title: 'Development Error',
@@ -274,7 +274,7 @@ const ProductList = React.memo(() => {
                     console.error('🚨 Schema validation failed for rules engine:', err.details);
                     console.error('🔍 Schema errors:', err.schemaErrors);
                     // For development, show schema validation errors to help debugging
-                    if (import.meta.env.DEV) {
+                    if (import.meta.env?.DEV) {
                         setRulesMessages([{
                             title: 'Development Error',
                             message: `Schema validation failed - ${err.details}`,
@@ -363,7 +363,7 @@ const ProductList = React.memo(() => {
 						/>
 
 							{/* Debug Information (Development Only) */}
-							{/* {import.meta.env.DEV && (
+							{/* {import.meta.env?.DEV && (
                             <FilterDebugger 
                                 filters={filters}
                                 searchQuery={searchQuery}

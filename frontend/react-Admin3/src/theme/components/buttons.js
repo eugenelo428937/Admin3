@@ -22,11 +22,11 @@
  */
 
 import { alpha, darken } from '@mui/material/styles';
-import { spacing } from '../tokens/spacing';
-import { md3, staticColors } from '../tokens/colors';
-import { shadows } from '../tokens/shadows';
-import { borderRadius } from '../tokens/borderRadius';
-import { fontSizes, lineHeights, fontWeights, letterSpacings } from '../tokens/typography';
+import { spacing } from '../tokens/spacing.js';
+import { md3, staticColors } from '../tokens/colors.js';
+import { shadows } from '../tokens/shadows.js';
+import { borderRadius } from '../tokens/borderRadius.js';
+import { fontSizes, lineHeights, fontWeights, letterSpacings } from '../tokens/typography.js';
 import { color } from '@mui/system';
 
 /**

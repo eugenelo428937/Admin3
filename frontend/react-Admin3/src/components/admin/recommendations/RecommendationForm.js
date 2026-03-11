@@ -5,9 +5,9 @@ import {
   FormControl, FormLabel, Select, MenuItem, CircularProgress
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import recommendationService from '../../../services/recommendationService';
-import productProductVariationService from '../../../services/productProductVariationService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import recommendationService from '../../../services/recommendationService.js';
+import productProductVariationService from '../../../services/productProductVariationService.js';
 
 const AdminRecommendationForm = () => {
     const { isSuperuser } = useAuth();

@@ -6,10 +6,11 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import NavigationMenu from '../NavigationMenu';
+import NavigationMenu from '../NavigationMenu.js';
 
+import appTheme from '../../../theme';
 expect.extend(toHaveNoViolations);
 
 // Mock react-router-dom
@@ -34,68 +35,14 @@ const mockUseAuth = {
   isStudyPlus: false,
 };
 
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => mockUseAuth,
 }));
 
-// Mock useTheme hook with complete liftkit theme
-const mockTheme = {
-  palette: {
-    offwhite: {
-      '000': '#fdfdfd',
-      '001': '#f0edf1'
-    },
-    bpp: {
-      granite: {
-        '000': '#ffffff',
-        '010': '#f1f1f1',
-        '020': '#d9d9d9',
-        '030': '#bababa',
-        '040': '#9e9e9e',
-        '050': '#848484',
-        '060': '#6a6a6a',
-        '070': '#525252',
-        '080': '#3b3b3a',
-        '090': '#272524',
-        '100': '#111110'
-      }
-    }
-  },
-  shadows: Array(25).fill('none').map((_, i) => i === 8 ? '0px 5px 5px -3px rgba(0,0,0,0.2)' : 'none'),
-  breakpoints: {
-    down: () => '@media (max-width:600px)',
-    up: () => '@media (min-width:600px)',
-    values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 }
-  },
-  liftkit: {
-    spacing: {
-      xs3: '0.3rem',
-      xs2: '0.38rem',
-      xs: '0.49rem',
-      sm: '0.62rem',
-      md: '1rem',
-      lg: '1.62rem',
-      xl: '2.62rem',
-      xl15: '3.33rem',
-      xl2: '4.24rem',
-      xl3: '6.85rem'  // Extended for MegaMenuPopover
-    },
-    typography: {
-      body: { fontSize: '1em', fontWeight: 400 }
-    }
-  }
-};
-
-vi.mock('@mui/material', async () => {
-  const actual = await vi.importActual('@mui/material');
-  return {
-    ...actual,
-    useTheme: () => mockTheme,
-  };
-});
+// Theme is provided by the global ThemeProvider wrapper in setupTests.js
 
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('NavigationMenu', () => {
   const mockHandleSubjectClick = vi.fn();
@@ -526,7 +473,7 @@ describe('NavigationMenu', () => {
       
       // Check expanded state - MUI Button sets aria-expanded when menu opens
       expect(adminButton).toHaveAttribute('aria-expanded', 'true');
-      expect(adminButton).toHaveAttribute('aria-controls', 'admin-menu');
+      expect(adminButton).toHaveAttribute('aria-controls', 'admin-menu-popover');
     });
     
     test('MegaMenuPopover for tutorials has proper ARIA attributes', () => {

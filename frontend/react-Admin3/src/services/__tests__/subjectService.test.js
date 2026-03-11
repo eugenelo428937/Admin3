@@ -18,18 +18,18 @@ describe('subjectService', () => {
   let subjectService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         catalogUrl: 'http://test-api/catalog',
       },
     }));
 
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -39,8 +39,8 @@ describe('subjectService', () => {
       },
     }));
 
-    subjectService = require('../subjectService').default;
-    httpService = require('../httpService').default;
+    { const _mod_subjectService = await import('../subjectService.js'); subjectService = _mod_subjectService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {

@@ -6,11 +6,12 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import VATBreakdown from '../VATBreakdown';
+import { ThemeProvider } from '@mui/material/styles';
+import VATBreakdown from '../VATBreakdown.js';
 
+import appTheme from '../../../theme';
 // Mock vatUtils
-vi.mock('../../../utils/vatUtils', () => ({
+vi.mock('../../../utils/vatUtils.js', () => ({
   formatVatLabel: (rate) => {
     if (rate === 0 || rate === null || rate === undefined) return 'VAT (0%)';
     return `VAT (${rate}%)`;
@@ -21,7 +22,7 @@ vi.mock('../../../utils/vatUtils', () => ({
   }
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('VATBreakdown', () => {
   const defaultVatCalculations = {

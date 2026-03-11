@@ -5,10 +5,11 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import JsonContentRenderer from '../JsonContentRenderer';
+import { ThemeProvider } from '@mui/material/styles';
+import JsonContentRenderer from '../JsonContentRenderer.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 describe('JsonContentRenderer', () => {
   const renderComponent = (content, className) => {

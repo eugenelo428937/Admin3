@@ -14,9 +14,9 @@
  */
 
 import { createSlice } from '@reduxjs/toolkit';
-import FilterValidator from '../filters/filterValidator';
-import { baseFiltersInitialState, baseFiltersReducers } from './baseFilters.slice';
-import { navigationFiltersReducers } from './navigationFilters.slice';
+import FilterValidator from '../filters/filterValidator.js';
+import { baseFiltersInitialState, baseFiltersReducers } from './baseFilters.slice.js';
+import { navigationFiltersReducers } from './navigationFilters.slice.js';
 
 /**
  * Create the main filters slice
@@ -199,7 +199,7 @@ export {
   selectHasActiveFilters,
   selectActiveFilterCount,
   selectActiveFilterSummary,
-} from './filterSelectors';
+} from './filterSelectors.js';
 
 // ========================================
 // Export Reducer

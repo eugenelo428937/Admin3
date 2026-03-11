@@ -6,20 +6,22 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import SearchModal from '../SearchModal';
+import { ThemeProvider } from '@mui/material/styles';
+import SearchModal from '../SearchModal.js';
 
+import appTheme from '../../../theme';
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
 }));
 
 // Mock SearchBox component
-vi.mock('../../SearchBox', () => {
-  return function MockSearchBox({ onSearchResults, onShowMatchingProducts, autoFocus, placeholder }) {
+vi.mock('../../SearchBox.js', () => ({
+  __esModule: true,
+  default: function MockSearchBox({ onSearchResults, onShowMatchingProducts, autoFocus, placeholder }) {
     return (
       <div data-testid="search-box">
         <input
@@ -37,12 +39,13 @@ vi.mock('../../SearchBox', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock SearchResults component
-vi.mock('../../SearchResults', () => {
-  return function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
+vi.mock('../../SearchResults.js', () => ({
+  __esModule: true,
+  default: function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
     return (
       <div data-testid="search-results">
         {loading && <div data-testid="loading">Loading...</div>}
@@ -59,10 +62,10 @@ vi.mock('../../SearchResults', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('SearchModal', () => {
   const mockOnClose = vi.fn();

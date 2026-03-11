@@ -6,7 +6,7 @@ import {
    Chip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import MaterialProductCard from "./MaterialProductCard";
+import MaterialProductCard from "./MaterialProductCard.js";
 
 const BUTTON_BEHAVIORS = [
    {

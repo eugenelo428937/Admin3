@@ -20,7 +20,7 @@ describe('tutorialService', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset modules to get fresh instances
     vi.resetModules();
 
@@ -28,7 +28,7 @@ describe('tutorialService', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         tutorialUrl: 'http://test-api/tutorials',
@@ -38,7 +38,7 @@ describe('tutorialService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -46,8 +46,8 @@ describe('tutorialService', () => {
     }));
 
     // Import after mocks are set up
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -462,27 +462,27 @@ describe('tutorialService URL fallback', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config without tutorialUrl
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         apiBaseUrl: 'http://fallback-api',
       },
     }));
 
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -501,27 +501,27 @@ describe('tutorialService apiUrl fallback', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config with only apiUrl
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         apiUrl: 'http://apiurl-fallback',
       },
     }));
 
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -540,13 +540,13 @@ describe('tutorialService empty config', () => {
   let tutorialService;
   let httpService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config with no URL values (empty strings are falsy)
     // Note: The fallback logic still produces '/tutorials' as URL
-    vi.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         tutorialUrl: '',
@@ -555,15 +555,15 @@ describe('tutorialService empty config', () => {
       },
     }));
 
-    vi.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    tutorialService = require('../tutorialService').default;
-    httpService = require('../httpService').default;
+    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {

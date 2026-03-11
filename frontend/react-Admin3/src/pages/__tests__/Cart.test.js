@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme';
+import theme from '../../theme/theme.js';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();
@@ -15,10 +15,10 @@ const mockNavigate = vi.fn();
 // Override useNavigate from the global mock in setupTests.js
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/cart', search: '', hash: '', state: null }),
-  useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/cart', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
+  useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -34,7 +34,7 @@ const mockFetchCart = vi.fn();
 const mockUpdateItem = vi.fn();
 const mockRemoveItem = vi.fn();
 
-vi.mock('../../services/cartService', () => ({
+vi.mock('../../services/cartService.js', () => ({
   __esModule: true,
   default: {
     fetchCart: vi.fn(),
@@ -44,11 +44,12 @@ vi.mock('../../services/cartService', () => ({
 }));
 
 // Import the mocked service to get references to the mock functions
-import cartService from '../../services/cartService';
+import cartService from '../../services/cartService.js';
 
 // Mock Cart subcomponents
-vi.mock('../../components/Cart/CartItemWithVAT', () => {
-  return function MockCartItemWithVAT({ item, onQuantityChange, onRemove }) {
+vi.mock('../../components/Cart/CartItemWithVAT.js', () => ({
+  __esModule: true,
+  default: function MockCartItemWithVAT({ item, onQuantityChange, onRemove }) {
     return (
       <div data-testid={`cart-item-${item.id}`}>
         <span>{item.name}</span>
@@ -67,11 +68,12 @@ vi.mock('../../components/Cart/CartItemWithVAT', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-vi.mock('../../components/Cart/CartTotals', () => {
-  return function MockCartTotals({ totals }) {
+vi.mock('../../components/Cart/CartTotals.js', () => ({
+  __esModule: true,
+  default: function MockCartTotals({ totals }) {
     return (
       <div data-testid="cart-totals">
         <span>Subtotal: £{totals?.subtotal}</span>
@@ -79,11 +81,12 @@ vi.mock('../../components/Cart/CartTotals', () => {
         <span>Total: £{totals?.total}</span>
       </div>
     );
-  };
-});
+  },
+}));
 
-vi.mock('../../components/Cart/CartVATError', () => {
-  return function MockCartVATError({ error, errorMessage, onRetry }) {
+vi.mock('../../components/Cart/CartVATError.js', () => ({
+  __esModule: true,
+  default: function MockCartVATError({ error, errorMessage, onRetry }) {
     return (
       <div data-testid="vat-error">
         <span>{errorMessage || error}</span>
@@ -92,10 +95,10 @@ vi.mock('../../components/Cart/CartVATError', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-import Cart from '../Cart';
+import Cart from '../Cart.js';
 
 describe('Cart Page', () => {
   const mockCartData = {

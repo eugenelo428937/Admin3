@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTheme } from "@mui/material/styles";
-import { formatPrice } from '../../../utils/priceFormatter';
-import { formatVatLabel } from '../../../utils/vatUtils';
-import { useCart } from "../../../contexts/CartContext";
+import { formatPrice } from '../../../utils/priceFormatter.js';
+import { formatVatLabel } from '../../../utils/vatUtils.js';
+import { useCart } from "../../../contexts/CartContext.js";
 import {
 	Alert,
 	AlertTitle,
@@ -41,7 +41,7 @@ import {
 	RuleOutlined,
 	CalendarMonthOutlined,
 } from "@mui/icons-material";
-import productService from "../../../services/productService";
+import productService from "../../../services/productService.js";
 
 const MarkingProductCard = React.memo(
 	({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {

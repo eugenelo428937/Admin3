@@ -17,8 +17,8 @@ import {
   useTheme
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { generateProductCode } from '../../../utils/productCodeGenerator';
-import { formatVatLabel, getBaseVatRate, getRegionDisplayName } from '../../../utils/vatUtils';
+import { generateProductCode } from '../../../utils/productCodeGenerator.js';
+import { formatVatLabel, getBaseVatRate, getRegionDisplayName } from '../../../utils/vatUtils.js';
 
 const CartSummaryPanel = ({
   cartItems = [],

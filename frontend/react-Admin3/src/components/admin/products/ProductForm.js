@@ -1,12 +1,12 @@
 // src/components/admin/products/ProductForm.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 import {
   TextField, Button, Container, Alert, Box, Typography,
   FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
 } from "@mui/material";
-import catalogProductService from "../../../services/catalogProductService";
+import catalogProductService from "../../../services/catalogProductService.js";
 
 const AdminProductForm = () => {
     const { isSuperuser } = useAuth();

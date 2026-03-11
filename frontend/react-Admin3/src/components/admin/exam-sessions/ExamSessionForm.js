@@ -5,8 +5,8 @@ import {
   FormControl, FormLabel
 } from '@mui/material';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import examSessionService from "../../../services/examSessionService";
+import { useAuth } from '../../../hooks/useAuth.js';
+import examSessionService from "../../../services/examSessionService.js";
 import moment from 'moment';
 
 const AdminExamSessionForm = () => {

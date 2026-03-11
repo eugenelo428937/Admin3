@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import { Button } from './Button.styled';
+import { Button } from './Button.styled.js';
 
 const TextButton = ({ size = 'medium', children, ...props }) => (
   <Button variant="text" size={size} {...props} disableFocusRipple={true}>

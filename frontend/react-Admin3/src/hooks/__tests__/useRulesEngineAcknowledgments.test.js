@@ -18,10 +18,10 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act } from '@testing-library/react';
-import useRulesEngineAcknowledgments from '../useRulesEngineAcknowledgments';
+import useRulesEngineAcknowledgments from '../useRulesEngineAcknowledgments.js';
 
 // Mock dependencies
-vi.mock('../../services/AcknowledgmentService', () => ({
+vi.mock('../../services/AcknowledgmentService.js', () => ({
   __esModule: true,
   default: {
     submitAcknowledgment: vi.fn(),
@@ -30,15 +30,15 @@ vi.mock('../../services/AcknowledgmentService', () => ({
   },
 }));
 
-vi.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils.js', () => ({
   __esModule: true,
   rulesEngineHelpers: {},
   executeAndProcessRules: vi.fn(),
   buildRulesContext: vi.fn(),
 }));
 
-import acknowledgmentService from '../../services/AcknowledgmentService';
-import { executeAndProcessRules } from '../../utils/rulesEngineUtils';
+import acknowledgmentService from '../../services/AcknowledgmentService.js';
+import { executeAndProcessRules } from '../../utils/rulesEngineUtils.js';
 
 describe('useRulesEngineAcknowledgments', () => {
   beforeEach(() => {

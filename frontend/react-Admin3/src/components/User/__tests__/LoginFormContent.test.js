@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 // Mock react-router-dom before importing
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
   BrowserRouter: ({ children }) => children
 }));
 
@@ -17,8 +17,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import LoginFormContent from '../LoginFormContent';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers';
+import LoginFormContent from '../LoginFormContent.js';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
+import appTheme from '../../../theme';
 
 describe('LoginFormContent', () => {
   const mockProps = {
@@ -32,19 +33,7 @@ describe('LoginFormContent', () => {
   };
 
   const renderWithTheme = (component) => {
-    const theme = createTheme({
-      liftkit: {
-        spacing: {
-          xs2: 8,
-          md: 16,
-        },
-      },
-      palette: {
-        secondary: {
-          main: '#1976d2',
-        },
-      },
-    });
+    const theme = appTheme;
     return render(
       <ThemeProvider theme={theme}>
         {component}

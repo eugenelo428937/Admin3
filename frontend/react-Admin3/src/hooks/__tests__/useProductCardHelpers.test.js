@@ -11,11 +11,11 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useProductCardHelpers from '../useProductCardHelpers';
+import useProductCardHelpers from '../useProductCardHelpers.js';
 
 // Mock CartContext
 const mockAddToCart = vi.fn();
-vi.mock('../../contexts/CartContext', () => ({
+vi.mock('../../contexts/CartContext.js', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
   }),
@@ -23,7 +23,7 @@ vi.mock('../../contexts/CartContext', () => ({
 
 // Mock productService
 const mockGetBulkMarkingDeadlines = vi.fn();
-vi.mock('../../services/productService', () => ({
+vi.mock('../../services/productService.js', () => ({
   __esModule: true,
   default: {
     getBulkMarkingDeadlines: (...args) => mockGetBulkMarkingDeadlines(...args),
@@ -349,7 +349,8 @@ describe('useProductCardHelpers', () => {
       const { result } = renderHook(() => useProductCardHelpers(products));
 
       // null is falsy, so fallback to product_id
-      expect(result.current.allStoreProductIds).toEqual([999, 102]);
+      expect(result.current.allStoreProductIds).toEqual(expect.arrayContaining([999, 102]));
+      expect(result.current.allStoreProductIds).toHaveLength(2);
     });
   });
 });

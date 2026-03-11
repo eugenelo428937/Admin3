@@ -6,7 +6,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import BaseProductCard from '../BaseProductCard';
+import BaseProductCard from '../BaseProductCard.js';
+import appTheme from '../../../theme';
 
 // Create a theme with ProductCard variants for testing
 const createTestTheme = (productCardConfig = {}) => {

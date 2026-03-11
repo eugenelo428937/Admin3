@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import PropTypes from "prop-types";
-import addressMetadataService from "../../services/addressMetadataService";
+import addressMetadataService from "../../services/addressMetadataService.js";
 import { useTheme } from "@mui/material/styles";
 const DynamicAddressForm = ({
 	country,

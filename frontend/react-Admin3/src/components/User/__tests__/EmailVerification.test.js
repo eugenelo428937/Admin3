@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/EmailVerification.test.js
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import EmailVerification from '../EmailVerification';
+import { ThemeProvider } from '@mui/material/styles';
+import EmailVerification from '../EmailVerification.js';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 let mockSearchParams = new URLSearchParams();
 
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-  useSearchParams: () => [mockSearchParams],
+  useNavigate: vi.fn(() => mockNavigate),
+  useSearchParams: vi.fn(() => [mockSearchParams]),
 }));
 
 // Mock authService
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     verifyEmailChange: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../services/authService', () => ({
 }));
 
 // Mock loggerService
-vi.mock('../../../services/loggerService', () => ({
+vi.mock('../../../services/loggerService.js', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -32,9 +32,10 @@ vi.mock('../../../services/loggerService', () => ({
   },
 }));
 
-import authService from '../../../services/authService';
+import authService from '../../../services/authService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const renderComponent = () => {
   return render(

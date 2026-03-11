@@ -16,8 +16,8 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import filtersReducer from "../../store/slices/filtersSlice";
-import ActiveFilters from "./ActiveFilters";
+import filtersReducer from "../../store/slices/filtersSlice.js";
+import ActiveFilters from "./ActiveFilters.js";
 
 // Mock Material-UI's useMediaQuery
 vi.mock("@mui/material/useMediaQuery");
@@ -102,14 +102,14 @@ const mockFilterCounts = {
 };
 
 describe("ActiveFilters Component", () => {
-   beforeEach(() => {
+   beforeEach(async () => {
       vi.clearAllMocks();
       // Mock desktop view by default
       require("@mui/material/useMediaQuery").default = vi.fn(() => false);
    });
 
    describe("No Active Filters State", () => {
-      test("renders nothing when no filters are active", () => {
+      test("renders nothing when no filters are active", async () => {
          const initialState = {
             subjects: [],
             categories: [],
@@ -126,7 +126,7 @@ describe("ActiveFilters Component", () => {
          expect(container).toBeEmptyDOMElement();
       });
 
-      test("does not render in compact variant when no filters are active", () => {
+      test("does not render in compact variant when no filters are active", async () => {
          const initialState = {
             subjects: [],
             categories: [],
@@ -142,7 +142,7 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Default Variant Rendering", () => {
-      test("renders active filter chips with correct labels", () => {
+      test("renders active filter chips with correct labels", async () => {
          const initialState = {
             subjects: ["CM2", "SA1"],
             categories: ["Materials"],
@@ -157,7 +157,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("Category: Materials")).toBeInTheDocument();
       });
 
-      test("shows correct active filter count", () => {
+      test("shows correct active filter count", async () => {
          const initialState = {
             subjects: ["CM2", "SA1"],
             categories: ["Materials"],
@@ -170,7 +170,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("3 Active Filters")).toBeInTheDocument();
       });
 
-      test("shows singular form when only one filter is active", () => {
+      test("shows singular form when only one filter is active", async () => {
          const initialState = {
             subjects: ["CM2"],
          };
@@ -182,7 +182,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("1 Active Filter")).toBeInTheDocument();
       });
 
-      test("renders Clear All button when showClearAll is true", () => {
+      test("renders Clear All button when showClearAll is true", async () => {
          const initialState = {
             subjects: ["CM2"],
             categories: ["Materials"],
@@ -197,7 +197,7 @@ describe("ActiveFilters Component", () => {
          ).toBeInTheDocument();
       });
 
-      test("does not render Clear All button when showClearAll is false", () => {
+      test("does not render Clear All button when showClearAll is false", async () => {
          const initialState = {
             subjects: ["CM2"],
             categories: ["Materials"],
@@ -214,7 +214,7 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Compact Variant", () => {
-      test("renders compact variant with filter count", () => {
+      test("renders compact variant with filter count", async () => {
          const initialState = {
             subjects: ["CM2", "SA1"],
             categories: ["Materials"],
@@ -228,7 +228,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.queryByText("Subject: CM2")).not.toBeInTheDocument(); // No chips in compact mode
       });
 
-      test("shows singular form in compact variant", () => {
+      test("shows singular form in compact variant", async () => {
          const initialState = {
             subjects: ["CM2"],
          };
@@ -240,7 +240,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("1 filter active")).toBeInTheDocument();
       });
 
-      test("renders Clear button in compact variant when showClearAll is true", () => {
+      test("renders Clear button in compact variant when showClearAll is true", async () => {
          const initialState = {
             subjects: ["CM2"],
          };
@@ -257,7 +257,7 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Minimal Variant", () => {
-      test("renders minimal variant as a single chip", () => {
+      test("renders minimal variant as a single chip", async () => {
          const initialState = {
             subjects: ["CM2", "SA1"],
             categories: ["Materials"],
@@ -361,12 +361,12 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Mobile Responsiveness", () => {
-      beforeEach(() => {
+      beforeEach(async () => {
          // Mock mobile view
          require("@mui/material/useMediaQuery").default = vi.fn(() => true);
       });
       test.skip("shows shortened labels on mobile", () => {
-         test("shows shortened labels on mobile", () => {
+         test("shows shortened labels on mobile", async () => {
             const initialState = {
                subjects: ["CM2"],
                categories: ["Materials"],
@@ -382,7 +382,7 @@ describe("ActiveFilters Component", () => {
          });
       });
       test.skip("uses small chips on mobile", () => {
-         test("uses small chips on mobile", () => {
+         test("uses small chips on mobile", async () => {
             const initialState = {
                subjects: ["CM2"],
             };
@@ -395,7 +395,7 @@ describe("ActiveFilters Component", () => {
       });
    });
    describe("Filter Chip Limits", () => {
-      test("limits number of displayed chips and shows remaining count", () => {
+      test("limits number of displayed chips and shows remaining count", async () => {
          const initialState = {
             subjects: ["CM1", "CM2", "SA1", "SA2", "CB1", "CB2"],
             categories: ["Materials", "Bundle", "Tutorial"],
@@ -411,7 +411,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("+7 more")).toBeInTheDocument();
       });
 
-      test("does not show remaining count when all chips fit within limit", () => {
+      test("does not show remaining count when all chips fit within limit", async () => {
          const initialState = {
             subjects: ["CM2"],
             categories: ["Materials"],
@@ -427,7 +427,7 @@ describe("ActiveFilters Component", () => {
 
    describe("Display Labels", () => {
       test.skip("uses display labels from filterCounts when available", () => {
-         test("uses display labels from filterCounts when available", () => {
+         test("uses display labels from filterCounts when available", async () => {
             const initialState = {
                subjects: ["CM2"],
                filterCounts: {
@@ -444,7 +444,7 @@ describe("ActiveFilters Component", () => {
             ).toBeInTheDocument();
          });
       });
-      test("falls back to filter value when no display label is available", () => {
+      test("falls back to filter value when no display label is available", async () => {
          const initialState = {
             subjects: ["UNKNOWN_SUBJECT"],
          };
@@ -458,7 +458,7 @@ describe("ActiveFilters Component", () => {
    });
    test.skip("applies correct color for each filter type", () => {
       describe("Color Coding", () => {
-         test("applies correct color for each filter type", () => {
+         test("applies correct color for each filter type", async () => {
             const initialState = {
                subjects: ["CM2"],
                categories: ["Materials"],
@@ -484,7 +484,7 @@ describe("ActiveFilters Component", () => {
    });
    test.skip("has proper ARIA labels", () => {
       describe("Accessibility", () => {
-         test("has proper ARIA labels", () => {
+         test("has proper ARIA labels", async () => {
             const initialState = {
                subjects: ["CM2"],
                categories: ["Materials"],
@@ -514,7 +514,7 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Edge Cases", () => {
-      test("handles undefined filter values gracefully", () => {
+      test("handles undefined filter values gracefully", async () => {
          const initialState = {
             subjects: [null, undefined, ""],
             categories: ["Materials"],
@@ -528,7 +528,7 @@ describe("ActiveFilters Component", () => {
          expect(screen.getByText("Category: Materials")).toBeInTheDocument();
       });
 
-      test("handles empty filter arrays", () => {
+      test("handles empty filter arrays", async () => {
          const initialState = {
             subjects: [],
             categories: [],
@@ -544,7 +544,7 @@ describe("ActiveFilters Component", () => {
          expect(container).toBeEmptyDOMElement();
       });
 
-      test("handles very long filter names", () => {
+      test("handles very long filter names", async () => {
          const initialState = {
             subjects: [
                "Very_Long_Subject_Name_That_Should_Be_Handled_Gracefully",
@@ -558,7 +558,7 @@ describe("ActiveFilters Component", () => {
    });
 
    describe("Props Validation", () => {
-      test("uses default props when not provided", () => {
+      test("uses default props when not provided", async () => {
          const initialState = {
             subjects: ["CM2"],
          };
@@ -572,7 +572,7 @@ describe("ActiveFilters Component", () => {
          ).toBeInTheDocument();
       });
 
-      test("respects custom maxChipsToShow prop", () => {
+      test("respects custom maxChipsToShow prop", async () => {
          const initialState = {
             subjects: ["CM1", "CM2", "SA1"],
          };
@@ -589,10 +589,10 @@ describe("ActiveFilters Component", () => {
       // No beforeEach needed - use default FilterRegistry registration
       // Tests should work with the globally registered filters
 
-      test("uses FilterRegistry for filter colors instead of hardcoded FILTER_CONFIG", () => {
-         const {
+      test("uses FilterRegistry for filter colors instead of hardcoded FILTER_CONFIG", async () => {
+         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
             FilterRegistry,
-         } = require("../../store/filters/filterRegistry");
+         } = _reqmod_______store_filters_filterRegistry_js;
 
          const initialState = {
             subjects: ["CM2"],
@@ -617,7 +617,7 @@ describe("ActiveFilters Component", () => {
          expect(producttypeChip).toHaveClass("MuiChip-colorSuccess"); // From registry: color: 'success'
       });
 
-      test("uses FilterRegistry for filter labels instead of hardcoded FILTER_CONFIG", () => {
+      test("uses FilterRegistry for filter labels instead of hardcoded FILTER_CONFIG", async () => {
          const initialState = {
             subjects: ["CM2"],
             categories: ["Materials"],
@@ -634,10 +634,10 @@ describe("ActiveFilters Component", () => {
          ).toBeInTheDocument();
       });
       test.skip("automatically renders chips for new filter types added to registry", () => {
-         test("automatically renders chips for new filter types added to registry", () => {
-            const {
+         test("automatically renders chips for new filter types added to registry", async () => {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
                FilterRegistry,
-            } = require("../../store/filters/filterRegistry");
+            } = _reqmod_______store_filters_filterRegistry_js;
 
             // Register a new filter type dynamically
             FilterRegistry.register({
@@ -669,10 +669,10 @@ describe("ActiveFilters Component", () => {
          });
       });
       test.skip("uses FilterRegistry.getDisplayValue for custom value formatting", () => {
-         test("uses FilterRegistry.getDisplayValue for custom value formatting", () => {
-            const {
+         test("uses FilterRegistry.getDisplayValue for custom value formatting", async () => {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
                FilterRegistry,
-            } = require("../../store/filters/filterRegistry");
+            } = _reqmod_______store_filters_filterRegistry_js;
 
             // Register filter with custom getDisplayValue function
             FilterRegistry.register({
@@ -699,10 +699,10 @@ describe("ActiveFilters Component", () => {
          });
       });
       test.skip("renders filter chips in order specified by FilterRegistry.order", () => {
-         test("renders filter chips in order specified by FilterRegistry.order", () => {
-            const {
+         test("renders filter chips in order specified by FilterRegistry.order", async () => {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
                FilterRegistry,
-            } = require("../../store/filters/filterRegistry");
+            } = _reqmod_______store_filters_filterRegistry_js;
 
             const initialState = {
                subjects: ["CM2"], // order: 1
@@ -723,11 +723,11 @@ describe("ActiveFilters Component", () => {
             expect(chips[2]).toBe("Product Type: Core Study Material");
          });
       });
-      test("no hardcoded FILTER_CONFIG remains in component (AC6 - Story 1.11)", () => {
+      test("no hardcoded FILTER_CONFIG remains in component (AC6 - Story 1.11)", async () => {
          // This test verifies the core goal: eliminating hardcoded filter configs
-         const {
+         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
             FilterRegistry,
-         } = require("../../store/filters/filterRegistry");
+         } = _reqmod_______store_filters_filterRegistry_js;
 
          const initialState = {
             subjects: ["CM2", "SA1"],
@@ -765,9 +765,9 @@ describe("ActiveFilters Component", () => {
       test.skip("handles registry-based filter removal actions", async () => {
          test("handles registry-based filter removal actions", async () => {
             const user = userEvent.setup();
-            const {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
                FilterRegistry,
-            } = require("../../store/filters/filterRegistry");
+            } = _reqmod_______store_filters_filterRegistry_js;
 
             const initialState = {
                subjects: ["CM2"],

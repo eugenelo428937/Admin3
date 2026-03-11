@@ -5,8 +5,8 @@ import {
   Button, Container, Alert, Paper, Typography, Box, CircularProgress
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import productVariationService from '../../../services/productVariationService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import productVariationService from '../../../services/productVariationService.js';
 
 const AdminProductVariationList = () => {
     const { isSuperuser } = useAuth();

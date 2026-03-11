@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductList from '../ProductList';
+import AdminProductList from '../ProductList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock catalogProductService
-vi.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -25,8 +25,9 @@ vi.mock('../../../../services/catalogProductService', () => ({
 }));
 
 // Mock ProductTable
-vi.mock('../ProductTable', () => {
-  return function MockProductTable({ products, onDelete }) {
+vi.mock('../ProductTable.js', () => ({
+  __esModule: true,
+  default: function MockProductTable({ products, onDelete }) {
     return (
       <div data-testid="product-table">
         {products.map((product) => (
@@ -37,12 +38,13 @@ vi.mock('../ProductTable', () => {
         ))}
       </div>
     );
-  };
-});
+  },
+}));
 
-import catalogProductService from '../../../../services/catalogProductService';
+import catalogProductService from '../../../../services/catalogProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockProducts = [
   {

@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/ProductBundleList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductBundleList from '../ProductBundleList';
+import AdminProductBundleList from '../ProductBundleList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService', () => ({
+vi.mock('../../../../services/catalogBundleService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,16 +24,18 @@ vi.mock('../../../../services/catalogBundleService', () => ({
   },
 }));
 
-import catalogBundleService from '../../../../services/catalogBundleService';
+import catalogBundleService from '../../../../services/catalogBundleService.js';
 
+import appTheme from '../../../../theme';
 // Mock BundleProductsPanel to avoid testing its internals here
-vi.mock('../BundleProductsPanel', () => {
-  return function MockBundleProductsPanel({ bundleId }) {
+vi.mock('../BundleProductsPanel.js', () => ({
+  __esModule: true,
+  default: function MockBundleProductsPanel({ bundleId }) {
     return <div data-testid={`expand-row-${bundleId}`}>Products for {bundleId}</div>;
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 const mockBundles = [
   {

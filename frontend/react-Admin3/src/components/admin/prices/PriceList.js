@@ -8,8 +8,8 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import priceService from '../../../services/priceService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import priceService from '../../../services/priceService.js';
 
 /**
  * Groups a flat array of prices into one row per product,

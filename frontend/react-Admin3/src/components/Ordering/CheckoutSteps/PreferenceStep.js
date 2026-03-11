@@ -15,9 +15,9 @@ import {
   Grid,
   CircularProgress
 } from '@mui/material';
-import rulesEngineService from '../../../services/rulesEngineService';
-import { useCart } from '../../../contexts/CartContext';
-import { useAuth } from '../../../hooks/useAuth';
+import rulesEngineService from '../../../services/rulesEngineService.js';
+import { useCart } from '../../../contexts/CartContext.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 
 const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) => {
   const { cartData } = useCart();

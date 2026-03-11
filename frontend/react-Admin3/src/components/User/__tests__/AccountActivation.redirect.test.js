@@ -8,14 +8,14 @@ import { vi } from 'vitest';
 const mockNavigate = vi.fn();
 const mockSearchParams = new URLSearchParams();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-  useSearchParams: () => [mockSearchParams],
+  useNavigate: vi.fn(() => mockNavigate),
+  useSearchParams: vi.fn(() => [mockSearchParams]),
   BrowserRouter: ({ children }) => children
 }));
 
 // Mock authService
 const mockActivateAccount = vi.fn();
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     activateAccount: (...args) => mockActivateAccount(...args)
@@ -25,7 +25,7 @@ vi.mock('../../../services/authService', () => ({
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import AccountActivation from '../AccountActivation';
+import AccountActivation from '../AccountActivation.js';
 
 describe('AccountActivation Redirect to Products', () => {
   beforeEach(() => {
@@ -40,28 +40,38 @@ describe('AccountActivation Redirect to Products', () => {
   });
 
   it('should redirect to /products after successful account activation', async () => {
+    vi.useFakeTimers();
     // Mock successful activation
     mockActivateAccount.mockResolvedValue({
       status: 'success',
       message: 'Account activated successfully! You can now log in.'
     });
 
-    render(
-      <BrowserRouter>
-        <AccountActivation />
-      </BrowserRouter>
-    );
+    const { act } = await import('react');
 
-    // Wait for activation to complete and success button to appear
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Go to Login/i })).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <AccountActivation />
+        </BrowserRouter>
+      );
+    });
+
+    // Wait for activation to complete - flush microtasks and timers
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
 
     // Verify authService.activateAccount was called with correct params
     expect(mockActivateAccount).toHaveBeenCalledWith('test-uid-123', 'test-token-456');
 
-    // THIS SHOULD FAIL - we expect navigation to /products but currently goes nowhere
+    // Advance past the 10-second countdown timer
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(11000);
+    });
+
     expect(mockNavigate).toHaveBeenCalledWith('/products');
+    vi.useRealTimers();
   });
 
   it('should not redirect on activation failure', async () => {
@@ -71,16 +81,22 @@ describe('AccountActivation Redirect to Products', () => {
       message: 'Activation link has expired'
     });
 
-    render(
-      <BrowserRouter>
-        <AccountActivation />
-      </BrowserRouter>
-    );
+    const { act } = await import('react');
 
-    // Wait for error message to appear
-    await waitFor(() => {
-      expect(screen.getByText(/Account Activation Failed/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <AccountActivation />
+        </BrowserRouter>
+      );
+    });
+
+    // Wait for error state to be set
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByText(/Account Activation Failed/i)).toBeInTheDocument();
 
     // Should NOT navigate on error
     expect(mockNavigate).not.toHaveBeenCalledWith('/products');

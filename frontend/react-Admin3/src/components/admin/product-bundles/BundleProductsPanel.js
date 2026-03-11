@@ -19,9 +19,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import catalogBundleProductService from "../../../services/catalogBundleProductService";
-import catalogProductService from "../../../services/catalogProductService";
-import productProductVariationService from "../../../services/productProductVariationService";
+import catalogBundleProductService from "../../../services/catalogBundleProductService.js";
+import catalogProductService from "../../../services/catalogProductService.js";
+import productProductVariationService from "../../../services/productProductVariationService.js";
 
 const BundleProductsPanel = ({ bundleId }) => {
   const [bundleProducts, setBundleProducts] = useState([]);

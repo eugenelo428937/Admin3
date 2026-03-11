@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/recommendations/__tests__/RecommendationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminRecommendationForm from '../RecommendationForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminRecommendationForm from '../RecommendationForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,14 +19,14 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock recommendationService
-vi.mock('../../../../services/recommendationService', () => ({
+vi.mock('../../../../services/recommendationService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,21 +36,23 @@ vi.mock('../../../../services/recommendationService', () => ({
 }));
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import recommendationService from '../../../../services/recommendationService';
-import productProductVariationService from '../../../../services/productProductVariationService';
+import recommendationService from '../../../../services/recommendationService.js';
+import productProductVariationService from '../../../../services/productProductVariationService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const mockPpvData = [

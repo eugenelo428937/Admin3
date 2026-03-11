@@ -14,12 +14,12 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import PropTypes from 'prop-types';
-import SmartAddressInput from './SmartAddressInput';
-import DynamicAddressForm from './DynamicAddressForm';
-import AddressComparisonModal from './AddressComparisonModal';
-import userService from '../../services/userService';
-import addressValidationService from '../../services/addressValidationService';
-import addressMetadataService from '../../services/addressMetadataService';
+import SmartAddressInput from './SmartAddressInput.js';
+import DynamicAddressForm from './DynamicAddressForm.js';
+import AddressComparisonModal from './AddressComparisonModal.js';
+import userService from '../../services/userService.js';
+import addressValidationService from '../../services/addressValidationService.js';
+import addressMetadataService from '../../services/addressMetadataService.js';
 
 const AddressEditModal = ({
   open = false,

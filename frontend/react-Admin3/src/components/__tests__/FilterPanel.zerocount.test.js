@@ -12,10 +12,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FilterPanel from '../Product/FilterPanel';
-import filtersReducer from '../../store/slices/filtersSlice';
+import { ThemeProvider } from '@mui/material/styles';
+import FilterPanel from '../Product/FilterPanel.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
 
+import appTheme from '../../theme';
 // Mock sessionStorage
 const mockSessionStorage = {};
 Object.defineProperty(window, 'sessionStorage', {
@@ -28,7 +29,7 @@ Object.defineProperty(window, 'sessionStorage', {
 });
 
 // Mock PerformanceTracker used by FilterRegistry
-vi.mock('../../utils/PerformanceTracker', () => ({
+vi.mock('../../utils/PerformanceTracker.js', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,
@@ -38,7 +39,7 @@ vi.mock('../../utils/PerformanceTracker', () => ({
   },
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 /**
  * Helper to create a Redux store with pre-set filterCounts.

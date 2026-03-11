@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductVariationList from '../ProductVariationList';
+import AdminProductVariationList from '../ProductVariationList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -23,9 +23,10 @@ vi.mock('../../../../services/productVariationService', () => ({
   },
 }));
 
-import productVariationService from '../../../../services/productVariationService';
+import productVariationService from '../../../../services/productVariationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockProductVariations = [
   {

@@ -1,5 +1,5 @@
-import config from "../config";
-import httpService from "./httpService";
+import config from "../config.js";
+import httpService from "./httpService.js";
 
 // Use the proper products API URL like other services
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;
@@ -170,7 +170,7 @@ class BundleService {
 					bundleProduct: bundleProduct,
 					totalItems: cartItems.length,
 					uniqueProducts: components.length,
-					bundleMetadata: null,  // Metadata not available in current API response
+					bundleMetadata: bundleResult.data.bundle_product?.metadata || null,
 				},
 			};
 		} catch (error) {
@@ -197,8 +197,8 @@ class BundleService {
 
 			return {
 				success: true,
-				metadata: null,  // Metadata not available in current API response
-				componentCount: bundleResult.data.components_count,
+				metadata: bundleResult.data.bundle_product?.metadata || null,
+				componentCount: bundleResult.data.total_components,
 			};
 		} catch (error) {
 			console.error("Error fetching bundle metadata:", error);

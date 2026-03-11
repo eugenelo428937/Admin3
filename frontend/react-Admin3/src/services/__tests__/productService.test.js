@@ -6,10 +6,10 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../productService');
+vi.unmock('../productService.js');
 
 // Mock dependencies BEFORE imports
-vi.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('../httpService', () => ({
   },
 }));
 
-vi.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     productsUrl: '/api/products',
@@ -29,8 +29,8 @@ vi.mock('../../config', () => ({
   },
 }));
 
-import productService from '../productService';
-import httpService from '../httpService';
+import productService from '../productService.js';
+import httpService from '../httpService.js';
 
 describe('productService', () => {
   beforeEach(() => {

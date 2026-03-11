@@ -1,11 +1,11 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import StepExamSession from '../StepExamSession';
+import { ThemeProvider } from '@mui/material/styles';
+import StepExamSession from '../StepExamSession.js';
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService', () => ({
+vi.mock('../../../../services/examSessionService.js', () => ({
   __esModule: true,
   default: {
     create: vi.fn(),
@@ -13,9 +13,10 @@ vi.mock('../../../../services/examSessionService', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService';
+import examSessionService from '../../../../services/examSessionService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { rulesEngineHelpers, buildRulesContext } from '../utils/rulesEngineUtils';
-import rulesEngineService from '../services/rulesEngineService';
+import { rulesEngineHelpers, buildRulesContext } from '../utils/rulesEngineUtils.js';
+import rulesEngineService from '../services/rulesEngineService.js';
 
 const useCheckoutRulesEngine = (cartData, cartItems) => {
     const [rulesResult, setRulesResult] = useState(null);

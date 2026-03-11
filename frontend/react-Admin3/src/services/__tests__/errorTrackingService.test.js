@@ -14,7 +14,7 @@ describe('errorTrackingService', () => {
   const originalProd = import.meta.env.PROD;
   let mockSentryInit;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
 
     // Create mock for Sentry
@@ -34,11 +34,11 @@ describe('errorTrackingService', () => {
   });
 
   describe('initializeErrorTracking', () => {
-    test('should initialize Sentry in production environment', () => {
+    test('should initialize Sentry in production environment', async () => {
       import.meta.env.MODE = 'production';
       import.meta.env.DEV = false;
       import.meta.env.PROD = true;
-      const { initializeErrorTracking } = require('../errorTrackingService');
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 
@@ -48,22 +48,22 @@ describe('errorTrackingService', () => {
       });
     });
 
-    test('should not initialize Sentry in development environment', () => {
+    test('should not initialize Sentry in development environment', async () => {
       import.meta.env.MODE = 'development';
       import.meta.env.DEV = true;
       import.meta.env.PROD = false;
-      const { initializeErrorTracking } = require('../errorTrackingService');
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 
       expect(mockSentryInit).not.toHaveBeenCalled();
     });
 
-    test('should not initialize Sentry in test environment', () => {
+    test('should not initialize Sentry in test environment', async () => {
       import.meta.env.MODE = 'test';
       import.meta.env.DEV = false;
       import.meta.env.PROD = false;
-      const { initializeErrorTracking } = require('../errorTrackingService');
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 

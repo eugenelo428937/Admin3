@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/ProductBundleForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminProductBundleForm from '../ProductBundleForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminProductBundleForm from '../ProductBundleForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,14 +19,14 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService', () => ({
+vi.mock('../../../../services/catalogBundleService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,23 +35,25 @@ vi.mock('../../../../services/catalogBundleService', () => ({
   },
 }));
 
-import catalogBundleService from '../../../../services/catalogBundleService';
+import catalogBundleService from '../../../../services/catalogBundleService.js';
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService', () => ({
+vi.mock('../../../../services/subjectService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import subjectService from '../../../../services/subjectService';
+import subjectService from '../../../../services/subjectService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const mockSubjects = [
@@ -198,7 +200,8 @@ describe('AdminProductBundleForm', () => {
         expect(screen.getByRole('button', { name: /create product bundle/i })).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /create product bundle/i }));
+      const submitButton = screen.getByRole('button', { name: /create product bundle/i });
+      fireEvent.submit(submitButton.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/please provide a bundle name/i)).toBeInTheDocument();

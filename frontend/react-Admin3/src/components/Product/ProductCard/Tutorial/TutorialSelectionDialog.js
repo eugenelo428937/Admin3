@@ -13,15 +13,15 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import TutorialDetailCard from './TutorialDetailCard';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
-import { useCart } from '../../../../contexts/CartContext';
-import { touchIconButtonStyle, responsiveGridSpacing } from './tutorialStyles';
+import TutorialDetailCard from './TutorialDetailCard.js';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useCart } from '../../../../contexts/CartContext.js';
+import { touchIconButtonStyle, responsiveGridSpacing } from './tutorialStyles.js';
 import {
   buildTutorialMetadata,
   buildTutorialProductData,
   buildTutorialPriceData,
-} from '../../../../utils/tutorialMetadataBuilder';
+} from '../../../../utils/tutorialMetadataBuilder.js';
 
 /**
  * TutorialSelectionDialog - Container component for tutorial event selection

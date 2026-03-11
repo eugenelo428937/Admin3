@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/subjects/__tests__/SubjectForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminSubjectForm from '../SubjectForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminSubjectForm from '../SubjectForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,14 +19,14 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService', () => ({
+vi.mock('../../../../services/subjectService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,13 +35,15 @@ vi.mock('../../../../services/subjectService', () => ({
   },
 }));
 
-import subjectService from '../../../../services/subjectService';
+import subjectService from '../../../../services/subjectService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const renderComponent = (isEditMode = false) => {
@@ -186,7 +188,8 @@ describe('AdminSubjectForm', () => {
       const codeInput = screen.getAllByRole('textbox')[0];
       fireEvent.change(codeInput, { target: { value: '' } });
 
-      fireEvent.click(screen.getByRole('button', { name: /create subject/i }));
+      const submitButton = screen.getByRole('button', { name: /create subject/i });
+      fireEvent.submit(submitButton.closest('form'));
 
       await waitFor(() => {
         // The error message appears as an Alert

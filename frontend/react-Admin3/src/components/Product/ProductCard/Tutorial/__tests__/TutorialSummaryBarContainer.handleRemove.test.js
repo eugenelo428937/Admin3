@@ -9,21 +9,24 @@ import { vi } from 'vitest';
  */
 
 // Remove global mocks from setupTests.js so we can test with real context
-vi.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 // Mock httpService BEFORE importing anything else
-vi.mock('../../../../../services/httpService', () => ({
-  get: vi.fn(),
-  post: vi.fn(),
-  delete: vi.fn(),
-  patch: vi.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+  },
 }));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider, useCart } from '../../../../../contexts/CartContext';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { CartProvider, useCart } from '../../../../../contexts/CartContext.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 // Mock CartContext with controllable state
 let mockCartContext = {
@@ -35,7 +38,7 @@ let mockCartContext = {
   loading: false,
 };
 
-vi.mock('../../../../../contexts/CartContext', async () => {
+vi.mock('../../../../../contexts/CartContext.js', async () => {
   const actual = await vi.importActual('../../../../../contexts/CartContext');
   return {
     ...actual,

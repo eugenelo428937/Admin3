@@ -7,13 +7,14 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import UserActions from '../UserActions';
+import UserActions from '../UserActions.js';
+import appTheme from '../../../theme';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock useAuth hook with configurable values
@@ -23,27 +24,18 @@ let mockAuthState = {
   logout: vi.fn(),
 };
 
-vi.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock useCart context
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartCount: 5,
   }),
 }));
 
-const theme = createTheme({
-  palette: {
-    liftkit: {
-      light: {
-        background: '#ffffff',
-        onSurface: '#000000',
-      },
-    },
-  },
-});
+const theme = appTheme;
 
 describe('UserActions', () => {
   const mockOnOpenSearch = vi.fn();

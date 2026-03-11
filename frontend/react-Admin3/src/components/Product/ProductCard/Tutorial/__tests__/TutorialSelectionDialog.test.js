@@ -1,17 +1,17 @@
 import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-vi.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme';
-import TutorialSelectionDialog from '../TutorialSelectionDialog';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
+import theme from '../../../../../theme/theme.js';
+import TutorialSelectionDialog from '../TutorialSelectionDialog.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock CartContext - TutorialSelectionDialog uses useCart
-vi.mock('../../../../../contexts/CartContext', () => ({
+vi.mock('../../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
@@ -26,8 +26,9 @@ vi.mock('../../../../../contexts/CartContext', () => ({
 }));
 
 // Mock TutorialDetailCard to simplify testing
-vi.mock('../TutorialDetailCard', () => {
-  return function MockTutorialDetailCard({ event, selectedChoiceLevel, onSelectChoice }) {
+vi.mock('../TutorialDetailCard.js', () => ({
+  __esModule: true,
+  default: function MockTutorialDetailCard({ event, selectedChoiceLevel, onSelectChoice }) {
     return (
       <div data-testid={`tutorial-card-${event.eventId}`}>
         <span>{event.eventTitle}</span>
@@ -39,8 +40,8 @@ vi.mock('../TutorialDetailCard', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
 describe('TutorialSelectionDialog', () => {
   const mockProduct = {

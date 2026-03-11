@@ -2,8 +2,8 @@ import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductImport.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminProductImport from '../ProductImport';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminProductImport from '../ProductImport.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -11,12 +11,12 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
+    useNavigate: vi.fn(() => mockNavigate),
   };
 });
 
 // Mock catalogProductService
-vi.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService.js', () => ({
   __esModule: true,
   default: {
     bulkImport: vi.fn(),
@@ -40,9 +40,10 @@ vi.mock('papaparse', () => ({
   }),
 }));
 
-import catalogProductService from '../../../../services/catalogProductService';
+import catalogProductService from '../../../../services/catalogProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderComponent = () => {
   return render(
