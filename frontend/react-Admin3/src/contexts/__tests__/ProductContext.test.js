@@ -8,6 +8,13 @@ import { vi } from 'vitest';
 // MUST be before imports to override setupTests.js global mock
 vi.unmock('../ProductContext.js');
 
+// Mock ConfigContext - ProductContext depends on useConfig
+vi.mock('../ConfigContext.js', () => ({
+  __esModule: true,
+  useConfig: () => ({ isInternal: false, configLoaded: true }),
+  ConfigProvider: ({ children }) => children,
+}));
+
 // Mock productService
 vi.mock('../../services/productService.js', () => ({
   __esModule: true,
