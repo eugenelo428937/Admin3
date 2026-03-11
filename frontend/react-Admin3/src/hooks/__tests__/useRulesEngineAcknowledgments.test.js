@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useRulesEngineAcknowledgments hook
  *
@@ -17,31 +18,31 @@
  */
 
 import { renderHook, act } from '@testing-library/react';
-import useRulesEngineAcknowledgments from '../useRulesEngineAcknowledgments';
+import useRulesEngineAcknowledgments from '../useRulesEngineAcknowledgments.js';
 
 // Mock dependencies
-jest.mock('../../services/AcknowledgmentService', () => ({
+vi.mock('../../services/AcknowledgmentService.js', () => ({
   __esModule: true,
   default: {
-    submitAcknowledgment: jest.fn(),
-    hasAcknowledgment: jest.fn(),
-    validateCheckoutAcknowledgments: jest.fn(),
+    submitAcknowledgment: vi.fn(),
+    hasAcknowledgment: vi.fn(),
+    validateCheckoutAcknowledgments: vi.fn(),
   },
 }));
 
-jest.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils.js', () => ({
   __esModule: true,
   rulesEngineHelpers: {},
-  executeAndProcessRules: jest.fn(),
-  buildRulesContext: jest.fn(),
+  executeAndProcessRules: vi.fn(),
+  buildRulesContext: vi.fn(),
 }));
 
-import acknowledgmentService from '../../services/AcknowledgmentService';
-import { executeAndProcessRules } from '../../utils/rulesEngineUtils';
+import acknowledgmentService from '../../services/AcknowledgmentService.js';
+import { executeAndProcessRules } from '../../utils/rulesEngineUtils.js';
 
 describe('useRulesEngineAcknowledgments', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initial state', () => {
@@ -76,8 +77,8 @@ describe('useRulesEngineAcknowledgments', () => {
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
 
       const message = { title: 'Test', content: 'Test content' };
-      const onAcknowledge = jest.fn();
-      const onClose = jest.fn();
+      const onAcknowledge = vi.fn();
+      const onClose = vi.fn();
 
       act(() => {
         result.current.showAcknowledgmentModal({
@@ -151,7 +152,7 @@ describe('useRulesEngineAcknowledgments', () => {
 
     test('should call onClose callback if provided', () => {
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
-      const onClose = jest.fn();
+      const onClose = vi.fn();
 
       act(() => {
         result.current.showAcknowledgmentModal({
@@ -225,7 +226,7 @@ describe('useRulesEngineAcknowledgments', () => {
 
     test('should call onAcknowledge callback on success', async () => {
       acknowledgmentService.submitAcknowledgment.mockResolvedValue({ success: true });
-      const onAcknowledge = jest.fn();
+      const onAcknowledge = vi.fn();
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
 
       act(() => {
@@ -313,7 +314,7 @@ describe('useRulesEngineAcknowledgments', () => {
         blocked: false,
         messages: { classified: { acknowledgments: { modal: [] } } },
       });
-      const mockService = { execute: jest.fn() };
+      const mockService = { execute: vi.fn() };
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
 
       let execResult;
@@ -568,7 +569,7 @@ describe('useRulesEngineAcknowledgments', () => {
         blocked: false,
         messages: {},
       });
-      const mockService = { execute: jest.fn() };
+      const mockService = { execute: vi.fn() };
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
 
       await act(async () => {
@@ -614,7 +615,7 @@ describe('useRulesEngineAcknowledgments', () => {
         blocked: false,
         messages: {},
       });
-      const mockService = { execute: jest.fn() };
+      const mockService = { execute: vi.fn() };
       const { result } = renderHook(() => useRulesEngineAcknowledgments());
 
       await act(async () => {

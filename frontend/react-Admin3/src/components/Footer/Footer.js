@@ -16,12 +16,12 @@ import {
    FaYoutube,
    FaComments,
 } from "react-icons/fa";
-import productService from "../../services/productService";
+import productService from "../../services/productService.js";
 import {
    navSelectSubject,
    navSelectProductGroup,
    navSelectProduct,
-} from "../../store/slices/filtersSlice";
+} from "../../store/slices/filtersSlice.js";
 
 // Subject category filters (same as NavigationMenu.js)
 const SUBJECT_CATEGORIES = {

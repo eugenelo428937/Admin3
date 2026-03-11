@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for ProductContext
  *
@@ -5,24 +6,31 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../ProductContext');
+vi.unmock('../ProductContext.js');
+
+// Mock ConfigContext - ProductContext depends on useConfig
+vi.mock('../ConfigContext.js', () => ({
+  __esModule: true,
+  useConfig: () => ({ isInternal: false, configLoaded: true }),
+  ConfigProvider: ({ children }) => children,
+}));
 
 // Mock productService
-jest.mock('../../services/productService', () => ({
+vi.mock('../../services/productService.js', () => ({
   __esModule: true,
   default: {
-    getAvailableProducts: jest.fn(),
+    getAvailableProducts: vi.fn(),
   },
 }));
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { ProductProvider, useProduct, useProducts } from '../ProductContext';
-import productService from '../../services/productService';
+import { ProductProvider, useProduct, useProducts } from '../ProductContext.js';
+import productService from '../../services/productService.js';
 
 describe('ProductContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('ProductProvider', () => {
@@ -228,7 +236,7 @@ describe('ProductContext', () => {
   describe('useProduct hook', () => {
     test('should throw error when used outside ProductProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const TestComponent = () => {
         useProduct();
@@ -271,7 +279,7 @@ describe('ProductContext', () => {
   describe('useProducts hook', () => {
     test('should throw error when used outside ProductProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const TestComponent = () => {
         useProducts();

@@ -1,6 +1,6 @@
 // frontend/react-Admin3/src/services/addressValidationService.js
-import config from '../config';
-import addressMetadataService from './addressMetadataService';
+import config from '../config.js';
+import addressMetadataService from './addressMetadataService.js';
 
 /**
  * Service for validating addresses against Postcoder API

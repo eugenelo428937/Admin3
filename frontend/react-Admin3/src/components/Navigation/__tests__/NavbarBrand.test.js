@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for NavbarBrand Component
  * T027: Test logo render, link with Router
@@ -5,22 +6,22 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import NavbarBrand from '../NavbarBrand';
+import NavbarBrand from '../NavbarBrand.js';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock image require
-jest.mock('../../../assets/ActEdlogo.png', () => 'test-logo.png', { virtual: true });
-jest.mock('../../../assets/ActEdlogo-S.png', () => 'test-logo-small.png', { virtual: true });
+vi.mock('../../../assets/ActEdlogo.png', () => ({ default: 'test-logo.png' }));
+vi.mock('../../../assets/ActEdlogo-S.png', () => ({ default: 'test-logo-small.png' }));
 
 describe('NavbarBrand', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const renderBrand = () => {

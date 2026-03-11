@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for MobileNavigation Component
  * T021: Test drawer open/close, menu items with Router
@@ -5,22 +6,23 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MobileNavigation from '../MobileNavigation';
+import { ThemeProvider } from '@mui/material/styles';
+import MobileNavigation from '../MobileNavigation.js';
 
+import appTheme from '../../../theme';
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
   NavLink: ({ children, to, onClick, className }) => (
     <a href={to} onClick={onClick} className={className}>{children}</a>
   ),
 }));
 
 // Mock useAuth hook
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isSuperuser: false,
     isApprentice: false,
@@ -31,25 +33,25 @@ jest.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock useCart context
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartCount: 3,
   }),
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('MobileNavigation', () => {
-  const mockOnClose = jest.fn();
-  const mockHandleSubjectClick = jest.fn();
-  const mockHandleProductClick = jest.fn();
-  const mockHandleProductGroupClick = jest.fn();
-  const mockHandleSpecificProductClick = jest.fn();
-  const mockHandleProductVariationClick = jest.fn();
-  const mockHandleMarkingVouchersClick = jest.fn();
-  const mockOnOpenSearch = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnOpenAuth = jest.fn();
+  const mockOnClose = vi.fn();
+  const mockHandleSubjectClick = vi.fn();
+  const mockHandleProductClick = vi.fn();
+  const mockHandleProductGroupClick = vi.fn();
+  const mockHandleSpecificProductClick = vi.fn();
+  const mockHandleProductVariationClick = vi.fn();
+  const mockHandleMarkingVouchersClick = vi.fn();
+  const mockOnOpenSearch = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnOpenAuth = vi.fn();
 
   const defaultProps = {
     open: true,
@@ -88,7 +90,7 @@ describe('MobileNavigation', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const renderNavigation = (props = {}) => {

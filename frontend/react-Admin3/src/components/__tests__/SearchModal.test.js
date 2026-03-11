@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * SearchModal Contract Tests
  *
@@ -9,26 +10,28 @@
  */
 
 // Mock modules MUST be defined before imports (Jest requirement)
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   BrowserRouter: ({ children }) => children,
-  useNavigate: () => mockNavigate
+  useNavigate: vi.fn(() => mockNavigate)
 }));
 
-jest.mock('../SearchBox', () => {
-  return function MockSearchBox() {
+vi.mock('../SearchBox.js', () => ({
+  __esModule: true,
+  default: function MockSearchBox() {
     const React = require('react');
     return React.createElement('div', { 'data-testid': 'mock-search-box' }, 'SearchBox Component');
-  };
-});
+  },
+}));
 
-jest.mock('../SearchResults', () => {
-  return function MockSearchResults() {
+vi.mock('../SearchResults.js', () => ({
+  __esModule: true,
+  default: function MockSearchResults() {
     const React = require('react');
     return React.createElement('div', { 'data-testid': 'mock-search-results' }, 'SearchResults Component');
-  };
-});
+  },
+}));
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -36,9 +39,9 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchModal from '../Navigation/SearchModal';
-import filtersReducer from '../../store/slices/filtersSlice';
-import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
+import SearchModal from '../Navigation/SearchModal.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 /**
  * Test helper: Create mock Redux store
@@ -119,7 +122,7 @@ describe('SearchModal Redux Integration', () => {
 
     // ACT: Render SearchModal
     const { store } = renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />,
+      <SearchModal open={true} onClose={vi.fn()} />,
       initialState
     );
 
@@ -158,7 +161,7 @@ describe('SearchModal Redux Integration', () => {
 
     // ACT: Open modal
     const { store } = renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />,
+      <SearchModal open={true} onClose={vi.fn()} />,
       initialState
     );
 
@@ -193,7 +196,7 @@ describe('SearchModal Redux Integration', () => {
       subjects: ['CB1'],
       searchQuery: 'mock'
     };
-    const mockOnClose = jest.fn();
+    const mockOnClose = vi.fn();
 
     // ACT: Open modal, then close it
     const { store } = renderWithProviders(
@@ -237,7 +240,7 @@ describe('SearchModal Redux Integration', () => {
       subjects: ['CB1'],
       searchQuery: 'actuarial'
     };
-    const mockOnClose = jest.fn();
+    const mockOnClose = vi.fn();
 
     // ACT: Open modal
     const { rerender, store } = renderWithProviders(
@@ -296,7 +299,7 @@ describe('SearchModal Redux Integration', () => {
     };
 
     renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />,
+      <SearchModal open={true} onClose={vi.fn()} />,
       initialState
     );
 
@@ -309,7 +312,7 @@ describe('SearchModal Redux Integration', () => {
 
     // ASSERT: Filters already in Redux
     const store = renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />,
+      <SearchModal open={true} onClose={vi.fn()} />,
       initialState
     ).store;
 
@@ -330,14 +333,14 @@ describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
 
   test('has no accessibility violations when open', async () => {
     const { container } = renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />
+      <SearchModal open={true} onClose={vi.fn()} />
     );
     await expectNoA11yViolations(container, wcag21AAConfig);
   });
 
   test('close button has accessible name', () => {
     renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />
+      <SearchModal open={true} onClose={vi.fn()} />
     );
 
     const closeButton = screen.getByLabelText(/close/i);
@@ -346,7 +349,7 @@ describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
 
   test('modal has proper dialog role when open', () => {
     renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />
+      <SearchModal open={true} onClose={vi.fn()} />
     );
 
     // MUI Modal should create a dialog
@@ -356,7 +359,7 @@ describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
 
   test('close button can be activated with keyboard', async () => {
     const user = userEvent.setup();
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     renderWithProviders(
       <SearchModal open={true} onClose={onClose} />
@@ -372,7 +375,7 @@ describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
 
   test('modal can be closed with Escape key', async () => {
     const user = userEvent.setup();
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     renderWithProviders(
       <SearchModal open={true} onClose={onClose} />
@@ -385,7 +388,7 @@ describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
 
   test('contains search functionality components', () => {
     renderWithProviders(
-      <SearchModal open={true} onClose={jest.fn()} />
+      <SearchModal open={true} onClose={vi.fn()} />
     );
 
     // SearchBox mock should be present

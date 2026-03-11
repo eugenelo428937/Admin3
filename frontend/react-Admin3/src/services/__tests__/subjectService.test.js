@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for subjectService
  *
@@ -17,34 +18,34 @@ describe('subjectService', () => {
   let subjectService;
   let httpService;
 
-  beforeEach(() => {
-    jest.resetModules();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config.js', () => ({
       __esModule: true,
       default: {
         catalogUrl: 'http://test-api/catalog',
       },
     }));
 
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService.js', () => ({
       __esModule: true,
       default: {
-        get: jest.fn(),
-        post: jest.fn(),
-        put: jest.fn(),
-        delete: jest.fn(),
+        get: vi.fn(),
+        post: vi.fn(),
+        put: vi.fn(),
+        delete: vi.fn(),
       },
     }));
 
-    subjectService = require('../subjectService').default;
-    httpService = require('../httpService').default;
+    { const _mod_subjectService = await import('../subjectService.js'); subjectService = _mod_subjectService.default; }
+    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getAll', () => {

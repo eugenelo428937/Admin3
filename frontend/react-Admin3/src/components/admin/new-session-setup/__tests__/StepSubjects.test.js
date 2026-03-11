@@ -1,37 +1,39 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import StepSubjects from '../StepSubjects';
+import StepSubjects from '../StepSubjects.js';
 
 // Mock services
-jest.mock('../../../../services/httpService', () => ({
+vi.mock('../../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/sessionSetupService', () => ({
+vi.mock('../../../../services/sessionSetupService.js', () => ({
   __esModule: true,
   default: {
-    getPreviousSession: jest.fn(),
-    getSessionSubjects: jest.fn(),
-    getSessionDataCounts: jest.fn(),
-    deactivateSessionData: jest.fn(),
+    getPreviousSession: vi.fn(),
+    getSessionSubjects: vi.fn(),
+    getSessionDataCounts: vi.fn(),
+    deactivateSessionData: vi.fn(),
   },
 }));
 
-jest.mock('../../../../config', () => ({
+vi.mock('../../../../config.js', () => ({
   __esModule: true,
   default: { catalogUrl: '/api/catalog' },
 }));
 
-import httpService from '../../../../services/httpService';
-import sessionSetupService from '../../../../services/sessionSetupService';
+import httpService from '../../../../services/httpService.js';
+import sessionSetupService from '../../../../services/sessionSetupService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithProviders = (ui) =>
   render(
@@ -47,10 +49,10 @@ const mockSubjects = [
 ];
 
 describe('StepSubjects', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     httpService.get.mockResolvedValue({ data: mockSubjects });
     httpService.post.mockResolvedValue({ data: { id: 1 } });
     sessionSetupService.getPreviousSession.mockResolvedValue({

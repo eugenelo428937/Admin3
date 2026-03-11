@@ -14,7 +14,7 @@
  * These pact tests define the contract shape the frontend expects.
  * Auth-guarded provider verification requires superuser state setup.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -22,7 +22,7 @@ const {
   integer,
   boolean,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Users Admin Service - Pact Consumer Tests', () => {

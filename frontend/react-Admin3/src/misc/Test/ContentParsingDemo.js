@@ -4,7 +4,7 @@ import {
   parseMessageContent,
   formatMessageText,
   extractAcknowledgmentConfig
-} from '../../utils/rulesEngineUtils';
+} from '../../utils/rulesEngineUtils.js';
 
 /**
  * Demo component to showcase content parsing utilities

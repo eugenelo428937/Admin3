@@ -5,8 +5,8 @@ import {
   Button, Container, Alert, Paper, Typography, Box, CircularProgress, TablePagination
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import examSessionService from '../../../services/examSessionService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import examSessionService from '../../../services/examSessionService.js';
 import moment from 'moment';
 
 const AdminExamSessionList = () => {

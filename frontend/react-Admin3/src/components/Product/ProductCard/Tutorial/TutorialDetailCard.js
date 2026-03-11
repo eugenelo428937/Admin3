@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import moment from 'moment';
-import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles';
+import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles.js';
 
 /**
  * TutorialDetailCard - Presentational component for displaying tutorial event details

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * CheckoutSteps Multi-Step Flow Tests (T061)
  *
@@ -12,8 +13,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme';
-import CheckoutSteps from '../CheckoutSteps';
+import theme from '../../../theme/theme.js';
+import CheckoutSteps from '../CheckoutSteps.js';
 
 // Helper to render with theme
 const renderWithTheme = (component) => {
@@ -25,11 +26,11 @@ const renderWithTheme = (component) => {
 };
 
 // Mock the rules engine service
-jest.mock('../../../services/rulesEngineService', () => ({
+vi.mock('../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
-    acknowledgeRule: jest.fn(() => Promise.resolve({ success: true })),
+    executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
+    acknowledgeRule: vi.fn(() => Promise.resolve({ success: true })),
     ENTRY_POINTS: {
       CHECKOUT_START: 'checkout_start',
       CHECKOUT_PAYMENT: 'checkout_payment'
@@ -38,20 +39,20 @@ jest.mock('../../../services/rulesEngineService', () => ({
 }));
 
 // Mock httpService
-jest.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
-    post: jest.fn(() => Promise.resolve({ data: {} })),
-    get: jest.fn(() => Promise.resolve({ data: {} })),
-    put: jest.fn(() => Promise.resolve({ data: {} }))
+    post: vi.fn(() => Promise.resolve({ data: {} })),
+    get: vi.fn(() => Promise.resolve({ data: {} })),
+    put: vi.fn(() => Promise.resolve({ data: {} }))
   }
 }));
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
-    getUserProfile: jest.fn(() => Promise.resolve({
+    getUserProfile: vi.fn(() => Promise.resolve({
       status: 'success',
       data: {
         id: 1,
@@ -67,16 +68,19 @@ jest.mock('../../../services/userService', () => ({
 }));
 
 // Mock config
-jest.mock('../../../config', () => ({
-  API_BASE_URL: 'http://localhost:8888',
-  isUAT: false
+vi.mock('../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    API_BASE_URL: 'http://localhost:8888',
+    isUAT: false
+  },
 }));
 
 // Mock useCheckoutValidation
-jest.mock('../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
   __esModule: true,
   default: () => ({
-    validateCheckout: jest.fn(() => Promise.resolve({ blocked: false })),
+    validateCheckout: vi.fn(() => Promise.resolve({ blocked: false })),
     addressValidation: { isValid: true, errors: [] },
     contactValidation: { isValid: true, errors: [] },
     validationMessage: null,
@@ -85,12 +89,12 @@ jest.mock('../../../hooks/useCheckoutValidation', () => ({
 }));
 
 // Mock useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
-  useCart: jest.fn()
+vi.mock('../../../contexts/CartContext.js', () => ({
+  useCart: vi.fn()
 }));
 
 // Mock useAuth hook
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     isAuthenticated: true,
     user: { id: 1, email: 'test@example.com' }
@@ -116,11 +120,11 @@ const mockCartData = {
 };
 
 describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
     // Mock useCart hook
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -129,7 +133,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 
   describe('Step Navigation', () => {
     it('should start at Step 1 (Cart Review)', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -147,7 +151,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
     });
 
     it('should have disabled Next button when Step 1 is incomplete', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -161,7 +165,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
     });
 
     it('should show all step labels in stepper', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -181,7 +185,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
     it('should display Terms & Conditions step content', async () => {
       // This test would need to navigate to Step 2
       // For now, test that Terms step exists in stepper
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -196,7 +200,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 
   describe('Step 3 - Preferences', () => {
     it('should display Preferences step in stepper', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -211,7 +215,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 
   describe('Step 4 - Payment', () => {
     it('should display Payment step in stepper', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -226,7 +230,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 
   describe('Order Summary Panel', () => {
     it('should display Order Summary on all steps', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -243,7 +247,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
     it('should render error alert component when error state is present', async () => {
       // This test verifies the Alert component renders in error state
       // Full validation error testing is in useCheckoutValidation.test.js
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -258,7 +262,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 
   describe('Loading States', () => {
     it('should show VAT loading message when calculating', async () => {
-      const mockOnComplete = jest.fn();
+      const mockOnComplete = vi.fn();
 
       renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -274,10 +278,10 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
 });
 
 describe('CheckoutSteps - Button States', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -285,7 +289,7 @@ describe('CheckoutSteps - Button States', () => {
   });
 
   it('should have Back button disabled on first step', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -296,7 +300,7 @@ describe('CheckoutSteps - Button States', () => {
   });
 
   it('should show "Continue to Terms" on Step 1', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -307,10 +311,10 @@ describe('CheckoutSteps - Button States', () => {
 });
 
 describe('CheckoutSteps - Complete Order Flow', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -320,7 +324,7 @@ describe('CheckoutSteps - Complete Order Flow', () => {
   it('should call onComplete when checkout completes successfully', async () => {
     // This would test the full flow but requires simulating all step completions
     // For now, verify the complete button exists on the payment step
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -334,10 +338,10 @@ describe('CheckoutSteps - Complete Order Flow', () => {
 });
 
 describe('CheckoutSteps - Cart Summary Integration', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
-    const { useCart } = require('../../../contexts/CartContext');
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -345,7 +349,7 @@ describe('CheckoutSteps - Cart Summary Integration', () => {
   });
 
   it('should display cart item in summary panel', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -355,7 +359,7 @@ describe('CheckoutSteps - Cart Summary Integration', () => {
   });
 
   it('should display Order Summary heading', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 

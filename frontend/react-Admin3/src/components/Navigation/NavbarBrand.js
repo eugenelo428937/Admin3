@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { useNavigate } from "react-router-dom";
+import actEdLogo from "../../assets/ActEdlogo-S.png";
 
 const NavbarBrand = () =>
 {
@@ -24,7 +25,7 @@ const NavbarBrand = () =>
 			{/* Desktop logo - hidden on mobile */}
 			<Box
 				component="img"
-				src={require("../../assets/ActEdlogo-S.png")}
+				src={actEdLogo}
 				alt="ActEd Logo"
 				sx={{
 					display: { xs: 'none', lg: 'block' },
@@ -36,7 +37,7 @@ const NavbarBrand = () =>
 			{/* Mobile logo - hidden on desktop */}
 			<Box
 				component="img"
-				src={require("../../assets/ActEdlogo-S.png")}
+				src={actEdLogo}
 				alt="ActEd Logo"
 				sx={{
 					display: { xs: 'block', lg: 'none' },

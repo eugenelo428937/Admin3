@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for US2/FR-013: FilterPanel hides zero-count options.
  *
@@ -11,33 +12,34 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import FilterPanel from '../Product/FilterPanel';
-import filtersReducer from '../../store/slices/filtersSlice';
+import { ThemeProvider } from '@mui/material/styles';
+import FilterPanel from '../Product/FilterPanel.js';
+import filtersReducer from '../../store/slices/filtersSlice.js';
 
+import appTheme from '../../theme';
 // Mock sessionStorage
 const mockSessionStorage = {};
 Object.defineProperty(window, 'sessionStorage', {
   value: {
-    getItem: jest.fn((key) => mockSessionStorage[key] || null),
-    setItem: jest.fn((key, value) => { mockSessionStorage[key] = value; }),
-    removeItem: jest.fn((key) => { delete mockSessionStorage[key]; }),
+    getItem: vi.fn((key) => mockSessionStorage[key] || null),
+    setItem: vi.fn((key, value) => { mockSessionStorage[key] = value; }),
+    removeItem: vi.fn((key) => { delete mockSessionStorage[key]; }),
   },
   writable: true,
 });
 
 // Mock PerformanceTracker used by FilterRegistry
-jest.mock('../../utils/PerformanceTracker', () => ({
+vi.mock('../../utils/PerformanceTracker.js', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,
-    startMeasure: jest.fn(),
-    endMeasure: jest.fn(),
-    checkBudget: jest.fn(),
+    startMeasure: vi.fn(),
+    endMeasure: vi.fn(),
+    checkBudget: vi.fn(),
   },
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 /**
  * Helper to create a Redux store with pre-set filterCounts.

@@ -1,31 +1,33 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductList from '../ProductList';
+import AdminProductList from '../ProductList.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock catalogProductService
-jest.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 // Mock ProductTable
-jest.mock('../ProductTable', () => {
-  return function MockProductTable({ products, onDelete }) {
+vi.mock('../ProductTable.js', () => ({
+  __esModule: true,
+  default: function MockProductTable({ products, onDelete }) {
     return (
       <div data-testid="product-table">
         {products.map((product) => (
@@ -36,12 +38,13 @@ jest.mock('../ProductTable', () => {
         ))}
       </div>
     );
-  };
-});
+  },
+}));
 
-import catalogProductService from '../../../../services/catalogProductService';
+import catalogProductService from '../../../../services/catalogProductService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockProducts = [
   {
@@ -72,7 +75,7 @@ const renderComponent = () => {
 
 describe('AdminProductList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -150,7 +153,7 @@ describe('AdminProductList', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete action triggered', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -168,7 +171,7 @@ describe('AdminProductList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -182,7 +185,7 @@ describe('AdminProductList', () => {
     });
 
     test('removes product from list after successful delete', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockResolvedValue({});
       // After delete, component re-fetches - mock the second list() call without deleted product
       const remainingProducts = [mockProducts[1]];
@@ -217,7 +220,7 @@ describe('AdminProductList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

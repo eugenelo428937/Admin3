@@ -1,8 +1,8 @@
 // Marking Voucher Product Card Variant Styles
-import { spacing } from '../../tokens/spacing';
-import { fontSizes } from '../../tokens/typography';
-import { markingVoucher } from '../../semantic/productCards';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../tokens/spacing.js';
+import { fontSizes } from '../../tokens/typography.js';
+import { markingVoucher } from '../../semantic/productCards.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Marking Voucher card variant - Orange theme

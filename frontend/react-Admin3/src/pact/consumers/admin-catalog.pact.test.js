@@ -13,7 +13,7 @@
  * are covered by backend integration tests (catalog.tests.test_admin_views).
  * Consumer pact tests verify the response shape the frontend expects.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -22,7 +22,7 @@ const {
   boolean,
   datetime,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Catalog Admin Service - Pact Consumer Tests', () => {

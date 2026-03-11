@@ -11,7 +11,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import storeBundleService from "../../../services/storeBundleService";
+import storeBundleService from "../../../services/storeBundleService.js";
 
 const StoreBundleProductsPanel = ({ bundleId }) => {
   const [bundleProducts, setBundleProducts] = useState([]);

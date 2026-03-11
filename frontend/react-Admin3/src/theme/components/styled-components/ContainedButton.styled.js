@@ -18,7 +18,7 @@
 
 import { forwardRef } from 'react';
 import { Typography } from '@mui/material';
-import { Button } from './Button.styled';
+import { Button } from './Button.styled.js';
 
 const ContainedButton = forwardRef(({ size = 'medium', children, ...props }, ref) => (
   <Button ref={ref} variant="contained" size={size} {...props}>

@@ -27,7 +27,7 @@ import {
 } from "@mui/icons-material";
 import authService from "../../services/authService";
 import userService from "../../services/userService";
-import config from "../../config";
+import config from '../../config.js';
 import CountryAutocomplete from "./CountryAutocomplete";
 import PhoneCodeAutocomplete from "./PhoneCodeAutocomplete";
 

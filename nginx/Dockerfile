@@ -11,12 +11,12 @@ WORKDIR /app
 COPY frontend/react-Admin3/package.json frontend/react-Admin3/package-lock.json ./
 RUN npm ci --silent
 
-# Copy source and staging env
+# Copy source, config, and staging env
 COPY frontend/react-Admin3/ ./
-COPY frontend/react-Admin3/.env.staging .env.production.local
+COPY frontend/react-Admin3/.env.staging .env.production
 
-# Build for production (CRA reads .env.production.local)
-RUN CI=false npm run build
+# Build for production (Vite reads .env.production)
+RUN npm run build
 
 # ── Stage 2: Nginx with React build + config ──
 FROM nginx:alpine
@@ -36,7 +36,7 @@ COPY nginx/generate-cert.sh /docker-entrypoint.d/40-generate-cert.sh
 RUN sed -i 's/\r$//' /docker-entrypoint.d/40-generate-cert.sh && \
     chmod +x /docker-entrypoint.d/40-generate-cert.sh
 
-# Copy React build output
+# Copy Vite build output (configured in vite.config.js: outDir: 'build')
 COPY --from=frontend-build /app/build /usr/share/nginx/html
 
 EXPOSE 80 443

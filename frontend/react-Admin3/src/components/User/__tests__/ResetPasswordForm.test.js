@@ -1,12 +1,13 @@
-const mockNavigate = jest.fn();
+import { vi } from 'vitest';
+const mockNavigate = vi.fn();
 const mockLocation = { search: '?uid=test-uid&token=test-token' };
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-  useLocation: () => mockLocation,
+vi.mock('react-router-dom', () => ({
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => mockLocation),
 }));
 
-const mockConfirmPasswordReset = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockConfirmPasswordReset = vi.fn();
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: { confirmPasswordReset: (...args) => mockConfirmPasswordReset(...args) },
 }));
@@ -15,15 +16,16 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ResetPasswordForm from '../ResetPasswordForm';
+import ResetPasswordForm from '../ResetPasswordForm.js';
+import appTheme from '../../../theme';
 
 describe('ResetPasswordForm', () => {
   const renderWithTheme = (component) => {
-    return render(<ThemeProvider theme={createTheme({ palette: { bpp: { granite: { '030': '#e0e0e0', '090': '#212121' } } } })}>{component}</ThemeProvider>);
+    return render(<ThemeProvider theme={appTheme}>{component}</ThemeProvider>);
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockLocation.search = '?uid=test-uid&token=test-token';
   });
 

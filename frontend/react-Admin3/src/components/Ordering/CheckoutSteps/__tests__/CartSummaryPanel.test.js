@@ -1,7 +1,8 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartSummaryPanel from '../CartSummaryPanel';
+import CartSummaryPanel from '../CartSummaryPanel.js';
 
 describe('CartSummaryPanel', () => {
   const mockCartItems = [
@@ -27,7 +28,8 @@ describe('CartSummaryPanel', () => {
     totals: {
       subtotal: 200.00,
       total_vat: 40.00,
-      total_gross: 240.00
+      total_gross: 240.00,
+      effective_vat_rate: 0.20
     },
     region_info: { region: 'UK' }
   };
@@ -38,7 +40,7 @@ describe('CartSummaryPanel', () => {
         cartItems={mockCartItems}
         vatCalculations={mockVatCalculations}
         isCollapsed={false}
-        onToggleCollapse={jest.fn()}
+        onToggleCollapse={vi.fn()}
       />
     );
 
@@ -54,7 +56,7 @@ describe('CartSummaryPanel', () => {
         cartItems={mockCartItems}
         vatCalculations={mockVatCalculations}
         isCollapsed={false}
-        onToggleCollapse={jest.fn()}
+        onToggleCollapse={vi.fn()}
       />
     );
 
@@ -70,7 +72,7 @@ describe('CartSummaryPanel', () => {
         cartItems={mockCartItems}
         vatCalculations={mockVatCalculations}
         isCollapsed={true}
-        onToggleCollapse={jest.fn()}
+        onToggleCollapse={vi.fn()}
       />
     );
 
@@ -86,7 +88,7 @@ describe('CartSummaryPanel', () => {
         cartItems={mockCartItems}
         vatCalculations={mockVatCalculations}
         isCollapsed={true}
-        onToggleCollapse={jest.fn()}
+        onToggleCollapse={vi.fn()}
       />
     );
 
@@ -103,7 +105,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={null}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
     }).not.toThrow();
@@ -117,7 +119,7 @@ describe('CartSummaryPanel', () => {
         cartItems={mockCartItems}
         vatCalculations={mockVatCalculations}
         isCollapsed={false}
-        onToggleCollapse={jest.fn()}
+        onToggleCollapse={vi.fn()}
       />
     );
 
@@ -144,7 +146,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithUKRegion}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -168,7 +170,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithSARegion}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -192,7 +194,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithIERegion}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -216,7 +218,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithROWRegion}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -239,7 +241,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithoutRegion}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -268,7 +270,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithItems}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -294,7 +296,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithItems}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -303,7 +305,7 @@ describe('CartSummaryPanel', () => {
       fireEvent.click(breakdownLink);
 
       // Should show per-item VAT details
-      expect(screen.getByText('VAT per Product:')).toBeInTheDocument();
+      expect(screen.getByText('VAT calculation per Product:')).toBeInTheDocument();
     });
 
     it('should indicate mixed VAT rates when items have different rates', () => {
@@ -325,12 +327,17 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithMixedRates}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
-      // Should indicate mixed rates
-      expect(screen.getByText(/mixed rates/i)).toBeInTheDocument();
+      // Click to expand VAT breakdown to see individual rates
+      const breakdownLink = screen.getByText(/View VAT breakdown/);
+      fireEvent.click(breakdownLink);
+
+      // Should show both rates (20% and 0%) indicating mixed VAT rates
+      expect(screen.getByText('20%')).toBeInTheDocument();
+      expect(screen.getByText('0%')).toBeInTheDocument();
     });
 
     it('should not show breakdown link when no per-item VAT data', () => {
@@ -349,7 +356,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithoutItems}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -394,7 +401,7 @@ describe('CartSummaryPanel', () => {
             cartItems={largeQuantityItems}
             vatCalculations={largeQuantityVat}
             isCollapsed={false}
-            onToggleCollapse={jest.fn()}
+            onToggleCollapse={vi.fn()}
           />
         );
       }).not.toThrow();
@@ -428,7 +435,7 @@ describe('CartSummaryPanel', () => {
           }]}
           vatCalculations={largeAmountVat}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
 
@@ -464,7 +471,7 @@ describe('CartSummaryPanel', () => {
               region_info: { region: 'UK' }
             }}
             isCollapsed={false}
-            onToggleCollapse={jest.fn()}
+            onToggleCollapse={vi.fn()}
           />
         );
       }).not.toThrow();
@@ -509,7 +516,7 @@ describe('CartSummaryPanel', () => {
           cartItems={[]}
           vatCalculations={emptyCartVat}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
       expect(container.firstChild).toMatchSnapshot();
@@ -521,7 +528,7 @@ describe('CartSummaryPanel', () => {
           cartItems={singleItemCart}
           vatCalculations={singleItemVat}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
       expect(container.firstChild).toMatchSnapshot();
@@ -533,7 +540,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={mockVatCalculations}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
       expect(container.firstChild).toMatchSnapshot();
@@ -545,7 +552,7 @@ describe('CartSummaryPanel', () => {
           cartItems={mockCartItems}
           vatCalculations={mockVatCalculations}
           isCollapsed={true}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
         />
       );
       expect(container.firstChild).toMatchSnapshot();

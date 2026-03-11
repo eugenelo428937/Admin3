@@ -1,31 +1,33 @@
+import { vi } from 'vitest';
 // src/components/admin/staff/__tests__/StaffList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStaffList from '../StaffList';
+import AdminStaffList from '../StaffList.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock staffService
-jest.mock('../../../../services/staffService', () => ({
+vi.mock('../../../../services/staffService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-import staffService from '../../../../services/staffService';
+import staffService from '../../../../services/staffService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockStaff = [
   {
@@ -50,7 +52,7 @@ const renderComponent = () => {
 
 describe('AdminStaffList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -126,7 +128,7 @@ describe('AdminStaffList', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       staffService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -145,7 +147,7 @@ describe('AdminStaffList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -172,7 +174,7 @@ describe('AdminStaffList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       staffService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

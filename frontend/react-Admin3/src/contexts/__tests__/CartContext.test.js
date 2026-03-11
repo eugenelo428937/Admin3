@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for CartContext
  *
@@ -8,28 +9,35 @@
 
 // Unmock CartContext to test the real implementation
 // This must be before any imports
-jest.unmock('../CartContext');
+vi.unmock('../CartContext.js');
+
+// Mock ConfigContext - CartContext depends on useConfig
+vi.mock('../ConfigContext.js', () => ({
+  __esModule: true,
+  useConfig: () => ({ isInternal: false, configLoaded: true }),
+  ConfigProvider: ({ children }) => children,
+}));
 
 // Mock cartService - this will override the setupTests.js mock for this file
-jest.mock('../../services/cartService', () => ({
+vi.mock('../../services/cartService.js', () => ({
   __esModule: true,
   default: {
-    fetchCart: jest.fn(() => Promise.resolve({
+    fetchCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: { region_info: { region: 'UK' } }
       }
     })),
-    addToCart: jest.fn(() => Promise.resolve({
+    addToCart: vi.fn(() => Promise.resolve({
       data: { items: [{ id: 1, quantity: 1 }] }
     })),
-    updateItem: jest.fn(() => Promise.resolve({
+    updateItem: vi.fn(() => Promise.resolve({
       data: { items: [{ id: 1, quantity: 3 }] }
     })),
-    removeItem: jest.fn(() => Promise.resolve({
+    removeItem: vi.fn(() => Promise.resolve({
       data: { items: [] }
     })),
-    clearCart: jest.fn(() => Promise.resolve({
+    clearCart: vi.fn(() => Promise.resolve({
       data: { items: [] }
     })),
   },
@@ -37,8 +45,8 @@ jest.mock('../../services/cartService', () => ({
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { CartProvider, useCart } from '../CartContext';
-import cartService from '../../services/cartService';
+import { CartProvider, useCart } from '../CartContext.js';
+import cartService from '../../services/cartService.js';
 
 // Ref to store cart context for tests
 let cartRef = null;
@@ -62,7 +70,7 @@ const TestConsumer = () => {
 
 describe('CartContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     cartRef = null;
 
     // Reset default mock implementations

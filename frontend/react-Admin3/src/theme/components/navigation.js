@@ -55,17 +55,17 @@
  * @usage <IconButton variant="hamburgerToggle"><MenuIcon /></IconButton>
  */
 
-import { spacing } from "../tokens/spacing";
-import { navigation } from "../semantic/navigation";
+import { spacing } from "../tokens/spacing.js";
+import { navigation } from "../semantic/navigation.js";
 import {
    fontSizes,
    fontWeights,
    fontFamilies,
    letterSpacings,
    lineHeights,
-} from "../tokens/typography";
-import { iconSizes } from "../tokens/icons";
-import { shadows } from "../tokens/shadows";
+} from "../tokens/typography.js";
+import { iconSizes } from "../tokens/icons.js";
+import { shadows } from "../tokens/shadows.js";
 
 const important = (value) => `${value} !important`;
 

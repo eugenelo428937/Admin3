@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Contract Tests for PerformanceTracker Utility Class (Story 1.15)
  *
@@ -16,7 +17,7 @@
  * - isSupported()
  */
 
-import PerformanceTracker from '../PerformanceTracker';
+import PerformanceTracker from '../PerformanceTracker.js';
 
 // Mock Performance API for Jest/jsdom environment
 const mockPerformanceEntries = [];
@@ -350,7 +351,7 @@ describe('PerformanceTracker', () => {
     let consoleWarnSpy;
 
     beforeEach(() => {
-      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
     });
 
     afterEach(() => {

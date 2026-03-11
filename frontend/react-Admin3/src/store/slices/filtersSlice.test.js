@@ -29,7 +29,7 @@ import {
   selectFilters,
   selectHasActiveFilters,
   selectActiveFilterCount,
-} from './filtersSlice';
+} from './filtersSlice.js';
 
 // Initial state for testing (Story 1.14 - updated to match baseFiltersInitialState)
 const initialState = {

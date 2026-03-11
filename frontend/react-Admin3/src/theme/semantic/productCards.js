@@ -11,7 +11,7 @@
  * @see data-model.md for ProductCardColors structure
  */
 
-import { scales, staticColors } from '../tokens/colors';
+import { scales, staticColors } from '../tokens/colors.js';
 
 // =============================================================================
 // Product Card Token Structure

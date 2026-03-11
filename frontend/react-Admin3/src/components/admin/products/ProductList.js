@@ -1,9 +1,9 @@
 // src/components/admin/products/ProductList.js
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth';
-import catalogProductService from "../../../services/catalogProductService";
-import ProductTable from "./ProductTable";
+import { useAuth } from '../../../hooks/useAuth.js';
+import catalogProductService from "../../../services/catalogProductService.js";
+import ProductTable from "./ProductTable.js";
 import {
   Button, Container, Grid, Typography, Alert, Box, CircularProgress,
   TablePagination

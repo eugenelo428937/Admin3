@@ -11,7 +11,7 @@
  * Story 1.11 - Migrated to use FilterRegistry (AC7)
  */
 
-import { FilterRegistry } from '../store/filters/filterRegistry';
+import { FilterRegistry } from '../store/filters/filterRegistry.js';
 
 /**
  * DEPRECATED: URL_PARAM_KEYS - Use FilterRegistry instead

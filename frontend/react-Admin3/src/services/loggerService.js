@@ -8,12 +8,12 @@ const logLevels = {
 
 const loggerService = {
 	debug: (message, data) => {
-		if (process.env.NODE_ENV !== "production") {
+		if (!import.meta.env?.PROD) {
 			console.log(`${logLevels.DEBUG} ${message}`, data || "");
 		}
 	},
 	info: (message, data) => {
-		if (process.env.NODE_ENV !== "production") {
+		if (!import.meta.env?.PROD) {
 			console.info(`${logLevels.INFO} ${message}`, data || "");
 		}
 	},

@@ -13,12 +13,12 @@ import {
    Snackbar,
 } from "@mui/material";
 import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
-import authService from "../../services/authService";
-import userService from "../../services/userService";
-import config from "../../config";
-import addressMetadataService from "../../services/addressMetadataService";
-import AddressComparisonModal from '../Address/AddressComparisonModal';
-import addressValidationService from '../../services/addressValidationService';
+import authService from "../../services/authService.js";
+import userService from "../../services/userService.js";
+import config from '../../config.js';
+import addressMetadataService from "../../services/addressMetadataService.js";
+import AddressComparisonModal from '../Address/AddressComparisonModal.js';
+import addressValidationService from '../../services/addressValidationService.js';
 import { PersonalInfoStep, HomeAddressStep, WorkAddressStep, PreferencesStep, SecurityStep } from './steps';
 import { useTheme } from "@mui/material/styles";
 const initialForm = {

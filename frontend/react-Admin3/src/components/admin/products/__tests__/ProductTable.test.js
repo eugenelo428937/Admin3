@@ -1,18 +1,21 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductTable.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductTable from '../ProductTable';
+import AdminProductTable from '../ProductTable.js';
 
+import appTheme from '../../../../theme';
 // Mock ProductVariationsPanel to avoid testing its internals here
-jest.mock('../ProductVariationsPanel', () => {
-  return function MockProductVariationsPanel({ productId }) {
+vi.mock('../ProductVariationsPanel.js', () => ({
+  __esModule: true,
+  default: function MockProductVariationsPanel({ productId }) {
     return <div data-testid={`expand-row-${productId}`}>Variations for {productId}</div>;
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 const mockProducts = [
   {
@@ -38,7 +41,7 @@ const mockProducts = [
 const renderComponent = (props = {}) => {
   const defaultProps = {
     products: mockProducts,
-    onDelete: jest.fn(),
+    onDelete: vi.fn(),
   };
 
   return render(
@@ -127,7 +130,7 @@ describe('AdminProductTable', () => {
 
   describe('delete functionality', () => {
     test('calls onDelete with correct id when delete clicked', () => {
-      const mockOnDelete = jest.fn();
+      const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
@@ -137,7 +140,7 @@ describe('AdminProductTable', () => {
     });
 
     test('calls onDelete with second product id', () => {
-      const mockOnDelete = jest.fn();
+      const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });

@@ -1,5 +1,5 @@
-import config from "../config";
-import httpService from "./httpService";
+import config from "../config.js";
+import httpService from "./httpService.js";
 
 // Search endpoints are now on the catalog API (002-catalog-api-consolidation)
 const SEARCH_API_URL = config.catalogUrl;

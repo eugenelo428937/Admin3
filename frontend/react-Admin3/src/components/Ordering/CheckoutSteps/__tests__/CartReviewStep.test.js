@@ -1,14 +1,15 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme';
-import CartReviewStep from '../CartReviewStep';
+import theme from '../../../../theme/theme.js';
+import CartReviewStep from '../CartReviewStep.js';
 
 // Mock components that aren't available in test environment
-jest.mock('../../../../utils/productCodeGenerator', () => ({
-  generateProductCode: jest.fn(() => 'TEST-001'),
+vi.mock('../../../../utils/productCodeGenerator.js', () => ({
+  generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 
 const renderWithTheme = (component) => {

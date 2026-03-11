@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import testTheme from "../theme/testTheme";
-import ProductCard from "../components/Common/BaseProductCard";
+import ProductCard from "../components/Common/BaseProductCard.js";
 import { School, AddShoppingCart, CalendarMonthOutlined, ViewModule, LocationOn, InfoOutline } from "@mui/icons-material";
 
 const EnhancedTutorialProductCardTest = ({ producttype = "tutorial", ...props }) => {

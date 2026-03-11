@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for UserActions Component
  * T026: Test auth state display, logout with AuthContext
@@ -6,56 +7,48 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import UserActions from '../UserActions';
+import UserActions from '../UserActions.js';
+import appTheme from '../../../theme';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
+  useNavigate: vi.fn(() => mockNavigate),
 }));
 
 // Mock useAuth hook with configurable values
 let mockAuthState = {
   isAuthenticated: false,
   user: null,
-  logout: jest.fn(),
+  logout: vi.fn(),
 };
 
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock useCart context
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartCount: 5,
   }),
 }));
 
-const theme = createTheme({
-  palette: {
-    liftkit: {
-      light: {
-        background: '#ffffff',
-        onSurface: '#000000',
-      },
-    },
-  },
-});
+const theme = appTheme;
 
 describe('UserActions', () => {
-  const mockOnOpenSearch = jest.fn();
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnToggleMobileMenu = jest.fn();
+  const mockOnOpenSearch = vi.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnToggleMobileMenu = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockAuthState = {
       isAuthenticated: false,
       user: null,
-      logout: jest.fn(),
+      logout: vi.fn(),
     };
   });
 
@@ -103,7 +96,7 @@ describe('UserActions', () => {
           first_name: 'John',
           last_name: 'Doe',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
     });
 
@@ -272,7 +265,7 @@ describe('UserActions', () => {
           first_name: 'John',
           last_name: 'Doe',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
 
       renderUserActions();
@@ -289,7 +282,7 @@ describe('UserActions', () => {
         user: {
           email: 'test@example.com',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
 
       renderUserActions();

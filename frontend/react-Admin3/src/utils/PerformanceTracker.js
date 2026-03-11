@@ -307,7 +307,7 @@ class PerformanceTracker {
 }
 
 // Development-only export
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env?.DEV) {
   // Export for development use
   window.PerformanceTracker = PerformanceTracker;
 }

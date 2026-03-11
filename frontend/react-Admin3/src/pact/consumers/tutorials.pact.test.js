@@ -7,7 +7,7 @@
  *
  * All tutorial endpoints use AllowAny permissions.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -15,7 +15,7 @@ const {
   integer,
   boolean,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Tutorials Service - Pact Consumer Tests', () => {

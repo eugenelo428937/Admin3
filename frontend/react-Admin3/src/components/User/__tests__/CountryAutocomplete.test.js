@@ -1,11 +1,13 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/CountryAutocomplete.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CountryAutocomplete from '../CountryAutocomplete';
+import { ThemeProvider } from '@mui/material/styles';
+import CountryAutocomplete from '../CountryAutocomplete.js';
 
+import appTheme from '../../../theme';
 // Mock config
-jest.mock('../../../config', () => ({
+vi.mock('../../../config.js', () => ({
   __esModule: true,
   default: { apiBaseUrl: 'http://localhost:8888' },
 }));
@@ -19,14 +21,14 @@ const mockCountries = [
 ];
 
 // Mock fetch
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderComponent = (props = {}) => {
   const defaultProps = {
-    onChange: jest.fn(),
+    onChange: vi.fn(),
   };
 
   return render(
@@ -38,7 +40,7 @@ const renderComponent = (props = {}) => {
 
 describe('CountryAutocomplete', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockFetch.mockResolvedValue({
       json: () => Promise.resolve(mockCountries),
     });
@@ -168,7 +170,7 @@ describe('CountryAutocomplete', () => {
 
   describe('selection', () => {
     test('calls onChange when country is selected', async () => {
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
       renderComponent({ onChange: mockOnChange, name: 'country' });
 
       const input = screen.getByRole('textbox');

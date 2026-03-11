@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for AuthModal Component
  * T019: Test open/close, form validation, submit with AuthContext/Router
@@ -5,23 +6,24 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AuthModal from '../AuthModal';
+import { ThemeProvider } from '@mui/material/styles';
+import AuthModal from '../AuthModal.js';
 
+import appTheme from '../../../theme';
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
-  useParams: () => ({}),
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
 }));
 
 // Mock useAuth hook
-const mockLogin = jest.fn();
-jest.mock('../../../hooks/useAuth', () => ({
+const mockLogin = vi.fn();
+vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     login: mockLogin,
     isLoading: false,
@@ -31,8 +33,9 @@ jest.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock LoginFormContent
-jest.mock('../../User/LoginFormContent', () => {
-  return function MockLoginFormContent({
+vi.mock('../../User/LoginFormContent.js', () => ({
+  __esModule: true,
+  default: function MockLoginFormContent({
     formData,
     handleInputChange,
     handleLogin,
@@ -70,16 +73,16 @@ jest.mock('../../User/LoginFormContent', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 
 describe('AuthModal', () => {
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset body overflow
     document.body.style.overflow = '';
     document.body.classList.remove('mui-fixed');

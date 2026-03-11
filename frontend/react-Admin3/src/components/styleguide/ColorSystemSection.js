@@ -8,7 +8,7 @@ import {
   Divider,
   Grid
 } from '@mui/material';
-import MaterialDesign3Palette from './MaterialDesign3Palette';
+import MaterialDesign3Palette from './MaterialDesign3Palette.js';
 
 const ColorSystemSection = () => {
   return (

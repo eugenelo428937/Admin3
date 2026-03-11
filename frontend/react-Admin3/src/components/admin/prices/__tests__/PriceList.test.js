@@ -1,31 +1,33 @@
+import { vi } from 'vitest';
 // src/components/admin/prices/__tests__/PriceList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminPriceList from '../PriceList';
+import AdminPriceList from '../PriceList.js';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock priceService
-jest.mock('../../../../services/priceService', () => ({
+vi.mock('../../../../services/priceService.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-import priceService from '../../../../services/priceService';
+import priceService from '../../../../services/priceService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockPrices = [
   {
@@ -66,7 +68,7 @@ const renderComponent = () => {
 
 describe('AdminPriceList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -172,7 +174,7 @@ describe('AdminPriceList', () => {
 
   describe('delete functionality', () => {
     test('deletes all prices for a product when confirmed', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       priceService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -193,7 +195,7 @@ describe('AdminPriceList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -220,7 +222,7 @@ describe('AdminPriceList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       priceService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

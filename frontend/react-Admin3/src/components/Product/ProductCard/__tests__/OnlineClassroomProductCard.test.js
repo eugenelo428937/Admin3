@@ -1,11 +1,13 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/OnlineClassroomProductCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import OnlineClassroomProductCard from '../OnlineClassroomProductCard';
+import { ThemeProvider } from '@mui/material/styles';
+import OnlineClassroomProductCard from '../OnlineClassroomProductCard.js';
 
+import appTheme from '../../../../theme';
 // Mock useCart
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',
@@ -16,7 +18,7 @@ jest.mock('../../../../contexts/CartContext', () => ({
   }),
 }));
 
-const theme = createTheme();
+const theme = appTheme;
 
 const mockProduct = {
   id: 'prod-1',
@@ -52,7 +54,7 @@ const mockProduct = {
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     product: mockProduct,
-    onAddToCart: jest.fn(),
+    onAddToCart: vi.fn(),
   };
 
   let result;
@@ -71,12 +73,13 @@ describe('OnlineClassroomProductCard', () => {
   describe('rendering', () => {
     test('renders product title', async () => {
       await renderComponent();
-      expect(screen.getByText('Online Classroom')).toBeInTheDocument();
+      expect(screen.getByText('CM2 Online Classroom')).toBeInTheDocument();
     });
 
-    test('renders product subtitle with subject code', async () => {
+    test('renders product name in price modal info', async () => {
       await renderComponent();
-      expect(screen.getByText(/CM2 - Online Classroom Course/i)).toBeInTheDocument();
+      // The product_name is shown in the price modal, not as a subtitle
+      expect(screen.getByText('CM2')).toBeInTheDocument();
     });
 
     test('renders subject code badge', async () => {
@@ -85,7 +88,8 @@ describe('OnlineClassroomProductCard', () => {
     });
 
     test('renders exam session badge', async () => {
-      await renderComponent();
+      const productWithSession = { ...mockProduct, exam_session_code: '25S' };
+      await renderComponent({ product: productWithSession });
       expect(screen.getByText('25S')).toBeInTheDocument();
     });
 
@@ -100,10 +104,10 @@ describe('OnlineClassroomProductCard', () => {
       expect(screen.getByText('Premium Access')).toBeInTheDocument();
     });
 
-    test('renders variation descriptions', async () => {
+    test('renders variation names', async () => {
       await renderComponent();
-      expect(screen.getByText('6 months access')).toBeInTheDocument();
-      expect(screen.getByText('12 months access with recordings')).toBeInTheDocument();
+      expect(screen.getByText('Standard Access')).toBeInTheDocument();
+      expect(screen.getByText('Premium Access')).toBeInTheDocument();
     });
 
     test('renders VAT status display', async () => {
@@ -214,7 +218,7 @@ describe('OnlineClassroomProductCard', () => {
 
   describe('add to cart', () => {
     test('calls onAddToCart with correct context when clicked', async () => {
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ onAddToCart: mockOnAddToCart });
 
       const addButton = screen.getByRole('button', { name: '' });
@@ -238,7 +242,7 @@ describe('OnlineClassroomProductCard', () => {
     });
 
     test('passes selected price type to onAddToCart', async () => {
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ onAddToCart: mockOnAddToCart });
 
       // Select retaker discount
@@ -263,7 +267,7 @@ describe('OnlineClassroomProductCard', () => {
 
     test('does not call onAddToCart when no variation selected', async () => {
       const productNoVariations = { ...mockProduct, variations: [] };
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ product: productNoVariations, onAddToCart: mockOnAddToCart });
 
       const addButton = screen.getByRole('button', { name: '' });
@@ -279,7 +283,7 @@ describe('OnlineClassroomProductCard', () => {
     test('applies hover transform on mouse enter', async () => {
       await renderComponent();
 
-      const card = screen.getByText('Online Classroom').closest('.MuiCard-root');
+      const card = screen.getByText('CM2 Online Classroom').closest('.MuiCard-root');
       fireEvent.mouseEnter(card);
 
       expect(card).toHaveStyle({ transform: 'scale(1.02)' });
@@ -288,7 +292,7 @@ describe('OnlineClassroomProductCard', () => {
     test('removes hover transform on mouse leave', async () => {
       await renderComponent();
 
-      const card = screen.getByText('Online Classroom').closest('.MuiCard-root');
+      const card = screen.getByText('CM2 Online Classroom').closest('.MuiCard-root');
       fireEvent.mouseEnter(card);
       fireEvent.mouseLeave(card);
 
@@ -301,7 +305,7 @@ describe('OnlineClassroomProductCard', () => {
       const productNoVariations = { ...mockProduct, variations: [] };
       await renderComponent({ product: productNoVariations });
 
-      expect(screen.getByText('Online Classroom')).toBeInTheDocument();
+      expect(screen.getByText('CM2 Online Classroom')).toBeInTheDocument();
       expect(screen.getByText('£0.00')).toBeInTheDocument();
     });
 

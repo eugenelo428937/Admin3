@@ -6,7 +6,7 @@
  */
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import config from '../../config';
+import config from '../../config.js';
 
 // Base query with authentication and error handling
 const baseQuery = fetchBaseQuery({

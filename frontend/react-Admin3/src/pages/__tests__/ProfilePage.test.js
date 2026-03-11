@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for ProfilePage Component
  * T013: Test authentication redirect, breadcrumb navigation, UserFormWizard integration
@@ -6,18 +7,18 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme';
+import theme from '../../theme/theme.js';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/profile', search: '', hash: '', state: null }),
-  useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/profile', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
+  useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -29,14 +30,15 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-const mockUseAuth = jest.fn();
-jest.mock('../../hooks/useAuth', () => ({
+const mockUseAuth = vi.fn();
+vi.mock('../../hooks/useAuth.js', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-jest.mock('../../components/User/UserFormWizard', () => {
-  return function MockUserFormWizard({ mode, onSuccess, onError }) {
+vi.mock('../../components/User/UserFormWizard.js', () => ({
+  __esModule: true,
+  default: function MockUserFormWizard({ mode, onSuccess, onError }) {
     return (
       <div data-testid="user-form-wizard" data-mode={mode}>
         <span>Mode: {mode}</span>
@@ -54,14 +56,14 @@ jest.mock('../../components/User/UserFormWizard', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-import ProfilePage from '../ProfilePage';
+import ProfilePage from '../ProfilePage.js';
 
 describe('ProfilePage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: true });
   });
 
@@ -178,7 +180,7 @@ describe('ProfilePage', () => {
 
   describe('success callback', () => {
     test('handles profile update success', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       renderProfilePage();
 
@@ -195,7 +197,7 @@ describe('ProfilePage', () => {
 
   describe('error callback', () => {
     test('handles profile update error', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderProfilePage();
 

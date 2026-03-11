@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Alert, Badge } from "react-bootstrap";
 import ValidatedPhoneInput from "./ValidatedPhoneInput";
 import phoneValidationService from "../../services/phoneValidationService";
-import config from "../../config";
+import config from '../../config.js';
 
 const PhoneValidationDemo = () => {
   const [countries, setCountries] = useState([]);

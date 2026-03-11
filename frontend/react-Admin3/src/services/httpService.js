@@ -1,7 +1,7 @@
 import axios from "axios";
-import authService from "./authService";
-import config from "../config";
-import logger from "./loggerService";
+import authService from "./authService.js";
+import config from "../config.js";
+import logger from "./loggerService.js";
 
 const httpService = axios.create({
 	baseURL: config.apiBaseUrl,
@@ -32,7 +32,7 @@ const fetchCsrfToken = async () => {
         });
         
         // Log session establishment for debugging
-        if (process.env.NODE_ENV === 'development' && response.data.sessionKey) {
+        if (import.meta.env?.DEV && response.data.sessionKey) {
 
         }
         
@@ -144,7 +144,7 @@ httpService.interceptors.response.use(
 
 // Create an axios instance with default configuration 
 // const httpService = axios.create({
-// 	baseURL: process.env.REACT_APP_API_URL || "http://127.0.0.1:8888",
+// 	baseURL: import.meta.env?.VITE_API_URL || "http://127.0.0.1:8888",
 // 	withCredentials: true,
 // 	headers: { "Content-Type": "application/json" },
 // });

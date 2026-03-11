@@ -1,7 +1,7 @@
 // Material Product Card Variant Styles
-import { spacing } from '../../tokens/spacing';
-import { material } from '../../semantic/productCards';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../tokens/spacing.js';
+import { material } from '../../semantic/productCards.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Material card variant - Sky/Blue theme

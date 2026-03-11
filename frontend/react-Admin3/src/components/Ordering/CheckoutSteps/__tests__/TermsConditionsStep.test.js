@@ -1,30 +1,31 @@
+import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/TermsConditionsStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
 // Mock useAuth hook
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
   }),
 }));
 
 // Mock rulesEngineService
-jest.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn(),
-    acknowledgeRule: jest.fn(),
+    executeRules: vi.fn(),
+    acknowledgeRule: vi.fn(),
   },
 }));
 
 // Mock rulesEngineUtils
-jest.mock('../../../../utils/rulesEngineUtils', () => ({
+vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
   rulesEngineHelpers: {
-    executeCheckoutTerms: jest.fn(),
+    executeCheckoutTerms: vi.fn(),
   },
-  parseMessageContent: jest.fn((message, defaults) => ({
+  parseMessageContent: vi.fn((message, defaults) => ({
     title: message?.content?.title || defaults.title,
     message: message?.content?.message || defaults.message,
     checkboxText: message?.content?.checkbox_text || defaults.checkboxText,
@@ -34,20 +35,22 @@ jest.mock('../../../../utils/rulesEngineUtils', () => ({
   })),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService';
-import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils';
+import rulesEngineService from '../../../../services/rulesEngineService.js';
+import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils.js';
 
 // Mock RulesEngineAcknowledgmentModal
-jest.mock('../../../Common/RulesEngineAcknowledgmentModal', () => {
-  return function MockRulesEngineAcknowledgmentModal({ open }) {
+vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
+  __esModule: true,
+  default: function MockRulesEngineAcknowledgmentModal({ open }) {
     if (!open) return null;
     return <div data-testid="acknowledgment-modal">Modal</div>;
-  };
-});
+  },
+}));
 
-import TermsConditionsStep from '../TermsConditionsStep';
+import TermsConditionsStep from '../TermsConditionsStep.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockCartData = {
   id: 'cart-123',
@@ -73,7 +76,7 @@ const renderComponent = (props = {}) => {
     cartData: mockCartData,
     cartItems: mockCartItems,
     generalTermsAccepted: false,
-    setGeneralTermsAccepted: jest.fn(),
+    setGeneralTermsAccepted: vi.fn(),
   };
 
   return render(
@@ -85,7 +88,7 @@ const renderComponent = (props = {}) => {
 
 describe('TermsConditionsStep', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     rulesEngineHelpers.executeCheckoutTerms.mockResolvedValue(defaultRulesResult);
   });
 
@@ -175,7 +178,7 @@ describe('TermsConditionsStep', () => {
     });
 
     test('calls setGeneralTermsAccepted when checkbox is clicked', async () => {
-      const mockSetTerms = jest.fn();
+      const mockSetTerms = vi.fn();
       renderComponent({ setGeneralTermsAccepted: mockSetTerms });
 
       await waitFor(() => {

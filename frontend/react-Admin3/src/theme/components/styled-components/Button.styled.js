@@ -28,8 +28,8 @@
 import { forwardRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { Button as MuiButton } from '@mui/material';
-import { borderRadius } from '../../tokens/borderRadius';
-import { getButtonStateStyles } from '../buttons';
+import { borderRadius } from '../../tokens/borderRadius.js';
+import { getButtonStateStyles } from '../buttons.js';
 
 // ---------------------------------------------------------------------------
 // Transient prop filter

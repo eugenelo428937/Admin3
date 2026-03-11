@@ -1,16 +1,18 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PreferencesStep from '../User/steps/PreferencesStep';
+import { ThemeProvider } from '@mui/material/styles';
+import PreferencesStep from '../User/steps/PreferencesStep.js';
 
-const theme = createTheme();
+import appTheme from '../../theme';
+const theme = appTheme;
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('PreferencesStep', () => {
   const defaultProps = {
     initialData: { send_invoices_to: 'HOME', send_study_material_to: 'HOME' },
-    onDataChange: jest.fn(),
+    onDataChange: vi.fn(),
     errors: {},
     mode: 'registration',
     hasWorkAddress: false,

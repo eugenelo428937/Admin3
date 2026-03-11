@@ -1,9 +1,10 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme';
-import CheckoutSteps from '../../CheckoutSteps';
+import theme from '../../../../theme/theme.js';
+import CheckoutSteps from '../../CheckoutSteps.js';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -37,57 +38,63 @@ const mockCartContext = {
   }
 };
 
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => mockCartContext
 }));
 
 // Mock the auth hook
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     user: null,
     isAuthenticated: false,
-    login: jest.fn(),
-    logout: jest.fn(),
+    login: vi.fn(),
+    logout: vi.fn(),
     loading: false
   })
 }));
 
 // Mock the services
-jest.mock('../../../../services/httpService', () => ({
-  post: jest.fn().mockResolvedValue({ data: {} }),
-  get: jest.fn().mockResolvedValue({ data: {} }),
-}));
-
-jest.mock('../../../../config', () => ({
-  API_BASE_URL: 'http://localhost:8888'
-}));
-
-jest.mock('../../../../services/userService', () => ({
+vi.mock('../../../../services/httpService.js', () => ({
   __esModule: true,
   default: {
-    getProfile: jest.fn().mockResolvedValue({ data: {} }),
-    updateProfile: jest.fn().mockResolvedValue({ data: {} })
+    post: vi.fn().mockResolvedValue({ data: {} }),
+    get: vi.fn().mockResolvedValue({ data: {} }),
+  },
+}));
+
+vi.mock('../../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    API_BASE_URL: 'http://localhost:8888'
+  },
+}));
+
+vi.mock('../../../../services/userService.js', () => ({
+  __esModule: true,
+  default: {
+    getProfile: vi.fn().mockResolvedValue({ data: {} }),
+    updateProfile: vi.fn().mockResolvedValue({ data: {} })
   }
 }));
 
-jest.mock('../../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../../hooks/useCheckoutValidation.js', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
     errors: {},
-    validateStep: jest.fn().mockReturnValue(true)
+    validateStep: vi.fn().mockReturnValue(true)
   })
 }));
 
-jest.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn().mockResolvedValue({
+    executeRules: vi.fn().mockResolvedValue({
       messages: [],
       effects: [],
       blocked: false
     }),
-    acknowledgeRule: jest.fn().mockResolvedValue({ success: true }),
+    acknowledgeRule: vi.fn().mockResolvedValue({ success: true }),
     ENTRY_POINTS: {
       CHECKOUT_START: 'checkout_start',
       CHECKOUT_TERMS: 'checkout_terms',
@@ -95,12 +102,12 @@ jest.mock('../../../../services/rulesEngineService', () => ({
       ORDER_COMPLETE: 'order_complete'
     }
   },
-  executeRules: jest.fn().mockResolvedValue({
+  executeRules: vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
     blocked: false
   }),
-  acknowledgeRule: jest.fn().mockResolvedValue({ success: true }),
+  acknowledgeRule: vi.fn().mockResolvedValue({ success: true }),
   ENTRY_POINTS: {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
@@ -113,10 +120,10 @@ jest.mock('../../../../services/rulesEngineService', () => ({
 // to enable step navigation. The component validates address/contact data before
 // allowing progression to step 2. Tests need to provide valid address data mocks.
 describe.skip('CheckoutSteps cart summary integration', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should show cart summary panel on steps 2 and beyond', async () => {
@@ -204,10 +211,10 @@ describe.skip('CheckoutSteps cart summary integration', () => {
 
 // TDD RED PHASE: Snapshot tests that require step navigation need valid address/contact data
 describe.skip('CheckoutSteps Snapshot Tests (T033 - Regression Detection)', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders step 1 - cart review', () => {
@@ -258,11 +265,11 @@ describe.skip('CheckoutSteps Snapshot Tests (T033 - Regression Detection)', () =
 // TDD RED PHASE: Order submission tests require complete step navigation setup
 describe.skip('Async Operations - Order Submission Success (T049)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should call onComplete callback when order is successfully submitted', async () => {
-    const mockOnComplete = jest.fn().mockResolvedValue({ status: 'success' });
+    const mockOnComplete = vi.fn().mockResolvedValue({ status: 'success' });
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -303,7 +310,7 @@ describe.skip('Async Operations - Order Submission Success (T049)', () => {
     const submitPromise = new Promise((resolve) => {
       resolveSubmit = resolve;
     });
-    const mockOnComplete = jest.fn().mockReturnValue(submitPromise);
+    const mockOnComplete = vi.fn().mockReturnValue(submitPromise);
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -331,7 +338,7 @@ describe.skip('Async Operations - Order Submission Success (T049)', () => {
   });
 
   it('should clear any previous errors on successful submission', async () => {
-    const mockOnComplete = jest.fn().mockResolvedValue({ status: 'success' });
+    const mockOnComplete = vi.fn().mockResolvedValue({ status: 'success' });
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -343,11 +350,11 @@ describe.skip('Async Operations - Order Submission Success (T049)', () => {
 // TDD RED PHASE: Order failure tests require complete step navigation setup
 describe.skip('Async Operations - Order Submission Failure (T050)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should display error message when order submission fails', async () => {
-    const mockOnComplete = jest.fn().mockRejectedValue(new Error('Payment failed'));
+    const mockOnComplete = vi.fn().mockRejectedValue(new Error('Payment failed'));
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -386,7 +393,7 @@ describe.skip('Async Operations - Order Submission Failure (T050)', () => {
   });
 
   it('should handle network errors gracefully', async () => {
-    const mockOnComplete = jest.fn().mockRejectedValue(new Error('Network error'));
+    const mockOnComplete = vi.fn().mockRejectedValue(new Error('Network error'));
 
     // Should render without throwing
     expect(() => {
@@ -398,7 +405,7 @@ describe.skip('Async Operations - Order Submission Failure (T050)', () => {
   });
 
   it('should display validation errors when required fields are missing', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -416,7 +423,7 @@ describe.skip('Async Operations - Order Submission Failure (T050)', () => {
   });
 
   it('should not call onComplete if validation fails', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -441,7 +448,7 @@ describe.skip('Async Operations - Order Submission Failure (T050)', () => {
   });
 
   it('should reset loading state after submission failure', async () => {
-    const mockOnComplete = jest.fn().mockRejectedValue(new Error('Server error'));
+    const mockOnComplete = vi.fn().mockRejectedValue(new Error('Server error'));
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -455,10 +462,10 @@ describe.skip('Async Operations - Order Submission Failure (T050)', () => {
 });
 
 describe('Address Validation - Checkout Flow (T058)', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render checkout steps without address errors initially', () => {

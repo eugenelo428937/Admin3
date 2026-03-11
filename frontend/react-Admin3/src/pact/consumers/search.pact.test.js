@@ -6,7 +6,7 @@
  * - GET /api/search/advanced-fuzzy/    (advancedSearch)
  * - GET /api/search/default-data/      (getDefaultSearchData)
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -15,7 +15,7 @@ const {
   boolean,
   decimal,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Search Service - Pact Consumer Tests', () => {

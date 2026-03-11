@@ -1,41 +1,42 @@
+import { vi } from 'vitest';
 /**
  * Tests for useCheckoutValidation hook
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useCheckoutValidation from '../useCheckoutValidation';
+import useCheckoutValidation from '../useCheckoutValidation.js';
 
 // Mock dependencies
-jest.mock('../../services/acknowledgmentService', () => ({
+vi.mock('../../services/acknowledgmentService.js', () => ({
   __esModule: true,
   default: {
-    validateCheckoutReadiness: jest.fn(),
-    buildValidationContext: jest.fn(),
-    canProceedWithCheckout: jest.fn(),
-    getMissingAcknowledgments: jest.fn(),
-    collectAllRequiredAcknowledgments: jest.fn()
+    validateCheckoutReadiness: vi.fn(),
+    buildValidationContext: vi.fn(),
+    canProceedWithCheckout: vi.fn(),
+    getMissingAcknowledgments: vi.fn(),
+    collectAllRequiredAcknowledgments: vi.fn()
   }
 }));
 
-jest.mock('libphonenumber-js', () => ({
-  parsePhoneNumber: jest.fn()
+vi.mock('libphonenumber-js', () => ({
+  parsePhoneNumber: vi.fn()
 }));
 
-const acknowledgmentService = require('../../services/acknowledgmentService').default;
-const { parsePhoneNumber } = require('libphonenumber-js');
+import acknowledgmentService from '../../services/acknowledgmentService.js';
+import { parsePhoneNumber } from 'libphonenumber-js';
 
 describe('useCheckoutValidation', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('initial state', () => {
-    test('should return initial validation state', () => {
+    test('should return initial validation state', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
 
       expect(result.current.isValidating).toBe(false);
@@ -46,7 +47,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validateEmail', () => {
-    test('should return error for empty email', () => {
+    test('should return error for empty email', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validateEmail('')).toEqual({
@@ -55,7 +56,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return error for invalid email format', () => {
+    test('should return error for invalid email format', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validateEmail('invalid-email')).toEqual({
@@ -64,7 +65,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return valid for correct email', () => {
+    test('should return valid for correct email', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validateEmail('test@example.com')).toEqual({
@@ -75,7 +76,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validatePhone', () => {
-    test('should return valid for empty optional phone', () => {
+    test('should return valid for empty optional phone', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validatePhone('', 'GB', false)).toEqual({
@@ -84,7 +85,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return error for empty required phone', () => {
+    test('should return error for empty required phone', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validatePhone('', 'GB', true)).toEqual({
@@ -93,7 +94,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return error when parsePhoneNumber returns null', () => {
+    test('should return error when parsePhoneNumber returns null', async () => {
       parsePhoneNumber.mockReturnValue(null);
       const { result } = renderHook(() => useCheckoutValidation());
       
@@ -103,7 +104,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return error for invalid phone number', () => {
+    test('should return error for invalid phone number', async () => {
       parsePhoneNumber.mockReturnValue({
         isValid: () => false
       });
@@ -115,7 +116,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return valid for correct phone number', () => {
+    test('should return valid for correct phone number', async () => {
       parsePhoneNumber.mockReturnValue({
         isValid: () => true,
         formatNational: () => '07700 900000'
@@ -127,7 +128,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.formattedNumber).toBe('07700 900000');
     });
 
-    test('should handle parsePhoneNumber errors', () => {
+    test('should handle parsePhoneNumber errors', async () => {
       parsePhoneNumber.mockImplementation(() => { throw new Error('Parse error'); });
       const { result } = renderHook(() => useCheckoutValidation());
       
@@ -139,7 +140,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validateAddress', () => {
-    test('should return error for null address', () => {
+    test('should return error for null address', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       expect(result.current.validateAddress(null, 'Delivery')).toEqual({
@@ -148,7 +149,7 @@ describe('useCheckoutValidation', () => {
       });
     });
 
-    test('should return error for missing required fields', () => {
+    test('should return error for missing required fields', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       const validation = result.current.validateAddress({}, 'Delivery');
@@ -159,7 +160,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.error).toContain('Country');
     });
 
-    test('should accept address_line_1 as address field', () => {
+    test('should accept address_line_1 as address field', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       const validation = result.current.validateAddress({
@@ -171,7 +172,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.isValid).toBe(true);
     });
 
-    test('should accept street as address field', () => {
+    test('should accept street as address field', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       const validation = result.current.validateAddress({
@@ -185,7 +186,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validateContactInfo', () => {
-    test('should validate required contact fields', () => {
+    test('should validate required contact fields', async () => {
       parsePhoneNumber.mockReturnValue({
         isValid: () => true,
         formatNational: () => '07700 900000'
@@ -201,7 +202,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.errors).toHaveLength(0);
     });
 
-    test('should return errors for invalid contact info', () => {
+    test('should return errors for invalid contact info', async () => {
       parsePhoneNumber.mockReturnValue(null);
       const { result } = renderHook(() => useCheckoutValidation());
       
@@ -214,7 +215,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.errors.length).toBeGreaterThan(0);
     });
 
-    test('should validate optional phone numbers', () => {
+    test('should validate optional phone numbers', async () => {
       parsePhoneNumber.mockImplementation((phone) => {
         if (phone === '+447700900000') {
           return { isValid: () => true, formatNational: () => '07700 900000' };
@@ -236,7 +237,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validateAddresses', () => {
-    test('should validate delivery and invoice addresses', () => {
+    test('should validate delivery and invoice addresses', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       const validation = result.current.validateAddresses(
@@ -247,7 +248,7 @@ describe('useCheckoutValidation', () => {
       expect(validation.isValid).toBe(true);
     });
 
-    test('should return errors for invalid addresses', () => {
+    test('should return errors for invalid addresses', async () => {
       const { result } = renderHook(() => useCheckoutValidation());
       
       const validation = result.current.validateAddresses(
@@ -387,7 +388,7 @@ describe('useCheckoutValidation', () => {
   });
 
   describe('validateStep1', () => {
-    test('should validate step 1 and update state', () => {
+    test('should validate step 1 and update state', async () => {
       parsePhoneNumber.mockReturnValue({
         isValid: () => true,
         formatNational: () => '07700 900000'
@@ -406,7 +407,7 @@ describe('useCheckoutValidation', () => {
       expect(result.current.addressValidation.deliveryAddress.isValid).toBe(true);
     });
 
-    test('should return errors for invalid step 1 data', () => {
+    test('should return errors for invalid step 1 data', async () => {
       parsePhoneNumber.mockReturnValue(null);
       const { result } = renderHook(() => useCheckoutValidation());
 

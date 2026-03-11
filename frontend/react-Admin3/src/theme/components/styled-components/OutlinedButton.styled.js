@@ -18,7 +18,7 @@
 
 import { forwardRef } from 'react';
 import { Typography } from '@mui/material';
-import { Button } from './Button.styled';
+import { Button } from './Button.styled.js';
 
 const OutlinedButton = forwardRef(({ size = 'medium', children, ...props }, ref) => (
   <Button ref={ref} variant="outlined" size={size} {...props}>

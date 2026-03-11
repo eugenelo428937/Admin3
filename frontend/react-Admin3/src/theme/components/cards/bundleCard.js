@@ -1,7 +1,7 @@
 // Bundle Product Card Variant Styles
-import { spacing } from '../../spacing'
-import { bundle } from '../../semantic/productCards';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../spacing/index.js'
+import { bundle } from '../../semantic/productCards.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Bundle card variant - Green theme

@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 // =============================================================================
 // POLYFILLS - Must be FIRST to ensure availability for all imports
 // =============================================================================
@@ -22,15 +24,14 @@ global.BroadcastChannel = BroadcastChannelPolyfill;
 // =============================================================================
 // SERVICE MOCKS - Must be BEFORE any imports to prevent axios import errors
 // =============================================================================
-// Jest hoists jest.mock() calls to the top of the file automatically.
+// Vitest hoists vi.mock() calls to the top of the file automatically.
 // These mocks break the import chain that causes:
 // "SyntaxError: Cannot use import statement outside a module" from axios
 // =============================================================================
 
-// Mock react-router-dom to fix ESM module resolution issues with Jest
-// react-router-dom v7 uses ESM exports that Jest has trouble resolving
-// We provide standalone mock implementations instead of using jest.requireActual()
-jest.mock('react-router-dom', () => {
+// Mock react-router-dom to fix ESM module resolution issues
+// We provide standalone mock implementations instead of using vi.importActual()
+vi.mock('react-router-dom', () => {
   const React = require('react');
 
   return {
@@ -59,33 +60,33 @@ jest.mock('react-router-dom', () => {
     Routes: ({ children }) => React.createElement(React.Fragment, null, children),
     Route: ({ element }) => element || null,
 
-    // Navigation hooks
-    useNavigate: () => jest.fn(),
-    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
-    useParams: () => ({}),
-    useSearchParams: () => [new URLSearchParams(), jest.fn()],
-    useMatch: () => null,
-    useMatches: () => [],
-    useHref: (to) => typeof to === 'string' ? to : (to?.pathname || '/'),
-    useInRouterContext: () => true,
-    useNavigationType: () => 'PUSH',
-    useOutlet: () => null,
-    useOutletContext: () => undefined,
-    useResolvedPath: (to) => ({ pathname: typeof to === 'string' ? to : (to?.pathname || '/'), search: '', hash: '' }),
-    useRoutes: () => null,
-    useLinkClickHandler: () => jest.fn((e) => e.preventDefault()),
+    // Navigation hooks — wrapped in vi.fn() so tests can override with mockReturnValue
+    useNavigate: vi.fn(() => vi.fn()),
+    useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' })),
+    useParams: vi.fn(() => ({})),
+    useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
+    useMatch: vi.fn(() => null),
+    useMatches: vi.fn(() => []),
+    useHref: vi.fn((to) => typeof to === 'string' ? to : (to?.pathname || '/')),
+    useInRouterContext: vi.fn(() => true),
+    useNavigationType: vi.fn(() => 'PUSH'),
+    useOutlet: vi.fn(() => null),
+    useOutletContext: vi.fn(() => undefined),
+    useResolvedPath: vi.fn((to) => ({ pathname: typeof to === 'string' ? to : (to?.pathname || '/'), search: '', hash: '' })),
+    useRoutes: vi.fn(() => null),
+    useLinkClickHandler: vi.fn(() => vi.fn((e) => e.preventDefault())),
 
     // Data hooks (React Router v6.4+)
-    useLoaderData: () => ({}),
-    useActionData: () => undefined,
-    useRouteError: () => null,
-    useNavigation: () => ({ state: 'idle', location: undefined, formMethod: undefined, formAction: undefined, formEncType: undefined, formData: undefined }),
-    useRevalidator: () => ({ state: 'idle', revalidate: jest.fn() }),
-    useFetcher: () => ({ state: 'idle', data: undefined, load: jest.fn(), submit: jest.fn(), Form: 'form' }),
-    useFetchers: () => [],
-    useBeforeUnload: jest.fn(),
-    useBlocker: () => ({ state: 'unblocked', proceed: undefined, reset: undefined }),
-    useRouteLoaderData: () => undefined,
+    useLoaderData: vi.fn(() => ({})),
+    useActionData: vi.fn(() => undefined),
+    useRouteError: vi.fn(() => null),
+    useNavigation: vi.fn(() => ({ state: 'idle', location: undefined, formMethod: undefined, formAction: undefined, formEncType: undefined, formData: undefined })),
+    useRevalidator: vi.fn(() => ({ state: 'idle', revalidate: vi.fn() })),
+    useFetcher: vi.fn(() => ({ state: 'idle', data: undefined, load: vi.fn(), submit: vi.fn(), Form: 'form' })),
+    useFetchers: vi.fn(() => []),
+    useBeforeUnload: vi.fn(),
+    useBlocker: vi.fn(() => ({ state: 'unblocked', proceed: undefined, reset: undefined })),
+    useRouteLoaderData: vi.fn(() => undefined),
 
     // Form component
     Form: React.forwardRef(({ children, ...props }, ref) =>
@@ -93,11 +94,11 @@ jest.mock('react-router-dom', () => {
     ),
 
     // Utility functions
-    createBrowserRouter: jest.fn(() => ({})),
-    createHashRouter: jest.fn(() => ({})),
-    createMemoryRouter: jest.fn(() => ({})),
-    createRoutesFromElements: jest.fn(() => []),
-    createRoutesFromChildren: jest.fn(() => []),
+    createBrowserRouter: vi.fn(() => ({})),
+    createHashRouter: vi.fn(() => ({})),
+    createMemoryRouter: vi.fn(() => ({})),
+    createRoutesFromElements: vi.fn(() => []),
+    createRoutesFromChildren: vi.fn(() => []),
     createSearchParams: (init) => new URLSearchParams(init),
     generatePath: (path) => path,
     matchPath: () => null,
@@ -123,36 +124,94 @@ jest.mock('react-router-dom', () => {
   };
 });
 
-jest.mock('./services/httpService', () => ({
+// =============================================================================
+// GLOBAL THEME WRAPPER - Wrap all RTL renders with ThemeProvider
+// =============================================================================
+// Components use custom theme properties (productCards, semantic, navigation).
+// Without ThemeProvider, MUI useTheme() returns bare default theme.
+vi.mock('@testing-library/react', async (importOriginal) => {
+  const actual = await importOriginal();
+  const React = await import('react');
+  const { ThemeProvider } = await import('@mui/material/styles');
+  const { default: appTheme } = await import('./theme');
+
+  return {
+    ...actual,
+    render: (ui, options = {}) => {
+      const { wrapper: UserWrapper, ...restOptions } = options;
+      const ThemeWrapper = ({ children }) => {
+        const content = React.createElement(ThemeProvider, { theme: appTheme }, children);
+        return UserWrapper ? React.createElement(UserWrapper, null, content) : content;
+      };
+      return actual.render(ui, { wrapper: ThemeWrapper, ...restOptions });
+    },
+  };
+});
+
+// Mock @sentry/react (not installed as dependency)
+vi.mock('@sentry/react', () => ({
+  __esModule: true,
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  setTag: vi.fn(),
+  withScope: vi.fn((cb) => cb({ setExtra: vi.fn(), setLevel: vi.fn() })),
+  Severity: { Error: 'error', Warning: 'warning', Info: 'info' },
+}));
+
+vi.mock('./config.js', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(() => Promise.resolve({ data: {} })),
-    post: jest.fn(() => Promise.resolve({ data: {} })),
-    put: jest.fn(() => Promise.resolve({ data: {} })),
-    delete: jest.fn(() => Promise.resolve({ data: {} })),
-    patch: jest.fn(() => Promise.resolve({ data: {} })),
-    create: jest.fn(() => ({
-      get: jest.fn(() => Promise.resolve({ data: {} })),
-      post: jest.fn(() => Promise.resolve({ data: {} })),
-      put: jest.fn(() => Promise.resolve({ data: {} })),
-      delete: jest.fn(() => Promise.resolve({ data: {} })),
-      patch: jest.fn(() => Promise.resolve({ data: {} })),
+    apiBaseUrl: 'http://localhost:8888',
+    authUrl: 'http://localhost:8888/api/auth',
+    userUrl: 'http://localhost:8888/api/users',
+    examSessionUrl: 'http://localhost:8888/api/exam-sessions',
+    productsUrl: 'http://localhost:8888/api/products',
+    catalogUrl: 'http://localhost:8888/api/catalog',
+    subjectUrl: 'http://localhost:8888/api/subjects',
+    examSessionSubjectUrl: 'http://localhost:8888/api/exam-session-subjects',
+    cartUrl: 'http://localhost:8888/api/cart',
+    countryUrl: 'http://localhost:8888/api/countries',
+    markingUrl: 'http://localhost:8888/api/marking',
+    tutorialUrl: 'http://localhost:8888/api/tutorials',
+    isDevelopment: false,
+    isUAT: false,
+    pageSize: 20,
+    enableDebugLogs: false,
+  },
+}));
+
+vi.mock('./services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(() => Promise.resolve({ data: {} })),
+    post: vi.fn(() => Promise.resolve({ data: {} })),
+    put: vi.fn(() => Promise.resolve({ data: {} })),
+    delete: vi.fn(() => Promise.resolve({ data: {} })),
+    patch: vi.fn(() => Promise.resolve({ data: {} })),
+    create: vi.fn(() => ({
+      get: vi.fn(() => Promise.resolve({ data: {} })),
+      post: vi.fn(() => Promise.resolve({ data: {} })),
+      put: vi.fn(() => Promise.resolve({ data: {} })),
+      delete: vi.fn(() => Promise.resolve({ data: {} })),
+      patch: vi.fn(() => Promise.resolve({ data: {} })),
       interceptors: {
-        request: { use: jest.fn(), eject: jest.fn() },
-        response: { use: jest.fn(), eject: jest.fn() },
+        request: { use: vi.fn(), eject: vi.fn() },
+        response: { use: vi.fn(), eject: vi.fn() },
       },
     })),
     interceptors: {
-      request: { use: jest.fn(), eject: jest.fn() },
-      response: { use: jest.fn(), eject: jest.fn() },
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn() },
     },
   },
 }));
 
-jest.mock('./services/cartService', () => ({
+vi.mock('./services/cartService.js', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(() => Promise.resolve({
+    getCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: {
@@ -160,7 +219,7 @@ jest.mock('./services/cartService', () => ({
         }
       }
     })),
-    fetchCart: jest.fn(() => Promise.resolve({
+    fetchCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: {
@@ -168,26 +227,26 @@ jest.mock('./services/cartService', () => ({
         }
       }
     })),
-    addToCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    updateItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    updateCartItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    removeFromCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    removeItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    clearCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
-    checkout: jest.fn(() => Promise.resolve({ data: { success: true, order_id: 12345 } })),
-    fetchOrders: jest.fn(() => Promise.resolve({ data: [] })),
+    addToCart: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    updateItem: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    updateCartItem: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    removeFromCart: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    removeItem: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    clearCart: vi.fn(() => Promise.resolve({ data: { success: true } })),
+    checkout: vi.fn(() => Promise.resolve({ data: { success: true, order_id: 12345 } })),
+    fetchOrders: vi.fn(() => Promise.resolve({ data: [] })),
   },
 }));
 
-jest.mock('./services/authService', () => ({
+vi.mock('./services/authService.js', () => ({
   __esModule: true,
   default: {
-    login: jest.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
-    logout: jest.fn(() => Promise.resolve({ data: {} })),
-    refreshToken: jest.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
-    register: jest.fn(() => Promise.resolve({ data: {} })),
-    getCurrentUser: jest.fn(() => Promise.resolve({ data: {} })),
-    isAuthenticated: jest.fn(() => false),
+    login: vi.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
+    logout: vi.fn(() => Promise.resolve({ data: {} })),
+    refreshToken: vi.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
+    register: vi.fn(() => Promise.resolve({ data: {} })),
+    getCurrentUser: vi.fn(() => Promise.resolve({ data: {} })),
+    isAuthenticated: vi.fn(() => false),
   },
 }));
 
@@ -196,7 +255,7 @@ jest.mock('./services/authService', () => ({
 // =============================================================================
 
 // Mock TutorialChoiceContext - used by CartPanel, TutorialSelectionDialog, etc.
-jest.mock('./contexts/TutorialChoiceContext', () => {
+vi.mock('./contexts/TutorialChoiceContext.js', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -207,42 +266,42 @@ jest.mock('./contexts/TutorialChoiceContext', () => {
       activeSubject: null,
       editDialogOpen: null,
       // Basic choice management
-      getTutorialChoice: jest.fn(),
-      addTutorialChoice: jest.fn(),
-      removeTutorialChoice: jest.fn(),
-      removeSubjectChoices: jest.fn(),
-      removeAllChoices: jest.fn(),
-      clearTutorialChoices: jest.fn(),
-      updateChoiceLevel: jest.fn(),
+      getTutorialChoice: vi.fn(),
+      addTutorialChoice: vi.fn(),
+      removeTutorialChoice: vi.fn(),
+      removeSubjectChoices: vi.fn(),
+      removeAllChoices: vi.fn(),
+      clearTutorialChoices: vi.fn(),
+      updateChoiceLevel: vi.fn(),
       // Getters
-      getSubjectChoices: jest.fn(() => ({})),
-      getOrderedChoices: jest.fn(() => []),
-      getAllChoices: jest.fn(() => ({})),
-      isChoiceLevelAvailable: jest.fn(() => true),
-      getNextAvailableChoiceLevel: jest.fn(() => '1st'),
-      getTotalSubjectsWithChoices: jest.fn(() => 0),
-      getTotalChoices: jest.fn(() => 0),
-      isEventSelected: jest.fn(() => false),
-      getEventChoiceLevel: jest.fn(() => null),
+      getSubjectChoices: vi.fn(() => ({})),
+      getOrderedChoices: vi.fn(() => []),
+      getAllChoices: vi.fn(() => ({})),
+      isChoiceLevelAvailable: vi.fn(() => true),
+      getNextAvailableChoiceLevel: vi.fn(() => '1st'),
+      getTotalSubjectsWithChoices: vi.fn(() => 0),
+      getTotalChoices: vi.fn(() => 0),
+      isEventSelected: vi.fn(() => false),
+      getEventChoiceLevel: vi.fn(() => null),
       // Panel management
-      showChoicePanelForSubject: jest.fn(),
-      hideChoicePanel: jest.fn(),
+      showChoicePanelForSubject: vi.fn(),
+      hideChoicePanel: vi.fn(),
       // Dialog management
-      openEditDialog: jest.fn(),
-      closeEditDialog: jest.fn(),
+      openEditDialog: vi.fn(),
+      closeEditDialog: vi.fn(),
       // Pricing
-      getSubjectPrice: jest.fn(() => 0),
-      getTotalPrice: jest.fn(() => 0),
+      getSubjectPrice: vi.fn(() => 0),
+      getTotalPrice: vi.fn(() => 0),
       // Draft choice methods (Story 3.8)
-      getDraftChoices: jest.fn(() => []),
-      hasDraftChoices: jest.fn(() => false),
-      markChoicesAsAdded: jest.fn(),
-      restoreChoicesToDraft: jest.fn(),
-      hasCartedChoices: jest.fn(() => false),
-      getCartedChoices: jest.fn(() => []),
+      getDraftChoices: vi.fn(() => []),
+      hasDraftChoices: vi.fn(() => false),
+      markChoicesAsAdded: vi.fn(),
+      restoreChoicesToDraft: vi.fn(),
+      hasCartedChoices: vi.fn(() => false),
+      getCartedChoices: vi.fn(() => []),
       // Validation methods
-      validateChoices: jest.fn(() => ({ valid: true, errors: [] })),
-      getChoiceValidationStatus: jest.fn(() => 'valid'),
+      validateChoices: vi.fn(() => ({ valid: true, errors: [] })),
+      getChoiceValidationStatus: vi.fn(() => 'valid'),
     }),
     TutorialChoiceProvider: ({ children }) => children,
     TutorialChoiceContext: React.createContext({}),
@@ -250,18 +309,18 @@ jest.mock('./contexts/TutorialChoiceContext', () => {
 });
 
 // Mock CartContext - used by navigation, checkout, product cards, etc.
-jest.mock('./contexts/CartContext', () => {
+vi.mock('./contexts/CartContext.js', () => {
   const React = require('react');
   return {
     __esModule: true,
     useCart: () => ({
       cartItems: [],
       cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-      addToCart: jest.fn(() => Promise.resolve()),
-      updateCartItem: jest.fn(() => Promise.resolve()),
-      removeFromCart: jest.fn(() => Promise.resolve()),
-      clearCart: jest.fn(() => Promise.resolve()),
-      refreshCart: jest.fn(() => Promise.resolve()),
+      addToCart: vi.fn(() => Promise.resolve()),
+      updateCartItem: vi.fn(() => Promise.resolve()),
+      removeFromCart: vi.fn(() => Promise.resolve()),
+      clearCart: vi.fn(() => Promise.resolve()),
+      refreshCart: vi.fn(() => Promise.resolve()),
       cartCount: 0,
       loading: false,
     }),
@@ -274,7 +333,7 @@ jest.mock('./contexts/CartContext', () => {
 // IMPORTS - After service mocks
 // =============================================================================
 
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// jest-dom adds custom matchers for asserting on DOM nodes.
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
@@ -368,4 +427,5 @@ if (typeof performance !== 'undefined') {
 // Individual tests can import and use it as needed with manual setup
 
 // Mock scrollIntoView (not implemented in JSDOM)
-Element.prototype.scrollIntoView = jest.fn();
+Element.prototype.scrollIntoView = vi.fn();
+

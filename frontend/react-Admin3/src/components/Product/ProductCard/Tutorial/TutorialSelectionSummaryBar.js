@@ -15,11 +15,11 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { CartCheck } from "react-bootstrap-icons";
+import { ShoppingCartCheckout as CartCheck } from "@mui/icons-material";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
-import { touchButtonStyle, touchIconButtonStyle } from "./tutorialStyles";
+import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext.js";
+import { touchButtonStyle, touchIconButtonStyle } from "./tutorialStyles.js";
 
 /**
  * TutorialSelectionSummaryBar - Persistent summary bar for tutorial choices

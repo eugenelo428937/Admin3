@@ -1,13 +1,13 @@
 // Components Module
 // Aggregates all component style overrides into single export
 
-import { cardOverrides } from './cards';
-import alertOverrides from './alerts';
-import baselineOverrides from './baseline';
-import buttonOverrides from './buttons';
-import inputOverrides from './inputs';
-import navigationOverrides from './navigation';
-import miscOverrides from './misc';
+import { cardOverrides } from './cards/index.js';
+import alertOverrides from './alerts.js';
+import baselineOverrides from './baseline.js';
+import buttonOverrides from './buttons.js';
+import inputOverrides from './inputs.js';
+import navigationOverrides from './navigation.js';
+import miscOverrides from './misc.js';
 
 /**
  * Deep-merges two MUI component override objects.

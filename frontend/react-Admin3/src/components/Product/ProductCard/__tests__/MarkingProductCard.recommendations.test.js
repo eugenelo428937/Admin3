@@ -1,15 +1,17 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MarkingProductCard from '../MarkingProductCard';
-import productService from '../../../../services/productService';
+import MarkingProductCard from '../MarkingProductCard.js';
+import productService from '../../../../services/productService.js';
+import appTheme from '../../../../theme';
 
 // Mock productService
-jest.mock('../../../../services/productService', () => ({
+vi.mock('../../../../services/productService.js', () => ({
   __esModule: true,
   default: {
-    getMarkingDeadlines: jest.fn()
+    getMarkingDeadlines: vi.fn()
   }
 }));
 
@@ -22,52 +24,21 @@ const mockCartData = {
   }
 };
 
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: mockCartData
   })
 }));
 
 // Create a minimal test theme with the required bpp.sky and bpp.pink palettes
-const testTheme = createTheme({
-  palette: {
-    bpp: {
-      sky: {
-        "010": "#e5f9ff",
-        "020": "#8ae6ff",
-        "030": "#2bcbf8",
-        "040": "#00abd9",
-        "050": "#008ebb",
-        "060": "#006f99",
-        "070": "#005782",
-        "080": "#003d67",
-        "090": "#00264e",
-        100: "#00141a",
-        110: "#23cefd",
-      },
-      pink: {
-        "010": "#ffe5f2",
-        "020": "#ffb3d6",
-        "030": "#ff80ba",
-        "040": "#ff4d9e",
-        "050": "#ff1a82",
-        "060": "#e60066",
-        "070": "#b3004d",
-        "080": "#800034",
-        "090": "#4d001f",
-        100: "#1a000a",
-        110: "#ff66a3",
-      },
-    },
-  },
-});
+const testTheme = appTheme;
 
 // NOTE: productService mock is defined at the top of the file for proper hoisting
 describe('MarkingProductCard - Recommended Products with SpeedDial', () => {
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     productService.getMarkingDeadlines.mockResolvedValue([]);
   });
 
@@ -122,6 +93,7 @@ describe('MarkingProductCard - Recommended Products with SpeedDial', () => {
 
   // Mock data helper for recommended products (typically materials)
   const createRecommendedProduct = () => ({
+    id: 202,
     essp_id: 202,
     esspv_id: 2002,
     product_code: 'MAT001',
@@ -380,7 +352,7 @@ describe('MarkingProductCard - Recommended Products with SpeedDial', () => {
         <MarkingProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
-          bulkDeadlines={{ [product.essp_id]: expiredDeadlines }}
+          bulkDeadlines={{ [product.id]: expiredDeadlines }}
         />
       );
 

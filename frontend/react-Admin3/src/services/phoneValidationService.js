@@ -1,5 +1,5 @@
 import { parsePhoneNumber, isValidPhoneNumber, getCountryCallingCode } from 'libphonenumber-js';
-import config from '../config';
+import config from '../config.js';
 
 class PhoneValidationService {
   constructor() {
