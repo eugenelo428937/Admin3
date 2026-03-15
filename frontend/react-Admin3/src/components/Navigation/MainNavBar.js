@@ -196,9 +196,9 @@ const MainNavBar = () => {
       <div className="sticky-top">
          {/* TopNavBar hidden on mobile (sm and smaller), hidden entirely in internal mode */}
          {!isInternal && (
-            <div className="d-none d-sm-block">
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
                <TopNavBar onOpenSearch={handleOpenSearchModal} />
-            </div>
+            </Box>
          )}
          <AppBar
             position="sticky"
@@ -220,8 +220,18 @@ const MainNavBar = () => {
                      px: "0 !Important",
                   }}
                >
-                  {/* Left Box - Action icons (mobile only, left-aligned) */}
-                  <div className="d-flex justify-content-start align-items-center order-1 order-lg-3 d-md-none">
+                  {/* Left Box - Action icons (mobile for public, all screens for internal) */}
+                  <Box
+                     sx={{
+                        display: {
+                           xs: "flex",
+                           md: isInternal ? "flex" : "none",
+                        },
+                        justifyContent: "flex-start",
+                        alignItems: "center",
+                        order: { xs: 1, lg: 3 },
+                     }}
+                  >
                      {isInternal ? (
                         <AdminNavActions
                            onOpenAuth={handleOpenAuthModal}
@@ -235,18 +245,27 @@ const MainNavBar = () => {
                            isMobile={false}
                         />
                      )}
-                  </div>
+                  </Box>
 
                   {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
-                  <div className="d-flex justify-content-center justify-content-md-start align-items-center order-2 order-md-1">
+                  <Box
+                     sx={{
+                        display: "flex",
+                        justifyContent: { xs: "center", md: "flex-start" },
+                        alignItems: "center",
+                        order: { xs: 2, md: 1 },
+                     }}
+                  >
                      <NavbarBrand />
-                  </div>
+                  </Box>
 
                   {/* Center Section - Navigation Menu (Desktop) */}
                   <Box
                      id="navbar-menu"
-                     className="justify-content-lg-center justify-content-md-start order-3 order-md-2 d-none d-md-flex"
                      sx={{
+                        display: { xs: "none", md: "flex" },
+                        justifyContent: { md: "flex-start", lg: "center" },
+                        order: { xs: 3, md: 2 },
                         flexDirection: { xs: "column", md: "row" },
                         width: "auto",
                      }}
@@ -329,9 +348,24 @@ const MainNavBar = () => {
                   </Box>
 
                   {/* Right Box - Actions (desktop only) and Hamburger */}
-                  <div className="d-flex justify-content-end align-items-center gap-2 order-3 order-md-3">
-                     {/* Desktop actions - hidden on mobile */}
-                     <div className="d-none d-md-flex">
+                  <Box
+                     sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                        gap: 1,
+                        order: 3,
+                     }}
+                  >
+                     {/* Desktop actions - hidden on mobile (not shown for internal - uses left box) */}
+                     <Box
+                        sx={{
+                           display: {
+                              xs: "none",
+                              md: isInternal ? "none" : "flex",
+                           },
+                        }}
+                     >
                         {isInternal ? (
                            <AdminNavActions
                               onOpenAuth={handleOpenAuthModal}
@@ -345,7 +379,7 @@ const MainNavBar = () => {
                               isMobile={false}
                            />
                         )}
-                     </div>
+                     </Box>
 
                      {/* Hamburger menu toggle - visible on mobile (below md breakpoint) */}
                      <IconButton
@@ -374,7 +408,7 @@ const MainNavBar = () => {
                            <span className="toggler-icon bottom-bar"></span>
                         </Box>
                      </IconButton>
-                  </div>
+                  </Box>
                </Container>
             </Toolbar>
          </AppBar>
