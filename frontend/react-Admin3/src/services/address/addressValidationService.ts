@@ -1,9 +1,10 @@
 // Address Validation Service
 // Validates addresses against Postcoder API and compares user-entered addresses with API suggestions.
 
-import config from '../config.js';
-import addressMetadataService from './addressMetadataService.ts';
-import type { AddressLookupValidationResult, AddressDifference, PostcoderAddress } from '../types/address';
+import config from '../../config';
+import httpService from '../httpService';
+import addressMetadataService from './addressMetadataService';
+import type { AddressLookupValidationResult, AddressDifference, PostcoderAddress } from '../../types/address';
 
 interface AddressInput {
   address?: string;
@@ -31,21 +32,17 @@ const addressValidationService = {
     }
 
     try {
-      let queryParams = `query=${encodeURIComponent(searchQuery)}&country=${countryCode}`;
-
+      const params: Record<string, string> = { query: searchQuery, country: countryCode };
       if (address.postal_code && countryCode === 'GB') {
-        queryParams += `&postcode=${encodeURIComponent(address.postal_code)}`;
+        params.postcode = address.postal_code;
       }
 
-      const response = await fetch(
-        `${(config as any).apiBaseUrl}/api/utils/address-lookup/?${queryParams}`
+      const response = await httpService.get(
+        `${(config as any).apiBaseUrl}/api/utils/address-lookup/`,
+        { params }
       );
 
-      if (!response.ok) {
-        return { hasMatch: false, bestMatch: null, needsComparison: false, error: 'API error' };
-      }
-
-      const data = await response.json();
+      const data = response.data;
       const addresses: PostcoderAddress[] = data.addresses || [];
 
       if (addresses.length === 0) {
@@ -57,14 +54,13 @@ const addressValidationService = {
       let fullAddressDetails: PostcoderAddress = bestAutocompleteMatch;
       if (bestAutocompleteMatch.id) {
         try {
-          const retrieveResponse = await fetch(
-            `${(config as any).apiBaseUrl}/api/utils/address-retrieve/?id=${encodeURIComponent(bestAutocompleteMatch.id)}&country=${countryCode}`
+          const retrieveResponse = await httpService.get(
+            `${(config as any).apiBaseUrl}/api/utils/address-retrieve/`,
+            { params: { id: bestAutocompleteMatch.id, country: countryCode } }
           );
-          if (retrieveResponse.ok) {
-            const retrieveData = await retrieveResponse.json();
-            if (retrieveData.addresses && retrieveData.addresses.length > 0) {
-              fullAddressDetails = retrieveData.addresses[0];
-            }
+          const retrieveData = retrieveResponse.data;
+          if (retrieveData.addresses && retrieveData.addresses.length > 0) {
+            fullAddressDetails = retrieveData.addresses[0];
           }
         } catch (retrieveError) {
           console.warn('Failed to retrieve full address details:', retrieveError);

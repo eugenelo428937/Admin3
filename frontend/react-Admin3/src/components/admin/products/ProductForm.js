@@ -6,7 +6,7 @@ import {
   TextField, Button, Container, Alert, Box, Typography,
   FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
 } from "@mui/material";
-import catalogProductService from "../../../services/catalogProductService.js";
+import catalogProductService from "../../../services/catalogProductService";
 
 const AdminProductForm = () => {
     const { isSuperuser } = useAuth();

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import catalogProductService from "../../../services/catalogProductService.js";
+import catalogProductService from "../../../services/catalogProductService";
 import ProductTable from "./ProductTable.js";
 import {
   Button, Container, Grid, Typography, Alert, Box, CircularProgress,

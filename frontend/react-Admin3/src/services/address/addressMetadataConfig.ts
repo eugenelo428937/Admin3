@@ -19,7 +19,7 @@
  * - UPU Postal Addressing Standards
  */
 
-import type { AddressMetadata } from '../types/address/address.types';
+import type { AddressMetadata } from '../../types/address/address.types';
 
 // Country-specific address metadata
 export const ADDRESS_METADATA: Record<string, AddressMetadata> = {

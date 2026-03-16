@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock storeProductService
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../../services/storeProductService.js', () => ({
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService.js';
+import storeProductService from '../../../../services/storeProductService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

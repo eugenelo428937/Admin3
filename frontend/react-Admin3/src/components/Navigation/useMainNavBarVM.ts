@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useConfig } from '../../contexts/ConfigContext.js';
-import productService from '../../services/productService.js';
+import productService from '../../services/productService';
 import {
    navSelectSubject,
    navViewAllProducts,

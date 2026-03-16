@@ -23,7 +23,7 @@ vi.mock('../../contexts/CartContext.tsx', () => ({
 
 // Mock productService
 const mockGetBulkMarkingDeadlines = vi.fn();
-vi.mock('../../services/productService.js', () => ({
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
     getBulkMarkingDeadlines: (...args) => mockGetBulkMarkingDeadlines(...args),

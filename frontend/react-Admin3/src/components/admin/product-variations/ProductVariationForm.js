@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import productVariationService from '../../../services/productVariationService.js';
+import productVariationService from '../../../services/productVariationService';
 
 const VARIATION_TYPES = [
     { value: 'eBook', label: 'eBook' },
