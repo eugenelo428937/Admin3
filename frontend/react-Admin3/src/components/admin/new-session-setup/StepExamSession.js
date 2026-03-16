@@ -3,7 +3,7 @@ import {
   TextField, Button, Alert, Box, Typography, Paper,
   FormControl, FormLabel, Autocomplete, Divider, CircularProgress
 } from '@mui/material';
-import examSessionService from '../../../services/examSessionService.js';
+import examSessionService from '../../../services/examSessionService';
 
 const StepExamSession = ({ onSessionCreated }) => {
   const [error, setError] = useState(null);
