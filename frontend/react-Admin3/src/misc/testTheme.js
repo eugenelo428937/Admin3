@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 import theme from "./theme";
-import { scales } from "../theme/tokens/colors.js";
+import { scales } from "../theme/tokens/colors";
 import liftKitTheme from "./liftKitTheme.js";
 
 // Test theme that adds a custom ProductCard component with base + subvariants

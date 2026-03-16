@@ -10,7 +10,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import filtersReducer from '../../store/slices/filtersSlice.js';
-import theme from '../../theme/theme.js';
+import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();
