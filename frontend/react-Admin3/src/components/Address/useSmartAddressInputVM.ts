@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import addressMetadataService, { ADDRESS_METADATA } from '../../services/addressMetadataService.ts';
+import addressMetadataService, { ADDRESS_METADATA } from '../../services/address/addressMetadataService.ts';
 import config from '../../config.js';
 import type { AddressMetadata, AddressSuggestion, AddressChangeEvent, DropdownPosition } from '../../types/address';
 

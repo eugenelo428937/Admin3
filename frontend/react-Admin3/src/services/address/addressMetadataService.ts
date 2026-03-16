@@ -24,7 +24,7 @@ import {
   COUNTRY_CODE_MAPPINGS
 } from './addressMetadataConfig.ts';
 
-import type { AddressMetadata, AddressValidationResult } from '../types/address';
+import type { AddressMetadata, AddressValidationResult } from '../../types/address';
 
 // Re-export ADDRESS_METADATA for backward compatibility
 export { ADDRESS_METADATA };

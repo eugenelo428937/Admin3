@@ -18,11 +18,11 @@ import '@testing-library/jest-dom';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 import TutorialProductCard from '../TutorialProductCard.js';
-import tutorialService from '../../../../../services/tutorialService.js';
+import tutorialService from '../../../../../services/tutorialService';
 import cartService from '../../../../../services/cartService.ts';
 
 // Mock tutorial service
-vi.mock('../../../../../services/tutorialService.js', () => ({
+vi.mock('../../../../../services/tutorialService', () => ({
   getTutorialVariations: vi.fn(() => Promise.resolve([]))
 }));
 

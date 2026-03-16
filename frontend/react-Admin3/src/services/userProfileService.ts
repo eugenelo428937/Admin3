@@ -1,7 +1,7 @@
 // src/services/userProfileService.ts
 import httpService from "./httpService.js";
 import config from "../config.js";
-import { parsePaginatedResponse } from "./paginationHelper.js";
+import { parsePaginatedResponse } from "./paginationHelper";
 import type { UserProfile, Address, ContactNumber } from "../types/auth";
 
 const API_URL = `${(config as any).userUrl}/profiles`;

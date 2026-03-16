@@ -6,8 +6,8 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import priceService from '../../../services/priceService.js';
-import storeProductService from '../../../services/storeProductService.js';
+import priceService from '../../../services/priceService';
+import storeProductService from '../../../services/storeProductService';
 
 const AdminPriceForm = () => {
     const { isSuperuser } = useAuth();

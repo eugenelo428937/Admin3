@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import ValidatedPhoneInput from '../ValidatedPhoneInput.tsx';
 
 // Mock phoneValidationService
-vi.mock('../../../services/phoneValidationService.js', () => ({
+vi.mock('../../../services/phoneValidationService', () => ({
   __esModule: true,
   default: {
     getCountryCodeFromName: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../../services/phoneValidationService.js', () => ({
   },
 }));
 
-import phoneValidationService from '../../../services/phoneValidationService.js';
+import phoneValidationService from '../../../services/phoneValidationService';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

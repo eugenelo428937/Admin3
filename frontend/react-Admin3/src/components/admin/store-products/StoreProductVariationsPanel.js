@@ -16,7 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import storeProductService from "../../../services/storeProductService.js";
+import storeProductService from "../../../services/storeProductService";
 
 /**
  * Displays store product variations for a catalog product.

@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock storeProductService
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('../../../../services/storeProductService.js', () => ({
 }));
 
 // Mock examSessionSubjectService
-vi.mock('../../../../services/examSessionSubjectService.js', () => ({
+vi.mock('../../../../services/examSessionSubjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -44,16 +44,16 @@ vi.mock('../../../../services/examSessionSubjectService.js', () => ({
 }));
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService.js', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService.js';
-import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
-import productProductVariationService from '../../../../services/productProductVariationService.js';
+import storeProductService from '../../../../services/storeProductService';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService';
+import productProductVariationService from '../../../../services/productProductVariationService';
 
 const theme = appTheme;
 

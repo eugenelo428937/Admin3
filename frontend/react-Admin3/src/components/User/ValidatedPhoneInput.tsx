@@ -8,7 +8,7 @@ import {
 	FormHelperText,
 } from "@mui/material";
 import { Check, Error } from "@mui/icons-material";
-import phoneValidationService from "../../services/phoneValidationService.js";
+import phoneValidationService from "../../services/phoneValidationService";
 import { useTheme } from "@mui/material/styles";
 import type { Country } from "../../types/auth";
 

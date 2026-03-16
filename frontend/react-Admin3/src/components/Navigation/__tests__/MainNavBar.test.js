@@ -47,7 +47,7 @@ vi.mock('../../../services/cartService.ts', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../services/productService.js', () => ({
+vi.mock('../../../services/productService', () => ({
   __esModule: true,
   default: {
     getNavigationData: vi.fn(() => Promise.resolve({

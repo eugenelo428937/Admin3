@@ -9,7 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import priceService from '../../../services/priceService.js';
+import priceService from '../../../services/priceService';
 
 /**
  * Groups a flat array of prices into one row per product,
