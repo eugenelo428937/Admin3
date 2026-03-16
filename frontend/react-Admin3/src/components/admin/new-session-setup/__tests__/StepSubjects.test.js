@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import StepSubjects from '../StepSubjects.js';
 
 // Mock services
-vi.mock('../../../../services/httpService.js', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('../../../../config.js', () => ({
   default: { catalogUrl: '/api/catalog' },
 }));
 
-import httpService from '../../../../services/httpService.js';
+import httpService from '../../../../services/httpService';
 import sessionSetupService from '../../../../services/sessionSetupService';
 
 import appTheme from '../../../../theme';

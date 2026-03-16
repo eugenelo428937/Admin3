@@ -39,7 +39,7 @@ vi.mock('../../../services/rulesEngineService', () => ({
 }));
 
 // Mock httpService
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(() => Promise.resolve({ data: {} })),

@@ -19,7 +19,7 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),

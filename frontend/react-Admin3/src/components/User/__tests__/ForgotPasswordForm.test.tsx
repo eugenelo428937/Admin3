@@ -20,7 +20,7 @@ vi.mock('react-google-recaptcha-v3', () => ({
 
 // Mock authService
 const mockRequestPasswordReset = vi.fn();
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     requestPasswordReset: (...args: any[]) => mockRequestPasswordReset(...args),
