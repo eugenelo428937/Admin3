@@ -1,23 +1,21 @@
-import React from "react";
-import
-   {
-      Box,
-      Button,
-      Container,
-      Grid,
-      MenuItem,
-      MenuList,
-      Menu,
-      Typography,
-      useTheme
-   } from "@mui/material";
-import { NavLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.tsx";
-import { useConfig } from "../../contexts/ConfigContext.js";
-import MegaMenuPopover from "./MegaMenuPopover.js";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import React from 'react';
+import {
+   Box,
+   Button,
+   Container,
+   Grid,
+   MenuItem,
+   MenuList,
+   Typography,
+   useTheme
+} from '@mui/material';
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth.tsx';
+import MegaMenuPopover from './MegaMenuPopover.tsx';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import type { NavigationMenuProps, AdminCategories } from '../../types/navigation';
 
-const NavigationMenu = ({
+const NavigationMenu: React.FC<NavigationMenuProps> = ({
    subjects,
    navbarProductGroups,
    distanceLearningData,
@@ -32,94 +30,87 @@ const NavigationMenu = ({
    handleProductVariationClick,
    handleMarkingVouchersClick,
    onCollapseNavbar,
-}) =>
-{
-   const theme = useTheme();
+}) => {
+   const theme = useTheme() as any;
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
    // Admin MegaMenu category definitions
-   const adminCategories = {
+   const adminCategories: AdminCategories = {
       row1: [
          {
-            label: "Catalog",
+            label: 'Catalog',
             enabled: true,
             links: [
-               { label: "Exam Sessions", to: "/admin/exam-sessions" },
-               { label: "Subjects", to: "/admin/subjects" },
-               {
-                  label: "Exam Session Subjects",
-                  to: "/admin/exam-session-subjects",
-               },
-               { label: "Products", to: "/admin/products" },
-               { label: "Product Variations", to: "/admin/product-variations" },
-               { label: "Product Bundles Template", to: "/admin/product-bundles" },
+               { label: 'Exam Sessions', to: '/admin/exam-sessions' },
+               { label: 'Subjects', to: '/admin/subjects' },
+               { label: 'Exam Session Subjects', to: '/admin/exam-session-subjects' },
+               { label: 'Products', to: '/admin/products' },
+               { label: 'Product Variations', to: '/admin/product-variations' },
+               { label: 'Product Bundles Template', to: '/admin/product-bundles' },
             ],
          },
          {
-            label: "Current products",
+            label: 'Current products',
             enabled: true,
             links: [
-               { label: "Products", to: "/admin/store-products" },
-               { label: "Recommendations", to: "/admin/recommendations" },
-               { label: "Prices", to: "/admin/prices" },
-               { label: "Bundles ", to: "/admin/store-bundles" },
+               { label: 'Products', to: '/admin/store-products' },
+               { label: 'Recommendations', to: '/admin/recommendations' },
+               { label: 'Prices', to: '/admin/prices' },
+               { label: 'Bundles ', to: '/admin/store-bundles' },
             ],
          },
          {
-            label: "Filtering",
+            label: 'Filtering',
             enabled: false,
             links: [
-               { label: "Filter Groups", to: "/admin/filter-groups" },
-               { label: "Filter Configuration", to: "/admin/filter-config" },
+               { label: 'Filter Groups', to: '/admin/filter-groups' },
+               { label: 'Filter Configuration', to: '/admin/filter-config' },
             ],
          },
          {
-            label: "Users",
+            label: 'Users',
             enabled: true,
             links: [
-               { label: "User List", to: "/admin/user-profiles" },
-               { label: "Staff List", to: "/admin/staff" },
+               { label: 'User List', to: '/admin/user-profiles' },
+               { label: 'Staff List', to: '/admin/staff' },
             ],
          },
       ],
       row2: [
          {
-            label: "Tutorials",
+            label: 'Tutorials',
             enabled: false,
             links: [
-               { label: "Tutorial Events", to: "/admin/tutorial-events" },
-               { label: "Tutorial Sessions", to: "/admin/tutorial-sessions" },
+               { label: 'Tutorial Events', to: '/admin/tutorial-events' },
+               { label: 'Tutorial Sessions', to: '/admin/tutorial-sessions' },
             ],
          },
          {
-            label: "Marking",
+            label: 'Marking',
             enabled: false,
             links: [
-               { label: "Marking Vouchers", to: "/admin/marking-vouchers" },
-               {
-                  label: "Marking Assignments",
-                  to: "/admin/marking-assignments",
-               },
+               { label: 'Marking Vouchers', to: '/admin/marking-vouchers' },
+               { label: 'Marking Assignments', to: '/admin/marking-assignments' },
             ],
          },
          {
-            label: "Orders",
+            label: 'Orders',
             enabled: false,
             links: [
-               { label: "Orders", to: "/admin/orders" },
-               { label: "Order Items", to: "/admin/order-items" },
+               { label: 'Orders', to: '/admin/orders' },
+               { label: 'Order Items', to: '/admin/order-items' },
             ],
          },
          {
-            label: "Email System",
+            label: 'Email System',
             enabled: true,
             links: [
-               { label: "Settings", to: "/admin/email/settings" },
-               { label: "Templates", to: "/admin/email/templates" },
-               { label: "Queue", to: "/admin/email/queue" },
-               { label: "Attachments", to: "/admin/email/attachments" },
-               { label: "Content Rules", to: "/admin/email/content-rules" },
-               { label: "Placeholders", to: "/admin/email/placeholders" },
+               { label: 'Settings', to: '/admin/email/settings' },
+               { label: 'Templates', to: '/admin/email/templates' },
+               { label: 'Queue', to: '/admin/email/queue' },
+               { label: 'Attachments', to: '/admin/email/attachments' },
+               { label: 'Content Rules', to: '/admin/email/content-rules' },
+               { label: 'Placeholders', to: '/admin/email/placeholders' },
             ],
          },
       ],
@@ -131,16 +122,16 @@ const NavigationMenu = ({
          aria-label="Main navigation"
          disableGutters
          sx={{
-            display: { xs: "none", md: "flex" },
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: { xs: "flex-start"},
+            display: { xs: 'none', md: 'flex' },
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: { xs: 'flex-start' },
             width: 'auto',
             gap: theme.gaps.normal,
          }}
       >
-         <Button component={NavLink} to="/home" variant="main_nav_link">
-            <Typography variant="main_nav_text">Home</Typography>
+         <Button component={NavLink as any} to="/home" variant={'main_nav_link' as any}>
+            <Typography variant={'main_nav_text' as any}>Home</Typography>
          </Button>
 
          {/* Subjects Menu */}
@@ -153,12 +144,12 @@ const NavigationMenu = ({
             }}
          >
             <Grid container spacing={1}>
-               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
-                  <Typography variant="mega-nav-heading" id="core-principles-heading">
+               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 } as any}>
+                  <Typography variant={'mega-nav-heading' as any} id="core-principles-heading">
                      Core Principles
                   </Typography>
                   <MenuList
-                     variant="nav_menu"
+                     variant={'nav_menu' as any}
                      dense
                      aria-labelledby="core-principles-heading"
                   >
@@ -167,25 +158,24 @@ const NavigationMenu = ({
                            .filter((s) => /^(CB|CS|CM)/.test(s.code))
                            .map((subject) => (
                               <MenuItem
-                                 variant="nav_menu"
+                                 variant={'nav_menu' as any}
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <Typography variant="mega_nav_link">{subject.code} - {subject.description}</Typography>
+                                 <Typography variant={'mega_nav_link' as any}>{subject.code} - {subject.description}</Typography>
                               </MenuItem>
                            ))}
                   </MenuList>
                </Grid>
-               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
-                  <Typography variant="mega-nav-heading" id="core-practices-heading">
+               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 } as any}>
+                  <Typography variant={'mega-nav-heading' as any} id="core-practices-heading">
                      Core Practices
                   </Typography>
                   <MenuList
-                     variant="nav_menu"
+                     variant={'nav_menu' as any}
                      dense
                      aria-labelledby="core-practices-heading"
                   >
@@ -194,10 +184,9 @@ const NavigationMenu = ({
                            .filter((s) => /^CP[1-3]$/.test(s.code))
                            .map((subject) => (
                               <MenuItem
-                                 variant="nav_menu"
+                                 variant={'nav_menu' as any}
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -207,15 +196,15 @@ const NavigationMenu = ({
                            ))}
                   </MenuList>
                </Grid>
-               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
+               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 } as any}>
                   <Typography
-                     variant="mega-nav-heading"
+                     variant={'mega-nav-heading' as any}
                      id="specialist-principles-heading"
                   >
                      Specialist Principles
                   </Typography>
                   <MenuList
-                     variant="nav_menu"
+                     variant={'nav_menu' as any}
                      dense
                      aria-labelledby="specialist-principles-heading"
                   >
@@ -224,10 +213,9 @@ const NavigationMenu = ({
                            .filter((s) => /^SP/.test(s.code))
                            .map((subject) => (
                               <MenuItem
-                                 variant="nav_menu"
+                                 variant={'nav_menu' as any}
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -237,15 +225,15 @@ const NavigationMenu = ({
                            ))}
                   </MenuList>
                </Grid>
-               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
+               <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 } as any}>
                   <Typography
-                     variant="mega-nav-heading"
+                     variant={'mega-nav-heading' as any}
                      id="specialist-advanced-heading"
                   >
                      Specialist Advanced
                   </Typography>
                   <MenuList
-                     variant="nav_menu"
+                     variant={'nav_menu' as any}
                      dense
                      aria-labelledby="specialist-advanced-heading"
                   >
@@ -254,10 +242,9 @@ const NavigationMenu = ({
                            .filter((s) => /^SA/.test(s.code))
                            .map((subject) => (
                               <MenuItem
-                                 variant="nav_menu"
+                                 variant={'nav_menu' as any}
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -287,16 +274,14 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                ) : Array.isArray(navbarProductGroups) &&
-                  navbarProductGroups.length > 0 ? (
-                  navbarProductGroups.map((group) =>
-                  {
+                 navbarProductGroups.length > 0 ? (
+                  navbarProductGroups.map((group) => {
                      // Special handling for Tutorial group - split into two columns
                      if (
-                        group.name === "Tutorial" &&
+                        group.name === 'Tutorial' &&
                         group.products &&
                         group.products.length > 0
-                     )
-                     {
+                     ) {
                         const midPoint = Math.ceil(group.products.length / 2);
                         const leftColumn = group.products.slice(0, midPoint);
                         const rightColumn = group.products.slice(midPoint);
@@ -309,29 +294,23 @@ const NavigationMenu = ({
                               <Grid container spacing={1}>
                                  <Grid size={6}>
                                     <Typography
-                                       variant="mega-nav-heading"
+                                       variant={'mega-nav-heading' as any}
                                        sx={{ mb: 1 }}
-                                       onClick={() =>
-                                       {
+                                       onClick={() => {
                                           handleProductGroupClick(group.name);
-                                          onCollapseNavbar &&
-                                             onCollapseNavbar();
+                                          onCollapseNavbar && onCollapseNavbar();
                                        }}
                                     >
                                        {group.name}
                                     </Typography>
-                                    <MenuList variant="nav_menu" dense>
+                                    <MenuList variant={'nav_menu' as any} dense>
                                        {leftColumn.map((product) => (
                                           <MenuItem
-                                             variant="nav_menu"
+                                             variant={'nav_menu' as any}
                                              key={product.id}
-                                             onClick={() =>
-                                             {
-                                                handleSpecificProductClick(
-                                                   product.id
-                                                );
-                                                onCollapseNavbar &&
-                                                   onCollapseNavbar();
+                                             onClick={() => {
+                                                handleSpecificProductClick(product.id);
+                                                onCollapseNavbar && onCollapseNavbar();
                                              }}
                                           >
                                              {product.shortname}
@@ -342,22 +321,18 @@ const NavigationMenu = ({
                                  <Grid size={6}>
                                     <Typography
                                        variant="subtitle2"
-                                       sx={{ mb: 1, visibility: "hidden" }}
+                                       sx={{ mb: 1, visibility: 'hidden' }}
                                     >
                                        &nbsp;
                                     </Typography>
-                                    <MenuList variant="nav_menu" dense>
+                                    <MenuList variant={'nav_menu' as any} dense>
                                        {rightColumn.map((product) => (
                                           <MenuItem
-                                             variant="nav_menu"
+                                             variant={'nav_menu' as any}
                                              key={product.id}
-                                             onClick={() =>
-                                             {
-                                                handleSpecificProductClick(
-                                                   product.id
-                                                );
-                                                onCollapseNavbar &&
-                                                   onCollapseNavbar();
+                                             onClick={() => {
+                                                handleSpecificProductClick(product.id);
+                                                onCollapseNavbar && onCollapseNavbar();
                                              }}
                                           >
                                              {product.shortname}
@@ -377,13 +352,12 @@ const NavigationMenu = ({
                            size={{ xs: 12, md: 2, xl: 2 }}
                         >
                            <Typography
-                              variant="mega-nav-heading"
+                              variant={'mega-nav-heading' as any}
                               sx={{
                                  mb: 1,
-                                 cursor: "pointer",
+                                 cursor: 'pointer',
                               }}
-                              onClick={() =>
-                              {
+                              onClick={() => {
                                  handleProductGroupClick(group.name);
                                  onCollapseNavbar && onCollapseNavbar();
                               }}
@@ -391,34 +365,28 @@ const NavigationMenu = ({
                               {group.name}
                            </Typography>
                            {group.products && group.products.length > 0 ? (
-                              <MenuList variant="nav_menu" dense>
+                              <MenuList variant={'nav_menu' as any} dense>
                                  {group.products.map((product) => (
                                     <MenuItem
-                                       variant="nav_menu"
+                                       variant={'nav_menu' as any}
                                        key={product.id}
-                                       onClick={() =>
-                                       {
-                                          handleSpecificProductClick(
-                                             product.id
-                                          );
-                                          onCollapseNavbar &&
-                                             onCollapseNavbar();
+                                       onClick={() => {
+                                          handleSpecificProductClick(product.id);
+                                          onCollapseNavbar && onCollapseNavbar();
                                        }}
                                     >
                                        {product.shortname}
                                     </MenuItem>
                                  ))}
                                  {/* Add Marking Vouchers link under Marking group */}
-                                 {group.name === "Marking" && (
+                                 {group.name === 'Marking' && (
                                     <MenuItem
-                                       variant="nav_menu"
-                                       component={NavLink}
+                                       variant={'nav_menu' as any}
+                                       component={NavLink as any}
                                        to="/products?group=8"
-                                       onClick={(e) =>
-                                       {
+                                       onClick={(e: React.MouseEvent) => {
                                           handleMarkingVouchersClick(e);
-                                          onCollapseNavbar &&
-                                             onCollapseNavbar();
+                                          onCollapseNavbar && onCollapseNavbar();
                                        }}
                                     >
                                        Marking Vouchers
@@ -427,14 +395,13 @@ const NavigationMenu = ({
                               </MenuList>
                            ) : (
                               /* If Marking group has no products, still show Marking Vouchers */
-                              group.name === "Marking" ? (
-                                 <MenuList variant="nav_menu" dense>
+                              group.name === 'Marking' ? (
+                                 <MenuList variant={'nav_menu' as any} dense>
                                     <MenuItem
-                                       variant="nav_menu"
-                                       component={NavLink}
+                                       variant={'nav_menu' as any}
+                                       component={NavLink as any}
                                        to="/products?group=8"
-                                       onClick={(e) =>
-                                       {
+                                       onClick={(e: React.MouseEvent) => {
                                           handleMarkingVouchersClick(e);
                                           onCollapseNavbar && onCollapseNavbar();
                                        }}
@@ -463,14 +430,13 @@ const NavigationMenu = ({
                )}
                <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
-                     variant="navViewAll"
-                     onClick={() =>
-                     {
+                     variant={'navViewAll' as any}
+                     onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
                      }}
                   >
-                     <Typography variant="navViewAllText">
+                     <Typography variant={'navViewAllText' as any}>
                         View All Products
                      </Typography>
                      <NavigateNextIcon />
@@ -503,10 +469,9 @@ const NavigationMenu = ({
                         size={{ xs: 12, md: 2, xl: 2 }}
                      >
                         <Typography
-                           variant="mega-nav-heading"
-                           sx={{ mb: 1, cursor: "pointer" }}
-                           onClick={() =>
-                           {
+                           variant={'mega-nav-heading' as any}
+                           sx={{ mb: 1, cursor: 'pointer' }}
+                           onClick={() => {
                               handleProductGroupClick(group.name);
                               onCollapseNavbar && onCollapseNavbar();
                            }}
@@ -514,13 +479,12 @@ const NavigationMenu = ({
                            {group.name}
                         </Typography>
                         {group.products && group.products.length > 0 ? (
-                           <MenuList variant="nav_menu" dense>
+                           <MenuList variant={'nav_menu' as any} dense>
                               {group.products.map((product) => (
                                  <MenuItem
-                                    variant="nav_menu"
+                                    variant={'nav_menu' as any}
                                     key={product.id}
-                                    onClick={() =>
-                                    {
+                                    onClick={() => {
                                        handleSpecificProductClick(product.id);
                                        onCollapseNavbar && onCollapseNavbar();
                                     }}
@@ -529,13 +493,12 @@ const NavigationMenu = ({
                                  </MenuItem>
                               ))}
                               {/* Add Marking Vouchers link under Marking group */}
-                              {group.name === "Marking" && (
+                              {group.name === 'Marking' && (
                                  <MenuItem
-                                    variant="nav_menu"
-                                    component={NavLink}
+                                    variant={'nav_menu' as any}
+                                    component={NavLink as any}
                                     to="/products?group=8"
-                                    onClick={(e) =>
-                                    {
+                                    onClick={(e: React.MouseEvent) => {
                                        handleMarkingVouchersClick(e);
                                        onCollapseNavbar && onCollapseNavbar();
                                     }}
@@ -546,14 +509,13 @@ const NavigationMenu = ({
                            </MenuList>
                         ) : (
                            /* If Marking group has no products, still show Marking Vouchers */
-                           group.name === "Marking" ? (
-                              <MenuList variant="nav_menu" dense>
+                           group.name === 'Marking' ? (
+                              <MenuList variant={'nav_menu' as any} dense>
                                  <MenuItem
-                                    variant="nav_menu"
-                                    component={NavLink}
+                                    variant={'nav_menu' as any}
+                                    component={NavLink as any}
                                     to="/products?group=8"
-                                    onClick={(e) =>
-                                    {
+                                    onClick={(e: React.MouseEvent) => {
                                        handleMarkingVouchersClick(e);
                                        onCollapseNavbar && onCollapseNavbar();
                                     }}
@@ -578,15 +540,14 @@ const NavigationMenu = ({
                )}
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Button
-                     variant="navViewAll"
-                     component={NavLink}
+                     variant={'navViewAll' as any}
+                     component={NavLink as any}
                      to="/products?distance_learning=true"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         onCollapseNavbar && onCollapseNavbar();
                      }}
                   >
-                     <Typography variant="navViewAllText">
+                     <Typography variant={'navViewAllText' as any}>
                         View All Distance Learning
                      </Typography>
                      <NavigateNextIcon />
@@ -615,8 +576,8 @@ const NavigationMenu = ({
                      {/* Location Column - Split into 2 sub-columns */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="mega-nav-heading"
-                           sx={{ mb: 1, fontWeight: "bold" }}
+                           variant={'mega-nav-heading' as any}
+                           sx={{ mb: 1, fontWeight: 'bold' }}
                            id="tutorial-location-heading"
                         >
                            Location
@@ -624,58 +585,45 @@ const NavigationMenu = ({
                         <Grid container>
                            <Grid size={6}>
                               <MenuList
-                                 variant="nav_menu"
+                                 variant={'nav_menu' as any}
                                  dense
                                  aria-labelledby="tutorial-location-heading"
                               >
-                                 {tutorialData.Location?.left?.length > 0 ? (
-                                    tutorialData.Location.left.map(
-                                       (product) => (
-                                          <MenuItem
-                                             variant="nav_menu"
-                                             key={product.id}
-                                             onClick={() =>
-                                             {
-                                                handleSpecificProductClick(
-                                                   product.id
-                                                );
-                                                onCollapseNavbar?.();
-                                             }}
-                                          >
-                                             {product.shortname}
-                                          </MenuItem>
-                                       )
-                                    )
+                                 {tutorialData.Location?.left?.length ? (
+                                    tutorialData.Location.left.map((product) => (
+                                       <MenuItem
+                                          variant={'nav_menu' as any}
+                                          key={product.id}
+                                          onClick={() => {
+                                             handleSpecificProductClick(product.id);
+                                             onCollapseNavbar?.();
+                                          }}
+                                       >
+                                          {product.shortname}
+                                       </MenuItem>
+                                    ))
                                  ) : (
-                                    <Typography
-                                       color="text.secondary"
-                                       variant="body2"
-                                    >
+                                    <Typography color="text.secondary" variant="body2">
                                        No locations
                                     </Typography>
                                  )}
                               </MenuList>
                            </Grid>
                            <Grid size={6}>
-                              <MenuList variant="nav_menu" dense>
-                                 {tutorialData.Location?.right?.length > 0 &&
-                                    tutorialData.Location.right.map(
-                                       (product) => (
-                                          <MenuItem
-                                             variant="nav_menu"
-                                             key={product.id}
-                                             onClick={() =>
-                                             {
-                                                handleSpecificProductClick(
-                                                   product.id
-                                                );
-                                                onCollapseNavbar?.();
-                                             }}
-                                          >
-                                             {product.shortname}
-                                          </MenuItem>
-                                       )
-                                    )}
+                              <MenuList variant={'nav_menu' as any} dense>
+                                 {tutorialData.Location?.right?.length &&
+                                    tutorialData.Location.right.map((product) => (
+                                       <MenuItem
+                                          variant={'nav_menu' as any}
+                                          key={product.id}
+                                          onClick={() => {
+                                             handleSpecificProductClick(product.id);
+                                             onCollapseNavbar?.();
+                                          }}
+                                       >
+                                          {product.shortname}
+                                       </MenuItem>
+                                    ))}
                               </MenuList>
                            </Grid>
                         </Grid>
@@ -684,27 +632,24 @@ const NavigationMenu = ({
                      {/* Format Column */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="mega-nav-heading"
-                           sx={{ mb: 1, fontWeight: "bold" }}
+                           variant={'mega-nav-heading' as any}
+                           sx={{ mb: 1, fontWeight: 'bold' }}
                            id="tutorial-format-heading"
                         >
                            Format
                         </Typography>
                         <MenuList
-                           variant="nav_menu"
+                           variant={'nav_menu' as any}
                            dense
                            aria-labelledby="tutorial-format-heading"
                         >
-                           {tutorialData.Format?.length > 0 ? (
+                           {tutorialData.Format?.length ? (
                               tutorialData.Format.map((format) => (
                                  <MenuItem
-                                    variant="nav_menu"
+                                    variant={'nav_menu' as any}
                                     key={format.filter_type}
-                                    onClick={() =>
-                                    {
-                                       handleProductGroupClick(
-                                          format.group_name
-                                       );
+                                    onClick={() => {
+                                       handleProductGroupClick(format.group_name);
                                        onCollapseNavbar?.();
                                     }}
                                  >
@@ -712,10 +657,7 @@ const NavigationMenu = ({
                                  </MenuItem>
                               ))
                            ) : (
-                              <Typography
-                                 color="text.secondary"
-                                 variant="body2"
-                              >
+                              <Typography color="text.secondary" variant="body2">
                                  No formats available
                               </Typography>
                            )}
@@ -732,13 +674,13 @@ const NavigationMenu = ({
                {/* View All Tutorials button */}
                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
-                     variant="navViewAll"
-                     component={NavLink}
+                     variant={'navViewAll' as any}
+                     component={NavLink as any}
                      to="/products?tutorial=true"
                      onClick={() => onCollapseNavbar?.()}
                      sx={{ mb: 2 }}
                   >
-                     <Typography variant="navViewAllText">
+                     <Typography variant={'navViewAllText' as any}>
                         View All Tutorials
                      </Typography>
                      <NavigateNextIcon />
@@ -750,23 +692,23 @@ const NavigationMenu = ({
          {/* Conditional sections */}
          {isApprentice ? (
             <Button
-               variant="main_nav_link"
-               component={NavLink}
+               variant={'main_nav_link' as any}
+               component={NavLink as any}
                to="/apprenticeships"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="mega-nav-heading">Apprenticeships</Typography>
+               <Typography variant={'mega-nav-heading' as any}>Apprenticeships</Typography>
             </Button>
          ) : null}
 
          {isStudyPlus ? (
             <Button
-               variant="main_nav_link"
-               component={NavLink}
+               variant={'main_nav_link' as any}
+               component={NavLink as any}
                to="/study-plus"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="mega-nav-heading">Study Plus</Typography>
+               <Typography variant={'mega-nav-heading' as any}>Study Plus</Typography>
             </Button>
          ) : null}
 
@@ -789,30 +731,30 @@ const NavigationMenu = ({
                               <Grid item xs={6} sm={3} key={category.label}>
                                  <Box
                                     data-disabled={
-                                       !category.enabled ? "true" : undefined
+                                       !category.enabled ? 'true' : undefined
                                     }
                                     sx={{
                                        ...(!category.enabled && {
                                           opacity: 0.5,
-                                          pointerEvents: "none",
+                                          pointerEvents: 'none',
                                        }),
                                     }}
                                  >
                                     <Typography
-                                       variant="mega-nav-heading"
+                                       variant={'mega-nav-heading' as any}
                                        sx={{
                                           mb: 1,
-                                          fontWeight: "bold",
+                                          fontWeight: 'bold',
                                        }}
                                     >
                                        {category.label}
                                     </Typography>
-                                    <MenuList variant="nav_menu" dense>
+                                    <MenuList variant={'nav_menu' as any} dense>
                                        {category.links.map((link) => (
                                           <MenuItem
-                                             variant="nav_menu"
+                                             variant={'nav_menu' as any}
                                              key={link.to}
-                                             component={NavLink}
+                                             component={NavLink as any}
                                              to={link.to}
                                              onClick={() => onCollapseNavbar?.()}
                                           >
@@ -828,12 +770,12 @@ const NavigationMenu = ({
                         {rowIndex === 0 && (
                            <Box sx={{ mb: 2 }}>
                               <Button
-                                 variant="navViewAll"
-                                 component={NavLink}
+                                 variant={'navViewAll' as any}
+                                 component={NavLink as any}
                                  to="/admin/new-session-setup"
                                  onClick={() => onCollapseNavbar?.()}
                               >
-                                 <Typography variant="navViewAllText">
+                                 <Typography variant={'navViewAllText' as any}>
                                     New Session Setup
                                  </Typography>
                                  <NavigateNextIcon />

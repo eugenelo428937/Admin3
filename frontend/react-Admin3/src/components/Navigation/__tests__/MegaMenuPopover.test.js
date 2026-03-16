@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import MegaMenuPopover from '../MegaMenuPopover.js';
+import MegaMenuPopover from '../MegaMenuPopover.tsx';
 
 import appTheme from '../../../theme';
 expect.extend(toHaveNoViolations);
