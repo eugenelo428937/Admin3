@@ -7,15 +7,6 @@
  * - Total gross amount (grand total)
  * - VAT breakdown by region
  * - Item count per region
- *
- * Props:
- * - totals (object): Cart totals with breakdown
- *   - totalNetAmount (number)
- *   - totalVatAmount (number)
- *   - totalGrossAmount (number)
- *   - vatBreakdown (array): Breakdown by region
- * - currency (string): Currency code (GBP, USD, ZAR, etc.)
- * - className (string): Optional custom CSS class
  */
 import React from 'react';
 import {
@@ -29,9 +20,15 @@ import {
   Box,
   Chip
 } from '@mui/material';
-import PropTypes from 'prop-types';
+import type { CartTotalsData, VATBreakdownItem } from '../../types/cart';
 
-const CartTotals = ({
+interface CartTotalsProps {
+  totals?: CartTotalsData;
+  currency?: string;
+  className?: string;
+}
+
+const CartTotals: React.FC<CartTotalsProps> = ({
   totals,
   currency = 'GBP',
   className = ''
@@ -39,7 +36,7 @@ const CartTotals = ({
   /**
    * Format currency based on currency code
    */
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number | null | undefined): string => {
     // Handle null/undefined
     if (amount == null) return '-';
 
@@ -122,7 +119,7 @@ const CartTotals = ({
                   VAT Breakdown:
                 </Typography>
                 <List dense disablePadding>
-                  {vatBreakdown.map((breakdown, index) => (
+                  {vatBreakdown.map((breakdown: VATBreakdownItem, index: number) => (
                     <ListItem
                       key={index}
                       disableGutters
@@ -179,24 +176,6 @@ const CartTotals = ({
       </CardContent>
     </Card>
   );
-};
-
-CartTotals.propTypes = {
-  totals: PropTypes.shape({
-    totalNetAmount: PropTypes.number,
-    totalVatAmount: PropTypes.number,
-    totalGrossAmount: PropTypes.number,
-    vatBreakdown: PropTypes.arrayOf(
-      PropTypes.shape({
-        region: PropTypes.string.isRequired,
-        rate: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
-        itemCount: PropTypes.number.isRequired
-      })
-    )
-  }),
-  currency: PropTypes.string,
-  className: PropTypes.string
 };
 
 export default CartTotals;

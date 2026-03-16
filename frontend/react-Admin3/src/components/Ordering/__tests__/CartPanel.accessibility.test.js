@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import CartPanel from '../CartPanel.js';
-import { CartContext } from '../../../contexts/CartContext.js';
+import { CartContext } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 
 import appTheme from '../../../theme';

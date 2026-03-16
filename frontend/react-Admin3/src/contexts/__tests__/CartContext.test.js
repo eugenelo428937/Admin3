@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 
 // Unmock CartContext to test the real implementation
 // This must be before any imports
-vi.unmock('../CartContext.js');
+vi.unmock('../CartContext.tsx');
 
 // Mock ConfigContext - CartContext depends on useConfig
 vi.mock('../ConfigContext.js', () => ({
@@ -19,7 +19,7 @@ vi.mock('../ConfigContext.js', () => ({
 }));
 
 // Mock cartService - this will override the setupTests.js mock for this file
-vi.mock('../../services/cartService.js', () => ({
+vi.mock('../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     fetchCart: vi.fn(() => Promise.resolve({
@@ -45,8 +45,8 @@ vi.mock('../../services/cartService.js', () => ({
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { CartProvider, useCart } from '../CartContext.js';
-import cartService from '../../services/cartService.js';
+import { CartProvider, useCart } from '../CartContext.tsx';
+import cartService from '../../services/cartService.ts';
 
 // Ref to store cart context for tests
 let cartRef = null;

@@ -33,7 +33,7 @@ import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { NumberInput, HStack, IconButton as ChakraIconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import BaseProductCard from "../../Common/BaseProductCard.js";
-import { useCart } from "../../../contexts/CartContext.js";
+import { useCart } from "../../../contexts/CartContext.tsx";
 
 const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 	const theme = useTheme();

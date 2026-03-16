@@ -34,7 +34,7 @@ const mockFetchCart = vi.fn();
 const mockUpdateItem = vi.fn();
 const mockRemoveItem = vi.fn();
 
-vi.mock('../../services/cartService.js', () => ({
+vi.mock('../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     fetchCart: vi.fn(),
@@ -44,10 +44,10 @@ vi.mock('../../services/cartService.js', () => ({
 }));
 
 // Import the mocked service to get references to the mock functions
-import cartService from '../../services/cartService.js';
+import cartService from '../../services/cartService.ts';
 
 // Mock Cart subcomponents
-vi.mock('../../components/Cart/CartItemWithVAT.js', () => ({
+vi.mock('../../components/Cart/CartItemWithVAT.tsx', () => ({
   __esModule: true,
   default: function MockCartItemWithVAT({ item, onQuantityChange, onRemove }) {
     return (
@@ -71,7 +71,7 @@ vi.mock('../../components/Cart/CartItemWithVAT.js', () => ({
   },
 }));
 
-vi.mock('../../components/Cart/CartTotals.js', () => ({
+vi.mock('../../components/Cart/CartTotals.tsx', () => ({
   __esModule: true,
   default: function MockCartTotals({ totals }) {
     return (
@@ -84,7 +84,7 @@ vi.mock('../../components/Cart/CartTotals.js', () => ({
   },
 }));
 
-vi.mock('../../components/Cart/CartVATError.js', () => ({
+vi.mock('../../components/Cart/CartVATError.tsx', () => ({
   __esModule: true,
   default: function MockCartVATError({ error, errorMessage, onRetry }) {
     return (

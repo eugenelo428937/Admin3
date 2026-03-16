@@ -1,16 +1,43 @@
-import { useState, useCallback, useEffect } from 'react';
-import acknowledgmentService from '../services/acknowledgmentService.js';
+import { useState, useCallback } from 'react';
+import acknowledgmentService from '../services/acknowledgmentService.ts';
 import { parsePhoneNumber } from 'libphonenumber-js';
+import type { CartItem, CartData } from '../types/cart';
+import type {
+  ContactData,
+  CheckoutAddress,
+  CheckoutAddressData,
+  FieldValidation,
+  AddressValidationState,
+  ContactValidationState,
+  ValidationSummary,
+  CheckoutValidationState,
+  Step1ValidationResult,
+  AcknowledgmentInfo,
+  ComprehensiveValidationResult,
+  MissingAcknowledgmentsResult,
+} from '../types/checkout';
 
-/**
- * Hook for checkout validation
- *
- * Manages validation of ALL acknowledgments from ALL entry points
- * as well as address and contact information validation
- * before allowing checkout to proceed.
- */
-const useCheckoutValidation = () => {
-  const [validationState, setValidationState] = useState({
+// ─── Return Type ────────────────────────────────────────────────
+
+interface UseCheckoutValidationReturn extends CheckoutValidationState {
+  statusMessage: string;
+  validateCheckout: (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string, userProfile?: any) => Promise<ComprehensiveValidationResult>;
+  validateStep1: (contactData: ContactData, deliveryAddress: CheckoutAddress, invoiceAddress: CheckoutAddress) => Step1ValidationResult;
+  validateContactInfo: (contactData: ContactData) => { isValid: boolean; errors: string[]; validations: ContactValidationState };
+  validateAddresses: (deliveryAddress: CheckoutAddress, invoiceAddress: CheckoutAddress) => { isValid: boolean; errors: string[]; validations: AddressValidationState };
+  validateEmail: (email: string) => FieldValidation;
+  validatePhone: (phoneNumber: string, countryCode?: string, isRequired?: boolean) => FieldValidation & { formattedNumber?: string };
+  validateAddress: (addressData: CheckoutAddressData | undefined, addressType: string) => FieldValidation;
+  quickCanProceedCheck: (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string) => Promise<boolean>;
+  getMissingAcknowledgments: (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string) => Promise<MissingAcknowledgmentsResult>;
+  collectAllRequiredAcknowledgments: (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string) => Promise<AcknowledgmentInfo[]>;
+  resetValidation: () => void;
+}
+
+// ─── Hook ───────────────────────────────────────────────────────
+
+const useCheckoutValidation = (): UseCheckoutValidationReturn => {
+  const [validationState, setValidationState] = useState<CheckoutValidationState>({
     isValidating: false,
     canProceed: false,
     blocked: false,
@@ -25,7 +52,6 @@ const useCheckoutValidation = () => {
     validationMessage: '',
     lastValidated: null,
     error: null,
-    // Address and contact validation state
     addressValidation: {
       deliveryAddress: { isValid: false, error: null },
       invoiceAddress: { isValid: false, error: null }
@@ -36,100 +62,62 @@ const useCheckoutValidation = () => {
     }
   });
 
-  /**
-   * Validate email address
-   */
-  const validateEmail = useCallback((email) => {
+  const validateEmail = useCallback((email: string): FieldValidation => {
     if (!email || !email.trim()) {
       return { isValid: false, error: 'Email address is required' };
     }
-
-    // RFC 5322 compliant email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return { isValid: false, error: 'Please enter a valid email address' };
     }
-
     return { isValid: true, error: null };
   }, []);
 
-  /**
-   * Validate phone number (synchronous)
-   */
-  const validatePhone = useCallback((phoneNumber, countryCode = 'GB', isRequired = false) => {
-    // Handle empty/null values
+  const validatePhone = useCallback((phoneNumber: string, countryCode: string = 'GB', isRequired: boolean = false): FieldValidation & { formattedNumber?: string } => {
     if (!phoneNumber || (typeof phoneNumber === 'string' && !phoneNumber.trim())) {
       if (isRequired) {
         return { isValid: false, error: 'Phone number is required' };
       }
-      return { isValid: true, error: null }; // Optional field is valid when empty
+      return { isValid: true, error: null };
     }
 
     try {
-      // Use libphonenumber-js directly for synchronous validation
-      const parsedNumber = parsePhoneNumber(phoneNumber, countryCode);
-
+      const parsedNumber = parsePhoneNumber(phoneNumber, countryCode as any);
       if (!parsedNumber) {
-        return {
-          isValid: false,
-          error: 'Invalid phone number format'
-        };
+        return { isValid: false, error: 'Invalid phone number format' };
       }
-
       const isValid = parsedNumber.isValid();
-
       if (!isValid) {
-        return {
-          isValid: false,
-          error: 'Please enter a valid phone number'
-        };
+        return { isValid: false, error: 'Please enter a valid phone number' };
       }
-
-      return {
-        isValid: true,
-        error: null,
-        formattedNumber: parsedNumber.formatNational()
-      };
+      return { isValid: true, error: null, formattedNumber: parsedNumber.formatNational() };
     } catch (error) {
-      return {
-        isValid: false,
-        error: 'Invalid phone number format'
-      };
+      return { isValid: false, error: 'Invalid phone number format' };
     }
   }, []);
 
-  /**
-   * Validate address completeness
-   */
-  const validateAddress = useCallback((addressData, addressType) => {
+  const validateAddress = useCallback((addressData: CheckoutAddressData | undefined, addressType: string): FieldValidation => {
     if (!addressData || typeof addressData !== 'object') {
       return { isValid: false, error: `${addressType} address is required` };
     }
 
-    const missingFields = [];
+    const missingFields: string[] = [];
 
-    // Check for primary address line (flexible field names)
-    const hasAddressLine = addressData.address_line_1 ||
-                          addressData.street ||
-                          addressData.address ||
-                          addressData.building;
+    const hasAddressLine = addressData.address_line_1 || addressData.street || addressData.address || addressData.building;
     if (!hasAddressLine || (typeof hasAddressLine === 'string' && !hasAddressLine.trim())) {
       missingFields.push('Address Line 1');
     }
 
-    // Check for city/town (flexible field names)
     const hasCity = addressData.city || addressData.town;
     if (!hasCity || (typeof hasCity === 'string' && !hasCity.trim())) {
       missingFields.push('City');
     }
 
-    // Check for postal code (flexible field names)
     const hasPostalCode = addressData.postal_code || addressData.postcode;
     if (!hasPostalCode || (typeof hasPostalCode === 'string' && !hasPostalCode.trim())) {
       missingFields.push('Postal Code');
     }
 
-    // Check for country
     if (!addressData.country || !addressData.country.trim()) {
       missingFields.push('Country');
     }
@@ -144,36 +132,29 @@ const useCheckoutValidation = () => {
     return { isValid: true, error: null };
   }, []);
 
-  /**
-   * Validate contact information
-   */
-  const validateContactInfo = useCallback((contactData) => {
-    const errors = [];
-    const validations = {
+  const validateContactInfo = useCallback((contactData: ContactData) => {
+    const errors: string[] = [];
+    const validations: ContactValidationState = {
       mobilePhone: { isValid: true, error: null },
       email: { isValid: true, error: null }
     };
 
-    // Use saved country codes, default to GB if not set
     const mobileCountry = contactData.mobile_phone_country || 'GB';
     const homeCountry = contactData.home_phone_country || 'GB';
     const workCountry = contactData.work_phone_country || 'GB';
 
-    // Validate mobile phone (required) - use saved country code
     const phoneValidation = validatePhone(contactData.mobile_phone, mobileCountry, true);
     validations.mobilePhone = phoneValidation;
     if (!phoneValidation.isValid) {
-      errors.push(phoneValidation.error);
+      errors.push(phoneValidation.error!);
     }
 
-    // Validate email (required)
     const emailValidation = validateEmail(contactData.email_address);
     validations.email = emailValidation;
     if (!emailValidation.isValid) {
-      errors.push(emailValidation.error);
+      errors.push(emailValidation.error!);
     }
 
-    // Validate optional phone numbers - use saved country codes
     if (contactData.home_phone) {
       const homePhoneValidation = validatePhone(contactData.home_phone, homeCountry, false);
       if (!homePhoneValidation.isValid) {
@@ -188,85 +169,56 @@ const useCheckoutValidation = () => {
       }
     }
 
-    return {
-      isValid: errors.length === 0,
-      errors,
-      validations
-    };
+    return { isValid: errors.length === 0, errors, validations };
   }, [validateEmail, validatePhone]);
 
-  /**
-   * Validate addresses (delivery and invoice)
-   */
-  const validateAddresses = useCallback((deliveryAddress, invoiceAddress) => {
-    const errors = [];
-    const validations = {
+  const validateAddresses = useCallback((deliveryAddress: CheckoutAddress, invoiceAddress: CheckoutAddress) => {
+    const errors: string[] = [];
+    const validations: AddressValidationState = {
       deliveryAddress: { isValid: true, error: null },
       invoiceAddress: { isValid: true, error: null }
     };
 
-    // Validate delivery address
     const deliveryValidation = validateAddress(deliveryAddress?.addressData, 'Delivery');
     validations.deliveryAddress = deliveryValidation;
     if (!deliveryValidation.isValid) {
-      errors.push(deliveryValidation.error);
+      errors.push(deliveryValidation.error!);
     }
 
-    // Validate invoice address
     const invoiceValidation = validateAddress(invoiceAddress?.addressData, 'Invoice');
     validations.invoiceAddress = invoiceValidation;
     if (!invoiceValidation.isValid) {
-      errors.push(invoiceValidation.error);
+      errors.push(invoiceValidation.error!);
     }
 
-    return {
-      isValid: errors.length === 0,
-      errors,
-      validations
-    };
+    return { isValid: errors.length === 0, errors, validations };
   }, [validateAddress]);
 
-  /**
-   * Validate checkout comprehensively
-   */
-  const validateCheckout = useCallback(async (cartData, cartItems, paymentMethod, userProfile = null) => {
-    
-
-    setValidationState(prev => ({
-      ...prev,
-      isValidating: true,
-      error: null
-    }));
+  const validateCheckout = useCallback(async (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string, userProfile: any = null): Promise<ComprehensiveValidationResult> => {
+    setValidationState(prev => ({ ...prev, isValidating: true, error: null }));
 
     try {
       const result = await acknowledgmentService.validateCheckoutReadiness(
-        cartData,
-        cartItems,
-        paymentMethod,
-        userProfile
+        cartData, cartItems, paymentMethod, userProfile
       );
-
-      
 
       setValidationState({
         isValidating: false,
         canProceed: result.canProceed,
         blocked: result.blocked,
-        summary: result.summary || {
-          total_required: 0,
-          total_satisfied: 0,
-          total_missing: 0
-        },
+        summary: result.summary || { total_required: 0, total_satisfied: 0, total_missing: 0 },
         allRequiredAcknowledgments: result.allRequiredAcknowledgments || [],
-        missingAcknowledgments: result.missingAcknowledgments?.details || [],
+        missingAcknowledgments: (result.missingAcknowledgments as any)?.details || [],
         satisfiedAcknowledgments: result.satisfiedAcknowledgments || [],
         validationMessage: result.validationMessage || '',
         lastValidated: new Date(),
-        error: null
+        error: null,
+        addressValidation: { deliveryAddress: { isValid: false, error: null }, invoiceAddress: { isValid: false, error: null } },
+        contactValidation: { mobilePhone: { isValid: false, error: null }, email: { isValid: false, error: null } }
       });
 
-      return result;
-    } catch (error) {
+      return result as ComprehensiveValidationResult;
+    } catch (error: any) {
       console.error('❌ [useCheckoutValidation] Error:', error);
 
       setValidationState(prev => ({
@@ -278,25 +230,13 @@ const useCheckoutValidation = () => {
         lastValidated: new Date()
       }));
 
-      return {
-        canProceed: false,
-        blocked: true,
-        error: error.message
-      };
+      return { canProceed: false, blocked: true, error: error.message, success: false, summary: { total_required: 0, total_satisfied: 0, total_missing: 0 }, allRequiredAcknowledgments: [], missingAcknowledgments: [], satisfiedAcknowledgments: [] };
     }
   }, []);
 
-  /**
-   * Quick check if checkout can proceed (without detailed validation)
-   */
-  const quickCanProceedCheck = useCallback(async (cartData, cartItems, paymentMethod) => {
+  const quickCanProceedCheck = useCallback(async (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string): Promise<boolean> => {
     try {
-      const context = acknowledgmentService.buildValidationContext(
-        cartData,
-        cartItems,
-        paymentMethod
-      );
-
+      const context = acknowledgmentService.buildValidationContext(cartData, cartItems, paymentMethod);
       return await acknowledgmentService.canProceedWithCheckout(context);
     } catch (error) {
       console.error('❌ [quickCanProceedCheck] Error:', error);
@@ -304,40 +244,19 @@ const useCheckoutValidation = () => {
     }
   }, []);
 
-  /**
-   * Get missing acknowledgments details
-   */
-  const getMissingAcknowledgments = useCallback(async (cartData, cartItems, paymentMethod) => {
+  const getMissingAcknowledgments = useCallback(async (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string): Promise<MissingAcknowledgmentsResult> => {
     try {
-      const context = acknowledgmentService.buildValidationContext(
-        cartData,
-        cartItems,
-        paymentMethod
-      );
-
+      const context = acknowledgmentService.buildValidationContext(cartData, cartItems, paymentMethod);
       return await acknowledgmentService.getMissingAcknowledgments(context);
     } catch (error) {
       console.error('❌ [getMissingAcknowledgments] Error:', error);
-      return {
-        total: 0,
-        byEntryPoint: {},
-        details: [],
-        message: 'Unable to check missing acknowledgments.'
-      };
+      return { total: 0, byEntryPoint: {}, details: [], message: 'Unable to check missing acknowledgments.' };
     }
   }, []);
 
-  /**
-   * Collect all required acknowledgments for given context
-   */
-  const collectAllRequiredAcknowledgments = useCallback(async (cartData, cartItems, paymentMethod) => {
+  const collectAllRequiredAcknowledgments = useCallback(async (cartData: CartData | null, cartItems: CartItem[], paymentMethod: string): Promise<AcknowledgmentInfo[]> => {
     try {
-      const context = acknowledgmentService.buildValidationContext(
-        cartData,
-        cartItems,
-        paymentMethod
-      );
-
+      const context = acknowledgmentService.buildValidationContext(cartData, cartItems, paymentMethod);
       return await acknowledgmentService.collectAllRequiredAcknowledgments(context);
     } catch (error) {
       console.error('❌ [collectAllRequiredAcknowledgments] Error:', error);
@@ -345,33 +264,27 @@ const useCheckoutValidation = () => {
     }
   }, []);
 
-  /**
-   * Validate Step 1 (Cart Review) - addresses and contact info
-   */
-  const validateStep1 = useCallback((contactData, deliveryAddress, invoiceAddress) => {
-    const errors = [];
+  const validateStep1 = useCallback((contactData: ContactData, deliveryAddress: CheckoutAddress, invoiceAddress: CheckoutAddress): Step1ValidationResult => {
+    const errors: string[] = [];
     let canProceed = true;
 
-    // Validate contact information
     const contactValidation = validateContactInfo(contactData);
     if (!contactValidation.isValid) {
       errors.push(...contactValidation.errors);
       canProceed = false;
     }
 
-    // Validate addresses
     const addressesValidation = validateAddresses(deliveryAddress, invoiceAddress);
     if (!addressesValidation.isValid) {
       errors.push(...addressesValidation.errors);
       canProceed = false;
     }
 
-    // Update validation state
     setValidationState(prev => ({
       ...prev,
       addressValidation: addressesValidation.validations,
       contactValidation: contactValidation.validations,
-      canProceed: canProceed && prev.canProceed, // Combine with acknowledgment validation
+      canProceed: canProceed && prev.canProceed,
       validationMessage: errors.length > 0 ? errors.join('. ') : '',
       error: errors.length > 0 ? errors[0] : null
     }));
@@ -384,19 +297,12 @@ const useCheckoutValidation = () => {
     };
   }, [validateContactInfo, validateAddresses]);
 
-  /**
-   * Reset validation state
-   */
   const resetValidation = useCallback(() => {
     setValidationState({
       isValidating: false,
       canProceed: false,
       blocked: false,
-      summary: {
-        total_required: 0,
-        total_satisfied: 0,
-        total_missing: 0
-      },
+      summary: { total_required: 0, total_satisfied: 0, total_missing: 0 },
       allRequiredAcknowledgments: [],
       missingAcknowledgments: [],
       satisfiedAcknowledgments: [],
@@ -414,37 +320,23 @@ const useCheckoutValidation = () => {
     });
   }, []);
 
-  /**
-   * Get user-friendly status message
-   */
-  const getStatusMessage = useCallback(() => {
-    if (validationState.isValidating) {
-      return 'Validating acknowledgments...';
-    }
-
-    if (validationState.error) {
-      return `Validation error: ${validationState.error}`;
-    }
-
+  const getStatusMessage = useCallback((): string => {
+    if (validationState.isValidating) return 'Validating acknowledgments...';
+    if (validationState.error) return `Validation error: ${validationState.error}`;
     if (validationState.blocked) {
       const missingCount = validationState.summary.total_missing;
       return `Checkout blocked: ${missingCount} required acknowledgment${missingCount !== 1 ? 's' : ''} missing`;
     }
-
     if (validationState.canProceed) {
       const satisfiedCount = validationState.summary.total_satisfied;
       return `Ready to proceed: All ${satisfiedCount} acknowledgment${satisfiedCount !== 1 ? 's' : ''} satisfied`;
     }
-
     return 'Checkout validation pending';
   }, [validationState]);
 
   return {
-    // State
     ...validationState,
     statusMessage: getStatusMessage(),
-
-    // Actions
     validateCheckout,
     validateStep1,
     validateContactInfo,

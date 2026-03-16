@@ -16,7 +16,7 @@ vi.mock('../../../../services/bundleService.js', () => ({
 
 // Mock CartContext
 const mockAddToCart = vi.fn().mockResolvedValue({});
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
     cartItems: [],

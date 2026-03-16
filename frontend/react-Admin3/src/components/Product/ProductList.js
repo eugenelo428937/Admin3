@@ -19,7 +19,7 @@ import {
     useTheme,
     useMediaQuery
 } from '@mui/material';
-import { useCart } from '../../contexts/CartContext.js';
+import { useCart } from '../../contexts/CartContext.tsx';
 import useProductsSearch from '../../hooks/useProductsSearch.js';
 import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
 import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';

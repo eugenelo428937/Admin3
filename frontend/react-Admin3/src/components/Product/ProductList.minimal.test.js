@@ -14,7 +14,7 @@ vi.mock("../../services/httpService.js", () => ({
    },
 }));
 
-vi.mock("../../services/cartService.js", () => ({
+vi.mock("../../services/cartService.ts", () => ({
    __esModule: true,
    default: {
       getCart: vi.fn(() => Promise.resolve({

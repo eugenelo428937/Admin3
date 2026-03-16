@@ -25,7 +25,7 @@ vi.mock('../../../../../services/httpService.js', () => ({
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
-import { CartProvider, useCart } from '../../../../../contexts/CartContext.js';
+import { CartProvider, useCart } from '../../../../../contexts/CartContext.tsx';
 import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 // Mock CartContext with controllable state
@@ -38,7 +38,7 @@ let mockCartContext = {
   loading: false,
 };
 
-vi.mock('../../../../../contexts/CartContext.js', async () => {
+vi.mock('../../../../../contexts/CartContext.tsx', async () => {
   const actual = await vi.importActual('../../../../../contexts/CartContext');
   return {
     ...actual,

@@ -1,6 +1,6 @@
 // src/components/User/useOrderHistoryVM.ts
 import { useEffect, useState } from "react";
-import cartService from "../../services/cartService.js";
+import cartService from "../../services/cartService.ts";
 import type { Order } from "../../types/auth";
 
 export interface OrderHistoryVM {

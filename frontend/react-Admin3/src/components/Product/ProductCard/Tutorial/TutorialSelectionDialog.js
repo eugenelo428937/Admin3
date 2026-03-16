@@ -15,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import TutorialDetailCard from './TutorialDetailCard.js';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
-import { useCart } from '../../../../contexts/CartContext.js';
+import { useCart } from '../../../../contexts/CartContext.tsx';
 import { touchIconButtonStyle, responsiveGridSpacing } from './tutorialStyles.js';
 import {
   buildTutorialMetadata,

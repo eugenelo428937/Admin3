@@ -24,7 +24,7 @@ const mockCartData = {
   }
 };
 
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: mockCartData
   })

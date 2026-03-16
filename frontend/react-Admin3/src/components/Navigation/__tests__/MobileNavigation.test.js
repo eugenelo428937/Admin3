@@ -33,7 +33,7 @@ vi.mock('../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock useCart context
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartCount: 3,
   }),
