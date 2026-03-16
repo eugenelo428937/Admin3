@@ -7,19 +7,19 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import useCheckoutRulesEngine from '../useCheckoutRulesEngine.ts';
 
 // Mock dependencies
-vi.mock('../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
     executeCheckoutTerms: vi.fn()
   },
   buildRulesContext: vi.fn()
 }));
 
-vi.mock('../../services/rulesEngineService.js', () => ({
+vi.mock('../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {}
 }));
 
-const _reqmod_______utils_rulesEngineUtils_js = await import('../../utils/rulesEngineUtils.js'); const { rulesEngineHelpers } = _reqmod_______utils_rulesEngineUtils_js;
+const _reqmod_______utils_rulesEngineUtils_js = await import('../../utils/rulesEngineUtils'); const { rulesEngineHelpers } = _reqmod_______utils_rulesEngineUtils_js;
 
 describe('useCheckoutRulesEngine', () => {
   const mockCartData = { id: 1, total: 100 };

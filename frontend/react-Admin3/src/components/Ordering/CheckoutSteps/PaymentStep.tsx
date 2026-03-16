@@ -18,7 +18,7 @@ import {
    Alert as MuiAlert,
 } from "@mui/material";
 import { useCart } from "../../../contexts/CartContext.tsx";
-import rulesEngineService from "../../../services/rulesEngineService.js";
+import rulesEngineService from "../../../services/rulesEngineService";
 
 import type {
    PaymentMethod,

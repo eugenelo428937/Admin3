@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import PreferenceStep from '../PreferenceStep.tsx';
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -39,7 +39,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
   }),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../../services/rulesEngineService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
