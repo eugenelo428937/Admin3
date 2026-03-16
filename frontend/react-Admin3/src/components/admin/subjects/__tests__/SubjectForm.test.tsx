@@ -1,9 +1,8 @@
 import { vi } from 'vitest';
-// src/components/admin/subjects/__tests__/SubjectForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminSubjectForm from '../SubjectForm.js';
+import AdminSubjectForm from '../SubjectForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.js', () => ({
@@ -21,12 +20,12 @@ vi.mock('react-router-dom', () => {
   return {
     useNavigate: vi.fn(() => mockNavigate),
     useParams: vi.fn(() => ({})),
-    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
+    Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,15 +34,15 @@ vi.mock('../../../../services/subjectService.js', () => ({
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 const theme = appTheme;
 
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
 import appTheme from '../../../../theme';
-const setMockParams = (params) => {
-  useParams.mockReturnValue(params);
+const setMockParams = (params: Record<string, string>) => {
+  (useParams as any).mockReturnValue(params);
 };
 
 const renderComponent = (isEditMode = false) => {
@@ -63,7 +62,7 @@ const renderComponent = (isEditMode = false) => {
 describe('AdminSubjectForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
       isStudyPlus: false,
@@ -115,7 +114,7 @@ describe('AdminSubjectForm', () => {
     };
 
     beforeEach(() => {
-      subjectService.getById.mockResolvedValue(mockSubject);
+      (subjectService.getById as any).mockResolvedValue(mockSubject);
     });
 
     test('renders edit form title', async () => {
@@ -161,7 +160,7 @@ describe('AdminSubjectForm', () => {
 
   describe('form submission', () => {
     test('creates subject on submit in create mode', async () => {
-      subjectService.create.mockResolvedValue({});
+      (subjectService.create as any).mockResolvedValue({});
 
       renderComponent();
 
@@ -189,7 +188,7 @@ describe('AdminSubjectForm', () => {
       fireEvent.change(codeInput, { target: { value: '' } });
 
       const submitButton = screen.getByRole('button', { name: /create subject/i });
-      fireEvent.submit(submitButton.closest('form'));
+      fireEvent.submit(submitButton.closest('form')!);
 
       await waitFor(() => {
         // The error message appears as an Alert
@@ -210,7 +209,7 @@ describe('AdminSubjectForm', () => {
 
   describe('error handling', () => {
     test('shows error when fetch fails in edit mode', async () => {
-      subjectService.getById.mockRejectedValueOnce(new Error('Fetch error'));
+      (subjectService.getById as any).mockRejectedValueOnce(new Error('Fetch error'));
 
       renderComponent(true);
 
@@ -220,7 +219,7 @@ describe('AdminSubjectForm', () => {
     });
 
     test('shows error when create fails', async () => {
-      subjectService.create.mockRejectedValueOnce(new Error('Create error'));
+      (subjectService.create as any).mockRejectedValueOnce(new Error('Create error'));
 
       renderComponent();
 
