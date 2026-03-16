@@ -23,7 +23,7 @@ vi.mock('../../../services/authService.ts', () => ({
 }));
 
 // Mock loggerService
-vi.mock('../../../services/loggerService.js', () => ({
+vi.mock('../../../services/loggerService', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),

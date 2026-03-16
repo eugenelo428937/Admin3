@@ -14,7 +14,7 @@ vi.mock('../../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../../services/sessionSetupService.js', () => ({
+vi.mock('../../../../services/sessionSetupService', () => ({
   __esModule: true,
   default: {
     getPreviousSession: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('../../../../config.js', () => ({
 }));
 
 import httpService from '../../../../services/httpService.js';
-import sessionSetupService from '../../../../services/sessionSetupService.js';
+import sessionSetupService from '../../../../services/sessionSetupService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

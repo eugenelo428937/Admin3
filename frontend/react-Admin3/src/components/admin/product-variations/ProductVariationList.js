@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import productVariationService from '../../../services/productVariationService.js';
+import productVariationService from '../../../services/productVariationService';
 
 const AdminProductVariationList = () => {
     const { isSuperuser } = useAuth();

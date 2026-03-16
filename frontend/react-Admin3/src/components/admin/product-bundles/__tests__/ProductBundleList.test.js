@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService.js', () => ({
+vi.mock('../../../../services/catalogBundleService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../services/catalogBundleService.js', () => ({
   },
 }));
 
-import catalogBundleService from '../../../../services/catalogBundleService.js';
+import catalogBundleService from '../../../../services/catalogBundleService';
 
 import appTheme from '../../../../theme';
 // Mock BundleProductsPanel to avoid testing its internals here

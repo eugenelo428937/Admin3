@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock recommendationService
-vi.mock('../../../../services/recommendationService.js', () => ({
+vi.mock('../../../../services/recommendationService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,15 +36,15 @@ vi.mock('../../../../services/recommendationService.js', () => ({
 }));
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService.js', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import recommendationService from '../../../../services/recommendationService.js';
-import productProductVariationService from '../../../../services/productProductVariationService.js';
+import recommendationService from '../../../../services/recommendationService';
+import productProductVariationService from '../../../../services/productProductVariationService';
 
 const theme = appTheme;
 

@@ -19,7 +19,7 @@ vi.mock('../httpService.js', () => ({
   },
 }));
 
-vi.mock('../loggerService.js', () => ({
+vi.mock('../loggerService', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -39,7 +39,7 @@ vi.mock('../../config.js', () => ({
 
 import authService from '../authService.ts';
 import httpService from '../httpService.js';
-import logger from '../loggerService.js';
+import logger from '../loggerService';
 
 describe('authService', () => {
   beforeEach(() => {

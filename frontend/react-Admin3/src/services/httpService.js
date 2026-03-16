@@ -1,7 +1,7 @@
 import axios from "axios";
 import authService from "./authService.ts";
 import config from "../config.js";
-import logger from "./loggerService.js";
+import logger from "./loggerService";
 
 const httpService = axios.create({
 	baseURL: config.apiBaseUrl,

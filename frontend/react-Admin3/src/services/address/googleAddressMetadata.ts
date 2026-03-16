@@ -12,7 +12,7 @@ import type {
   AddressMetadata,
   AddressFieldConfig,
   LayoutRow,
-} from '../types/address/address.types';
+} from '../../types/address/address.types';
 
 // Google's address metadata API base URL
 const GOOGLE_ADDRESS_DATA_URL = 'https://chromium-i18n.appspot.com/ssl-address/data';

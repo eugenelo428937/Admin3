@@ -38,7 +38,7 @@ describe('errorTrackingService', () => {
       import.meta.env.MODE = 'production';
       import.meta.env.DEV = false;
       import.meta.env.PROD = true;
-      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 
@@ -52,7 +52,7 @@ describe('errorTrackingService', () => {
       import.meta.env.MODE = 'development';
       import.meta.env.DEV = true;
       import.meta.env.PROD = false;
-      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 
@@ -63,7 +63,7 @@ describe('errorTrackingService', () => {
       import.meta.env.MODE = 'test';
       import.meta.env.DEV = false;
       import.meta.env.PROD = false;
-      const _reqmod____errorTrackingService_js = await import('../errorTrackingService.js'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
+      const _reqmod____errorTrackingService_js = await import('../errorTrackingService'); const { initializeErrorTracking } = _reqmod____errorTrackingService_js;
 
       initializeErrorTracking();
 

@@ -19,8 +19,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import productProductVariationService from "../../../services/productProductVariationService.js";
-import productVariationService from "../../../services/productVariationService.js";
+import productProductVariationService from "../../../services/productProductVariationService";
+import productVariationService from "../../../services/productVariationService";
 
 const ProductVariationsPanel = ({ productId }) => {
   const [variations, setVariations] = useState([]);

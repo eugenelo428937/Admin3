@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useCart } from '../contexts/CartContext.tsx';
-import productService from '../services/productService.js';
+import productService from '../services/productService';
 
 /**
  * Custom hook for managing product card functionality

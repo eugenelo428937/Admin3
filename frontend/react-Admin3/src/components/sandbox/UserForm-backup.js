@@ -30,7 +30,7 @@ import authService from "../../services/authService.ts";
 import config from '../../config.js';
 import ValidatedPhoneInput from "../User/ValidatedPhoneInput.tsx";
 import SmartAddressInput from "../Address/SmartAddressInput.tsx";
-import addressMetadataService from "../../services/addressMetadataService.ts";
+import addressMetadataService from "../../services/address/addressMetadataService.ts";
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
    title: "",

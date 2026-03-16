@@ -22,7 +22,7 @@ import SearchBox from '../SearchBox.js';
 import filtersReducer from '../../store/slices/filtersSlice.js';
 
 // Mock searchService to avoid API calls
-vi.mock('../../services/searchService.js', () => ({
+vi.mock('../../services/searchService', () => ({
   __esModule: true,
   default: {
     getDefaultSearchData: vi.fn(() => Promise.resolve({
