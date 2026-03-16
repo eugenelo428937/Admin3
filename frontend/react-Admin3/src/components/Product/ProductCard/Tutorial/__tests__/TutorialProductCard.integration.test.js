@@ -4,7 +4,7 @@ vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 vi.unmock('../../../../../contexts/CartContext.tsx');
 
 // Mock httpService before importing anything else
-vi.mock('../../../../../services/httpService.js', () => ({
+vi.mock('../../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import authService from "../../services/authService.ts";
+import authService from "../../services/authService";
 
 type ActivationStatus = "processing" | "success" | "error";
 type ActivationMode = "activation" | "email_verification";
