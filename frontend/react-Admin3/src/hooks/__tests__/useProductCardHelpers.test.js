@@ -15,7 +15,7 @@ import useProductCardHelpers from '../useProductCardHelpers.js';
 
 // Mock CartContext
 const mockAddToCart = vi.fn();
-vi.mock('../../contexts/CartContext.js', () => ({
+vi.mock('../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
   }),

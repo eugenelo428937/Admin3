@@ -6,13 +6,6 @@
  * - "Recalculate VAT" button
  * - Loading state during retry
  * - Optional dismiss button
- *
- * Props:
- * - error (boolean): Whether error exists
- * - errorMessage (string): Error message to display
- * - onRetry (function): Callback for retry button
- * - onDismiss (function): Optional callback for dismiss button
- * - className (string): Optional custom CSS class
  */
 import React, { useState } from 'react';
 import {
@@ -25,17 +18,24 @@ import {
   Refresh as RefreshIcon,
   ErrorOutline as ErrorOutlineIcon
 } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 
-const CartVATError = ({
-  error,
-  errorMessage,
+interface CartVATErrorProps {
+  error?: boolean;
+  errorMessage?: string | null;
+  onRetry: () => Promise<void>;
+  onDismiss?: (() => void) | null;
+  className?: string;
+}
+
+const CartVATError: React.FC<CartVATErrorProps> = ({
+  error = false,
+  errorMessage = null,
   onRetry,
-  onDismiss,
+  onDismiss = null,
   className = ''
 }) => {
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [retryError, setRetryError] = useState(null);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   // Don't render if no error
   if (!error) {
@@ -114,21 +114,6 @@ const CartVATError = ({
       </Box>
     </Alert>
   );
-};
-
-CartVATError.propTypes = {
-  error: PropTypes.bool,
-  errorMessage: PropTypes.string,
-  onRetry: PropTypes.func.isRequired,
-  onDismiss: PropTypes.func,
-  className: PropTypes.string
-};
-
-CartVATError.defaultProps = {
-  error: false,
-  errorMessage: null,
-  onDismiss: null,
-  className: ''
 };
 
 export default CartVATError;

@@ -15,19 +15,33 @@ import rulesEngineService from '../../../services/rulesEngineService.js';
 import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal.js';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 
-const TermsConditionsStep = ({
+import type { CartItem, CartData } from '../../../types/cart';
+import type {
+  RulesMessage,
+  TermsContent,
+  AcknowledgmentMessage,
+} from '../../../types/checkout';
+
+interface TermsConditionsStepProps {
+  cartData: CartData | null;
+  cartItems: CartItem[];
+  generalTermsAccepted: boolean;
+  setGeneralTermsAccepted: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const TermsConditionsStep: React.FC<TermsConditionsStepProps> = ({
   cartData,
   cartItems,
   generalTermsAccepted,
   setGeneralTermsAccepted
 }) => {
   const { user } = useAuth(); // Get user from AuthContext
-  const [rulesLoading, setRulesLoading] = useState(false);
-  const [rulesMessages, setRulesMessages] = useState([]);
-  const [showAcknowledgmentModal, setShowAcknowledgmentModal] = useState(false);
-  const [acknowledgmentMessages, setAcknowledgmentMessages] = useState([]);
-  const [error, setError] = useState('');
-  const [termsContent, setTermsContent] = useState(null);
+  const [rulesLoading, setRulesLoading] = useState<boolean>(false);
+  const [rulesMessages, setRulesMessages] = useState<RulesMessage[]>([]);
+  const [showAcknowledgmentModal, setShowAcknowledgmentModal] = useState<boolean>(false);
+  const [acknowledgmentMessages, setAcknowledgmentMessages] = useState<AcknowledgmentMessage[]>([]);
+  const [error, setError] = useState<string>('');
+  const [termsContent, setTermsContent] = useState<TermsContent | null>(null);
 
   // Execute checkout_terms rules when step mounts
   useEffect(() => {
@@ -69,7 +83,7 @@ const TermsConditionsStep = ({
               checkboxText: 'I have read and accept the Terms & Conditions'
             });
 
-            const content = {
+            const content: TermsContent = {
               title: parsed.title,
               message: parsed.message,
               checkbox_text: parsed.checkboxText,
@@ -83,7 +97,7 @@ const TermsConditionsStep = ({
           // Show acknowledgment modal for messages that need modal display (like digital content)
           const modalAcks = result.messages.classified.acknowledgments.modal;
           console.log('🔍 [TermsConditionsStep] Modal acknowledgments:', modalAcks);
-          console.log('🔍 [TermsConditionsStep] Modal ack_keys:', modalAcks.map(m => ({ ack_key: m.ack_key, template_id: m.template_id })));
+          console.log('🔍 [TermsConditionsStep] Modal ack_keys:', modalAcks.map((m: AcknowledgmentMessage) => ({ ack_key: m.ack_key, template_id: m.template_id })));
           if (modalAcks.length > 0) {
             setAcknowledgmentMessages(modalAcks);
             setShowAcknowledgmentModal(true);
@@ -115,7 +129,7 @@ const TermsConditionsStep = ({
     executeTermsRules();
   }, [cartData, cartItems, user]);
 
-  const handleAcknowledgmentComplete = async (acknowledged, messageId, ackKey) => {
+  const handleAcknowledgmentComplete = async (acknowledged: boolean, messageId: string | number, ackKey: string) => {
     console.log('🔍 [TermsConditionsStep] handleAcknowledgmentComplete called:', {
       acknowledged,
       messageId,
@@ -151,7 +165,7 @@ const TermsConditionsStep = ({
   };
 
   // Render terms content from rules engine or fallback to static content
-  const renderTermsContent = () => {
+  const renderTermsContent = (): React.ReactNode => {
     if (termsContent) {
       // If we have content from the rules engine
       return (
@@ -217,7 +231,7 @@ const TermsConditionsStep = ({
           {rulesMessages.map((message, index) => {
             // Use the parsed content from the new utilities
             const parsed = message.parsed || message;
-            const severity = parsed.variant === 'warning' ? 'warning' :
+            const severity: 'warning' | 'error' | 'info' = parsed.variant === 'warning' ? 'warning' :
                           parsed.variant === 'error' ? 'error' :
                           parsed.variant === 'info' ? 'info' : 'info';
 
@@ -231,6 +245,7 @@ const TermsConditionsStep = ({
                 <Typography variant="h6" component="h4">
                   {parsed.title || 'Notice'}
                 </Typography>
+                {/* NOTE: dangerouslySetInnerHTML preserved from original - content is sanitized by rules engine */}
                 <Box
                   dangerouslySetInnerHTML={{
                     __html: parsed.message || 'No message content'
@@ -263,8 +278,7 @@ const TermsConditionsStep = ({
                     id="general-terms-checkbox"
                     checked={generalTermsAccepted}
                     required
-                    error={true}
-                    onChange={async (e) => {
+                    onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                       const isChecked = e.target.checked;
                       setGeneralTermsAccepted(isChecked);
 

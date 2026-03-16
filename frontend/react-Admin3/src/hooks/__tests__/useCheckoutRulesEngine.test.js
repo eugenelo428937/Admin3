@@ -4,7 +4,7 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, waitFor, act } from '@testing-library/react';
-import useCheckoutRulesEngine from '../useCheckoutRulesEngine.js';
+import useCheckoutRulesEngine from '../useCheckoutRulesEngine.ts';
 
 // Mock dependencies
 vi.mock('../../utils/rulesEngineUtils.js', () => ({

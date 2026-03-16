@@ -20,7 +20,16 @@ import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { generateProductCode } from '../../../utils/productCodeGenerator.js';
 import { formatVatLabel, getEffectiveVatRate, getRegionDisplayName } from '../../../utils/vatUtils.js';
 
-const CartSummaryPanel = ({
+import type { CartItem, VATCalculations, VATItemCalculation } from '../../../types/cart';
+import type { PaymentMethod } from '../../../types/checkout';
+
+interface CartSummaryPanelProps {
+  cartItems?: CartItem[];
+  vatCalculations?: VATCalculations | null;
+  paymentMethod?: PaymentMethod;
+}
+
+const CartSummaryPanel: React.FC<CartSummaryPanelProps> = ({
   cartItems = [],
   vatCalculations,
   paymentMethod = 'card'
@@ -29,9 +38,9 @@ const CartSummaryPanel = ({
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   // Default: collapsed on md or smaller, expanded on lg+
-  const [isExpanded, setIsExpanded] = useState(isLargeScreen);
+  const [isExpanded, setIsExpanded] = useState<boolean>(isLargeScreen);
   // VAT breakdown collapsed by default
-  const [isVatBreakdownExpanded, setIsVatBreakdownExpanded] = useState(false);
+  const [isVatBreakdownExpanded, setIsVatBreakdownExpanded] = useState<boolean>(false);
 
   // Update expansion state when screen size changes
   useEffect(() => {
@@ -51,14 +60,23 @@ const CartSummaryPanel = ({
   const baseVatRate = getEffectiveVatRate(vatCalculations);
 
   // Get per-item VAT calculations
-  const itemVatCalculations = vatCalculations?.vat_calculations || [];
+  const itemVatCalculations: VATItemCalculation[] = vatCalculations?.vat_calculations || [];
 
   // Check if any items have different VAT rates (mixed VAT scenario)
   const hasMixedVatRates = itemVatCalculations.length > 0 &&
-    itemVatCalculations.some(item => {
-      const itemRate = parseFloat(item.vat_rate || 0);
+    itemVatCalculations.some((item: VATItemCalculation) => {
+      const itemRate = parseFloat(String(item.vat_rate || 0));
       return Math.abs(itemRate - baseVatRate) > 0.001; // Allow for floating point tolerance
     });
+
+  // Format rule name for display (e.g., calculate_vat_uk_digital_product -> UK Digital Product)
+  const formatRuleName = (rule: string | null | undefined): string | null => {
+    if (!rule) return null;
+    return rule
+      .replace('calculate_vat_', '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c: string) => c.toUpperCase());
+  };
 
   return (
     <Card sx={{ height: 'fit-content', width: '100%' }}>
@@ -116,7 +134,7 @@ const CartSummaryPanel = ({
                   </TableCell>
                   <TableCell align="center">{item.quantity}</TableCell>
                   <TableCell align="right">
-                    £{(parseFloat(item.actual_price) * item.quantity).toFixed(2)}
+                    £{(parseFloat(String(item.actual_price)) * item.quantity).toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -196,19 +214,10 @@ const CartSummaryPanel = ({
                             // Find the matching cart item for product name
                             const cartItem = cartItems.find(ci => String(ci.id) === String(vatItem.id));
                             const productName = cartItem?.product_name || vatItem.product_type || `Item ${index + 1}`;
-                            const vatRate = parseFloat(vatItem.vat_rate || 0);
-                            const netAmount = parseFloat(vatItem.net_amount || 0);
-                            const vatAmount = parseFloat(vatItem.vat_amount || 0);
+                            const vatRate = parseFloat(String(vatItem.vat_rate || 0));
+                            const netAmount = parseFloat(String(vatItem.net_amount || 0));
+                            const vatAmount = parseFloat(String(vatItem.vat_amount || 0));
                             const appliedRule = vatItem.applied_rule;
-
-                            // Format rule name for display (e.g., calculate_vat_uk_digital_product -> UK Digital Product)
-                            const formatRuleName = (rule) => {
-                              if (!rule) return null;
-                              return rule
-                                .replace('calculate_vat_', '')
-                                .replace(/_/g, ' ')
-                                .replace(/\b\w/g, c => c.toUpperCase());
-                            };
 
                             return (
                               <TableRow key={vatItem.id || index}>

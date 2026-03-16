@@ -15,7 +15,7 @@ const mockCartState = {
   removeFromCart: vi.fn(),
 };
 
-vi.mock('../../../../../contexts/CartContext.js', async () => {
+vi.mock('../../../../../contexts/CartContext.tsx', async () => {
   const React = await import('react');
   return {
     __esModule: true,
@@ -44,7 +44,7 @@ import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 // Import the mocked modules to allow vi.spyOn
 import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';
-import * as CartContextModule from '../../../../../contexts/CartContext.js';
+import * as CartContextModule from '../../../../../contexts/CartContext.tsx';
 
 // Helper to render with theme provider only (contexts are mocked globally)
 const renderWithProviders = (ui) => {

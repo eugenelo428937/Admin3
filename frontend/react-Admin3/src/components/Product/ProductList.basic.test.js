@@ -11,7 +11,7 @@ vi.mock("../../services/httpService.js", () => ({
       delete: vi.fn(),
    },
 }));
-vi.mock("../../services/cartService.js", () => ({
+vi.mock("../../services/cartService.ts", () => ({
    __esModule: true,
    default: {
       getCart: vi.fn(() =>
@@ -30,7 +30,7 @@ vi.mock("../../services/cartService.js", () => ({
    },
 }));
 // Mock CartContext to prevent CartProvider from importing services
-vi.mock("../../contexts/CartContext.js", () => {
+vi.mock("../../contexts/CartContext.tsx", () => {
    return {
       __esModule: true,
       useCart: () => ({
@@ -103,7 +103,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import ProductList from "./ProductList.js";
-import { CartProvider } from "../../contexts/CartContext.js";
+import { CartProvider } from "../../contexts/CartContext.tsx";
 import { createMockStore } from "../../test-utils/reduxMockStore.js";
 
 import appTheme from '../../theme';

@@ -29,7 +29,7 @@ vi.mock('../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -72,7 +72,7 @@ vi.mock('../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock the useCart hook
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },

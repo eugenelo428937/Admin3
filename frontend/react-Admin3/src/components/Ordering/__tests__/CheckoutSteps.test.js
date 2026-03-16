@@ -3,8 +3,8 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme/theme.js';
-import CheckoutSteps from '../CheckoutSteps.js';
-import { CartContext } from '../../../contexts/CartContext.js';
+import CheckoutSteps from '../CheckoutSteps.tsx';
+import { CartContext } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import rulesEngineService from '../../../services/rulesEngineService.js';
 
@@ -65,7 +65,7 @@ vi.mock('../../../config.js', () => ({
 }));
 
 // Mock useCart hook
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
@@ -79,7 +79,7 @@ vi.mock('../../../services/userService.ts', () => ({
 }));
 
 // Mock useCheckoutValidation hook
-vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
@@ -110,7 +110,7 @@ describe('CheckoutSteps', () => {
     });
 
     // Mock useCart hook
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: { id: 1, user: null, session_key: null }
@@ -163,7 +163,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: asetCartItems,
       cartData: { id: 2, user: null, session_key: null }
@@ -219,7 +219,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: nonAsetCartItems,
       cartData: { id: 3, user: null, session_key: null }
@@ -262,7 +262,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: cartItems,
       cartData: { id: 1, user: null, session_key: null }
@@ -317,7 +317,7 @@ describe('CheckoutSteps', () => {
       }
     ];
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: cartItems,
       cartData: { id: 1, user: null, session_key: null }

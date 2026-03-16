@@ -47,7 +47,7 @@ vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
   },
 }));
 
-import TermsConditionsStep from '../TermsConditionsStep.js';
+import TermsConditionsStep from '../TermsConditionsStep.tsx';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

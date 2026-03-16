@@ -16,15 +16,31 @@ import {
   CircularProgress
 } from '@mui/material';
 import rulesEngineService from '../../../services/rulesEngineService.js';
-import { useCart } from '../../../contexts/CartContext.js';
+import { useCart } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 
-const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) => {
+import type {
+  PreferencesState,
+  PreferencePrompt,
+} from '../../../types/checkout';
+
+interface PreferenceStepProps {
+  preferences: PreferencesState;
+  setPreferences: React.Dispatch<React.SetStateAction<PreferencesState>>;
+  onPreferencesSubmit?: () => void;
+}
+
+interface CombinedCheckboxTextareaValue {
+  special_needs: boolean;
+  details: string;
+}
+
+const PreferenceStep: React.FC<PreferenceStepProps> = ({ preferences, setPreferences, onPreferencesSubmit }) => {
   const { cartData } = useCart();
   const { user, isAuthenticated } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [rulesPreferences, setRulesPreferences] = useState([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [rulesPreferences, setRulesPreferences] = useState<PreferencePrompt[]>([]);
 
   useEffect(() => {
     fetchPreferences();
@@ -66,14 +82,14 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
       const response = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PREFERENCE, context);
 
       // Check for both preference_prompts (new) and preferences (legacy) fields
-      const preferencesData = response.preference_prompts || response.preferences || [];
+      const preferencesData: PreferencePrompt[] = response.preference_prompts || response.preferences || [];
 
       if (response.success && preferencesData.length > 0) {
         setRulesPreferences(preferencesData);
 
         // Initialize preferences state with defaults
-        const initialPrefs = {};
-        preferencesData.forEach(pref => {
+        const initialPrefs: PreferencesState = {};
+        preferencesData.forEach((pref: PreferencePrompt) => {
           initialPrefs[pref.preferenceKey] = {
             value: pref.default || '',
             inputType: pref.inputType,
@@ -94,7 +110,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
     }
   };
 
-  const handlePreferenceChange = (preferenceKey, value) => {
+  const handlePreferenceChange = (preferenceKey: string, value: any) => {
     setPreferences(prev => ({
       ...prev,
       [preferenceKey]: {
@@ -104,7 +120,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
     }));
   };
 
-  const getContentText = (content) => {
+  const getContentText = (content: any): string => {
     // Handle different content formats
     if (typeof content === 'string') {
       return content;
@@ -131,7 +147,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
     return '';
   };
 
-  const renderPreferenceInput = (preference) => {
+  const renderPreferenceInput = (preference: PreferencePrompt): React.ReactNode => {
     const currentValue = preferences[preference.preferenceKey]?.value || preference.default || '';
     const contentText = getContentText(preference.content);
 
@@ -248,9 +264,9 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
           </Card>
         );
 
-      case 'combined_checkbox_textarea':
-        const combinedValue = typeof currentValue === 'object' && currentValue !== null
-          ? currentValue
+      case 'combined_checkbox_textarea': {
+        const combinedValue: CombinedCheckboxTextareaValue = typeof currentValue === 'object' && currentValue !== null
+          ? currentValue as CombinedCheckboxTextareaValue
           : { special_needs: false, details: '' };
 
         return (
@@ -271,7 +287,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
                   <Checkbox
                     checked={combinedValue.special_needs}
                     onChange={(e) => {
-                      const newValue = {
+                      const newValue: CombinedCheckboxTextareaValue = {
                         ...combinedValue,
                         special_needs: e.target.checked
                       };
@@ -297,7 +313,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
                   placeholder={preference.textareaPlaceholder || "Please tell us more about your special educational need or health condition and how we might be able to help..."}
                   value={combinedValue.details}
                   onChange={(e) => {
-                    const newValue = {
+                    const newValue: CombinedCheckboxTextareaValue = {
                       ...combinedValue,
                       details: e.target.value
                     };
@@ -308,6 +324,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
             </CardContent>
           </Card>
         );
+      }
 
       case 'text':
       case 'textarea':
@@ -374,7 +391,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
             Please review and update your preferences below. These settings will help us provide you with the best possible experience.
           </Typography>
 
-          {rulesPreferences.map(preference => renderPreferenceInput(preference))}          
+          {rulesPreferences.map(preference => renderPreferenceInput(preference))}
         </Box>
       )}
     </Box>
