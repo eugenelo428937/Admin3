@@ -32,7 +32,7 @@ vi.mock('@mui/material/useMediaQuery', () => ({
 }));
 
 // Mock useAuth hook - configure in beforeEach
-vi.mock('../../../hooks/useAuth.js');
+vi.mock('../../../hooks/useAuth.tsx');
 
 // Mock useCart hook - configure in beforeEach (like the passing unit tests)
 vi.mock('../../../contexts/CartContext.js', () => ({
@@ -91,7 +91,7 @@ vi.mock('../../../services/httpService.js', () => ({
   }
 }));
 
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getUserProfile: vi.fn().mockResolvedValue({ data: {} }),
@@ -545,7 +545,7 @@ describe('CheckoutSteps Component Integration', () => {
     vi.clearAllMocks();
 
     // Mock useAuth hook
-    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.js'); const { useAuth } = _reqmod__________hooks_useAuth_js;
+    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.tsx'); const { useAuth } = _reqmod__________hooks_useAuth_js;
     useAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, email: 'test@example.com' }
@@ -722,7 +722,7 @@ describe('CheckoutSteps Modal Interactions', () => {
     vi.clearAllMocks();
 
     // Mock useAuth hook
-    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.js'); const { useAuth } = _reqmod__________hooks_useAuth_js;
+    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.tsx'); const { useAuth } = _reqmod__________hooks_useAuth_js;
     useAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, email: 'test@example.com' }

@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Breadcrumbs, Link } from "@mui/material";
 import { Home as HomeIcon, Person as PersonIcon } from "@mui/icons-material";
-import { useAuth } from "../hooks/useAuth.js";
-import UserFormWizard from "../components/User/UserFormWizard.js";
+import { useAuth } from "../hooks/useAuth.tsx";
+import UserFormWizard from "../components/User/UserFormWizard.tsx";
 
 /**
  * ProfilePage - User profile editing page using UserFormWizard

@@ -60,7 +60,7 @@ vi.mock('../../../services/productService.js', () => ({
 }));
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,

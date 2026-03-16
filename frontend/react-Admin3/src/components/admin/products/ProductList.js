@@ -1,7 +1,7 @@
 // src/components/admin/products/ProductList.js
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import catalogProductService from "../../../services/catalogProductService.js";
 import ProductTable from "./ProductTable.js";
 import {

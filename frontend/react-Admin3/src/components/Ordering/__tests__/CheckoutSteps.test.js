@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme/theme.js';
 import CheckoutSteps from '../CheckoutSteps.js';
 import { CartContext } from '../../../contexts/CartContext.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import rulesEngineService from '../../../services/rulesEngineService.js';
 
 // Custom render function with ThemeProvider
@@ -45,7 +45,7 @@ vi.mock('../../../services/rulesEngineService.js', () => {
 });
 
 // Mock useAuth hook
-vi.mock('../../../hooks/useAuth.js');
+vi.mock('../../../hooks/useAuth.tsx');
 
 // Mock httpService
 vi.mock('../../../services/httpService.js', () => ({
@@ -70,7 +70,7 @@ vi.mock('../../../contexts/CartContext.js', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getProfile: vi.fn().mockResolvedValue({ data: {} }),

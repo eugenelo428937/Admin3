@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AuthModal from '../AuthModal.js';
+import AuthModal from '../AuthModal.tsx';
 
 import appTheme from '../../../theme';
 // Mock react-router-dom
@@ -23,7 +23,7 @@ vi.mock('react-router-dom', () => ({
 
 // Mock useAuth hook
 const mockLogin = vi.fn();
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     login: mockLogin,
     isLoading: false,
@@ -33,7 +33,7 @@ vi.mock('../../../hooks/useAuth.js', () => ({
 }));
 
 // Mock LoginFormContent
-vi.mock('../../User/LoginFormContent.js', () => ({
+vi.mock('../../User/LoginFormContent.tsx', () => ({
   __esModule: true,
   default: function MockLoginFormContent({
     formData,

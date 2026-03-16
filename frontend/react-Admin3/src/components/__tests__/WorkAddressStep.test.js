@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import WorkAddressStep from '../User/steps/WorkAddressStep.js';
+import WorkAddressStep from '../User/steps/WorkAddressStep.tsx';
 
 import appTheme from '../../theme';
 vi.mock('../Address/SmartAddressInput.js', () => ({
@@ -19,7 +19,7 @@ vi.mock('../Address/DynamicAddressForm.js', () => ({
   },
 }));
 
-vi.mock('../User/ValidatedPhoneInput.js', () => ({
+vi.mock('../User/ValidatedPhoneInput.tsx', () => ({
   __esModule: true,
   default: function MockValidatedPhoneInput({ name, label }) {
     return <input data-testid={`phone-${name}`} aria-label={label} />;

@@ -6,12 +6,12 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminExamSessionList from '../ExamSessionList.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock examSessionService
 vi.mock('../../../../services/examSessionService', () => ({

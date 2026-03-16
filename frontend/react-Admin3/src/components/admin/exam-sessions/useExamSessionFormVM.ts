@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import examSessionService from '../../../services/examSessionService';
 import moment from 'moment';
 import type { ExamSessionInput } from '../../../types/examSession';

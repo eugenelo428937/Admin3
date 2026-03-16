@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import SmartAddressInput from './SmartAddressInput.js';
 import DynamicAddressForm from './DynamicAddressForm.js';
 import AddressComparisonModal from './AddressComparisonModal.js';
-import userService from '../../services/userService.js';
+import userService from '../../services/userService.ts';
 import addressValidationService from '../../services/addressValidationService.js';
 import addressMetadataService from '../../services/addressMetadataService.js';
 
