@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  IconButton, 
+import {
+  Box,
+  IconButton,
   Button,
   Menu,
   MenuItem,
@@ -17,21 +17,29 @@ import {
 	Download as DownloadIcon,
 	Menu as MenuIcon,
 	Logout as LogoutIcon,
-	Person as ProfileIcon,	
-} from "@mui/icons-material";
+	Person as ProfileIcon,
+} from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth.tsx';
 import { useCart } from '../../contexts/CartContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 
-const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu, isMobile }) => {
+interface UserActionsProps {
+  onOpenSearch: () => void;
+  onOpenAuth: () => void;
+  onOpenCart: () => void;
+  onToggleMobileMenu: () => void;
+  isMobile: boolean;
+}
+
+const UserActions: React.FC<UserActionsProps> = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu, isMobile }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const { cartCount } = useCart();
   const navigate = useNavigate();
-  const [profileAnchor, setProfileAnchor] = useState(null);
-  const theme = useTheme();
+  const [profileAnchor, setProfileAnchor] = useState<HTMLElement | null>(null);
+  const theme = useTheme() as any;
 
-  const handleProfileOpen = (event) => {
+  const handleProfileOpen = (event: React.MouseEvent<HTMLElement>) => {
     setProfileAnchor(event.currentTarget);
   };
 
@@ -51,12 +59,12 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
   };
 
   return (
-		<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+		<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
 			{/* Mobile Menu Button */}
 			{isMobile && (
 				<IconButton
 					onClick={onToggleMobileMenu}
-					sx={{ display: { xs: "flex", md: "none" } }}
+					sx={{ display: { xs: 'flex', md: 'none' } }}
 					aria-label="open navigation menu">
 					<MenuIcon />
 				</IconButton>
@@ -71,9 +79,9 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 						target="_blank"
 						startIcon={<DownloadIcon />}
 						sx={{
-							textTransform: "none",
+							textTransform: 'none',
 							color: 'navigation.text.inverse',
-							display: { xs: "none", md: "flex" },
+							display: { xs: 'none', md: 'flex' },
 						}}>
 						Brochure
 					</Button>
@@ -99,9 +107,9 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 					sx={{ color: 'navigation.text.inverse' }}
 					aria-label={`shopping cart with ${cartCount} items`}
 					startIcon={<CartIcon />}>
-					<Badge badgeContent={cartCount} color="primary" max={99}>						
+					<Badge badgeContent={cartCount} color="primary" max={99}>
 					</Badge>
-					Cart 
+					Cart
 				</Button>
 			</Tooltip>
 
@@ -111,11 +119,11 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 					<Tooltip title="User Profile">
 						<IconButton
 							onClick={handleProfileOpen}
-							sx={{ color: "text.primary" }}
+							sx={{ color: 'text.primary' }}
 							aria-label="user profile menu">
 							<Avatar
-								sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
-								{user?.email?.charAt(0).toUpperCase() || "U"}
+								sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+								{user?.email?.charAt(0).toUpperCase() || 'U'}
 							</Avatar>
 						</IconButton>
 					</Tooltip>
@@ -124,24 +132,24 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 						anchorEl={profileAnchor}
 						open={Boolean(profileAnchor)}
 						onClose={handleProfileClose}
-						transformOrigin={{ horizontal: "right", vertical: "top" }}
-						anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+						transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+						anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
 						sx={{
-							"& .MuiPaper-root": {
-								width: "200px",
-								maxWidth: "100%",
+							'& .MuiPaper-root': {
+								width: '200px',
+								maxWidth: '100%',
 							},
 						}}>
 						<Box
 							sx={{
 								px: 2,
 								py: 1,
-								overflow: "visible",
+								overflow: 'visible',
 								zIndex: 9999,
 								backgroundColor: theme.palette.grey[50],
 								borderRadius: 2,
 								boxShadow: 2,
-								border: "1px solid rgba(0, 0, 0, 0.12)",
+								border: '1px solid rgba(0, 0, 0, 0.12)',
 							}}>
 							<Typography variant="body1" noWrap>
 								{user?.first_name && user?.last_name
@@ -172,7 +180,7 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 					variant="contained"
 					size="small"
 					sx={{
-						textTransform: "none",
+						textTransform: 'none',
 						borderRadius: 2,
 					}}>
 					Login

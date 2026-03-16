@@ -1,14 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Popover, Box, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import type { MegaMenuPopoverProps } from '../../types/navigation';
 
-/**
- * Reusable mega-menu popover component with full accessibility support.
- * Handles open/close state, ARIA attributes, and keyboard navigation.
- * Positions the popover below the entire navigation bar.
- */
-const MegaMenuPopover = ({
+const MegaMenuPopover: React.FC<MegaMenuPopoverProps> = ({
   id,
   label,
   children,
@@ -19,10 +14,10 @@ const MegaMenuPopover = ({
   popoverProps = {},
   navbarSelector = '.navbar-main',
 }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [anchorPosition, setAnchorPosition] = useState(null);
-  const buttonRef = useRef(null);
-  const theme = useTheme();
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const theme = useTheme() as any;
   const open = Boolean(anchorEl);
   const popoverId = `${id}-popover`;
 
@@ -30,7 +25,6 @@ const MegaMenuPopover = ({
     const navbar = document.querySelector(navbarSelector);
     if (navbar) {
       const navbarRect = navbar.getBoundingClientRect();
-      // Position below the navbar, full width from left edge
       return {
         top: navbarRect.bottom,
         left: 0,
@@ -39,7 +33,7 @@ const MegaMenuPopover = ({
     return null;
   }, [navbarSelector]);
 
-  const handleOpen = (event) => {
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
     const position = calculatePosition();
     if (position) {
@@ -52,7 +46,6 @@ const MegaMenuPopover = ({
     setAnchorEl(null);
     setAnchorPosition(null);
     onClose?.();
-    // Return focus to button when closing
     setTimeout(() => buttonRef.current?.focus(), 0);
   };
 
@@ -61,20 +54,18 @@ const MegaMenuPopover = ({
       <Button
         ref={buttonRef}
         id={`${id}-button`}
-        variant="main_nav_link"
+        variant={'main_nav_link' as any}
         aria-controls={open ? popoverId : undefined}
         aria-haspopup="true"
         aria-expanded={open}
         onClick={handleOpen}
-        endIcon={<ExpandMoreIcon sx={{
-          ml: 0,          
-        }}/>}
+        endIcon={<ExpandMoreIcon sx={{ ml: 0 }} />}
         sx={{
           ...buttonProps.sx,
         }}
         {...buttonProps}
       >
-        <Typography variant="main_nav_text">
+        <Typography variant={'main_nav_text' as any}>
           {label}
         </Typography>
       </Button>
@@ -83,7 +74,7 @@ const MegaMenuPopover = ({
         open={open}
         anchorEl={anchorPosition ? undefined : anchorEl}
         anchorReference={anchorPosition ? 'anchorPosition' : 'anchorEl'}
-        anchorPosition={anchorPosition}
+        anchorPosition={anchorPosition || undefined}
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
@@ -113,9 +104,8 @@ const MegaMenuPopover = ({
         {...popoverProps}
       >
         <Box
-          onClick={(e) => {
-            // Close mega menu when clicking on menu items or buttons (navigation links)
-            if (e.target.closest('.MuiMenuItem-root, .MuiButton-root')) {
+          onClick={(e: React.MouseEvent<HTMLElement>) => {
+            if ((e.target as HTMLElement).closest('.MuiMenuItem-root, .MuiButton-root')) {
               handleClose();
             }
           }}
@@ -127,7 +117,7 @@ const MegaMenuPopover = ({
               md: theme.spacingTokens.xl[1],
               lg: theme.spacingTokens.xl[2],
               xl: theme.spacingTokens.xl[3],
-           },
+            },
             justifyContent: 'flex-start',
           }}
         >
@@ -136,27 +126,6 @@ const MegaMenuPopover = ({
       </Popover>
     </>
   );
-};
-
-MegaMenuPopover.propTypes = {
-  /** Unique identifier for the menu (used for ARIA) */
-  id: PropTypes.string.isRequired,
-  /** Button label text */
-  label: PropTypes.string.isRequired,
-  /** Menu content */
-  children: PropTypes.node.isRequired,
-  /** Maximum width of the popover */
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  /** Callback when menu opens */
-  onOpen: PropTypes.func,
-  /** Callback when menu closes */
-  onClose: PropTypes.func,
-  /** Additional props for the Button component */
-  buttonProps: PropTypes.object,
-  /** Additional props for the Popover component */
-  popoverProps: PropTypes.object,
-  /** CSS selector for the navbar element to position below (default: '.navbar-main') */
-  navbarSelector: PropTypes.string,
 };
 
 export default MegaMenuPopover;

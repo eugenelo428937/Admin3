@@ -8,7 +8,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import NavigationMenu from '../NavigationMenu.js';
+import NavigationMenu from '../NavigationMenu.tsx';
 
 import appTheme from '../../../theme';
 expect.extend(toHaveNoViolations);

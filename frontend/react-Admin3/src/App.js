@@ -13,7 +13,7 @@ import { AuthProvider } from "./hooks/useAuth.tsx";
 import { ConfigProvider } from "./contexts/ConfigContext.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import Home from "./pages/Home.js";
-import MainNavBar from "./components/Navigation/MainNavBar.js";
+import MainNavBar from "./components/Navigation/MainNavBar.tsx";
 import NoMatch from "./components/NoMatch.js";
 import { CartProvider } from "./contexts/CartContext.tsx";
 import { ProductProvider } from "./contexts/ProductContext.js";
