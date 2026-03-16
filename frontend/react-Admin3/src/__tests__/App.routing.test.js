@@ -16,7 +16,7 @@ import theme from '../theme/theme';
 import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Mock all services before component imports
-vi.mock('../services/httpService.js', () => ({
+vi.mock('../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),

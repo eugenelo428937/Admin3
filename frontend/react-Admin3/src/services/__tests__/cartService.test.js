@@ -35,7 +35,7 @@ describe('cartService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -47,7 +47,7 @@ describe('cartService', () => {
 
     // Import after mocks are set up
     { const _mod_cartService = await import('../cartService.ts'); cartService = _mod_cartService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {

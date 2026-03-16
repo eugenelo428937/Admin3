@@ -24,7 +24,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock authService - using vi.fn() directly in the mock factory
-vi.mock('../../services/authService.ts', () => ({
+vi.mock('../../services/authService', () => ({
   __esModule: true,
   default: {
     login: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('../../services/authService.ts', () => ({
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../useAuth.tsx';
-import authService from '../../services/authService.ts';
+import authService from '../../services/authService';
 
 // Helper to render hook with AuthProvider
 const renderUseAuth = () => {

@@ -82,7 +82,7 @@ vi.mock('../../../services/rulesEngineService', () => {
   };
 });
 
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(),

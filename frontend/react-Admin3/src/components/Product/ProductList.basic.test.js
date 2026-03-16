@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 /**
  * Basic test for ProductList component to verify rules engine integration
  */
-vi.mock("../../services/httpService.js", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),
