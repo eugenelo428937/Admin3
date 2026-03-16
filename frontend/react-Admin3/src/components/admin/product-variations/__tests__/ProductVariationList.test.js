@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService.js', () => ({
+vi.mock('../../../../services/productVariationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../../services/productVariationService.js', () => ({
   },
 }));
 
-import productVariationService from '../../../../services/productVariationService.js';
+import productVariationService from '../../../../services/productVariationService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

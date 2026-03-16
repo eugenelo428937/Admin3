@@ -16,7 +16,7 @@ vi.mock('../ConfigContext.js', () => ({
 }));
 
 // Mock productService
-vi.mock('../../services/productService.js', () => ({
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
     getAvailableProducts: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('../../services/productService.js', () => ({
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { ProductProvider, useProduct, useProducts } from '../ProductContext.js';
-import productService from '../../services/productService.js';
+import productService from '../../services/productService';
 
 describe('ProductContext', () => {
   beforeEach(() => {

@@ -6,7 +6,7 @@ import {
   Button, Card, CardHeader, CardContent, CardActions,
   Container, Alert, Box, Typography, CircularProgress
 } from "@mui/material";
-import catalogProductService from "../../../services/catalogProductService.js";
+import catalogProductService from "../../../services/catalogProductService";
 
 const AdminProductDetail = () => {
     const { isSuperuser } = useAuth();

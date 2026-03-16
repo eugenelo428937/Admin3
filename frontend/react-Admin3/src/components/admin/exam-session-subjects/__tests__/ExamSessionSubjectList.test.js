@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock examSessionSubjectService
-vi.mock('../../../../services/examSessionSubjectService.js', () => ({
+vi.mock('../../../../services/examSessionSubjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock('../../../../services/examSessionService', () => ({
   },
 }));
 
-import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService';
 import examSessionService from '../../../../services/examSessionService';
 
 import appTheme from '../../../../theme';

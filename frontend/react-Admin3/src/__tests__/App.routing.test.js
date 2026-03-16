@@ -37,7 +37,7 @@ vi.mock('../services/cartService.ts', () => ({
   },
 }));
 
-vi.mock('../services/productService.js', () => ({
+vi.mock('../services/productService', () => ({
   __esModule: true,
   default: {
     getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
@@ -48,7 +48,7 @@ vi.mock('../services/productService.js', () => ({
   },
 }));
 
-vi.mock('../services/subjectService.js', () => ({
+vi.mock('../services/subjectService', () => ({
   getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 

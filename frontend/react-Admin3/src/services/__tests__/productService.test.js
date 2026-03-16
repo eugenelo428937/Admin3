@@ -6,7 +6,7 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../productService.js');
+vi.unmock('../productService');
 
 // Mock dependencies BEFORE imports
 vi.mock('../httpService.js', () => ({
@@ -29,7 +29,7 @@ vi.mock('../../config.js', () => ({
   },
 }));
 
-import productService from '../productService.js';
+import productService from '../productService';
 import httpService from '../httpService.js';
 
 describe('productService', () => {

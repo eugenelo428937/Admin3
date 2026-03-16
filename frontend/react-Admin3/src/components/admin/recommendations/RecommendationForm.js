@@ -6,8 +6,8 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import recommendationService from '../../../services/recommendationService.js';
-import productProductVariationService from '../../../services/productProductVariationService.js';
+import recommendationService from '../../../services/recommendationService';
+import productProductVariationService from '../../../services/productProductVariationService';
 
 const AdminRecommendationForm = () => {
     const { isSuperuser } = useAuth();

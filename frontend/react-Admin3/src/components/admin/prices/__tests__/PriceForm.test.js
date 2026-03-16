@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock priceService
-vi.mock('../../../../services/priceService.js', () => ({
+vi.mock('../../../../services/priceService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,15 +36,15 @@ vi.mock('../../../../services/priceService.js', () => ({
 }));
 
 // Mock storeProductService
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import priceService from '../../../../services/priceService.js';
-import storeProductService from '../../../../services/storeProductService.js';
+import priceService from '../../../../services/priceService';
+import storeProductService from '../../../../services/storeProductService';
 
 const theme = appTheme;
 

@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import BundleProductsPanel from '../BundleProductsPanel.js';
 
 // Mock services
-vi.mock('../../../../services/catalogBundleProductService.js', () => ({
+vi.mock('../../../../services/catalogBundleProductService', () => ({
   __esModule: true,
   default: {
     getByBundleId: vi.fn(),
@@ -16,23 +16,23 @@ vi.mock('../../../../services/catalogBundleProductService.js', () => ({
   },
 }));
 
-vi.mock('../../../../services/catalogProductService.js', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-vi.mock('../../../../services/productProductVariationService.js', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
     getByProduct: vi.fn(),
   },
 }));
 
-import catalogBundleProductService from '../../../../services/catalogBundleProductService.js';
-import catalogProductService from '../../../../services/catalogProductService.js';
-import productProductVariationService from '../../../../services/productProductVariationService.js';
+import catalogBundleProductService from '../../../../services/catalogBundleProductService';
+import catalogProductService from '../../../../services/catalogProductService';
+import productProductVariationService from '../../../../services/productProductVariationService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

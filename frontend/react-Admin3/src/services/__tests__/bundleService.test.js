@@ -31,7 +31,7 @@ vi.mock('../../config.js', () => ({
   },
 }));
 
-import bundleService from '../bundleService.js';
+import bundleService from '../bundleService';
 import httpService from '../httpService.js';
 
 describe('bundleService', () => {
