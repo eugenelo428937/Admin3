@@ -64,7 +64,7 @@ vi.mock('../services/rulesEngineService.js', () => ({
   }
 }));
 
-vi.mock('../hooks/useAuth.js', () => ({
+vi.mock('../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -104,7 +104,7 @@ vi.mock('../pages/ProfilePage.js', () => ({
   },
 }));
 
-vi.mock('../components/User/OrderHistory.js', () => ({
+vi.mock('../components/User/OrderHistory.tsx', () => ({
   __esModule: true,
   default: function MockOrderHistory() {
     return <div data-testid="orders-page">Order History Page</div>;
@@ -132,35 +132,35 @@ vi.mock('../pages/StyleGuide.js', () => ({
   },
 }));
 
-vi.mock('../components/User/ForgotPasswordForm.js', () => ({
+vi.mock('../components/User/ForgotPasswordForm.tsx', () => ({
   __esModule: true,
   default: function MockForgotPassword() {
     return <div data-testid="forgot-password-page">Forgot Password</div>;
   },
 }));
 
-vi.mock('../components/User/ResetPasswordForm.js', () => ({
+vi.mock('../components/User/ResetPasswordForm.tsx', () => ({
   __esModule: true,
   default: function MockResetPassword() {
     return <div data-testid="reset-password-page">Reset Password</div>;
   },
 }));
 
-vi.mock('../components/User/AccountActivation.js', () => ({
+vi.mock('../components/User/AccountActivation.tsx', () => ({
   __esModule: true,
   default: function MockAccountActivation() {
     return <div data-testid="account-activation-page">Account Activation</div>;
   },
 }));
 
-vi.mock('../components/User/ResendActivation.js', () => ({
+vi.mock('../components/User/ResendActivation.tsx', () => ({
   __esModule: true,
   default: function MockResendActivation() {
     return <div data-testid="resend-activation-page">Resend Activation</div>;
   },
 }));
 
-vi.mock('../components/User/EmailVerification.js', () => ({
+vi.mock('../components/User/EmailVerification.tsx', () => ({
   __esModule: true,
   default: function MockEmailVerification() {
     return <div data-testid="email-verification-page">Email Verification</div>;
@@ -198,15 +198,15 @@ import Home from '../pages/Home.js';
 import ProductList from '../components/Product/ProductList.js';
 import CheckoutPage from '../components/Ordering/CheckoutPage.js';
 import ProfilePage from '../pages/ProfilePage.js';
-import OrderHistory from '../components/User/OrderHistory.js';
+import OrderHistory from '../components/User/OrderHistory.tsx';
 import NoMatch from '../components/NoMatch.js';
 import Registration from '../pages/Registration.js';
 import StyleGuide from '../pages/StyleGuide.js';
-import ForgotPasswordForm from '../components/User/ForgotPasswordForm.js';
-import ResetPasswordForm from '../components/User/ResetPasswordForm.js';
-import AccountActivation from '../components/User/AccountActivation.js';
-import ResendActivation from '../components/User/ResendActivation.js';
-import EmailVerification from '../components/User/EmailVerification.js';
+import ForgotPasswordForm from '../components/User/ForgotPasswordForm.tsx';
+import ResetPasswordForm from '../components/User/ResetPasswordForm.tsx';
+import AccountActivation from '../components/User/AccountActivation.tsx';
+import ResendActivation from '../components/User/ResendActivation.tsx';
+import EmailVerification from '../components/User/EmailVerification.tsx';
 import MainNavBar from '../components/Navigation/MainNavBar.js';
 
 // Simple test router setup matching App.js routes

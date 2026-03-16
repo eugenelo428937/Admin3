@@ -5,12 +5,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import AdminSubjectForm from '../SubjectForm.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();

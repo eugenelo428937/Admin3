@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import MainNavActions from '../MainNavActions.js';
+import MainNavActions from '../MainNavActions.tsx';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme/theme.js';
 
@@ -24,7 +24,7 @@ let mockAuthState = {
   logout: mockLogout,
 };
 
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockAuthState,
 }));
 

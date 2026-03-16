@@ -14,7 +14,7 @@ import {
    Search as SearchIcon,
    MenuBook as KnowledgeBaseIcon,
 } from "@mui/icons-material";
-// import { useAuth } from "../../hooks/useAuth.js"; // Now used by child components
+// import { useAuth } from "../../hooks/useAuth.tsx"; // Now used by child components
 import { useConfig } from "../../contexts/ConfigContext.js";
 import productService from "../../services/productService.js";
 import SearchModal from "./SearchModal.js";
@@ -24,8 +24,8 @@ import TopNavBar from "./TopNavBar.js";
 import NavbarBrand from "./NavbarBrand.js";
 import NavigationMenu from "./NavigationMenu.js";
 import AdminNavigationMenu from "./AdminNavigationMenu.js";
-import MainNavActions, { AdminNavActions } from "./MainNavActions.js";
-import AuthModal from "./AuthModal.js";
+import MainNavActions, { AdminNavActions } from "./MainNavActions.tsx";
+import AuthModal from "./AuthModal.tsx";
 import CartPanel from "../Ordering/CartPanel.js";
 // Redux imports for navigation integration
 import {

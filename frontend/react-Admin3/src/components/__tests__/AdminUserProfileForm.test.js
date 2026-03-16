@@ -6,11 +6,11 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm.js';
 
 import appTheme from '../../theme';
-vi.mock('../../hooks/useAuth.js', () => ({
+vi.mock('../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({ isSuperuser: true }),
 }));
 
-vi.mock('../../services/userProfileService.js', () => ({
+vi.mock('../../services/userProfileService.ts', () => ({
   __esModule: true,
   default: {
     getById: vi.fn().mockResolvedValue({

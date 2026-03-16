@@ -12,7 +12,7 @@ import {
 import { Close as CloseIcon, Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext.js";
 import { useTutorialChoice } from "../../contexts/TutorialChoiceContext.js";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../hooks/useAuth.tsx";
 import { useNavigate } from "react-router-dom";
 import { generateProductCode } from "../../utils/productCodeGenerator.js";
 // TODO Phase 8: import VATBreakdown from "../Common/VATBreakdown.js";

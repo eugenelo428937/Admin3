@@ -49,7 +49,7 @@ describe('userService', () => {
     }));
 
     // Import after mocks are set up
-    { const _mod_userService = await import('../userService.js'); userService = _mod_userService.default; }
+    { const _mod_userService = await import('../userService.ts'); userService = _mod_userService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
     { const _mod_logger = await import('../loggerService.js'); logger = _mod_logger.default; }
   });

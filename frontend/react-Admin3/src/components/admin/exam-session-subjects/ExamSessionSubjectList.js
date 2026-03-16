@@ -6,7 +6,7 @@ import {
   FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
 import examSessionService from '../../../services/examSessionService';
 

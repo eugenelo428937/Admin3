@@ -32,7 +32,7 @@ vi.mock('../../../../contexts/CartContext.js', () => ({
 }));
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
     isAuthenticated: true,

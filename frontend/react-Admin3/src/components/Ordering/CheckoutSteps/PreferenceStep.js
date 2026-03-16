@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import rulesEngineService from '../../../services/rulesEngineService.js';
 import { useCart } from '../../../contexts/CartContext.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 
 const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) => {
   const { cartData } = useCart();
