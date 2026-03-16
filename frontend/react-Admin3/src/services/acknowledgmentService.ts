@@ -1,4 +1,34 @@
 import httpService from './httpService.js';
+import type {
+  ComprehensiveValidationResult,
+  MissingAcknowledgmentsResult,
+  AcknowledgmentInfo,
+  ValidationSummary,
+  ValidationContext,
+} from '../types/checkout';
+import type { CartItem, CartData } from '../types/cart';
+
+interface UserProfileParam {
+  id?: number;
+  email?: string;
+  home_country?: string;
+  work_country?: string;
+  [key: string]: any;
+}
+
+interface CheckoutReadinessResult {
+  canProceed: boolean;
+  blocked: boolean;
+  summary: ValidationSummary;
+  missingAcknowledgments: MissingAcknowledgmentsResult;
+  satisfiedAcknowledgments: AcknowledgmentInfo[];
+  allRequiredAcknowledgments: AcknowledgmentInfo[];
+  validationMessage: string;
+}
+
+interface AckDescriptionMap {
+  [ackKey: string]: string;
+}
 
 /**
  * Acknowledgment Service
@@ -8,23 +38,19 @@ import httpService from './httpService.js';
 class AcknowledgmentService {
   /**
    * Validate all acknowledgments across all entry points before checkout
-   * @param {Object} context - Context for validation (cart, payment info, etc)
-   * @returns {Promise<Object>} Comprehensive validation result
    */
-  async validateComprehensiveCheckout(context = {}) {
+  async validateComprehensiveCheckout(context: Record<string, any> = {}): Promise<ComprehensiveValidationResult> {
     try {
-      console.log('🔍 [AcknowledgmentService] Validating checkout with context:', context);
+      console.log('[AcknowledgmentService] Validating checkout with context:', context);
 
       const response = await httpService.post('/api/rules/validate-comprehensive-checkout/', {
-        context
+        context,
       });
 
       const result = response.data;
-      console.log('🔍 [AcknowledgmentService] Validation response:', result);
-      console.log('🔍 [AcknowledgmentService] Missing acknowledgments:', result.missing_acknowledgments);
-      console.log('🔍 [AcknowledgmentService] Satisfied acknowledgments:', result.satisfied_acknowledgments);
-
-      
+      console.log('[AcknowledgmentService] Validation response:', result);
+      console.log('[AcknowledgmentService] Missing acknowledgments:', result.missing_acknowledgments);
+      console.log('[AcknowledgmentService] Satisfied acknowledgments:', result.satisfied_acknowledgments);
 
       return {
         success: result.success,
@@ -33,76 +59,76 @@ class AcknowledgmentService {
         summary: result.summary || {
           total_required: 0,
           total_satisfied: 0,
-          total_missing: 0
+          total_missing: 0,
         },
         allRequiredAcknowledgments: result.all_required_acknowledgments || [],
         missingAcknowledgments: result.missing_acknowledgments || [],
         satisfiedAcknowledgments: result.satisfied_acknowledgments || [],
-        blockingRules: result.blocking_rules || []
+        blockingRules: result.blocking_rules || [],
       };
-    } catch (error) {
-      console.error('❌ [Comprehensive Validation] Error:', error);
+    } catch (error: unknown) {
+      console.error('[Comprehensive Validation] Error:', error);
+
+      const axiosError = error as { response?: { data?: { error?: string } }; message?: string };
 
       // Return blocked state on error for safety
       return {
         success: false,
         blocked: true,
         canProceed: false,
-        error: error.response?.data?.error || error.message,
+        error: axiosError.response?.data?.error || axiosError.message,
         summary: {
           total_required: 0,
           total_satisfied: 0,
-          total_missing: 0
+          total_missing: 0,
         },
         allRequiredAcknowledgments: [],
         missingAcknowledgments: [],
         satisfiedAcknowledgments: [],
-        blockingRules: []
+        blockingRules: [],
       };
     }
   }
 
   /**
    * Collect all required acknowledgments from all entry points for a given context
-   * @param {Object} context - Context to check (cart info, payment method, etc)
-   * @returns {Promise<Array>} List of all required acknowledgments
    */
-  async collectAllRequiredAcknowledgments(context = {}) {
+  async collectAllRequiredAcknowledgments(context: Record<string, any> = {}): Promise<AcknowledgmentInfo[]> {
     try {
       const result = await this.validateComprehensiveCheckout(context);
       return result.allRequiredAcknowledgments;
-    } catch (error) {
-      console.error('❌ [Collect Acknowledgments] Error:', error);
+    } catch (error: unknown) {
+      console.error('[Collect Acknowledgments] Error:', error);
       return [];
     }
   }
 
   /**
    * Check if all required acknowledgments are satisfied for checkout
-   * @param {Object} context - Context to validate
-   * @returns {Promise<boolean>} Whether checkout can proceed
    */
-  async canProceedWithCheckout(context = {}) {
+  async canProceedWithCheckout(context: Record<string, any> = {}): Promise<boolean> {
     try {
       const result = await this.validateComprehensiveCheckout(context);
       return result.canProceed && !result.blocked;
-    } catch (error) {
-      console.error('❌ [Can Proceed Check] Error:', error);
+    } catch (error: unknown) {
+      console.error('[Can Proceed Check] Error:', error);
       return false; // Block on error
     }
   }
 
   /**
    * Get detailed information about missing acknowledgments
-   * @param {Object} context - Context to validate
-   * @returns {Promise<Object>} Detailed missing acknowledgments info
    */
-  async getMissingAcknowledgments(context = {}) {
+  async getMissingAcknowledgments(context: Record<string, any> = {}): Promise<MissingAcknowledgmentsResult> {
     try {
       const result = await this.validateComprehensiveCheckout(context);
 
-      const missingByEntryPoint = {};
-      result.missingAcknowledgments.forEach(missing => {
+      const missingByEntryPoint: Record<string, AcknowledgmentInfo[]> = {};
+      const missingList = Array.isArray(result.missingAcknowledgments)
+        ? result.missingAcknowledgments
+        : [];
+
+      missingList.forEach((missing: AcknowledgmentInfo) => {
         const entryPoint = missing.entry_point || 'unknown';
         if (!missingByEntryPoint[entryPoint]) {
           missingByEntryPoint[entryPoint] = [];
@@ -111,45 +137,42 @@ class AcknowledgmentService {
       });
 
       return {
-        total: result.missingAcknowledgments.length,
+        total: missingList.length,
         byEntryPoint: missingByEntryPoint,
-        details: result.missingAcknowledgments,
-        message: this.generateMissingAcknowledgmentsMessage(result.missingAcknowledgments)
+        details: missingList,
+        message: this.generateMissingAcknowledgmentsMessage(missingList),
       };
-    } catch (error) {
-      console.error('❌ [Missing Acknowledgments] Error:', error);
+    } catch (error: unknown) {
+      console.error('[Missing Acknowledgments] Error:', error);
       return {
         total: 0,
         byEntryPoint: {},
         details: [],
-        message: 'Unable to validate acknowledgments. Please try again.'
+        message: 'Unable to validate acknowledgments. Please try again.',
       };
     }
   }
 
   /**
    * Generate a user-friendly message about missing acknowledgments
-   * @param {Array} missingAcknowledgments - List of missing acknowledgments
-   * @returns {string} User-friendly message
    */
-  generateMissingAcknowledgmentsMessage(missingAcknowledgments) {
+  generateMissingAcknowledgmentsMessage(missingAcknowledgments: AcknowledgmentInfo[]): string {
     if (missingAcknowledgments.length === 0) {
       return '';
     }
 
-    const messages = missingAcknowledgments.map(missing => {
+    const descriptions: AckDescriptionMap = {
+      terms_conditions_v1: 'Terms & Conditions',
+      digital_content_v1: 'Digital Content Agreement',
+      tutorial_credit_card_v1: 'Tutorial Credit Card Fee Acknowledgment',
+    };
+
+    const messages = missingAcknowledgments.map((missing: AcknowledgmentInfo) => {
       const entryPoint = missing.entry_point || 'unknown';
       const ackKey = missing.ackKey || 'unknown';
 
-      // Create user-friendly descriptions
-      const descriptions = {
-        'terms_conditions_v1': 'Terms & Conditions',
-        'digital_content_v1': 'Digital Content Agreement',
-        'tutorial_credit_card_v1': 'Tutorial Credit Card Fee Acknowledgment'
-      };
-
       const description = descriptions[ackKey] || ackKey;
-      return `• ${description} (${entryPoint})`;
+      return `\u2022 ${description} (${entryPoint})`;
     });
 
     return `Please complete the following required acknowledgments before checkout:\n${messages.join('\n')}`;
@@ -157,27 +180,32 @@ class AcknowledgmentService {
 
   /**
    * Build context for comprehensive validation from cart and user data
-   * @param {Object} cartData - Cart data
-   * @param {Array} cartItems - Cart items
-   * @param {string} paymentMethod - Payment method
-   * @param {Object} userProfile - User profile data (optional)
-   * @returns {Object} Context for validation
    */
-  buildValidationContext(cartData, cartItems, paymentMethod, userProfile = null) {
-    const context = {
+  buildValidationContext(
+    cartData: CartData | null | undefined,
+    cartItems: CartItem[] | null | undefined,
+    paymentMethod: string | null | undefined,
+    userProfile: UserProfileParam | null = null,
+  ): ValidationContext {
+    const context: ValidationContext = {
       cart: {
         id: cartData?.id,
         items: cartItems || [],
-        total: cartItems?.reduce((sum, item) => sum + (parseFloat(item.actual_price || 0) * item.quantity), 0) || 0,
+        total:
+          cartItems?.reduce(
+            (sum: number, item: CartItem) =>
+              sum + parseFloat(String(item.actual_price || 0)) * item.quantity,
+            0,
+          ) || 0,
         has_digital: cartData?.has_digital || false,
         has_material: cartData?.has_material || false,
         has_tutorial: cartData?.has_tutorial || false,
-        has_marking: cartData?.has_marking || false
+        has_marking: cartData?.has_marking || false,
       },
       payment: {
         method: paymentMethod || 'card',
-        is_card: paymentMethod === 'card'
-      }
+        is_card: paymentMethod === 'card',
+      },
     };
 
     // Add user context if available
@@ -187,7 +215,7 @@ class AcknowledgmentService {
         email: userProfile.email,
         is_authenticated: true,
         home_country: userProfile.home_country,
-        work_country: userProfile.work_country
+        work_country: userProfile.work_country,
       };
     }
 
@@ -196,13 +224,13 @@ class AcknowledgmentService {
 
   /**
    * Validate checkout readiness with detailed feedback
-   * @param {Object} cartData - Cart data
-   * @param {Array} cartItems - Cart items
-   * @param {string} paymentMethod - Payment method
-   * @param {Object} userProfile - User profile (optional)
-   * @returns {Promise<Object>} Detailed checkout readiness result
    */
-  async validateCheckoutReadiness(cartData, cartItems, paymentMethod, userProfile = null) {
+  async validateCheckoutReadiness(
+    cartData: CartData | null | undefined,
+    cartItems: CartItem[] | null | undefined,
+    paymentMethod: string | null | undefined,
+    userProfile: UserProfileParam | null = null,
+  ): Promise<CheckoutReadinessResult> {
     const context = this.buildValidationContext(cartData, cartItems, paymentMethod, userProfile);
 
     const validation = await this.validateComprehensiveCheckout(context);
@@ -215,7 +243,7 @@ class AcknowledgmentService {
       missingAcknowledgments: missing,
       satisfiedAcknowledgments: validation.satisfiedAcknowledgments,
       allRequiredAcknowledgments: validation.allRequiredAcknowledgments,
-      validationMessage: missing.message
+      validationMessage: missing.message,
     };
   }
 }

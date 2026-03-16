@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import { formatPrice } from '../../../utils/priceFormatter.js';
 import { formatVatLabel } from '../../../utils/vatUtils.js';
-import { useCart } from "../../../contexts/CartContext.js";
+import { useCart } from "../../../contexts/CartContext.tsx";
 import {
 	Alert,
 	AlertTitle,

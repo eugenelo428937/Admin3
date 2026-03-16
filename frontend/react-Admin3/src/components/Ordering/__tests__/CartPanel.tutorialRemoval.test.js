@@ -26,7 +26,7 @@ vi.mock('../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock cartService before importing
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(),
@@ -42,7 +42,7 @@ const mockClearCart = vi.fn();
 let mockCartItems = [];
 let mockCartData = { fees: [], items: [] };
 
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: mockCartItems,
     cartData: mockCartData,

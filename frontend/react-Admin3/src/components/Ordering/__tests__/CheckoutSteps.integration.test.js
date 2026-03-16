@@ -20,9 +20,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { MemoryRouter } from 'react-router-dom';
 import theme from '../../../theme/theme.js';
-import CartReviewStep from '../CheckoutSteps/CartReviewStep.js';
-import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.js';
-import CheckoutSteps from '../CheckoutSteps.js';
+import CartReviewStep from '../CheckoutSteps/CartReviewStep.tsx';
+import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.tsx';
+import CheckoutSteps from '../CheckoutSteps.tsx';
 import rulesEngineService from '../../../services/rulesEngineService.js';
 
 // Mock useMediaQuery so CartSummaryPanel expands in tests
@@ -35,12 +35,12 @@ vi.mock('@mui/material/useMediaQuery', () => ({
 vi.mock('../../../hooks/useAuth.tsx');
 
 // Mock useCart hook - configure in beforeEach (like the passing unit tests)
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
 // Mock useCheckoutValidation hook
-vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
@@ -552,7 +552,7 @@ describe('CheckoutSteps Component Integration', () => {
     });
 
     // Mock useCart hook (same pattern as passing unit tests)
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -581,7 +581,7 @@ describe('CheckoutSteps Component Integration', () => {
 
     it('should display cart items from mocked hook', async () => {
       const customCartItems = createMockCartItems({ productName: 'CM2 Core Reading' });
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: customCartItems,
         cartData: mockCartData
@@ -595,7 +595,7 @@ describe('CheckoutSteps Component Integration', () => {
     });
 
     it('should render correctly with empty cart', async () => {
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: [],
         cartData: mockCartData
@@ -684,7 +684,7 @@ describe('CheckoutSteps Component Integration', () => {
         }
       });
 
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: mockCartItems,
         cartData: cartDataWithVat
@@ -729,7 +729,7 @@ describe('CheckoutSteps Modal Interactions', () => {
     });
 
     // Mock useCart hook
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData

@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../theme/theme.js';
-import CheckoutSteps from '../../CheckoutSteps.js';
+import CheckoutSteps from '../../CheckoutSteps.tsx';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -38,7 +38,7 @@ const mockCartContext = {
   }
 };
 
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => mockCartContext
 }));
 
@@ -77,7 +77,7 @@ vi.mock('../../../../services/userService.ts', () => ({
   }
 }));
 
-vi.mock('../../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,

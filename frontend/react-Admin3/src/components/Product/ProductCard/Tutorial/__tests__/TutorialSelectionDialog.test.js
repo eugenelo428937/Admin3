@@ -11,7 +11,7 @@ import TutorialSelectionDialog from '../TutorialSelectionDialog.js';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock CartContext - TutorialSelectionDialog uses useCart
-vi.mock('../../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
