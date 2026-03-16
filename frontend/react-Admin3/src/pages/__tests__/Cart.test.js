@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme.js';
+import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();

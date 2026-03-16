@@ -19,7 +19,7 @@ import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { MemoryRouter } from 'react-router-dom';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import CartReviewStep from '../CheckoutSteps/CartReviewStep.tsx';
 import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.tsx';
 import CheckoutSteps from '../CheckoutSteps.tsx';
