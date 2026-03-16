@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import userService from '../../services/userService.ts';
-import addressValidationService from '../../services/addressValidationService.ts';
-import addressMetadataService from '../../services/addressMetadataService.ts';
+import addressValidationService from '../../services/address/addressValidationService.ts';
+import addressMetadataService from '../../services/address/addressMetadataService.ts';
 import type { AddressLocationType, AddressPurpose, AddressUpdateResult, AddressChangeEvent } from '../../types/address';
 import type { UserProfile } from '../../types/auth/user.types';
 

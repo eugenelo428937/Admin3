@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock catalogProductService
-vi.mock('../../../../services/catalogProductService.js', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/catalogProductService.js', () => ({
   },
 }));
 
-import catalogProductService from '../../../../services/catalogProductService.js';
+import catalogProductService from '../../../../services/catalogProductService';
 
 const theme = appTheme;
 

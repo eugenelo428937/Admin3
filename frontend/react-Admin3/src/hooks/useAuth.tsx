@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect, createContext, useContext, useCallback } from "react";
-import authService from "../services/authService.ts";
+import authService from "../services/authService";
 import type {
   AuthUser,
   LoginCredentials,

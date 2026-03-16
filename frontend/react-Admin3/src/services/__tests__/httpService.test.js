@@ -6,7 +6,7 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../httpService.js');
+vi.unmock('../httpService');
 
 // Create mock axios instance and direct get function - must use var for hoisting
 var mockAxiosGet = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('axios', () => ({
 }));
 
 // Mock authService
-vi.mock('../authService.ts', () => ({
+vi.mock('../authService', () => ({
   __esModule: true,
   default: {
     refreshToken: mockAuthServiceRefreshToken,
@@ -41,7 +41,7 @@ vi.mock('../authService.ts', () => ({
 }));
 
 // Mock loggerService
-vi.mock('../loggerService.js', () => ({
+vi.mock('../loggerService', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -61,7 +61,7 @@ vi.mock('../../config.js', () => ({
 }));
 
 import axios from 'axios';
-import authService from '../authService.ts';
+import authService from '../authService';
 
 describe('httpService', () => {
   let requestInterceptorFn;
@@ -71,7 +71,7 @@ describe('httpService', () => {
 
   beforeAll(async () => {
     // Import httpService to trigger axios.create and interceptor setup
-    await import('../httpService.js');
+    await import('../httpService');
 
     // Capture the interceptor callbacks
     if (mockAxiosInstance.interceptors.request.use.mock.calls.length > 0) {

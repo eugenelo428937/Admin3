@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { rulesEngineHelpers, buildRulesContext } from '../utils/rulesEngineUtils.js';
-import rulesEngineService from '../services/rulesEngineService.js';
+import { rulesEngineHelpers, buildRulesContext } from '../utils/rulesEngineUtils';
+import rulesEngineService from '../services/rulesEngineService';
 import type { CartData, CartItem } from '../types/cart';
 import type { RulesEngineResult, AcknowledgmentMessage, RulesMessage } from '../types/checkout';
 

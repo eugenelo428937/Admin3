@@ -2,11 +2,11 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import CheckoutSteps from '../CheckoutSteps.tsx';
 import { CartContext } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -17,7 +17,7 @@ const renderWithTheme = (ui, options = {}) => {
 };
 
 // Mock the rules engine service
-vi.mock('../../../services/rulesEngineService.js', () => {
+vi.mock('../../../services/rulesEngineService', () => {
   const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
@@ -48,7 +48,7 @@ vi.mock('../../../services/rulesEngineService.js', () => {
 vi.mock('../../../hooks/useAuth.tsx');
 
 // Mock httpService
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(),

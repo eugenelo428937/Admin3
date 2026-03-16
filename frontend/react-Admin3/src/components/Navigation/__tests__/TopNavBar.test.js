@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 // src/components/Navigation/__tests__/TopNavBar.test.js
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -33,7 +33,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TopNavBar from '../TopNavBar.js';
+import TopNavBar from '../TopNavBar.tsx';
 import appTheme from '../../../theme';
 
 // Create a theme with liftkit spacing and semantic navigation colors for tests

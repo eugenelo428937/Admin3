@@ -5,14 +5,14 @@ import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
 import SessionProductsSummary from '../SessionProductsSummary.js';
 
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService.js';
+import storeProductService from '../../../../services/storeProductService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

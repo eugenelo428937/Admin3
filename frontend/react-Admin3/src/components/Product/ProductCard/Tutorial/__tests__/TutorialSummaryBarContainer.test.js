@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // Mock httpService before importing anything else
-vi.mock('../../../../../services/httpService.js', () => ({
+vi.mock('../../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -39,7 +39,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme.js';
+import theme from '../../../../../theme/theme';
 import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 // Import the mocked modules to allow vi.spyOn

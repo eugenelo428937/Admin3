@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import staffService from '../../../services/staffService.js';
+import staffService from '../../../services/staffService';
 
 const AdminStaffList = () => {
   const { isSuperuser } = useAuth();

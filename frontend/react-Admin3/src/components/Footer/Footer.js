@@ -16,7 +16,7 @@ import {
    FaYoutube,
    FaComments,
 } from "react-icons/fa";
-import productService from "../../services/productService.js";
+import productService from "../../services/productService";
 import {
    navSelectSubject,
    navSelectProductGroup,

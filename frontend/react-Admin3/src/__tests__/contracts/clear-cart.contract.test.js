@@ -24,7 +24,7 @@ vi.mock('../../config.js', () => ({
 }));
 
 // Mock httpService with our test-specific implementation
-vi.mock('../../services/httpService.js', () => ({
+vi.mock('../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('../../services/httpService.js', () => ({
 // Import the REAL cartService (after unmocking)
 import cartService from '../../services/cartService.ts';
 // Import the mocked httpService
-import httpService from '../../services/httpService.js';
+import httpService from '../../services/httpService';
 
 describe('Contract Test: /api/cart/clear/', () => {
   beforeEach(() => {

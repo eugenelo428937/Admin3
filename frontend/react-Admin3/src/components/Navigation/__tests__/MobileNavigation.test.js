@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import MobileNavigation from '../MobileNavigation.js';
+import MobileNavigation from '../MobileNavigation.tsx';
 
 import appTheme from '../../../theme';
 // Mock react-router-dom

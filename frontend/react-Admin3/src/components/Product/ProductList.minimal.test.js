@@ -4,7 +4,7 @@ import { vi } from 'vitest';
  */
 
 // Mock services BEFORE any imports
-vi.mock("../../services/httpService.js", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock("./ActiveFilters.js", () => ({ __esModule: true, default: () => null }))
 vi.mock("./ProductGrid.js", () => ({ __esModule: true, default: () => null }));
 vi.mock("../SearchBox.js", () => ({ __esModule: true, default: () => null }));
 vi.mock("./FilterDebugger.js", () => ({ __esModule: true, default: () => null }));
-vi.mock("../Common/RulesEngineInlineAlert.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
 
 // Mock hooks
 vi.mock("../../hooks/useProductsSearch.js", () => ({

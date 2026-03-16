@@ -5,8 +5,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import httpService from '../../../services/httpService.js';
-import sessionSetupService from '../../../services/sessionSetupService.js';
+import httpService from '../../../services/httpService';
+import sessionSetupService from '../../../services/sessionSetupService';
 import config from '../../../config.js';
 
 const CATALOG_URL = `${config.catalogUrl}`;

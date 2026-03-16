@@ -38,7 +38,7 @@ describe('loggerService', () => {
       import.meta.env.MODE = 'development';
       import.meta.env.DEV = true;
       import.meta.env.PROD = false;
-      const mod = await import('../loggerService.js');
+      const mod = await import('../loggerService');
       loggerService = mod.default;
     });
 
@@ -93,7 +93,7 @@ describe('loggerService', () => {
       import.meta.env.MODE = 'production';
       import.meta.env.DEV = false;
       import.meta.env.PROD = true;
-      const mod = await import('../loggerService.js');
+      const mod = await import('../loggerService');
       loggerService = mod.default;
     });
 
@@ -130,7 +130,7 @@ describe('loggerService', () => {
       import.meta.env.MODE = 'test';
       import.meta.env.DEV = false;
       import.meta.env.PROD = false;
-      const mod = await import('../loggerService.js');
+      const mod = await import('../loggerService');
       loggerService = mod.default;
     });
 

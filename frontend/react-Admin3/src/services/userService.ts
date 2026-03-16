@@ -1,7 +1,7 @@
 // src/services/userService.ts
-import httpService from "./httpService.js";
-import config from "../config.js";
-import logger from "./loggerService.js";
+import httpService from "./httpService";
+import config from "../config";
+import logger from "./loggerService";
 import type {
   ProfileUpdateData,
   ProfileUpdateResult,
