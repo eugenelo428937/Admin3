@@ -19,8 +19,10 @@
  * - UPU Postal Addressing Standards
  */
 
+import type { AddressMetadata } from '../types/address/address.types';
+
 // Country-specific address metadata
-export const ADDRESS_METADATA = {
+export const ADDRESS_METADATA: Record<string, AddressMetadata> = {
   // ============================================================
   // UNITED STATES
   // ============================================================
@@ -147,7 +149,7 @@ export const ADDRESS_METADATA = {
         placeholder: 'SW1A 1AA',
         pattern: /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i,
         error: 'Enter a valid UK postcode (e.g., SW1A 1AA)',
-        transform: (value) => value.toUpperCase()
+        transform: (value: string): string => value.toUpperCase()
       }
     },
     layout: [
@@ -214,7 +216,7 @@ export const ADDRESS_METADATA = {
         placeholder: 'D02 X285',
         pattern: /^[A-Z\d]{3}\s?[A-Z\d]{4}$/i,
         error: 'Enter a valid Eircode (e.g., D02 X285)',
-        transform: (value) => value.toUpperCase(),
+        transform: (value: string): string => value.toUpperCase(),
         helpText: 'Optional - unique identifier for your address'
       }
     },
@@ -752,7 +754,7 @@ export const ADDRESS_METADATA = {
         placeholder: '150-0002',
         pattern: /^\d{3}-?\d{4}$/,
         error: 'Enter a valid postal code (e.g., 150-0002)',
-        transform: (value) => {
+        transform: (value: string): string => {
           const digits = value.replace(/\D/g, '');
           if (digits.length === 7) {
             return `${digits.slice(0, 3)}-${digits.slice(3)}`;
@@ -964,7 +966,7 @@ export const ADDRESS_METADATA = {
         placeholder: 'K1A 0A6',
         pattern: /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i,
         error: 'Enter a valid Canadian postal code (e.g., K1A 0A6)',
-        transform: (value) => value.toUpperCase()
+        transform: (value: string): string => value.toUpperCase()
       }
     },
     layout: [
@@ -1092,7 +1094,7 @@ export const ADDRESS_METADATA = {
         placeholder: 'HM 12',
         pattern: /^[A-Z]{2}\s?\d{2}$/i,
         error: 'Enter a valid postal code (e.g., HM 12)',
-        transform: (value) => value.toUpperCase()
+        transform: (value: string): string => value.toUpperCase()
       }
     },
     layout: [
@@ -1122,7 +1124,7 @@ export const ADDRESS_METADATA = {
         placeholder: '00-001',
         pattern: /^\d{2}-\d{3}$/,
         error: 'Enter a valid postal code (e.g., 00-001)',
-        transform: (value) => {
+        transform: (value: string): string => {
           const digits = value.replace(/\D/g, '');
           if (digits.length === 5) {
             return `${digits.slice(0, 2)}-${digits.slice(2)}`;
@@ -1158,7 +1160,7 @@ export const ADDRESS_METADATA = {
         placeholder: 'VLT 1234',
         pattern: /^[A-Z]{3}\s?\d{4}$/i,
         error: 'Enter a valid postal code (e.g., VLT 1234)',
-        transform: (value) => value.toUpperCase()
+        transform: (value: string): string => value.toUpperCase()
       }
     },
     layout: [
@@ -1240,7 +1242,7 @@ export const ADDRESS_METADATA = {
 /**
  * Country name to ISO code mapping
  */
-export const COUNTRY_CODE_MAPPINGS = {
+export const COUNTRY_CODE_MAPPINGS: Record<string, string> = {
   'United States': 'US',
   'United Kingdom': 'GB',
   'Hong Kong': 'HK',

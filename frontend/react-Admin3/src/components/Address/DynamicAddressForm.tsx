@@ -13,10 +13,23 @@ import {
 	CircularProgress,
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
-import PropTypes from "prop-types";
-import addressMetadataService from "../../services/addressMetadataService.js";
+import addressMetadataService from "../../services/addressMetadataService.ts";
 import { useTheme } from "@mui/material/styles";
-const DynamicAddressForm = ({
+import type { AddressMetadata, AddressFieldConfig, AddressChangeEvent, AddressValidationResult } from "../../types/address";
+
+interface DynamicAddressFormProps {
+	country: string;
+	values?: Record<string, string>;
+	onChange: (e: AddressChangeEvent) => void;
+	errors?: Record<string, string>;
+	fieldPrefix?: string;
+	showOptionalFields?: boolean;
+	className?: string;
+	metadata?: AddressMetadata | null;
+	readonly?: boolean;
+}
+
+const DynamicAddressForm: React.FC<DynamicAddressFormProps> = ({
 	country,
 	values = {},
 	onChange,
@@ -24,29 +37,26 @@ const DynamicAddressForm = ({
 	fieldPrefix = "",
 	showOptionalFields = true,
 	className = "",
-	metadata = null, // Allow passing pre-filtered metadata
-	readonly = false, // New: Make fields readonly
+	metadata = null,
+	readonly = false,
 }) => {
-	const [addressMetadata, setAddressMetadata] = useState(null);
-	const [fieldErrors, setFieldErrors] = useState({});
+	const [addressMetadata, setAddressMetadata] = useState<AddressMetadata | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 	const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 	const theme = useTheme();
-	// Get field name with prefix
+
 	const getFieldName = useCallback(
-		(fieldName) => {
+		(fieldName: string): string => {
 			return fieldPrefix ? `${fieldPrefix}_${fieldName}` : fieldName;
 		},
 		[fieldPrefix]
 	);
 
-	// Update metadata when country changes (async fetch for full Google metadata)
 	useEffect(() => {
 		const loadMetadata = async () => {
 			if (metadata) {
-				// Use passed metadata (pre-filtered)
 				setAddressMetadata(metadata);
 			} else {
-				// Fetch metadata asynchronously to get full Google API data
 				const countryCode = addressMetadataService.getCountryCode(country);
 				setIsLoadingMetadata(true);
 				try {
@@ -67,34 +77,29 @@ const DynamicAddressForm = ({
 		}
 	}, [country, metadata]);
 
-	// Handle field change with validation and transformation
 	const handleFieldChange = useCallback(
-		(e) => {
+		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }) => {
 			const { name, value } = e.target;
 			const fieldName = name.replace(`${fieldPrefix}_`, "");
 			const countryCode = addressMetadataService.getCountryCode(country);
 
-			// Transform value according to country rules
 			const transformedValue = addressMetadataService.transformFieldValue(
-				countryCode,
+				countryCode || '',
 				fieldName,
 				value
 			);
 
-			// Validate field
-			const validation = addressMetadataService.validateAddressField(
-				countryCode,
+			const validation: AddressValidationResult = addressMetadataService.validateAddressField(
+				countryCode || '',
 				fieldName,
 				transformedValue
 			);
 
-			// Update field errors
 			setFieldErrors((prev) => ({
 				...prev,
 				[name]: validation.error,
 			}));
 
-			// Call parent onChange with transformed value
 			if (onChange) {
 				onChange({
 					target: {
@@ -107,24 +112,23 @@ const DynamicAddressForm = ({
 		[country, fieldPrefix, onChange]
 	);
 
-	// Validate all fields
-	const validateAll = useCallback(() => {
+	const validateAll = useCallback((): Record<string, string> => {
 		if (!addressMetadata) return {};
 
 		const countryCode = addressMetadataService.getCountryCode(country);
-		const newErrors = {};
+		const newErrors: Record<string, string> = {};
 
 		Object.keys(addressMetadata.fields).forEach((fieldName) => {
 			const fullFieldName = getFieldName(fieldName);
 			const value = values[fullFieldName] || "";
 
 			const validation = addressMetadataService.validateAddressField(
-				countryCode,
+				countryCode || '',
 				fieldName,
 				value
 			);
 
-			if (!validation.isValid) {
+			if (!validation.isValid && validation.error) {
 				newErrors[fullFieldName] = validation.error;
 			}
 		});
@@ -133,24 +137,20 @@ const DynamicAddressForm = ({
 		return newErrors;
 	}, [addressMetadata, country, values, getFieldName]);
 
-	// Expose validation function
 	useEffect(() => {
-		if (onChange && onChange.validateAll) {
-			onChange.validateAll = validateAll;
+		if (onChange && (onChange as any).validateAll) {
+			(onChange as any).validateAll = validateAll;
 		}
 	}, [validateAll, onChange]);
 
-	// Render form field based on field configuration
-	const renderField = (fieldName, fieldConfig, layoutSpan = 12) => {
+	const renderField = (fieldName: string, fieldConfig: AddressFieldConfig, layoutSpan: number = 12) => {
 		const fullFieldName = getFieldName(fieldName);
 		const value = values[fullFieldName] || "";
 		const hasError = !!(errors[fullFieldName] || fieldErrors[fullFieldName]);
 		const errorMessage = errors[fullFieldName] || fieldErrors[fullFieldName];
-		const isRequired = addressMetadata.required.includes(fieldName);
+		const isRequired = addressMetadata!.required.includes(fieldName);
 
-		// Special handling for address field - always full width and multiline on mobile
 		const isAddressField = fieldName === 'address';
-		// For non-address fields, default to size 6 unless specified as 12
 		const gridSize = isAddressField ? 8 : (layoutSpan === 12 ? 12 : 6);
 
 		if (fieldConfig.type === "select") {
@@ -161,7 +161,7 @@ const DynamicAddressForm = ({
 						md: gridSize,
 					}}
 					key={fieldName}
-					sx={{ mr: theme.spacingTokens.md }}>
+					sx={{ mr: (theme as any).spacingTokens?.md }}>
 					<FormControl fullWidth error={hasError}>
 						<InputLabel>
 							{fieldConfig.label}
@@ -170,8 +170,8 @@ const DynamicAddressForm = ({
 						<Select
 							name={fullFieldName}
 							value={value}
-							onChange={handleFieldChange}
-						disabled={readonly}
+							onChange={handleFieldChange as any}
+							disabled={readonly}
 							label={fieldConfig.label + (isRequired ? " *" : "")}>
 							<MenuItem value="">Select {fieldConfig.label}</MenuItem>
 							{fieldConfig.options?.map((option) => (
@@ -193,7 +193,7 @@ const DynamicAddressForm = ({
 					md: gridSize,
 				}}
 				key={fieldName}
-				sx={{ mr: theme.spacingTokens.md }}>
+				sx={{ mr: (theme as any).spacingTokens?.md }}>
 				<TextField
 					fullWidth
 					required={isRequired}
@@ -214,7 +214,7 @@ const DynamicAddressForm = ({
 						},
 					}}
 					variant="standard"
-				InputProps={{ readOnly: readonly }}
+					InputProps={{ readOnly: readonly }}
 				/>
 			</Grid>
 		);
@@ -240,14 +240,8 @@ const DynamicAddressForm = ({
 		);
 	}
 
-	// Filter fields based on showOptionalFields (keep this for potential future use)
-	// const fieldsToShow = showOptionalFields
-	//   ? Object.keys(addressMetadata.fields)
-	//   : addressMetadata.required;
-
 	return (
 		<Box className={`dynamic-address-form ${className}`}>
-			{/* Country-specific address format info */}
 			<Box sx={{ mb: 3 }}>
 				<Typography variant="body2" color="text.secondary">
 					<Info
@@ -266,9 +260,8 @@ const DynamicAddressForm = ({
 				</Typography>
 			</Box>
 
-			{/* Render fields according to layout */}
 			{addressMetadata.layout.map((row, rowIndex) => (
-				<Grid container spacing={1} key={rowIndex} sx={{ mb: theme.spacingTokens.sm }}>
+				<Grid container spacing={1} key={rowIndex} sx={{ mb: (theme as any).spacingTokens?.sm }}>
 					{row.map(({ field, span }) => {
 						const fieldConfig = addressMetadata.fields[field];
 						if (
@@ -283,12 +276,10 @@ const DynamicAddressForm = ({
 				</Grid>
 			))}
 
-			{/* Show optional fields toggle if there are optional fields */}
-
 			{!showOptionalFields &&
 				Object.keys(addressMetadata.fields).length >
 					addressMetadata.required.length && (
-					<Box sx={{ textAlign: "center", mt: theme.spacingTokens.md }}>
+					<Box sx={{ textAlign: "center", mt: (theme as any).spacingTokens?.md }}>
 						<Typography variant="body2" color="text.secondary">
 							Some optional fields are hidden.
 						</Typography>
@@ -296,18 +287,6 @@ const DynamicAddressForm = ({
 				)}
 		</Box>
 	);
-};
-
-DynamicAddressForm.propTypes = {
-	country: PropTypes.string.isRequired,
-	values: PropTypes.object,
-	onChange: PropTypes.func.isRequired,
-	errors: PropTypes.object,
-	fieldPrefix: PropTypes.string,
-	showOptionalFields: PropTypes.bool,
-	className: PropTypes.string,
-	metadata: PropTypes.object,
-	readonly: PropTypes.bool,
 };
 
 export default DynamicAddressForm;
