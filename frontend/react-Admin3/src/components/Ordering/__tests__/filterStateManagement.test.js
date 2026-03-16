@@ -44,7 +44,7 @@ vi.mock('../../../services/productService.js', () => ({
 }));
 
 // Mock rulesEngineService
-vi.mock('../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn().mockResolvedValue({

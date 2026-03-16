@@ -22,8 +22,8 @@ import {
 import { useCart } from '../../contexts/CartContext.tsx';
 import useProductsSearch from '../../hooks/useProductsSearch.js';
 import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';
-import rulesEngineService from '../../services/rulesEngineService.js';
+import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
+import rulesEngineService from '../../services/rulesEngineService';
 
 // Redux imports
 import {
@@ -51,7 +51,7 @@ import ActiveFilters from './ActiveFilters.js';
 import ProductGrid from './ProductGrid.js';
 import SearchBox from '../SearchBox.js';
 import FilterDebugger from './FilterDebugger.js';
-import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert.js';
+import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
 
 const ProductList = React.memo(() => {
     const theme = useTheme();

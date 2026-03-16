@@ -6,7 +6,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import JsonContentRenderer from '../JsonContentRenderer.js';
+import JsonContentRenderer from '../JsonContentRenderer';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

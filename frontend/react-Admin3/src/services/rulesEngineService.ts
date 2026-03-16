@@ -1,7 +1,13 @@
 import httpService from './httpService.js';
+import type {
+  EntryPoints,
+  AcknowledgmentData,
+  ExecuteRulesResponse,
+  RulesEngineService,
+} from '../types/rulesEngine';
 
 // Entry point constants for consistency across the application
-const ENTRY_POINTS = {
+const ENTRY_POINTS: EntryPoints = {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
     CHECKOUT_PREFERENCE: 'checkout_preference',
@@ -12,30 +18,25 @@ const ENTRY_POINTS = {
     USER_REGISTRATION: 'user_registration'
 };
 
-const rulesEngineService = {
+const rulesEngineService: RulesEngineService = {
     // Entry point constants for external use
     ENTRY_POINTS,
-    
+
     /**
      * Execute rules at a specific entry point with given context
-     * @param {string} entryPoint - The entry point to execute rules for
-     * @param {object} context - The context data to pass to the rules engine
-     * @returns {Promise<object>} The response from the rules engine
-     * @throws {SchemaValidationError} When context schema validation fails
-     * @throws {Error} For other API errors
      */
-    executeRules: async (entryPoint, context = {}) => {
+    executeRules: async (entryPoint: string, context: Record<string, any> = {}): Promise<ExecuteRulesResponse> => {
         try {
             const response = await httpService.post('/api/rules/engine/execute/', {
                 entryPoint,
                 context
             });
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             // Handle schema validation errors specifically
-            if (error.response && error.response.status === 400 && 
+            if (error.response && error.response.status === 400 &&
                 error.response.data && error.response.data.schema_validation_errors) {
-                const schemaError = new Error('Schema validation failed');
+                const schemaError: any = new Error('Schema validation failed');
                 schemaError.name = 'SchemaValidationError';
                 schemaError.schemaErrors = error.response.data.schema_validation_errors;
                 schemaError.entryPoint = entryPoint;
@@ -50,14 +51,8 @@ const rulesEngineService = {
 
     /**
      * Acknowledge a rule in the session
-     * @param {object} acknowledgmentData - The acknowledgment data
-     * @param {string} acknowledgmentData.ackKey - The acknowledgment key
-     * @param {string} acknowledgmentData.message_id - The message/rule ID
-     * @param {boolean} acknowledgmentData.acknowledged - Whether acknowledged or not
-     * @param {string} acknowledgmentData.entry_point_location - The entry point location
-     * @returns {Promise<object>} The response from the API
      */
-    acknowledgeRule: async (acknowledgmentData) => {
+    acknowledgeRule: async (acknowledgmentData: AcknowledgmentData): Promise<any> => {
         try {
             const response = await httpService.post('/api/rules/acknowledge/', acknowledgmentData);
             return response.data;

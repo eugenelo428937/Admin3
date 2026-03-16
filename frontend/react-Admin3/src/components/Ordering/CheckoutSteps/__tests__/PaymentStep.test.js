@@ -41,7 +41,7 @@ vi.mock('../../../../contexts/CartContext.tsx', () => ({
 const mockExecuteRules = vi.fn();
 const mockAcknowledgeRule = vi.fn();
 
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: (...args) => mockExecuteRules(...args),

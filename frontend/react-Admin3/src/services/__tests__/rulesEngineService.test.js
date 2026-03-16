@@ -14,7 +14,7 @@ vi.mock('../httpService.js', () => ({
     },
 }));
 
-import rulesEngineService from '../rulesEngineService.js';
+import rulesEngineService from '../rulesEngineService';
 import httpService from '../httpService.js';
 
 describe('rulesEngineService', () => {

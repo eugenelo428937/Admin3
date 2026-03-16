@@ -6,8 +6,8 @@ import {
   executeAndProcessRules,
   rulesEngineHelpers,
   buildRulesContext
-} from '../../utils/rulesEngineUtils.js';
-import rulesEngineService from '../../services/rulesEngineService.js';
+} from '../../utils/rulesEngineUtils';
+import rulesEngineService from '../../services/rulesEngineService';
 
 /**
  * Demo component to showcase the complete message processing pipeline

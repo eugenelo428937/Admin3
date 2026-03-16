@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from '@mui/material';
 import { useCart } from '../../contexts/CartContext.tsx';
 import { useAuth } from '../../hooks/useAuth.tsx';
-import rulesEngineService from '../../services/rulesEngineService.js';
+import rulesEngineService from '../../services/rulesEngineService';
 import userService from '../../services/userService.ts';
 import useCheckoutValidation from '../../hooks/useCheckoutValidation.ts';
 import config from '../../config.js';
