@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock staffService
-vi.mock('../../../../services/staffService.js', () => ({
+vi.mock('../../../../services/staffService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/staffService.js', () => ({
   },
 }));
 
-import staffService from '../../../../services/staffService.js';
+import staffService from '../../../../services/staffService';
 
 const theme = appTheme;
 

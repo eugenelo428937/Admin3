@@ -30,7 +30,7 @@ vi.mock('../../config.js', () => ({
   },
 }));
 
-import searchService from '../searchService.js';
+import searchService from '../searchService';
 import httpService from '../httpService.js';
 
 describe('searchService', () => {
@@ -50,6 +50,7 @@ describe('searchService', () => {
       expect(result).toEqual({
         suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
         suggested_products: [],
+        total_count: 0,
       });
       expect(httpService.get).not.toHaveBeenCalled();
     });
@@ -60,6 +61,7 @@ describe('searchService', () => {
       expect(result).toEqual({
         suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
         suggested_products: [],
+        total_count: 0,
       });
       expect(httpService.get).not.toHaveBeenCalled();
     });
@@ -70,6 +72,7 @@ describe('searchService', () => {
       expect(result).toEqual({
         suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
         suggested_products: [],
+        total_count: 0,
       });
     });
 
@@ -79,6 +82,7 @@ describe('searchService', () => {
       expect(result).toEqual({
         suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
         suggested_products: [],
+        total_count: 0,
       });
     });
 

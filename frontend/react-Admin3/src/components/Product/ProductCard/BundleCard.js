@@ -40,7 +40,7 @@ import {
 import { Inventory2Outlined as BoxSeam } from "@mui/icons-material";
 import { ThemeProvider } from "@mui/material/styles";
 import { useCart } from "../../../contexts/CartContext.tsx";
-import bundleService from "../../../services/bundleService.js";
+import bundleService from "../../../services/bundleService";
 
 const BundleCard = React.memo(({ bundle, onAddToCart }) => {
    const theme = useTheme();

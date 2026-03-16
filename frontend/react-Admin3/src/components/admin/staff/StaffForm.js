@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import staffService from '../../../services/staffService.js';
+import staffService from '../../../services/staffService';
 
 const AdminStaffForm = () => {
   const { isSuperuser } = useAuth();

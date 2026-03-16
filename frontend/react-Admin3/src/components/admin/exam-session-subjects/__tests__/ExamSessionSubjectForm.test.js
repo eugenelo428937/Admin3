@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock examSessionSubjectService
-vi.mock('../../../../services/examSessionSubjectService.js', () => ({
+vi.mock('../../../../services/examSessionSubjectService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/examSessionSubjectService.js', () => ({
   },
 }));
 
-import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService';
 
 // Mock examSessionService
 vi.mock('../../../../services/examSessionService', () => ({

@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock catalogProductService
-vi.mock('../../../../services/catalogProductService.js', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -41,7 +41,7 @@ vi.mock('../ProductTable.js', () => ({
   },
 }));
 
-import catalogProductService from '../../../../services/catalogProductService.js';
+import catalogProductService from '../../../../services/catalogProductService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
