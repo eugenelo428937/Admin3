@@ -6,7 +6,7 @@ import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme.js';
+import theme from '../../../../../theme/theme';
 import TutorialSelectionDialog from '../TutorialSelectionDialog.js';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 

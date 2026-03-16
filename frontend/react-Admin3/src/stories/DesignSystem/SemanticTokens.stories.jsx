@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { semantic } from '../../theme/semantic/common.js';
-import { navigation } from '../../theme/semantic/navigation.js';
-import * as productCards from '../../theme/semantic/productCards.js';
+import { semantic } from '../../theme/semantic/common';
+import { navigation } from '../../theme/semantic/navigation';
+import * as productCards from '../../theme/semantic/productCards';
 
 export default {
   title: 'Design System/Tokens/Semantic',
@@ -84,7 +84,7 @@ export const CommonTokens = () => {
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>Common Semantic Tokens</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Flat semantic tokens from <code>theme/semantic/common.js</code>
+        Flat semantic tokens from <code>theme/semantic/common.ts</code>
       </Typography>
       <TokenTable title="Text & Background" tokens={tokens} prefix="semantic." />
     </Box>
@@ -118,7 +118,7 @@ export const NavigationTokens = () => {
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>Navigation Tokens</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Nested navigation tokens from <code>theme/semantic/navigation.js</code>
+        Nested navigation tokens from <code>theme/semantic/navigation.ts</code>
       </Typography>
       <TokenTable title="Text" tokens={textTokens} prefix="navigation." />
       <TokenTable title="Background" tokens={bgTokens} prefix="navigation." />
@@ -143,7 +143,7 @@ export const ProductCardTokens = () => {
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 1 }}>Product Card Tokens</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Each product type has its own color theme from <code>theme/semantic/productCards.js</code>
+        Each product type has its own color theme from <code>theme/semantic/productCards.ts</code>
       </Typography>
 
       {cardTypes.map(({ name, data, color }) => (
