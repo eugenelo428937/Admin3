@@ -17,23 +17,22 @@
 import {
   fetchGoogleAddressMetadata,
   transformGoogleMetadata
-} from './googleAddressMetadata.js';
+} from './googleAddressMetadata.ts';
 
 import {
   ADDRESS_METADATA,
   COUNTRY_CODE_MAPPINGS
-} from './addressMetadataConfig.js';
+} from './addressMetadataConfig.ts';
+
+import type { AddressMetadata, AddressValidationResult } from '../types/address';
 
 // Re-export ADDRESS_METADATA for backward compatibility
 export { ADDRESS_METADATA };
 
 /**
  * Get address metadata for a country (synchronous - uses fallback data)
- * @param {string} countryCode - ISO country code (e.g., 'US', 'GB')
- * @returns {object} Address metadata including format, fields, and validation
- * @note For dynamic Google API data, use fetchAddressMetadata() instead
  */
-export const getAddressMetadata = (countryCode) => {
+export const getAddressMetadata = (countryCode: string | null): AddressMetadata => {
   if (!countryCode) return ADDRESS_METADATA.DEFAULT;
 
   const metadata = ADDRESS_METADATA[countryCode.toUpperCase()];
@@ -43,44 +42,34 @@ export const getAddressMetadata = (countryCode) => {
 /**
  * Fetch address metadata dynamically from Google libaddressinput API
  * Falls back to hardcoded metadata if Google API fails
- *
- * @param {string} countryCode - ISO country code (e.g., 'US', 'GB')
- * @returns {Promise<object>} Address metadata including format, fields, and validation
  */
-export const fetchAddressMetadata = async (countryCode) => {
+export const fetchAddressMetadata = async (countryCode: string | null): Promise<AddressMetadata> => {
   if (!countryCode) return ADDRESS_METADATA.DEFAULT;
 
   const upperCountryCode = countryCode.toUpperCase();
 
   try {
-    // Try to fetch from Google API first
     const googleData = await fetchGoogleAddressMetadata(upperCountryCode);
 
     if (googleData) {
-      // Transform Google data to our format
       const transformed = transformGoogleMetadata(googleData, upperCountryCode);
 
-      // If we have a custom config, merge it with Google data
       const customConfig = ADDRESS_METADATA[upperCountryCode];
       if (customConfig) {
-        // Merge fields: Google fields + custom overrides
         const mergedFields = {
           ...transformed.fields,
           ...customConfig.fields
         };
 
-        // Use custom layout if defined, otherwise fall back to Google's layout
         const useLayout = customConfig.layout || transformed.layout;
 
-        // Merge ALL custom config properties (addressLookupSupported, etc.) with Google data
-        // But exclude 'fields' and 'layout' since we handle those specially above
         const { fields: _fields, layout: _layout, ...customConfigRest } = customConfig;
 
         return {
-          ...transformed,           // Google data as base
-          ...customConfigRest,      // Custom config properties (addressLookupSupported, requiresPostcodeForLookup, etc.)
-          fields: mergedFields,     // Merged fields
-          layout: useLayout         // Smart layout selection
+          ...transformed,
+          ...customConfigRest,
+          fields: mergedFields,
+          layout: useLayout
         };
       }
 
@@ -90,18 +79,13 @@ export const fetchAddressMetadata = async (countryCode) => {
     console.warn(`Failed to fetch Google metadata for ${upperCountryCode}, falling back to hardcoded data:`, error);
   }
 
-  // Fallback to hardcoded metadata
   return ADDRESS_METADATA[upperCountryCode] || ADDRESS_METADATA.DEFAULT;
 };
 
 /**
  * Validate address field based on country rules
- * @param {string} countryCode - ISO country code
- * @param {string} fieldName - Field to validate
- * @param {string} value - Field value
- * @returns {object} Validation result { isValid, error }
  */
-export const validateAddressField = (countryCode, fieldName, value) => {
+export const validateAddressField = (countryCode: string, fieldName: string, value: string): AddressValidationResult => {
   const metadata = getAddressMetadata(countryCode);
   const fieldConfig = metadata.fields[fieldName];
 
@@ -109,12 +93,10 @@ export const validateAddressField = (countryCode, fieldName, value) => {
     return { isValid: true, error: null };
   }
 
-  // Check if field is required
   if (metadata.required.includes(fieldName) && (!value || value.trim() === '')) {
     return { isValid: false, error: `${fieldConfig.label} is required` };
   }
 
-  // Pattern validation
   if (value && fieldConfig.pattern && !fieldConfig.pattern.test(value)) {
     return { isValid: false, error: fieldConfig.error || `Invalid ${fieldConfig.label}` };
   }
@@ -124,12 +106,8 @@ export const validateAddressField = (countryCode, fieldName, value) => {
 
 /**
  * Transform field value according to country rules
- * @param {string} countryCode - ISO country code
- * @param {string} fieldName - Field name
- * @param {string} value - Field value
- * @returns {string} Transformed value
  */
-export const transformFieldValue = (countryCode, fieldName, value) => {
+export const transformFieldValue = (countryCode: string, fieldName: string, value: string): string => {
   const metadata = getAddressMetadata(countryCode);
   const fieldConfig = metadata.fields[fieldName];
 
@@ -142,20 +120,16 @@ export const transformFieldValue = (countryCode, fieldName, value) => {
 
 /**
  * Get optional fields for a country
- * @param {string} countryCode - ISO country code
- * @returns {array} Array of optional field names
  */
-export const getOptionalFields = (countryCode) => {
+export const getOptionalFields = (countryCode: string): string[] => {
   const metadata = getAddressMetadata(countryCode);
   return metadata.optional || [];
 };
 
 /**
  * Get all fields (required + optional) for a country
- * @param {string} countryCode - ISO country code
- * @returns {array} Array of all field names
  */
-export const getAllFields = (countryCode) => {
+export const getAllFields = (countryCode: string): string[] => {
   const metadata = getAddressMetadata(countryCode);
   const required = metadata.required || [];
   const optional = metadata.optional || [];
@@ -164,32 +138,24 @@ export const getAllFields = (countryCode) => {
 
 /**
  * Check if a field is optional for a country
- * @param {string} countryCode - ISO country code
- * @param {string} fieldName - Field name to check
- * @returns {boolean} True if field is optional
  */
-export const isOptionalField = (countryCode, fieldName) => {
+export const isOptionalField = (countryCode: string, fieldName: string): boolean => {
   const optional = getOptionalFields(countryCode);
   return optional.includes(fieldName);
 };
 
 /**
  * Check if a field is required for a country
- * @param {string} countryCode - ISO country code
- * @param {string} fieldName - Field name to check
- * @returns {boolean} True if field is required
  */
-export const isRequiredField = (countryCode, fieldName) => {
+export const isRequiredField = (countryCode: string, fieldName: string): boolean => {
   const metadata = getAddressMetadata(countryCode);
   return metadata.required.includes(fieldName);
 };
 
 /**
  * Get country code from country name
- * @param {string} countryName - Full country name
- * @returns {string} ISO country code
  */
-export const getCountryCode = (countryName) => {
+export const getCountryCode = (countryName: string): string | null => {
   return COUNTRY_CODE_MAPPINGS[countryName] || null;
 };
 

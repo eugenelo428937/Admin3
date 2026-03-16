@@ -3,8 +3,8 @@ import {
   Box, Typography, Button, Alert, Divider,
 } from "@mui/material";
 import { Home, Edit as EditIcon } from "@mui/icons-material";
-import SmartAddressInput from "../../Address/SmartAddressInput.js";
-import DynamicAddressForm from "../../Address/DynamicAddressForm.js";
+import SmartAddressInput from "../../Address/SmartAddressInput.tsx";
+import DynamicAddressForm from "../../Address/DynamicAddressForm.tsx";
 import { useTheme } from "@mui/material/styles";
 import type { WizardMode, WizardStepData, WizardValidationErrors } from "../../../types/auth";
 

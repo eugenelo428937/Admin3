@@ -3,8 +3,8 @@ import {
   Box, Typography, TextField, Grid, Button, Alert, Divider,
 } from "@mui/material";
 import { Business, Add, Remove, Edit as EditIcon } from "@mui/icons-material";
-import SmartAddressInput from "../../Address/SmartAddressInput.js";
-import DynamicAddressForm from "../../Address/DynamicAddressForm.js";
+import SmartAddressInput from "../../Address/SmartAddressInput.tsx";
+import DynamicAddressForm from "../../Address/DynamicAddressForm.tsx";
 import ValidatedPhoneInput from "../ValidatedPhoneInput.tsx";
 import config from "../../../config.js";
 import { useTheme } from "@mui/material/styles";
