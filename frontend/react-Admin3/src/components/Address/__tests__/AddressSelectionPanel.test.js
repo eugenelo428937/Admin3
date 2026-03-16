@@ -3,12 +3,12 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AddressSelectionPanel from '../AddressSelectionPanel.js';
+import AddressSelectionPanel from '../AddressSelectionPanel.tsx';
 
 import appTheme from '../../../theme';
 // Mock AddressEditModal - capture props for verification
 let capturedModalProps = {};
-vi.mock('../AddressEditModal.js', () => ({
+vi.mock('../AddressEditModal.tsx', () => ({
   __esModule: true,
   default: function MockAddressEditModal({ open, onClose, onAddressUpdate, selectedAddressType, addressType }) {
     // Capture props for test verification
@@ -30,7 +30,7 @@ vi.mock('../AddressEditModal.js', () => ({
 }));
 
 // Mock DynamicAddressForm
-vi.mock('../DynamicAddressForm.js', () => ({
+vi.mock('../DynamicAddressForm.tsx', () => ({
   __esModule: true,
   default: function MockDynamicAddressForm({ address }) {
     return <div data-testid="dynamic-address-form">{JSON.stringify(address)}</div>;

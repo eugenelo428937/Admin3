@@ -8,7 +8,7 @@ import {
   Box
 } from '@mui/material';
 import { LocationOn, Receipt } from '@mui/icons-material';
-import AddressSelectionPanel from '../../Address/AddressSelectionPanel.js';
+import AddressSelectionPanel from '../../Address/AddressSelectionPanel.tsx';
 import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel.js';
 import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert.js';
 
