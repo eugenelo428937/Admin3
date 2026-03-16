@@ -5,7 +5,7 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MainNavActions from '../MainNavActions.tsx';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

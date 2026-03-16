@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import Footer from '../Footer.js';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import productService from '../../../services/productService.js';
 import filtersReducer from '../../../store/slices/filtersSlice.js';
 
