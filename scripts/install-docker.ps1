@@ -1,4 +1,8 @@
 #Requires -RunAsAdministrator
+param(
+    [ValidateRange(1,7)]
+    [int]$StartPhase = 1
+)
 <#
 .SYNOPSIS
     Set up WSL2 with Docker Engine for running Linux containers on Windows 11.
@@ -16,11 +20,20 @@
       Phase 7: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
 
     Run this script multiple times safely -- it detects completed phases.
+    Use -StartPhase to skip to a specific phase (e.g., -StartPhase 3).
 
     WHY WSL2 + Docker Engine (not Docker Desktop):
       Docker Desktop requires a paid license for enterprise/commercial use.
       WSL2 with Docker Engine is free, lightweight, and fully supported on Windows 11.
       No Hyper-V VM management overhead -- WSL2 handles the Linux kernel natively.
+
+.PARAMETER StartPhase
+    Phase number (1-7) to start from. Phases before this number are skipped.
+    Default: 1 (run all phases).
+
+.EXAMPLE
+    .\install-docker.ps1 -StartPhase 3
+    Skips phases 1-2, starts from WSL2 configuration.
 
 .NOTES
     - Must be run as Administrator
@@ -36,6 +49,10 @@ $ErrorActionPreference = 'Stop'
 
 $WSLDistro = "Ubuntu"
 
+# User profile where .wslconfig will be installed
+# This is the Windows user who will run WSL (not necessarily the admin running this script)
+$WSLUserProfile = "C:\Users\elo"
+
 # Ports to forward from host to WSL2 (for external network access)
 $DockerPorts = @(
     @{ HostPort = 8080;  Description = "HTTP (nginx)" },
@@ -49,6 +66,8 @@ $WSLSwap       = "2GB"
 
 # Manual install (when Microsoft Store is blocked)
 $UbuntuDownloadUrl = "https://aka.ms/wslubuntu2204"
+$DockerSetupDir    = "C:\Temp\Docker Setup"            # Working directory for install artifacts
+$LocalAppxBundle   = Join-Path $DockerSetupDir "Ubuntu2204.appxbundle"  # Pre-downloaded appxbundle
 $WSLInstallDir     = Join-Path $env:LOCALAPPDATA "WSL\Ubuntu"
 
 # ============================================================
@@ -78,7 +97,11 @@ function Write-Fail($message) {
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host " Admin3 Staging -- WSL2 Docker Setup" -ForegroundColor Cyan
 Write-Host " Windows 11" -ForegroundColor Cyan
-Write-Host "========================================`n" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+if ($StartPhase -gt 1) {
+    Write-Host " Skipping to Phase $StartPhase" -ForegroundColor Yellow
+}
+Write-Host ""
 
 # ============================================================
 # PRE-FLIGHT: Windows Version Check
@@ -136,7 +159,9 @@ Write-Host "  Docker Engine:    $(if ($dockerInstalled) { 'Installed' } else { '
 # PHASE 1: Enable WSL2 Features
 # ============================================================
 
-if (-not $wslEnabled -or -not $vmEnabled) {
+if ($StartPhase -gt 1) {
+    Write-Step "PHASE 1" "Skipped (--StartPhase $StartPhase)"
+} elseif (-not $wslEnabled -or -not $vmEnabled) {
     Write-Step "PHASE 1" "Enabling WSL2 features"
 
     $rebootNeeded = $false
@@ -181,6 +206,10 @@ if (-not $wslEnabled -or -not $vmEnabled) {
 # PHASE 2: Install WSL2 and Ubuntu Distro
 # ============================================================
 
+if ($StartPhase -gt 2) {
+    Write-Step "PHASE 2" "Skipped (--StartPhase $StartPhase)"
+} else {
+
 Write-Step "PHASE 2" "Installing WSL2 and Ubuntu distro"
 
 # Set WSL2 as default version
@@ -188,10 +217,29 @@ Write-Step "2a" "Setting WSL2 as default version..."
 wsl --set-default-version 2 2>&1 | Out-Null
 Write-OK "WSL2 set as default"
 
-# Update WSL to latest
+# Update WSL to latest (Store version required for systemd support)
 Write-Step "2b" "Updating WSL to latest version..."
+$savedEAP2 = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
 wsl --update 2>&1 | Out-Null
-Write-OK "WSL updated"
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Store update failed -- trying web download..."
+    wsl --update --web-download 2>&1 | Out-Null
+}
+$ErrorActionPreference = $savedEAP2
+
+# Verify WSL version supports systemd
+$wslVer = (wsl --version 2>&1 | Out-String).Trim()
+if ($wslVer -match 'WSL.*?:\s*([\d\.]+)') {
+    Write-OK "WSL updated to $($Matches[1])"
+} elseif ($wslVer -match 'Invalid') {
+    Write-Fail "WSL is still the old inbox version (systemd not supported)"
+    Write-Host "  Run manually: wsl --update --web-download" -ForegroundColor Cyan
+    Write-Host "  Then re-run this script." -ForegroundColor Gray
+    exit 1
+} else {
+    Write-OK "WSL updated"
+}
 
 if (-not $distroInstalled) {
     Write-Step "2c" "Installing Ubuntu distro..."
@@ -216,23 +264,30 @@ if (-not $distroInstalled) {
         exit 0
     }
 
-    # ── Strategy 2: Download appxbundle and sideload ──
-    Write-Warn "Microsoft Store appears blocked. Downloading Ubuntu manually..."
-    $downloadPath = Join-Path $env:TEMP "Ubuntu2204.appxbundle"
+    # ── Strategy 2: Use local or download appxbundle, then sideload ──
+    Write-Warn "Microsoft Store appears blocked. Installing Ubuntu from appxbundle..."
+    $downloadPath = $LocalAppxBundle
 
-    Write-Step "2c-i" "Downloading Ubuntu 22.04 LTS (~500MB)..."
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $oldProgress = $ProgressPreference
-        $ProgressPreference = 'SilentlyContinue'  # speeds up Invoke-WebRequest
-        Invoke-WebRequest -Uri $UbuntuDownloadUrl -OutFile $downloadPath -UseBasicParsing
-        $ProgressPreference = $oldProgress
-        $sizeMB = [math]::Round((Get-Item $downloadPath).Length / 1MB)
-        Write-OK "Downloaded ($sizeMB MB)"
-    } catch {
-        Write-Fail "Download failed: $($_.Exception.Message)"
-        Write-Host "  Try downloading manually from: $UbuntuDownloadUrl" -ForegroundColor Gray
-        exit 1
+    if (Test-Path $LocalAppxBundle) {
+        $sizeMB = [math]::Round((Get-Item $LocalAppxBundle).Length / 1MB)
+        Write-OK "Using pre-downloaded appxbundle: $LocalAppxBundle ($sizeMB MB)"
+    } else {
+        Write-Step "2c-i" "Local appxbundle not found at $LocalAppxBundle. Downloading Ubuntu 22.04 LTS (~500MB)..."
+        if (-not (Test-Path $DockerSetupDir)) { New-Item -ItemType Directory -Path $DockerSetupDir -Force | Out-Null }
+        $downloadPath = Join-Path $DockerSetupDir "Ubuntu2204.appxbundle"
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            $oldProgress = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'  # speeds up Invoke-WebRequest
+            Invoke-WebRequest -Uri $UbuntuDownloadUrl -OutFile $downloadPath -UseBasicParsing
+            $ProgressPreference = $oldProgress
+            $sizeMB = [math]::Round((Get-Item $downloadPath).Length / 1MB)
+            Write-OK "Downloaded ($sizeMB MB)"
+        } catch {
+            Write-Fail "Download failed: $($_.Exception.Message)"
+            Write-Host "  Try downloading manually to: $LocalAppxBundle" -ForegroundColor Gray
+            exit 1
+        }
     }
 
     Write-Step "2c-ii" "Attempting sideload via Add-AppxPackage..."
@@ -244,7 +299,6 @@ if (-not $distroInstalled) {
         if ($postSideload -match $WSLDistro) {
             $sideloadOK = $true
             Write-OK "Ubuntu installed via sideload"
-            Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
             Write-Host ""
             Write-Host "  ========================================" -ForegroundColor Yellow
             Write-Host "  UBUNTU FIRST-TIME SETUP" -ForegroundColor Yellow
@@ -261,93 +315,99 @@ if (-not $distroInstalled) {
 
     if (-not $sideloadOK) {
         # ── Strategy 3: Extract rootfs from appxbundle and wsl --import ──
-        Write-Step "2c-iii" "Extracting rootfs from appxbundle..."
+        # Write-Step "2c-iii" "Extracting rootfs from appxbundle..."
 
-        $extractPath = Join-Path $env:TEMP "Ubuntu2204-extract"
-        $zipPath     = Join-Path $env:TEMP "Ubuntu2204.zip"
+         $extractPath = Join-Path $DockerSetupDir "Ubuntu2204-extract"
+         $zipPath     = Join-Path $DockerSetupDir "Ubuntu2204.zip"
 
-        # Clean up any previous extraction
-        if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
+        # # Clean up any previous extraction
+        # if (Test-Path $extractPath) { Remove-Item -LiteralPath $extractPath -Recurse -Force -ErrorAction SilentlyContinue }
 
-        # appxbundle is a zip -- rename and extract
-        Copy-Item $downloadPath $zipPath -Force
-        Expand-Archive $zipPath $extractPath -Force
+        # # appxbundle is a zip -- rename and extract
+        # Copy-Item $downloadPath $zipPath -Force
+        # Expand-Archive $zipPath $extractPath -Force
 
-        # Find the x64 appx inside the bundle
-        $x64Appx = Get-ChildItem $extractPath -Filter "*.appx" | Where-Object {
-            $_.Name -match 'x64|amd64'
-        } | Select-Object -First 1
+        # # Find the x64 appx inside the bundle
+        # $x64Appx = Get-ChildItem $extractPath -Filter "*.appx" | Where-Object {
+        #     $_.Name -match 'x64|amd64'
+        # } | Select-Object -First 1
 
-        if (-not $x64Appx) {
-            # Some bundles have a single .appx without arch in the name
-            $x64Appx = Get-ChildItem $extractPath -Filter "Ubuntu*.appx" | Select-Object -First 1
-        }
+        # if (-not $x64Appx) {
+        #     # Some bundles have a single .appx without arch in the name
+        #     $x64Appx = Get-ChildItem $extractPath -Filter "Ubuntu*.appx" | Select-Object -First 1
+        # }
 
-        if (-not $x64Appx) {
-            Write-Fail "Could not find x64 .appx inside the bundle"
-            Write-Host "  Contents of $extractPath`:" -ForegroundColor Gray
-            Get-ChildItem $extractPath | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
-            exit 1
-        }
+        # if (-not $x64Appx) {
+        #     Write-Fail "Could not find x64 .appx inside the bundle"
+        #     Write-Host "  Contents of $extractPath`:" -ForegroundColor Gray
+        #     Get-ChildItem $extractPath | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
+        #     exit 1
+        # }
 
-        Write-OK "Found: $($x64Appx.Name)"
+        # Write-OK "Found: $($x64Appx.Name)"
 
-        # The .appx is also a zip -- extract to find install.tar.gz (the rootfs)
-        $appxExtract = Join-Path $extractPath "appx-content"
-        $appxZip     = Join-Path $extractPath "ubuntu-appx.zip"
-        Copy-Item $x64Appx.FullName $appxZip -Force
-        Expand-Archive $appxZip $appxExtract -Force
+        # # The .appx is also a zip -- extract to find install.tar.gz (the rootfs)
+        # $appxExtract = Join-Path $extractPath "appx-content"
+        # $appxZip     = Join-Path $extractPath "ubuntu-appx.zip"
+        # Copy-Item $x64Appx.FullName $appxZip -Force
+        # Expand-Archive $appxZip $appxExtract -Force
 
-        $rootfs = Get-ChildItem $appxExtract -Filter "install.tar*" | Select-Object -First 1
-        if (-not $rootfs) {
-            Write-Fail "Could not find rootfs tarball (install.tar*) inside .appx"
-            Write-Host "  Contents of appx:" -ForegroundColor Gray
-            Get-ChildItem $appxExtract | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
-            exit 1
-        }
+        # $rootfs = Get-ChildItem $appxExtract -Filter "install.tar*" | Select-Object -First 1
+        # if (-not $rootfs) {
+        #     Write-Fail "Could not find rootfs tarball (install.tar*) inside .appx"
+        #     Write-Host "  Contents of appx:" -ForegroundColor Gray
+        #     Get-ChildItem $appxExtract | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
+        #     exit 1
+        # }
 
-        Write-OK "Found rootfs: $($rootfs.Name)"
+        # Write-OK "Found rootfs: $($rootfs.Name)"
 
-        # Create install directory
-        if (-not (Test-Path $WSLInstallDir)) {
-            New-Item -ItemType Directory -Path $WSLInstallDir -Force | Out-Null
-        }
+        # # Create install directory
+        # if (-not (Test-Path $WSLInstallDir)) {
+        #     New-Item -ItemType Directory -Path $WSLInstallDir -Force | Out-Null
+        # }
 
-        # Import into WSL2
-        Write-Step "2c-iv" "Importing Ubuntu into WSL2..."
-        wsl --import $WSLDistro $WSLInstallDir $rootfs.FullName --version 2 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Fail "wsl --import failed"
-            exit 1
-        }
-        Write-OK "Ubuntu imported into WSL2 at $WSLInstallDir"
+        # # Import into WSL2
+        # Write-Step "2c-iv" "Importing Ubuntu into WSL2..."
+        # wsl --import $WSLDistro $WSLInstallDir $rootfs.FullName --version 2 2>&1
+        # if ($LASTEXITCODE -ne 0) {
+        #     Write-Fail "wsl --import failed"
+        #     exit 1
+        # }
+        # Write-OK "Ubuntu imported into WSL2 at $WSLInstallDir"
 
-        # Create a non-root default user
-        Write-Step "2c-v" "Creating Ubuntu user..."
-        $wslUser = Read-Host "  Enter a username for Ubuntu (default: admin)"
-        if (-not $wslUser -or $wslUser.Trim() -eq '') { $wslUser = "admin" }
+        # # Create a non-root default user
+        # Write-Step "2c-v" "Creating Ubuntu user..."
+        # $wslUser = Read-Host "  Enter a username for Ubuntu (default: admin)"
+        # if (-not $wslUser -or $wslUser.Trim() -eq '') { $wslUser = "admin" }
 
-        wsl -d $WSLDistro -e bash -c "useradd -m -s /bin/bash $wslUser 2>/dev/null" 2>&1 | Out-Null
-        wsl -d $WSLDistro -e bash -c "usermod -aG sudo $wslUser" 2>&1 | Out-Null
-        wsl -d $WSLDistro -e bash -c "echo '$wslUser ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$wslUser && chmod 440 /etc/sudoers.d/$wslUser" 2>&1 | Out-Null
-        Write-OK "User '$wslUser' created with sudo access"
+        # wsl -d $WSLDistro -e bash -c "useradd -m -s /bin/bash $wslUser 2>/dev/null" 2>&1 | Out-Null
+        # wsl -d $WSLDistro -e bash -c "usermod -aG sudo $wslUser" 2>&1 | Out-Null
+        # wsl -d $WSLDistro -e bash -c "echo '$wslUser ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$wslUser && chmod 440 /etc/sudoers.d/$wslUser" 2>&1 | Out-Null
+        # Write-OK "User '$wslUser' created with sudo access"
 
-        Write-Host ""
-        Write-Host "  Set a password for '$wslUser':" -ForegroundColor Yellow
-        wsl -d $WSLDistro -e passwd $wslUser
+        # Write-Host ""
+        # Write-Host "  Set a password for '$wslUser':" -ForegroundColor Yellow
+        # wsl -d $WSLDistro -e passwd $wslUser
 
-        # Write /etc/wsl.conf with default user and systemd
-        wsl -d $WSLDistro -e bash -c "cat > /etc/wsl.conf << 'WSLEOF'
-[user]
-default=$wslUser
-
-[boot]
-systemd=true
-
-[interop]
-enabled=true
-appendWindowsPath=true
-WSLEOF" 2>&1 | Out-Null
+        # Write /etc/wsl.conf via staging file + /mnt/c/ copy
+        # Uses .NET WriteAllLines to avoid UTF-8 BOM (BOM breaks WSL config parser)
+        $wslUser = "actedadmin"
+        $wslConfStaging = Join-Path $DockerSetupDir "wsl.conf"
+        [System.IO.File]::WriteAllLines($wslConfStaging, @(
+            "[user]",
+            "default=$wslUser",
+            "",
+            "[boot]",
+            "systemd=true",
+            "",
+            "[interop]",
+            "enabled=true",
+            "appendWindowsPath=true"
+        ))
+        # Convert Windows path to WSL /mnt/ path (e.g., C:\Temp\Docker Setup\wsl.conf -> /mnt/c/Temp/Docker Setup/wsl.conf)
+        $wslMntPath = ($wslConfStaging -replace '\\','/') -replace '^([A-Za-z]):', { '/mnt/' + $_.Groups[1].Value.ToLower() }
+        wsl -d $WSLDistro -e bash -c "sudo cp '$wslMntPath' /etc/wsl.conf" 2>&1 | Out-Null
         Write-OK "Configured /etc/wsl.conf (default user + systemd)"
 
         # Restart WSL for wsl.conf to take effect
@@ -358,10 +418,9 @@ WSLEOF" 2>&1 | Out-Null
         Start-Sleep -Seconds 2
         Write-OK "WSL restarted"
 
-        # Clean up temp files
-        Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
-        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-        Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
+        # Clean up temp extraction files (keep the appxbundle)
+        Remove-Item -LiteralPath $zipPath -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $extractPath -Recurse -Force -ErrorAction SilentlyContinue
 
         # Update state so subsequent phases proceed
         $distroInstalled = $true
@@ -398,10 +457,16 @@ WSLEOF" 2>&1 | Out-Null
     }
 }
 
+} # end Phase 2 skip guard
+
 
 # ============================================================
 # PHASE 3: Configure WSL2 (systemd, memory, networking)
 # ============================================================
+
+if ($StartPhase -gt 3) {
+    Write-Step "PHASE 3" "Skipped (--StartPhase $StartPhase)"
+} else {
 
 Write-Step "PHASE 3" "Configuring WSL2"
 
@@ -412,15 +477,18 @@ $hasSystemd = ($wslConf | Out-String) -match 'systemd\s*=\s*true'
 
 if (-not $hasSystemd) {
     Write-Host "  Enabling systemd in /etc/wsl.conf..." -ForegroundColor Gray
-    # Write wsl.conf with systemd enabled
-    wsl -d $WSLDistro -e bash -c "sudo bash -c 'cat > /etc/wsl.conf << WSLEOF
-[boot]
-systemd=true
-
-[interop]
-enabled=true
-appendWindowsPath=true
-WSLEOF'" 2>&1 | Out-Null
+    # Write wsl.conf via staging file + /mnt/c/ copy (avoids UNC permission + printf escaping issues)
+    $wslConfStaging = Join-Path $DockerSetupDir "wsl.conf"
+    [System.IO.File]::WriteAllLines($wslConfStaging, @(
+        "[boot]",
+        "systemd=true",
+        "",
+        "[interop]",
+        "enabled=true",
+        "appendWindowsPath=true"
+    ))
+    $wslMntPath = ($wslConfStaging -replace '\\','/') -replace '^([A-Za-z]):', { '/mnt/' + $_.Groups[1].Value.ToLower() }
+    wsl -d $WSLDistro -e bash -c "sudo cp '$wslMntPath' /etc/wsl.conf" 2>&1 | Out-Null
 
     Write-OK "systemd enabled -- restarting WSL..."
     wsl --shutdown 2>&1 | Out-Null
@@ -435,7 +503,8 @@ WSLEOF'" 2>&1 | Out-Null
 
 # 3b: Configure .wslconfig for resource limits
 Write-Step "3b" "Configuring WSL2 resource limits..."
-$wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+$wslConfigPath = Join-Path $WSLUserProfile ".wslconfig"
+$wslConfigStaging = Join-Path $DockerSetupDir ".wslconfig"
 $needsUpdate = $false
 
 if (Test-Path $wslConfigPath) {
@@ -465,9 +534,13 @@ swap=$WSLSwap
 networkingMode=$networkingMode
 "@
 
-    Set-Content -Path $wslConfigPath -Value $configContent -Encoding UTF8
-    Write-OK "Created .wslconfig: memory=$WSLMemory, processors=$WSLProcessors, networking=$networkingMode"
-    Write-Host "  Location: $wslConfigPath" -ForegroundColor Gray
+    # Write to staging dir first, then copy to user profile
+    if (-not (Test-Path $DockerSetupDir)) { New-Item -ItemType Directory -Path $DockerSetupDir -Force | Out-Null }
+    [System.IO.File]::WriteAllText($wslConfigStaging, $configContent)
+    Write-OK "Created .wslconfig in staging: $wslConfigStaging"
+    Copy-Item -Path $wslConfigStaging -Destination $wslConfigPath -Force
+    Write-OK "Copied to: $wslConfigPath"
+    Write-Host "  memory=$WSLMemory, processors=$WSLProcessors, networking=$networkingMode" -ForegroundColor Gray
 
     if ($networkingMode -eq 'mirrored') {
         Write-OK "Mirrored networking enabled -- WSL2 shares the host IP (no portproxy needed)"
@@ -490,10 +563,20 @@ networkingMode=$networkingMode
     }
 }
 
+} # end Phase 3 skip guard
+
 
 # ============================================================
 # PHASE 4: Install Docker Engine in WSL2 Ubuntu
 # ============================================================
+
+if ($StartPhase -gt 4) {
+    Write-Step "PHASE 4" "Skipped (--StartPhase $StartPhase)"
+} else {
+
+# WSL commands in Phase 4 write status/progress to stderr; relax error preference for the whole phase
+$savedEAP = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
 
 Write-Step "PHASE 4" "Installing Docker Engine in WSL2 Ubuntu"
 
@@ -554,28 +637,63 @@ if (-not $dockerInstalled) {
     $dockerVer = wsl -d $WSLDistro -e bash -c "docker --version" 2>&1
     Write-Host "  Version: $($dockerVer.Trim())" -ForegroundColor Gray
 
-    # Ensure Docker service is running
-    $dockerStatus = wsl -d $WSLDistro -e bash -c "systemctl is-active docker 2>/dev/null" 2>&1
-    if ($dockerStatus.Trim() -eq 'active') {
-        Write-OK "Docker service is running"
+    # Check if systemd is running as PID 1
+    $initPid = (wsl -d $WSLDistro -e bash -c "ps -p 1 -o comm= 2>/dev/null" 2>&1 | Out-String).Trim()
+    if ($initPid -ne 'systemd') {
+        Write-Warn "systemd is not running as PID 1 (got: '$initPid') -- restarting WSL..."
+        wsl --shutdown 2>&1 | Out-Null
+        Start-Sleep -Seconds 3
+        wsl -d $WSLDistro -e bash -c "echo WSL restarted" 2>&1 | Out-Null
+        Start-Sleep -Seconds 2
+        $initPid = (wsl -d $WSLDistro -e bash -c "ps -p 1 -o comm= 2>/dev/null" 2>&1 | Out-String).Trim()
+        if ($initPid -eq 'systemd') {
+            Write-OK "WSL restarted with systemd"
+        } else {
+            Write-Fail "systemd still not running after restart. Check /etc/wsl.conf has [boot] systemd=true"
+            Write-Host "  Verify: wsl -d Ubuntu -e cat /etc/wsl.conf" -ForegroundColor Gray
+        }
     } else {
+        Write-OK "systemd running as PID 1"
+    }
+
+    # Ensure Docker service is running
+    $dockerStatus = (wsl -d $WSLDistro -e bash -c "systemctl is-active docker 2>/dev/null" 2>&1 | Out-String).Trim()
+    if ($dockerStatus -eq 'active') {
+        Write-OK "Docker service is running"
+    } elseif ($initPid -eq 'systemd') {
         Write-Warn "Docker service is not running -- starting..."
-        wsl -d $WSLDistro -e bash -c "sudo systemctl start docker" 2>&1 | Out-Null
-        Write-OK "Docker service started"
+        wsl -d $WSLDistro -e bash -c "sudo systemctl enable docker && sudo systemctl start docker" 2>&1 | Out-Null
+        Start-Sleep -Seconds 3
+        $dockerStatus = (wsl -d $WSLDistro -e bash -c "systemctl is-active docker 2>/dev/null" 2>&1 | Out-String).Trim()
+        if ($dockerStatus -eq 'active') {
+            Write-OK "Docker service started"
+        } else {
+            Write-Warn "Docker service may not have started. Check: wsl -d Ubuntu -e sudo systemctl status docker"
+        }
+    } else {
+        Write-Warn "Cannot start Docker without systemd. Fix systemd first, then re-run with -StartPhase 4"
     }
 }
+
+$ErrorActionPreference = $savedEAP
+
+} # end Phase 4 skip guard
 
 
 # ============================================================
 # PHASE 5: Port Forwarding for External Access
 # ============================================================
 
+if ($StartPhase -gt 5) {
+    Write-Step "PHASE 5" "Skipped (--StartPhase $StartPhase)"
+} else {
+
 Write-Step "PHASE 5" "Configuring port forwarding for external access"
 Write-Host "  Docker ports in WSL2 are accessible on localhost automatically." -ForegroundColor Gray
 Write-Host "  Port forwarding is only needed for access from other machines." -ForegroundColor Gray
 
 # Check if mirrored networking is active
-$wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+$wslConfigPath = Join-Path $WSLUserProfile ".wslconfig"
 $mirroredActive = $false
 if (Test-Path $wslConfigPath) {
     $cfgContent = Get-Content $wslConfigPath -Raw
@@ -653,10 +771,16 @@ if ($mirroredActive) {
     }
 }
 
+} # end Phase 5 skip guard
+
 
 # ============================================================
 # PHASE 6: Port Conflict Check
 # ============================================================
+
+if ($StartPhase -gt 6) {
+    Write-Step "PHASE 6" "Skipped (--StartPhase $StartPhase)"
+} else {
 
 Write-Step "PHASE 6" "Checking port conflicts on host"
 foreach ($pf in $DockerPorts) {
@@ -670,6 +794,8 @@ foreach ($pf in $DockerPorts) {
         Write-OK "Port $($pf.HostPort) available ($($pf.Description))"
     }
 }
+
+} # end Phase 6 skip guard
 
 
 # ============================================================
@@ -870,7 +996,7 @@ Write-Host "    localhost:8080  -- HTTP  (nginx)" -ForegroundColor Gray
 Write-Host "    localhost:8443  -- HTTPS (nginx)" -ForegroundColor Gray
 Write-Host ""
 Write-Host "  Files:" -ForegroundColor White
-Write-Host "    WSL config:    $env:USERPROFILE\.wslconfig" -ForegroundColor Gray
+Write-Host "    WSL config:    $WSLUserProfile\.wslconfig" -ForegroundColor Gray
 Write-Host "    WSL distro:    \\wsl$\Ubuntu\home\" -ForegroundColor Gray
 Write-Host "    Admin3 repo:   \\wsl$\Ubuntu\home\USER\Admin3\" -ForegroundColor Gray
 Write-Host ""
