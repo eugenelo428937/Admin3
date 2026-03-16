@@ -7,7 +7,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const mockActivateAccount = vi.fn();
-vi.mock('../../../services/authService.js', () => ({
+vi.mock('../../../services/authService.ts', () => ({
   __esModule: true,
   default: { activateAccount: (...args: any[]) => mockActivateAccount(...args) },
 }));

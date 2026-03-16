@@ -3,11 +3,11 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import PersonalInfoStep from '../User/steps/PersonalInfoStep.js';
+import PersonalInfoStep from '../User/steps/PersonalInfoStep.tsx';
 
 import appTheme from '../../theme';
 // Mock ValidatedPhoneInput to avoid complex phone validation in tests
-vi.mock('../User/ValidatedPhoneInput.js', () => ({
+vi.mock('../User/ValidatedPhoneInput.tsx', () => ({
   __esModule: true,
   default: function MockValidatedPhoneInput({ name, value, onChange, label }) {
     return (

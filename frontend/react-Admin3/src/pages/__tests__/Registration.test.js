@@ -31,12 +31,12 @@ vi.mock('react-router-dom', () => ({
 
 // Mock useAuth hook
 const mockUseAuth = vi.fn();
-vi.mock('../../hooks/useAuth.js', () => ({
+vi.mock('../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-vi.mock('../../components/User/UserFormWizard.js', () => ({
+vi.mock('../../components/User/UserFormWizard.tsx', () => ({
   __esModule: true,
   default: function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
     return (

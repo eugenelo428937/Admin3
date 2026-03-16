@@ -238,7 +238,7 @@ vi.mock('./services/cartService.js', () => ({
   },
 }));
 
-vi.mock('./services/authService.js', () => ({
+vi.mock('./services/authService.ts', () => ({
   __esModule: true,
   default: {
     login: vi.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),

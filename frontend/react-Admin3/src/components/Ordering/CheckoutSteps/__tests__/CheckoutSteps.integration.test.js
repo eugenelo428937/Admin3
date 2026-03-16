@@ -43,7 +43,7 @@ vi.mock('../../../../contexts/CartContext.js', () => ({
 }));
 
 // Mock the auth hook
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     user: null,
     isAuthenticated: false,
@@ -69,7 +69,7 @@ vi.mock('../../../../config.js', () => ({
   },
 }));
 
-vi.mock('../../../../services/userService.js', () => ({
+vi.mock('../../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getProfile: vi.fn().mockResolvedValue({ data: {} }),

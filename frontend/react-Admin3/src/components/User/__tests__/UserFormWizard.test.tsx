@@ -31,7 +31,7 @@ vi.mock('../../../config.js', () => ({
 
 // Mock authService
 const mockRegister = vi.fn();
-vi.mock('../../../services/authService.js', () => ({
+vi.mock('../../../services/authService.ts', () => ({
   __esModule: true,
   default: {
     register: (...args: any[]) => mockRegister(...args),
@@ -39,7 +39,7 @@ vi.mock('../../../services/authService.js', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getUserProfile: vi.fn().mockResolvedValue({ status: 'error' }),
@@ -49,7 +49,7 @@ vi.mock('../../../services/userService.js', () => ({
 
 // Mock addressMetadataService - path is relative to the component being tested
 // The component imports from ../../services/addressMetadataService
-// From /src/components/User/UserFormWizard.js -> /src/services/addressMetadataService
+// From /src/components/User/UserFormWizard.tsx -> /src/services/addressMetadataService
 // From test at /src/components/User/__tests__/ -> need ../../../services/addressMetadataService
 vi.mock('../../../services/addressMetadataService.js', () => {
   const mockGetCountryCode = vi.fn(() => 'GB');
@@ -78,7 +78,7 @@ vi.mock('../../../services/addressMetadataService.js', () => {
 });
 
 // Mock ValidatedPhoneInput
-vi.mock('../ValidatedPhoneInput.js', () => ({
+vi.mock('../ValidatedPhoneInput.tsx', () => ({
   __esModule: true,
   default: function MockValidatedPhoneInput({
     name,

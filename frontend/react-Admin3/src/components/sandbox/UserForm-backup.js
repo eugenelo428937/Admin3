@@ -26,9 +26,9 @@ import {
    Autocomplete,
 } from "@mui/material";
 import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
-import authService from "../../services/authService.js";
+import authService from "../../services/authService.ts";
 import config from '../../config.js';
-import ValidatedPhoneInput from "../User/ValidatedPhoneInput.js";
+import ValidatedPhoneInput from "../User/ValidatedPhoneInput.tsx";
 import SmartAddressInput from "../Address/SmartAddressInput.js";
 import addressMetadataService from "../../services/addressMetadataService.js";
 import { useTheme } from "@mui/material/styles";

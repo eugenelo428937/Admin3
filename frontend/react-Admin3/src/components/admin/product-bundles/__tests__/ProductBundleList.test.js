@@ -7,12 +7,12 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminProductBundleList from '../ProductBundleList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock catalogBundleService
 vi.mock('../../../../services/catalogBundleService.js', () => ({

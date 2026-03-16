@@ -23,12 +23,12 @@ vi.mock('./pages/Registration.js', () => ({ __esModule: true, default: () => <di
 vi.mock('./components/Navigation/MainNavBar.js', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
 vi.mock('./components/Product/ProductList.js', () => ({ __esModule: true, default: () => <div data-testid="product-list">Products</div> }));
 vi.mock('./components/Ordering/CheckoutPage.js', () => ({ __esModule: true, default: () => <div data-testid="checkout-page">Checkout</div> }));
-vi.mock('./components/User/OrderHistory.js', () => ({ __esModule: true, default: () => <div data-testid="order-history">Orders</div> }));
-vi.mock('./components/User/ForgotPasswordForm.js', () => ({ __esModule: true, default: () => <div data-testid="forgot-password">Forgot Password</div> }));
-vi.mock('./components/User/ResetPasswordForm.js', () => ({ __esModule: true, default: () => <div data-testid="reset-password">Reset Password</div> }));
-vi.mock('./components/User/AccountActivation.js', () => ({ __esModule: true, default: () => <div data-testid="account-activation">Activation</div> }));
-vi.mock('./components/User/ResendActivation.js', () => ({ __esModule: true, default: () => <div data-testid="resend-activation">Resend</div> }));
-vi.mock('./components/User/EmailVerification.js', () => ({ __esModule: true, default: () => <div data-testid="email-verification">Email Verify</div> }));
+vi.mock('./components/User/OrderHistory.tsx', () => ({ __esModule: true, default: () => <div data-testid="order-history">Orders</div> }));
+vi.mock('./components/User/ForgotPasswordForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="forgot-password">Forgot Password</div> }));
+vi.mock('./components/User/ResetPasswordForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="reset-password">Reset Password</div> }));
+vi.mock('./components/User/AccountActivation.tsx', () => ({ __esModule: true, default: () => <div data-testid="account-activation">Activation</div> }));
+vi.mock('./components/User/ResendActivation.tsx', () => ({ __esModule: true, default: () => <div data-testid="resend-activation">Resend</div> }));
+vi.mock('./components/User/EmailVerification.tsx', () => ({ __esModule: true, default: () => <div data-testid="email-verification">Email Verify</div> }));
 vi.mock('./pages/StyleGuide.js', () => ({ __esModule: true, default: () => <div data-testid="styleguide">Style Guide</div> }));
 vi.mock('./components/NoMatch.js', () => ({ __esModule: true, default: () => <div data-testid="no-match">404 Not Found</div> }));
 vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js', () => ({ __esModule: true, default: () => null }));

@@ -5,7 +5,7 @@ import {
 import { Business, Add, Remove, Edit as EditIcon } from "@mui/icons-material";
 import SmartAddressInput from "../../Address/SmartAddressInput.js";
 import DynamicAddressForm from "../../Address/DynamicAddressForm.js";
-import ValidatedPhoneInput from "../ValidatedPhoneInput.js";
+import ValidatedPhoneInput from "../ValidatedPhoneInput.tsx";
 import config from "../../../config.js";
 import { useTheme } from "@mui/material/styles";
 import type { WizardMode, WizardStepData, WizardValidationErrors } from "../../../types/auth";
