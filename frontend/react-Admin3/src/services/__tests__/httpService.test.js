@@ -33,7 +33,7 @@ vi.mock('axios', () => ({
 }));
 
 // Mock authService
-vi.mock('../authService.js', () => ({
+vi.mock('../authService.ts', () => ({
   __esModule: true,
   default: {
     refreshToken: mockAuthServiceRefreshToken,
@@ -61,7 +61,7 @@ vi.mock('../../config.js', () => ({
 }));
 
 import axios from 'axios';
-import authService from '../authService.js';
+import authService from '../authService.ts';
 
 describe('httpService', () => {
   let requestInterceptorFn;

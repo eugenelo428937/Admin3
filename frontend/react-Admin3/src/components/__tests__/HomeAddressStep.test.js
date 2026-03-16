@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import HomeAddressStep from '../User/steps/HomeAddressStep.js';
+import HomeAddressStep from '../User/steps/HomeAddressStep.tsx';
 
 import appTheme from '../../theme';
 vi.mock('../Address/SmartAddressInput.js', () => ({

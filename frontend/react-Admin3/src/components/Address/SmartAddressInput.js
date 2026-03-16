@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import CountryAutocomplete from '../User/CountryAutocomplete.js';
+import CountryAutocomplete from '../User/CountryAutocomplete.tsx';
 import DynamicAddressForm from './DynamicAddressForm.js';
 import addressMetadataService, { ADDRESS_METADATA } from '../../services/addressMetadataService.js';
 import config from '../../config.js';

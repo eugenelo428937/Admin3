@@ -1,6 +1,6 @@
 // src/components/TopNavBar.js
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../hooks/useAuth.tsx";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import
 {
@@ -10,7 +10,7 @@ import
    Download as DownloadIcon,
 } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext.js";
-import AuthModal from "./AuthModal.js";
+import AuthModal from "./AuthModal.tsx";
 import CartPanel from "../Ordering/CartPanel.js";
 import SearchModal from "./SearchModal.js";
 import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";

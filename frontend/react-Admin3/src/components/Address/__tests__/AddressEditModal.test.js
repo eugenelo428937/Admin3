@@ -6,12 +6,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import AddressEditModal from '../AddressEditModal.js';
 import theme from '../../../theme/theme.js';
-import userService from '../../../services/userService.js';
+import userService from '../../../services/userService.ts';
 import addressValidationService from '../../../services/addressValidationService.js';
 import addressMetadataService from '../../../services/addressMetadataService.js';
 
 // Mock userService
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     updateUserProfile: vi.fn(() => Promise.resolve({

@@ -24,7 +24,7 @@ let mockAuthState = {
   logout: vi.fn(),
 };
 
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockAuthState,
 }));
 

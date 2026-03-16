@@ -1,7 +1,7 @@
 // src/components/admin/products/ProductForm.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import {
   TextField, Button, Container, Alert, Box, Typography,
   FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress

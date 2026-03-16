@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import examSessionService from '../../../services/examSessionService';
 import type { ExamSession } from '../../../types/examSession';
 
