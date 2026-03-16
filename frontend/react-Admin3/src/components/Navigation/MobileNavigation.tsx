@@ -1,13 +1,11 @@
-// src/components/MobileNavigation.js
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.tsx";
-import { useConfig } from "../../contexts/ConfigContext.js";
-import { useCart } from "../../contexts/CartContext.tsx";
-import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
-import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from "@mui/material";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from '@mui/icons-material';
+import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from '@mui/material';
+import useMobileNavigationVM from './useMobileNavigationVM.ts';
+import type { MobileNavigationProps, NavigationSubject, NavigationProductGroup, TutorialFormat, TutorialOnlineClassroom, NavigationProduct } from '../../types/navigation';
 
-const MobileNavigation = ({
+const MobileNavigation: React.FC<MobileNavigationProps> = ({
 	open,
 	onClose,
 	subjects,
@@ -27,55 +25,16 @@ const MobileNavigation = ({
 	onOpenCart,
 	onOpenAuth,
 }) => {
-	const { isSuperuser, isApprentice, isStudyPlus, isAuthenticated } = useAuth();
-	const { cartCount } = useCart();
-	const navigate = useNavigate();
-	const theme = useTheme();
-
-	// Navigation state management
-	const [navigationStack, setNavigationStack] = useState([
-		{ type: "main", title: "Menu" },
-	]);
-
-	// Handle navigation and close mobile menu
-	const handleNavigation = (path, params = {}) => {
-		if (params && Object.keys(params).length > 0) {
-			const searchParams = new URLSearchParams(params);
-			navigate(`${path}?${searchParams.toString()}`);
-		} else {
-			navigate(path);
-		}
-		if (onClose) onClose(); // Close mobile menu
-	};
-
-	// Navigate to a new panel
-	const navigateToPanel = (panelType, title, data = null) => {
-		setNavigationStack((prev) => [...prev, { type: panelType, title, data }]);
-	};
-
-	// Navigate back one level
-	const navigateBack = () => {
-		if (navigationStack.length > 1) {
-			setNavigationStack((prev) => prev.slice(0, -1));
-		}
-	};
-
-	// Get current panel
-	const currentPanel = navigationStack[navigationStack.length - 1];
-
-	// Close navigation and reset stack
-	const closeNavigation = () => {
-		setNavigationStack([{ type: "main", title: "Menu" }]);
-		if (onClose) onClose();
-	};
+	const vm = useMobileNavigationVM(onClose);
+	const theme = useTheme() as any;
 
 	// Reusable header component
-	const MobileNavHeader = ({ title = "", showBackButton = false }) => (
+	const MobileNavHeader: React.FC<{ title?: string; showBackButton?: boolean }> = ({ title = '', showBackButton = false }) => (
 		<Box
 			sx={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "start",
+				display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'start',
 				p: 2,
 				pt: 1.5,
 				gap: 0.5,
@@ -84,19 +43,19 @@ const MobileNavigation = ({
 			}}
 		>
 			{/* Top row - Action icons on left */}
-			<Box sx={{ display: "flex", alignItems: "center", minHeight: "40px" }}>
+			<Box sx={{ display: 'flex', alignItems: 'center', minHeight: '40px' }}>
 				{/* Search, Cart, Login icons */}
-				<Box sx={{ display: "flex", gap: 0.25, alignItems: "center" }}>
+				<Box sx={{ display: 'flex', gap: 0.25, alignItems: 'center' }}>
 					{/* Search Icon */}
 					<IconButton
 						onClick={() => {
 							if (onOpenSearch) {
 								onOpenSearch();
-								closeNavigation();
+								vm.closeNavigation();
 							}
 						}}
 						size="medium"
-						variant="mobileNavIcon"
+						variant={'mobileNavIcon' as any}
 						aria-label="search">
 						<Search fontSize="medium" />
 					</IconButton>
@@ -106,13 +65,13 @@ const MobileNavigation = ({
 						onClick={() => {
 							if (onOpenCart) {
 								onOpenCart();
-								closeNavigation();
+								vm.closeNavigation();
 							}
 						}}
 						size="medium"
-						variant="mobileNavIcon"
+						variant={'mobileNavIcon' as any}
 						aria-label="shopping cart">
-						<Badge badgeContent={cartCount} color="primary" max={99}>
+						<Badge badgeContent={vm.cartCount} color="primary" max={99}>
 							<ShoppingCartOutlined fontSize="medium" />
 						</Badge>
 					</IconButton>
@@ -122,28 +81,28 @@ const MobileNavigation = ({
 						onClick={() => {
 							if (onOpenAuth) {
 								onOpenAuth();
-								closeNavigation();
+								vm.closeNavigation();
 							}
 						}}
 						size="medium"
-						variant="mobileNavIcon"
-						aria-label={isAuthenticated ? "profile" : "login"}>
-						{isAuthenticated ? <AccountCircle fontSize="medium" /> : <Login fontSize="medium" />}
+						variant={'mobileNavIcon' as any}
+						aria-label={vm.isAuthenticated ? 'profile' : 'login'}>
+						{vm.isAuthenticated ? <AccountCircle fontSize="medium" /> : <Login fontSize="medium" />}
 					</IconButton>
 				</Box>
 			</Box>
 
 			{/* Bottom row - Back button and Title (only show when on sub-panel) */}
 			{showBackButton && (
-				<Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+				<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
 					{/* Back button */}
-					<IconButton onClick={navigateBack} size="medium" variant="mobileNavIcon" aria-label="go back">
+					<IconButton onClick={vm.navigateBack} size="medium" variant={'mobileNavIcon' as any} aria-label="go back">
 						<NavigateBefore fontSize="medium" />
 					</IconButton>
 
 					{/* Title */}
 					{title && (
-						<Typography variant="mainnavlink">
+						<Typography variant={'mainnavlink' as any}>
 							{title}
 						</Typography>
 					)}
@@ -153,61 +112,61 @@ const MobileNavigation = ({
 	);
 
 	// Main navigation panel
-	const MainPanel = () => (
+	const MainPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="" showBackButton={false} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
-					<ListItemButton component={NavLink} to="/home" onClick={closeNavigation}>
-						<ListItemText primary={<Typography variant="mainnavlink">Home</Typography>} />
+					<ListItemButton component={NavLink as any} to="/home" onClick={vm.closeNavigation}>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Home</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
-						<ListItemText primary={<Typography variant="mainnavlink">Subjects</Typography>} />
+					<ListItemButton onClick={() => vm.navigateToPanel('subjects', 'Subjects')}>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Subjects</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => navigateToPanel("products", "Products")}>
-						<ListItemText primary={<Typography variant="mainnavlink">Products</Typography>} />
+					<ListItemButton onClick={() => vm.navigateToPanel('products', 'Products')}>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Products</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => navigateToPanel("distance-learning", "Distance Learning")}>
-						<ListItemText primary={<Typography variant="mainnavlink">Distance Learning</Typography>} />
+					<ListItemButton onClick={() => vm.navigateToPanel('distance-learning', 'Distance Learning')}>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Distance Learning</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => navigateToPanel("tutorials", "Tutorials")}>
-						<ListItemText primary={<Typography variant="mainnavlink">Tutorials</Typography>} />
+					<ListItemButton onClick={() => vm.navigateToPanel('tutorials', 'Tutorials')}>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Tutorials</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				{/* Conditional sections based on user permissions */}
-				{isApprentice && (
+				{vm.isApprentice && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">Apprenticeships</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Apprenticeships</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
 
-				{isStudyPlus && (
+				{vm.isStudyPlus && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">Study Plus</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Study Plus</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
 
 				{/* Admin section for superusers */}
-				{isSuperuser && (
+				{vm.isSuperuser && (
 					<ListItem disablePadding>
-						<ListItemButton onClick={() => navigateToPanel("admin", "Admin")}>
-							<ListItemText primary={<Typography variant="mainnavlink">Admin</Typography>} />
+						<ListItemButton onClick={() => vm.navigateToPanel('admin', 'Admin')}>
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Admin</Typography>} />
 							<ExpandMore />
 						</ListItemButton>
 					</ListItem>
@@ -217,59 +176,59 @@ const MobileNavigation = ({
 	);
 
 	// Subjects panel
-	const SubjectsPanel = () => (
+	const SubjectsPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="Subjects" showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() =>
-							navigateToPanel(
-								"subjects-core-principles",
-								"Core Principles",
+							vm.navigateToPanel(
+								'subjects-core-principles',
+								'Core Principles',
 								subjects.filter((s) => /^(CB|CS|CM)/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="mainnavlink">Core Principles</Typography>} />
-						<ExpandMore variant="mobileNavIcon"/>
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Core Principles</Typography>} />
+						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() =>
-							navigateToPanel(
-								"subjects-core-practices",
-								"Core Practices",
+							vm.navigateToPanel(
+								'subjects-core-practices',
+								'Core Practices',
 								subjects.filter((s) => /^CP[1-3]$/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="mainnavlink">Core Practices</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Core Practices</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() =>
-							navigateToPanel(
-								"subjects-specialist-principles",
-								"Specialist Principles",
+							vm.navigateToPanel(
+								'subjects-specialist-principles',
+								'Specialist Principles',
 								subjects.filter((s) => /^SP/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="mainnavlink">Specialist Principles</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Specialist Principles</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() =>
-							navigateToPanel(
-								"subjects-specialist-advanced",
-								"Specialist Advanced",
+							vm.navigateToPanel(
+								'subjects-specialist-advanced',
+								'Specialist Advanced',
 								subjects.filter((s) => /^SA/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="mainnavlink">Specialist Advanced</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>Specialist Advanced</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -278,9 +237,9 @@ const MobileNavigation = ({
 	);
 
 	// Subject category panel (Core Principles, etc.)
-	const SubjectCategoryPanel = ({ data }) => (
+	const SubjectCategoryPanel: React.FC<{ data: NavigationSubject[] }> = ({ data }) => (
 		<Box>
-			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
+			<MobileNavHeader title={vm.currentPanel.title} showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				{data &&
 					data.map((subject) => (
@@ -288,9 +247,9 @@ const MobileNavigation = ({
 							<ListItemButton
 								onClick={() => {
 									handleSubjectClick(subject.code);
-									closeNavigation();
+									vm.closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="mainnavlink">{`${subject.code} - ${subject.description}`}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{`${subject.code} - ${subject.description}`}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))}
@@ -299,7 +258,7 @@ const MobileNavigation = ({
 	);
 
 	// Products panel
-	const ProductsPanel = () => (
+	const ProductsPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="Products" showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
@@ -307,15 +266,15 @@ const MobileNavigation = ({
 					<ListItemButton
 						onClick={() => {
 							handleProductClick();
-							handleNavigation("/products");
+							vm.handleNavigation('/products');
 						}}>
-						<ListItemText primary={<Typography variant="mainnavlink">View All Products</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>View All Products</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingProductGroups ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">Loading products...</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Loading products...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -324,9 +283,9 @@ const MobileNavigation = ({
 						<ListItem key={group.id || group.name} disablePadding>
 							<ListItemButton
 								onClick={() =>
-									navigateToPanel("product-group", group.name, group)
+									vm.navigateToPanel('product-group', group.name, group)
 								}>
-								<ListItemText primary={<Typography variant="mainnavlink">{group.name}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{group.name}</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -337,17 +296,17 @@ const MobileNavigation = ({
 	);
 
 	// Product group panel
-	const ProductGroupPanel = ({ data }) => (
+	const ProductGroupPanel: React.FC<{ data: NavigationProductGroup }> = ({ data }) => (
 		<Box>
-			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
+			<MobileNavHeader title={vm.currentPanel.title} showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() => {
 							handleProductGroupClick(data.name);
-							closeNavigation();
+							vm.closeNavigation();
 						}}>
-						<ListItemText primary={<Typography variant="mainnavlink">{`View All ${data.name}`}</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>{`View All ${data.name}`}</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{data.products && data.products.length > 0 ? (
@@ -356,28 +315,28 @@ const MobileNavigation = ({
 							<ListItemButton
 								onClick={() => {
 									handleSpecificProductClick(product.id);
-									closeNavigation();
+									vm.closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{product.shortname}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">No products available</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>No products available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
 				{/* Add Marking Vouchers link under Marking group */}
-				{data.name === "Marking" && (
+				{data.name === 'Marking' && (
 					<ListItem disablePadding>
 						<ListItemButton
 							onClick={(e) => {
-								handleMarkingVouchersClick(e);
-								handleNavigation("/products", { group: "8" });
+								handleMarkingVouchersClick(e as any);
+								vm.handleNavigation('/products', { group: '8' });
 							}}>
-							<ListItemText primary={<Typography variant="mainnavlink">Marking Vouchers</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Marking Vouchers</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -386,24 +345,24 @@ const MobileNavigation = ({
 	);
 
 	// Distance Learning panel
-	const DistanceLearningPanel = () => (
+	const DistanceLearningPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="Distance Learning" showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() => {
-							handleNavigation("/products", {
-								distance_learning: "true",
+							vm.handleNavigation('/products', {
+								distance_learning: 'true',
 							});
 						}}>
-						<ListItemText primary={<Typography variant="mainnavlink">View All Distance Learning</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>View All Distance Learning</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingDistanceLearning ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">Loading distance learning...</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Loading distance learning...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -412,13 +371,13 @@ const MobileNavigation = ({
 						<ListItem key={group.id || group.name} disablePadding>
 							<ListItemButton
 								onClick={() =>
-									navigateToPanel(
-										"distance-learning-group",
+									vm.navigateToPanel(
+										'distance-learning-group',
 										group.name,
 										group
 									)
 								}>
-								<ListItemText primary={<Typography variant="mainnavlink">{group.name}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{group.name}</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -429,22 +388,22 @@ const MobileNavigation = ({
 	);
 
 	// Tutorials panel
-	const TutorialsPanel = () => (
+	const TutorialsPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="Tutorials" showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton
 						onClick={() => {
-							handleNavigation("/products?main_category=Tutorials");
+							vm.handleNavigation('/products?main_category=Tutorials');
 						}}>
-						<ListItemText primary={<Typography variant="mainnavlink">View All Tutorials</Typography>} />
+						<ListItemText primary={<Typography variant={'mainnavlink' as any}>View All Tutorials</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingTutorial ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">Loading tutorials...</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>Loading tutorials...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : tutorialData ? (
@@ -453,13 +412,13 @@ const MobileNavigation = ({
 							<ListItem disablePadding>
 								<ListItemButton
 									onClick={() =>
-										navigateToPanel(
-											"tutorial-location",
-											"Location",
+										vm.navigateToPanel(
+											'tutorial-location',
+											'Location',
 											tutorialData.Location
 										)
 									}>
-									<ListItemText primary={<Typography variant="mainnavlink">Location</Typography>} />
+									<ListItemText primary={<Typography variant={'mainnavlink' as any}>Location</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
@@ -468,29 +427,29 @@ const MobileNavigation = ({
 							<ListItem disablePadding>
 								<ListItemButton
 									onClick={() =>
-										navigateToPanel(
-											"tutorial-format",
-											"Format",
+										vm.navigateToPanel(
+											'tutorial-format',
+											'Format',
 											tutorialData.Format
 										)
 									}>
-									<ListItemText primary={<Typography variant="mainnavlink">Format</Typography>} />
+									<ListItemText primary={<Typography variant={'mainnavlink' as any}>Format</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
 						)}
-						{tutorialData["Online Classroom"] &&
-							tutorialData["Online Classroom"].length > 0 && (
+						{tutorialData['Online Classroom'] &&
+							tutorialData['Online Classroom'].length > 0 && (
 								<ListItem disablePadding>
 									<ListItemButton
 										onClick={() =>
-											navigateToPanel(
-												"tutorial-online",
-												"Online Classroom",
-												tutorialData["Online Classroom"]
+											vm.navigateToPanel(
+												'tutorial-online',
+												'Online Classroom',
+												tutorialData['Online Classroom']
 											)
 										}>
-										<ListItemText primary={<Typography variant="mainnavlink">Online Classroom</Typography>} />
+										<ListItemText primary={<Typography variant={'mainnavlink' as any}>Online Classroom</Typography>} />
 										<ExpandMore />
 									</ListItemButton>
 								</ListItem>
@@ -499,7 +458,7 @@ const MobileNavigation = ({
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="mainnavlink">No tutorial data available</Typography>} />
+							<ListItemText primary={<Typography variant={'mainnavlink' as any}>No tutorial data available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -508,31 +467,31 @@ const MobileNavigation = ({
 	);
 
 	// Tutorial category panels
-	const TutorialCategoryPanel = ({ data, type }) => (
+	const TutorialCategoryPanel: React.FC<{ data: any; type: string }> = ({ data, type }) => (
 		<Box>
-			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
+			<MobileNavHeader title={vm.currentPanel.title} showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
-				{type === "format" ? (
-					data.map((format) => (
+				{type === 'format' ? (
+					(data as TutorialFormat[]).map((format) => (
 						<ListItem key={format.filter_type} disablePadding>
 							<ListItemButton
 								onClick={() => {
 									handleProductGroupClick(format.group_name);
-									closeNavigation();
+									vm.closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="mainnavlink">{format.name}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{format.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
-				) : type === "online" ? (
-					data.map((variation) => (
+				) : type === 'online' ? (
+					(data as TutorialOnlineClassroom[]).map((variation) => (
 						<ListItem key={variation.id} disablePadding>
 							<ListItemButton
 								onClick={() => {
 									handleProductVariationClick(variation.id);
-									closeNavigation();
+									vm.closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="mainnavlink">{variation.description || variation.name}</Typography>} />
+								<ListItemText primary={<Typography variant={'mainnavlink' as any}>{variation.description || variation.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
@@ -540,26 +499,26 @@ const MobileNavigation = ({
 					// Location type - both left and right products
 					<>
 						{data.left &&
-							data.left.map((product) => (
+							(data.left as NavigationProduct[]).map((product) => (
 								<ListItem key={product.id} disablePadding>
 									<ListItemButton
 										onClick={() => {
 											handleSpecificProductClick(product.id);
-											closeNavigation();
+											vm.closeNavigation();
 										}}>
-										<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
+										<ListItemText primary={<Typography variant={'mainnavlink' as any}>{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}
 						{data.right &&
-							data.right.map((product) => (
+							(data.right as NavigationProduct[]).map((product) => (
 								<ListItem key={product.id} disablePadding>
 									<ListItemButton
 										onClick={() => {
 											handleSpecificProductClick(product.id);
-											closeNavigation();
+											vm.closeNavigation();
 										}}>
-										<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
+										<ListItemText primary={<Typography variant={'mainnavlink' as any}>{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}
@@ -570,22 +529,22 @@ const MobileNavigation = ({
 	);
 
 	// Admin panel
-	const AdminPanel = () => (
+	const AdminPanel: React.FC = () => (
 		<Box>
 			<MobileNavHeader title="Admin" showBackButton={true} />
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => handleNavigation("/admin/exam-sessions")}>
+					<ListItemButton onClick={() => vm.handleNavigation('/admin/exam-sessions')}>
 						<ListItemText primary="Exam Sessions" />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => handleNavigation("/admin/subjects")}>
+					<ListItemButton onClick={() => vm.handleNavigation('/admin/subjects')}>
 						<ListItemText primary="Subjects" />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton onClick={() => handleNavigation("/admin/products")}>
+					<ListItemButton onClick={() => vm.handleNavigation('/admin/products')}>
 						<ListItemText primary="Products" />
 					</ListItemButton>
 				</ListItem>
@@ -595,41 +554,41 @@ const MobileNavigation = ({
 
 	// Render current panel content
 	const renderCurrentPanel = () => {
-		switch (currentPanel.type) {
-			case "main":
+		switch (vm.currentPanel.type) {
+			case 'main':
 				return <MainPanel />;
-			case "subjects":
+			case 'subjects':
 				return <SubjectsPanel />;
-			case "subjects-core-principles":
-			case "subjects-core-practices":
-			case "subjects-specialist-principles":
-			case "subjects-specialist-advanced":
-				return <SubjectCategoryPanel data={currentPanel.data} />;
-			case "products":
+			case 'subjects-core-principles':
+			case 'subjects-core-practices':
+			case 'subjects-specialist-principles':
+			case 'subjects-specialist-advanced':
+				return <SubjectCategoryPanel data={vm.currentPanel.data} />;
+			case 'products':
 				return <ProductsPanel />;
-			case "product-group":
-			case "distance-learning-group":
-				return <ProductGroupPanel data={currentPanel.data} />;
-			case "distance-learning":
+			case 'product-group':
+			case 'distance-learning-group':
+				return <ProductGroupPanel data={vm.currentPanel.data} />;
+			case 'distance-learning':
 				return <DistanceLearningPanel />;
-			case "tutorials":
+			case 'tutorials':
 				return <TutorialsPanel />;
-			case "tutorial-location":
+			case 'tutorial-location':
 				return (
 					<TutorialCategoryPanel
-						data={currentPanel.data}
+						data={vm.currentPanel.data}
 						type="location"
 					/>
 				);
-			case "tutorial-format":
+			case 'tutorial-format':
 				return (
-					<TutorialCategoryPanel data={currentPanel.data} type="format" />
+					<TutorialCategoryPanel data={vm.currentPanel.data} type="format" />
 				);
-			case "tutorial-online":
+			case 'tutorial-online':
 				return (
-					<TutorialCategoryPanel data={currentPanel.data} type="online" />
+					<TutorialCategoryPanel data={vm.currentPanel.data} type="online" />
 				);
-			case "admin":
+			case 'admin':
 				return <AdminPanel />;
 			default:
 				return <MainPanel />;
@@ -640,10 +599,10 @@ const MobileNavigation = ({
 		<Drawer
 			anchor="right"
 			open={open}
-			onClose={closeNavigation}
+			onClose={vm.closeNavigation}
 			aria-label="Mobile navigation menu"
 			ModalProps={{
-				keepMounted: true, // Better mobile performance
+				keepMounted: true,
 			}}
 			sx={{
 				'& .MuiDrawer-paper': {
