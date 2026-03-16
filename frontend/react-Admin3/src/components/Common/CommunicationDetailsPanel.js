@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import { Phone, Email } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import ValidatedPhoneInput from '../User/ValidatedPhoneInput.js';
-import userService from '../../services/userService.js';
+import ValidatedPhoneInput from '../User/ValidatedPhoneInput.tsx';
+import userService from '../../services/userService.ts';
 import config from '../../config.js';
 
 // Constants

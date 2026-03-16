@@ -1,7 +1,7 @@
 // src/components/MobileNavigation.js
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../hooks/useAuth.tsx";
 import { useConfig } from "../../contexts/ConfigContext.js";
 import { useCart } from "../../contexts/CartContext.js";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";

@@ -7,11 +7,11 @@ import NavigationMenu from '../Navigation/NavigationMenu.js';
 import theme from '../../theme';
 
 // Mock useAuth
-vi.mock('../../hooks/useAuth.js', () => ({
+vi.mock('../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../hooks/useAuth.tsx';
 
 const defaultProps = {
   subjects: [{ id: 1, code: 'CM2', description: 'Financial Mathematics' }],

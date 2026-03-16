@@ -12,7 +12,7 @@ import
       useTheme
    } from "@mui/material";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../hooks/useAuth.tsx";
 import { useConfig } from "../../contexts/ConfigContext.js";
 import MegaMenuPopover from "./MegaMenuPopover.js";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";

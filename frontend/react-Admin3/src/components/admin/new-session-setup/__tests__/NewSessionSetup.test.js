@@ -6,7 +6,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import NewSessionSetup from '../NewSessionSetup.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -71,7 +71,7 @@ vi.mock('../StepTutorials.js', () => ({
   },
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

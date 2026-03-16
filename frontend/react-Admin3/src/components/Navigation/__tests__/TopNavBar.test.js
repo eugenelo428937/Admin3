@@ -40,7 +40,7 @@ import appTheme from '../../../theme';
 const theme = appTheme;
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -99,7 +99,7 @@ vi.mock('../SearchModal.js', () => ({
 }));
 
 // Mock AuthModal
-vi.mock('../AuthModal.js', () => ({
+vi.mock('../AuthModal.tsx', () => ({
   __esModule: true,
   default: function MockAuthModal({ open, onClose }) {
     return open ? (

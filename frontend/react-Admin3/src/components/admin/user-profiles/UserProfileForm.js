@@ -5,8 +5,8 @@ import {
 } from '@mui/material';
 import { Person, Home, Business, Phone } from '@mui/icons-material';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
-import userProfileService from '../../../services/userProfileService.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
+import userProfileService from '../../../services/userProfileService.ts';
 import { PersonalInfoStep, HomeAddressStep, WorkAddressStep, PreferencesStep } from '../../User/steps';
 
 const ADMIN_STEPS = [

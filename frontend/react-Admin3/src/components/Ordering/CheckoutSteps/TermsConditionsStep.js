@@ -13,7 +13,7 @@ import {
 import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils.js';
 import rulesEngineService from '../../../services/rulesEngineService.js';
 import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 
 const TermsConditionsStep = ({
   cartData,

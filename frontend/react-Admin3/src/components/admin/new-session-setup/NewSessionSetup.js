@@ -3,7 +3,7 @@ import {
   Container, Stepper, Step, StepLabel, Typography, Box, Paper
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import StepExamSession from './StepExamSession.js';
 import StepSubjects from './StepSubjects.js';
 import StepMaterials from './StepMaterials.js';

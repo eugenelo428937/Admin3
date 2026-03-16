@@ -1,7 +1,7 @@
 // src/components/admin/products/ProductDetail.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import {
   Button, Card, CardHeader, CardContent, CardActions,
   Container, Alert, Box, Typography, CircularProgress

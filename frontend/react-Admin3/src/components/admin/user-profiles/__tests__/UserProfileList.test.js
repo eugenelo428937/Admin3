@@ -7,15 +7,15 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminUserProfileList from '../UserProfileList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock userProfileService
-vi.mock('../../../../services/userProfileService.js', () => ({
+vi.mock('../../../../services/userProfileService.ts', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../../services/userProfileService.js', () => ({
   },
 }));
 
-import userProfileService from '../../../../services/userProfileService.js';
+import userProfileService from '../../../../services/userProfileService.ts';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

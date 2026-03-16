@@ -6,7 +6,7 @@ import {
   Select, MenuItem
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import catalogBundleService from '../../../services/catalogBundleService.js';
 import subjectService from '../../../services/subjectService';
 

@@ -5,7 +5,7 @@ import {
   Button, Container, Alert, Paper, Typography, Box, CircularProgress
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import productVariationService from '../../../services/productVariationService.js';
 
 const AdminProductVariationList = () => {

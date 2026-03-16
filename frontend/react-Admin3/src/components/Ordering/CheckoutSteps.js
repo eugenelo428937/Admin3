@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Alert, Card, CardActions, CardContent, Grid, Box, useTheme, Stepper, Step, StepLabel, Typography } from '@mui/material';
 import { useCart } from '../../contexts/CartContext.js';
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../hooks/useAuth.tsx';
 import httpService from '../../services/httpService.js';
 import config from '../../config.js';
 import rulesEngineService from '../../services/rulesEngineService.js';
 import RulesEngineModal from '../Common/RulesEngineModal.js';
-import userService from '../../services/userService.js';
+import userService from '../../services/userService.ts';
 import useCheckoutValidation from '../../hooks/useCheckoutValidation.js';
 import './CheckoutSteps/CheckoutSteps.css';
 
