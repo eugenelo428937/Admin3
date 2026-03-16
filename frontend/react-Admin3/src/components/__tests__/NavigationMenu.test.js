@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import NavigationMenu from '../Navigation/NavigationMenu.js';
+import NavigationMenu from '../Navigation/NavigationMenu.tsx';
 import theme from '../../theme';
 
 // Mock useAuth

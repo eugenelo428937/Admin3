@@ -130,7 +130,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import MainNavBar from '../MainNavBar.js';
+import MainNavBar from '../MainNavBar.tsx';
 import filtersReducer from '../../../store/slices/filtersSlice.js';
 import theme from '../../../theme/theme.js';
 import { ThemeProvider } from '@mui/material/styles';
