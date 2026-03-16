@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import StepExamSession from '../StepExamSession.js';
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     create: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('../../../../services/examSessionService.js', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionService from '../../../../services/examSessionService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

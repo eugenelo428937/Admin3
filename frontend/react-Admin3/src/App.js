@@ -1,10 +1,10 @@
 // src/App.js
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, CircularProgress, Box } from "@mui/material";
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
@@ -13,102 +13,94 @@ import { AuthProvider } from "./hooks/useAuth.js";
 import { ConfigProvider } from "./contexts/ConfigContext.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import Home from "./pages/Home.js";
-import ProfilePage from "./pages/ProfilePage.js";
 import MainNavBar from "./components/Navigation/MainNavBar.js";
 import NoMatch from "./components/NoMatch.js";
 import { CartProvider } from "./contexts/CartContext.js";
 import { ProductProvider } from "./contexts/ProductContext.js";
 import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext.js";
 import { Container } from "@mui/material";
-
-// Existing admin components
-import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList.js";
-import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm.js";
-import AdminSubjectList from "./components/admin/subjects/SubjectList.js";
-import AdminSubjectForm from "./components/admin/subjects/SubjectForm.js";
-import AdminSubjectDetail from "./components/admin/subjects/SubjectDetail.js";
-import AdminSubjectImport from "./components/admin/subjects/SubjectImport.js";
-import AdminProductList from "./components/admin/products/ProductList.js";
-import AdminProductDetail from "./components/admin/products/ProductDetail.js";
-import AdminProductForm from "./components/admin/products/ProductForm.js";
-import AdminProductImport from "./components/admin/products/ProductImport.js";
-
-// US3: New catalog admin components
-import AdminExamSessionSubjectList from "./components/admin/exam-session-subjects/ExamSessionSubjectList.js";
-import AdminExamSessionSubjectForm from "./components/admin/exam-session-subjects/ExamSessionSubjectForm.js";
-import AdminProductVariationList from "./components/admin/product-variations/ProductVariationList.js";
-import AdminProductVariationForm from "./components/admin/product-variations/ProductVariationForm.js";
-import AdminProductBundleList from "./components/admin/product-bundles/ProductBundleList.js";
-import AdminProductBundleForm from "./components/admin/product-bundles/ProductBundleForm.js";
-
-// US4: Store admin components
-import AdminStoreProductList from "./components/admin/store-products/StoreProductList.js";
-import AdminStoreProductForm from "./components/admin/store-products/StoreProductForm.js";
-import AdminRecommendationList from "./components/admin/recommendations/RecommendationList.js";
-import AdminRecommendationForm from "./components/admin/recommendations/RecommendationForm.js";
-import AdminPriceList from "./components/admin/prices/PriceList.js";
-import AdminPriceForm from "./components/admin/prices/PriceForm.js";
-import AdminStoreBundleList from "./components/admin/store-bundles/StoreBundleList.js";
-import AdminStoreBundleForm from "./components/admin/store-bundles/StoreBundleForm.js";
-
-// New Session Setup wizard
-import NewSessionSetup from "./components/admin/new-session-setup/NewSessionSetup.js";
-
-// US5: User admin components
-import AdminUserProfileList from "./components/admin/user-profiles/UserProfileList.js";
-import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileForm.js";
-import AdminStaffList from "./components/admin/staff/StaffList.js";
-import AdminStaffForm from "./components/admin/staff/StaffForm.js";
-
-// US6: Email System admin components
-import EmailSettingsList from "./components/admin/email/settings/EmailSettingsList";
-import EmailTemplateList from "./components/admin/email/templates/EmailTemplateList";
-import EmailTemplateForm from "./components/admin/email/templates/EmailTemplateForm";
-import EmailQueueList from "./components/admin/email/queue/EmailQueueList";
-import EmailQueueDetail from "./components/admin/email/queue/EmailQueueDetail";
-import EmailQueueDuplicateForm from "./components/admin/email/queue/EmailQueueDuplicateForm";
-import EmailAttachmentList from "./components/admin/email/attachments/EmailAttachmentList";
-import EmailAttachmentForm from "./components/admin/email/attachments/EmailAttachmentForm";
-import EmailContentRuleList from "./components/admin/email/content-rules/EmailContentRuleList";
-import EmailContentRuleForm from "./components/admin/email/content-rules/EmailContentRuleForm";
-import EmailPlaceholderList from "./components/admin/email/placeholders/EmailPlaceholderList";
-import EmailPlaceholderForm from "./components/admin/email/placeholders/EmailPlaceholderForm";
-import ClosingSalutationList from "./components/admin/email/closing-salutations/ClosingSalutationList";
-import ClosingSalutationForm from "./components/admin/email/closing-salutations/ClosingSalutationForm";
-
-// US6: Email System admin components
-import EmailSettingsList from "./components/admin/email/settings/EmailSettingsList";
-import EmailTemplateList from "./components/admin/email/templates/EmailTemplateList";
-import EmailTemplateForm from "./components/admin/email/templates/EmailTemplateForm";
-import EmailQueueList from "./components/admin/email/queue/EmailQueueList";
-import EmailQueueDetail from "./components/admin/email/queue/EmailQueueDetail";
-import EmailQueueDuplicateForm from "./components/admin/email/queue/EmailQueueDuplicateForm";
-import EmailAttachmentList from "./components/admin/email/attachments/EmailAttachmentList";
-import EmailAttachmentForm from "./components/admin/email/attachments/EmailAttachmentForm";
-import EmailContentRuleList from "./components/admin/email/content-rules/EmailContentRuleList";
-import EmailContentRuleForm from "./components/admin/email/content-rules/EmailContentRuleForm";
-import EmailPlaceholderList from "./components/admin/email/placeholders/EmailPlaceholderList";
-import EmailPlaceholderForm from "./components/admin/email/placeholders/EmailPlaceholderForm";
-import ClosingSalutationList from "./components/admin/email/closing-salutations/ClosingSalutationList";
-import ClosingSalutationForm from "./components/admin/email/closing-salutations/ClosingSalutationForm";
-
-// Public pages
-import ProductList from "./components/Product/ProductList.js";
-import CheckoutPage from "./components/Ordering/CheckoutPage.js";
-import OrderHistory from "./components/User/OrderHistory.js";
-import TutorialSummaryBarContainer from "./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js"; // T015
-import ForgotPasswordForm from "./components/User/ForgotPasswordForm.js";
-import ResetPasswordForm from "./components/User/ResetPasswordForm.js";
-import AccountActivation from "./components/User/AccountActivation.js";
-import ResendActivation from "./components/User/ResendActivation.js";
-import EmailVerification from "./components/User/EmailVerification.js";
-import StyleGuide from "./pages/StyleGuide.js";
-import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer.js";
-import Registration from './pages/Registration.js';
 import Footer from "./components/Footer";
 import "./App.scss";
 
+// --- Lazy-loaded routes (code-split into separate chunks) ---
+
+// Public pages
+const ProfilePage = React.lazy(() => import("./pages/ProfilePage.js"));
+const ProductList = React.lazy(() => import("./components/Product/ProductList.js"));
+const CheckoutPage = React.lazy(() => import("./components/Ordering/CheckoutPage.js"));
+const OrderHistory = React.lazy(() => import("./components/User/OrderHistory.js"));
+const TutorialSummaryBarContainer = React.lazy(() => import("./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js"));
+const ForgotPasswordForm = React.lazy(() => import("./components/User/ForgotPasswordForm.js"));
+const ResetPasswordForm = React.lazy(() => import("./components/User/ResetPasswordForm.js"));
+const AccountActivation = React.lazy(() => import("./components/User/AccountActivation.js"));
+const ResendActivation = React.lazy(() => import("./components/User/ResendActivation.js"));
+const EmailVerification = React.lazy(() => import("./components/User/EmailVerification.js"));
+const StyleGuide = React.lazy(() => import("./pages/StyleGuide.js"));
+const MaterialThemeVisualizer = React.lazy(() => import("./components/styleguide/MaterialThemeVisualizer.js"));
+const Registration = React.lazy(() => import('./pages/Registration.js'));
+
+// Admin: Exam Sessions, Subjects, Products (US2)
+const AdminExamSessionList = React.lazy(() => import("./components/admin/exam-sessions/ExamSessionList.tsx"));
+const AdminExamSessionForm = React.lazy(() => import("./components/admin/exam-sessions/ExamSessionForm.tsx"));
+const AdminSubjectList = React.lazy(() => import("./components/admin/subjects/SubjectList.tsx"));
+const AdminSubjectForm = React.lazy(() => import("./components/admin/subjects/SubjectForm.tsx"));
+const AdminSubjectDetail = React.lazy(() => import("./components/admin/subjects/SubjectDetail.tsx"));
+const AdminSubjectImport = React.lazy(() => import("./components/admin/subjects/SubjectImport.tsx"));
+const AdminProductList = React.lazy(() => import("./components/admin/products/ProductList.js"));
+const AdminProductDetail = React.lazy(() => import("./components/admin/products/ProductDetail.js"));
+const AdminProductForm = React.lazy(() => import("./components/admin/products/ProductForm.js"));
+const AdminProductImport = React.lazy(() => import("./components/admin/products/ProductImport.js"));
+
+// Admin: Catalog (US3)
+const AdminExamSessionSubjectList = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectList.js"));
+const AdminExamSessionSubjectForm = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectForm.js"));
+const AdminProductVariationList = React.lazy(() => import("./components/admin/product-variations/ProductVariationList.js"));
+const AdminProductVariationForm = React.lazy(() => import("./components/admin/product-variations/ProductVariationForm.js"));
+const AdminProductBundleList = React.lazy(() => import("./components/admin/product-bundles/ProductBundleList.js"));
+const AdminProductBundleForm = React.lazy(() => import("./components/admin/product-bundles/ProductBundleForm.js"));
+
+// Admin: Store (US4)
+const AdminStoreProductList = React.lazy(() => import("./components/admin/store-products/StoreProductList.js"));
+const AdminStoreProductForm = React.lazy(() => import("./components/admin/store-products/StoreProductForm.js"));
+const AdminRecommendationList = React.lazy(() => import("./components/admin/recommendations/RecommendationList.js"));
+const AdminRecommendationForm = React.lazy(() => import("./components/admin/recommendations/RecommendationForm.js"));
+const AdminPriceList = React.lazy(() => import("./components/admin/prices/PriceList.js"));
+const AdminPriceForm = React.lazy(() => import("./components/admin/prices/PriceForm.js"));
+const AdminStoreBundleList = React.lazy(() => import("./components/admin/store-bundles/StoreBundleList.js"));
+const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-bundles/StoreBundleForm.js"));
+
+// Admin: New Session Setup wizard
+const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.js"));
+
+// Admin: Users & Staff (US5)
+const AdminUserProfileList = React.lazy(() => import("./components/admin/user-profiles/UserProfileList.js"));
+const AdminUserProfileForm = React.lazy(() => import("./components/admin/user-profiles/UserProfileForm.js"));
+const AdminStaffList = React.lazy(() => import("./components/admin/staff/StaffList.js"));
+const AdminStaffForm = React.lazy(() => import("./components/admin/staff/StaffForm.js"));
+
+// Admin: Email System (US6)
+const EmailSettingsList = React.lazy(() => import("./components/admin/email/settings/EmailSettingsList"));
+const EmailTemplateList = React.lazy(() => import("./components/admin/email/templates/EmailTemplateList"));
+const EmailTemplateForm = React.lazy(() => import("./components/admin/email/templates/EmailTemplateForm"));
+const EmailQueueList = React.lazy(() => import("./components/admin/email/queue/EmailQueueList"));
+const EmailQueueDetail = React.lazy(() => import("./components/admin/email/queue/EmailQueueDetail"));
+const EmailQueueDuplicateForm = React.lazy(() => import("./components/admin/email/queue/EmailQueueDuplicateForm"));
+const EmailAttachmentList = React.lazy(() => import("./components/admin/email/attachments/EmailAttachmentList"));
+const EmailAttachmentForm = React.lazy(() => import("./components/admin/email/attachments/EmailAttachmentForm"));
+const EmailContentRuleList = React.lazy(() => import("./components/admin/email/content-rules/EmailContentRuleList"));
+const EmailContentRuleForm = React.lazy(() => import("./components/admin/email/content-rules/EmailContentRuleForm"));
+const EmailPlaceholderList = React.lazy(() => import("./components/admin/email/placeholders/EmailPlaceholderList"));
+const EmailPlaceholderForm = React.lazy(() => import("./components/admin/email/placeholders/EmailPlaceholderForm"));
+const ClosingSalutationList = React.lazy(() => import("./components/admin/email/closing-salutations/ClosingSalutationList"));
+const ClosingSalutationForm = React.lazy(() => import("./components/admin/email/closing-salutations/ClosingSalutationForm"));
+
 const system = createSystem(defaultConfig);
+
+const LazyFallback = () => (
+	<Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+		<CircularProgress />
+	</Box>
+);
 
 function App() {
 	// eslint-disable-next-line
@@ -211,6 +203,7 @@ function App() {
 									maxWidth={true}
 									disableGutters={true}
 									sx={bodyContainerStyles}>
+									<Suspense fallback={<LazyFallback />}>
 									<Routes>
 										<Route path="/" element={<Navigate to="/home" replace />} />
 										<Route path="/styleguide" element={<StyleGuide />} />
@@ -334,6 +327,7 @@ function App() {
 
 									{/* T015: Global tutorial summary bars - visible across all routes */}
 									<TutorialSummaryBarContainer />
+									</Suspense>
 								</Container>
 
 								{/* Footer component */}

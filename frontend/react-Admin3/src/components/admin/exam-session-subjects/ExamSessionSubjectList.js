@@ -8,7 +8,7 @@ import {
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.js';
 import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
-import examSessionService from '../../../services/examSessionService.js';
+import examSessionService from '../../../services/examSessionService';
 
 const AdminExamSessionSubjectList = () => {
     const { isSuperuser } = useAuth();

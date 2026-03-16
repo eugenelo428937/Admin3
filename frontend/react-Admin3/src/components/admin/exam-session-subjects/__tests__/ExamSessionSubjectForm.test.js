@@ -38,24 +38,24 @@ vi.mock('../../../../services/examSessionSubjectService.js', () => ({
 import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionService from '../../../../services/examSessionService';
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 const theme = appTheme;
 
