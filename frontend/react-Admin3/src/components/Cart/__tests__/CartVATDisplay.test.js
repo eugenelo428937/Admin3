@@ -13,7 +13,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartVATDisplay from '../CartVATDisplay.js';
+import CartVATDisplay from '../CartVATDisplay';
 
 describe('CartVATDisplay Component', () => {
   const mockVATData = {

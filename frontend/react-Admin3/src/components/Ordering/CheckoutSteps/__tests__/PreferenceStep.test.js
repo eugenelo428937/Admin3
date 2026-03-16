@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import PreferenceStep from '../PreferenceStep.js';
+import PreferenceStep from '../PreferenceStep.tsx';
 
 // Mock rulesEngineService
 vi.mock('../../../../services/rulesEngineService.js', () => ({
@@ -17,7 +17,7 @@ vi.mock('../../../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',

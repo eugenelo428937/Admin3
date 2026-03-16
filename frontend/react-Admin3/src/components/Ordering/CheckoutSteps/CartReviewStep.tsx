@@ -12,7 +12,28 @@ import AddressSelectionPanel from '../../Address/AddressSelectionPanel.tsx';
 import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel.js';
 import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert.js';
 
-const CartReviewStep = ({
+import type { CartItem, VATCalculations } from '../../../types/cart';
+import type {
+  RulesMessage,
+  AddressValidationState,
+  ContactValidationState,
+} from '../../../types/checkout';
+import type { UserProfile } from '../../../types/auth/user.types';
+
+interface CartReviewStepProps {
+  cartItems: CartItem[];
+  rulesLoading: boolean;
+  rulesMessages: RulesMessage[];
+  vatCalculations?: VATCalculations | null;
+  userProfile?: UserProfile | null;
+  onContactUpdate?: () => void;
+  onDeliveryAddressUpdate?: (address: any) => void;
+  onInvoiceAddressUpdate?: (address: any) => void;
+  addressValidation?: AddressValidationState | null;
+  contactValidation?: ContactValidationState | null;
+}
+
+const CartReviewStep: React.FC<CartReviewStepProps> = ({
   cartItems,
   rulesLoading,
   rulesMessages,

@@ -30,7 +30,7 @@ vi.mock('../../../hooks/useAuth.tsx', () => ({
 
 // Mock the useCart hook
 let mockCartCount = 3;
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },

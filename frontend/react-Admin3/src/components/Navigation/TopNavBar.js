@@ -9,9 +9,9 @@ import
    Search as SearchIcon,
    Download as DownloadIcon,
 } from "@mui/icons-material";
-import { useCart } from "../../contexts/CartContext.js";
+import { useCart } from "../../contexts/CartContext.tsx";
 import AuthModal from "./AuthModal.tsx";
-import CartPanel from "../Ordering/CartPanel.js";
+import CartPanel from "../Ordering/CartPanel.tsx";
 import SearchModal from "./SearchModal.js";
 import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";
 

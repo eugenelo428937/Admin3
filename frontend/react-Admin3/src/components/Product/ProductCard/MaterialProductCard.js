@@ -44,7 +44,7 @@ import {
 } from "@mui/icons-material";
 import { ThemeProvider } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
-import { useCart } from "../../../contexts/CartContext.js";
+import { useCart } from "../../../contexts/CartContext.tsx";
 import BaseProductCard from "../../Common/BaseProductCard.js";
 import MarkingProductCard from "./MarkingProductCard.js";
 import MarkingVoucherProductCard from "./MarkingVoucherProductCard.js";

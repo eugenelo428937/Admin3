@@ -15,7 +15,7 @@ import { vi } from 'vitest';
  */
 
 // Unmock cartService to test the actual implementation (global mock in setupTests.js)
-vi.unmock('../cartService.js');
+vi.unmock('../cartService.ts');
 
 describe('cartService', () => {
   let cartService;
@@ -46,7 +46,7 @@ describe('cartService', () => {
     }));
 
     // Import after mocks are set up
-    { const _mod_cartService = await import('../cartService.js'); cartService = _mod_cartService.default; }
+    { const _mod_cartService = await import('../cartService.ts'); cartService = _mod_cartService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 

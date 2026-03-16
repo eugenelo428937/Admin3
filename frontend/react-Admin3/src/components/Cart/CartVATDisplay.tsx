@@ -7,21 +7,21 @@
  * - Gross amount (total including VAT)
  * - VAT rate badge (percentage)
  * - Regional label (UK VAT, SA VAT, etc.)
- *
- * Props:
- * - netAmount (number): Net price excluding VAT
- * - vatAmount (number): VAT amount
- * - grossAmount (number): Total price including VAT
- * - vatRate (number): VAT rate as decimal (e.g., 0.2000 for 20%)
- * - vatRegion (string): VAT region code (UK, SA, IE, ROW, etc.)
- * - currency (string): Currency code (GBP, USD, ZAR, etc.)
- * - className (string): Optional custom CSS class
  */
 import React from 'react';
 import { Box, Typography, Chip } from '@mui/material';
-import PropTypes from 'prop-types';
 
-const CartVATDisplay = ({
+interface CartVATDisplayProps {
+  netAmount: number;
+  vatAmount: number;
+  grossAmount: number;
+  vatRate: number;
+  vatRegion?: string;
+  currency?: string;
+  className?: string;
+}
+
+const CartVATDisplay: React.FC<CartVATDisplayProps> = ({
   netAmount,
   vatAmount,
   grossAmount,
@@ -33,7 +33,7 @@ const CartVATDisplay = ({
   /**
    * Format currency based on currency code
    */
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number | null | undefined): string => {
     // Handle null/undefined
     if (amount == null) return '-';
 
@@ -60,7 +60,7 @@ const CartVATDisplay = ({
   /**
    * Format VAT rate as percentage
    */
-  const formatRate = () => {
+  const formatRate = (): string => {
     if (vatRate == null) return '0%';
     const percentage = Math.round(vatRate * 100);
     return `${percentage}%`;
@@ -69,7 +69,7 @@ const CartVATDisplay = ({
   /**
    * Get regional VAT label
    */
-  const getRegionalLabel = () => {
+  const getRegionalLabel = (): string => {
     if (!vatRegion) return 'VAT';
     return `${vatRegion} VAT`;
   };
@@ -126,16 +126,6 @@ const CartVATDisplay = ({
       </Box>
     </Box>
   );
-};
-
-CartVATDisplay.propTypes = {
-  netAmount: PropTypes.number.isRequired,
-  vatAmount: PropTypes.number.isRequired,
-  grossAmount: PropTypes.number.isRequired,
-  vatRate: PropTypes.number.isRequired,
-  vatRegion: PropTypes.string,
-  currency: PropTypes.string,
-  className: PropTypes.string
 };
 
 export default CartVATDisplay;

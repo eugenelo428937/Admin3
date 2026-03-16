@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import OrderHistory from '../OrderHistory.tsx';
 
 // Mock cartService
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     fetchOrders: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock('../../../utils/productCodeGenerator.js', () => ({
   generateProductCode: vi.fn((item: any) => `CODE-${item.id || '001'}`),
 }));
 
-import cartService from '../../../services/cartService.js';
+import cartService from '../../../services/cartService.ts';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

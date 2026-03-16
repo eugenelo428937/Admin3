@@ -20,7 +20,7 @@ const mockCartState = {
   refreshCart: vi.fn(),
 };
 
-vi.mock('../../../../../contexts/CartContext.js', () => {
+vi.mock('../../../../../contexts/CartContext.tsx', () => {
   const React = require('react');
   return {
     __esModule: true,

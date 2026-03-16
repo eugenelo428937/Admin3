@@ -16,7 +16,7 @@ const mockCartState = {
   addToCart: vi.fn(),
 };
 
-vi.mock('../../../../../contexts/CartContext.js', () => {
+vi.mock('../../../../../contexts/CartContext.tsx', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -32,7 +32,7 @@ vi.mock('../../../../../contexts/CartContext.js', () => {
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
-import { CartProvider } from '../../../../../contexts/CartContext.js';
+import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
 /**

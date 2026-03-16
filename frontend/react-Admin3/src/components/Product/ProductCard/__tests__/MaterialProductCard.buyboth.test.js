@@ -5,10 +5,10 @@ import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../theme/theme.js';
 import MaterialProductCard from '../MaterialProductCard.js';
-import { useCart } from '../../../../contexts/CartContext.js';
+import { useCart } from '../../../../contexts/CartContext.tsx';
 
 // Mock the CartContext
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn(),
 }));
 

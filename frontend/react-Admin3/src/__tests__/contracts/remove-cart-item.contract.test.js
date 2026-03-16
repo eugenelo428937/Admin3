@@ -14,7 +14,7 @@ import { vi } from 'vitest';
  */
 
 // Remove global mocks from setupTests.js so we can test the real cartService
-vi.unmock('../../services/cartService.js');
+vi.unmock('../../services/cartService.ts');
 
 // Mock config before cartService tries to use it
 vi.mock('../../config.js', () => ({
@@ -36,7 +36,7 @@ vi.mock('../../services/httpService.js', () => ({
 }));
 
 // Import the REAL cartService (after unmocking)
-import cartService from '../../services/cartService.js';
+import cartService from '../../services/cartService.ts';
 // Import the mocked httpService
 import httpService from '../../services/httpService.js';
 

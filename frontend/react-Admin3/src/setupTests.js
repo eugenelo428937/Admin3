@@ -208,7 +208,7 @@ vi.mock('./services/httpService.js', () => ({
   },
 }));
 
-vi.mock('./services/cartService.js', () => ({
+vi.mock('./services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -309,7 +309,7 @@ vi.mock('./contexts/TutorialChoiceContext.js', () => {
 });
 
 // Mock CartContext - used by navigation, checkout, product cards, etc.
-vi.mock('./contexts/CartContext.js', () => {
+vi.mock('./contexts/CartContext.tsx', () => {
   const React = require('react');
   return {
     __esModule: true,

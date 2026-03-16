@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import CheckoutPage from '../CheckoutPage.js';
 import theme from '../../../theme/theme.js';
-import cartService from '../../../services/cartService.js';
+import cartService from '../../../services/cartService.ts';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -15,7 +15,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock cart service
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     checkout: vi.fn()
@@ -40,7 +40,7 @@ const mockCartItems = [
 
 let mockCartItemsValue = [...mockCartItems];
 
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: mockCartItemsValue,
     cartData: { id: 1, user: null, session_key: 'test-session' },
@@ -57,7 +57,7 @@ vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
 }));
 
 // Mock CheckoutSteps component
-vi.mock('../CheckoutSteps.js', () => ({
+vi.mock('../CheckoutSteps.tsx', () => ({
   __esModule: true,
   default: function MockCheckoutSteps({ onComplete }) {
     return (

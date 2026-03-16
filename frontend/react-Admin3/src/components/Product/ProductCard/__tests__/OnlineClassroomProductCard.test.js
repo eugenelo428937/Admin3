@@ -7,7 +7,7 @@ import OnlineClassroomProductCard from '../OnlineClassroomProductCard.js';
 
 import appTheme from '../../../../theme';
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',

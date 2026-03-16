@@ -14,7 +14,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme/theme.js';
-import CheckoutSteps from '../CheckoutSteps.js';
+import CheckoutSteps from '../CheckoutSteps.tsx';
 
 // Helper to render with theme
 const renderWithTheme = (component) => {
@@ -77,7 +77,7 @@ vi.mock('../../../config.js', () => ({
 }));
 
 // Mock useCheckoutValidation
-vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     validateCheckout: vi.fn(() => Promise.resolve({ blocked: false })),
@@ -89,7 +89,7 @@ vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
 }));
 
 // Mock useCart hook
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
@@ -124,7 +124,7 @@ describe('CheckoutSteps - Multi-Step Flow (T061)', () => {
     vi.clearAllMocks();
 
     // Mock useCart hook
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -281,7 +281,7 @@ describe('CheckoutSteps - Button States', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -314,7 +314,7 @@ describe('CheckoutSteps - Complete Order Flow', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -341,7 +341,7 @@ describe('CheckoutSteps - Cart Summary Integration', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData

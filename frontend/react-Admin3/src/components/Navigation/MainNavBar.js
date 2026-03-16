@@ -26,7 +26,7 @@ import NavigationMenu from "./NavigationMenu.js";
 import AdminNavigationMenu from "./AdminNavigationMenu.js";
 import MainNavActions, { AdminNavActions } from "./MainNavActions.tsx";
 import AuthModal from "./AuthModal.tsx";
-import CartPanel from "../Ordering/CartPanel.js";
+import CartPanel from "../Ordering/CartPanel.tsx";
 // Redux imports for navigation integration
 import {
    navSelectSubject,
