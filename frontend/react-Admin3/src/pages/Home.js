@@ -3,11 +3,11 @@ import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox.js";
 import SearchResults from "../components/SearchResults.js";
-import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert.js";
+import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
-import { rulesEngineHelpers } from "../utils/rulesEngineUtils.js";
-import rulesEngineService from "../services/rulesEngineService.js";
+import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
+import rulesEngineService from "../services/rulesEngineService";
 import { useDispatch } from "react-redux";
 import { navSelectProductGroup } from "../store/slices/filtersSlice.js";
 import

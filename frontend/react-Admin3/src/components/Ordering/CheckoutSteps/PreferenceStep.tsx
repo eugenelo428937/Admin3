@@ -15,7 +15,7 @@ import {
   Grid,
   CircularProgress
 } from '@mui/material';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../services/rulesEngineService';
 import { useCart } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 
