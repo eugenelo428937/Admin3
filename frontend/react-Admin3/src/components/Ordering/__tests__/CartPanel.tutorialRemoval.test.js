@@ -21,7 +21,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth before importing
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn()
 }));
 
@@ -66,7 +66,7 @@ vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CartPanel from '../CartPanel.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies

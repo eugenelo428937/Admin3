@@ -22,7 +22,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isSuperuser: false,
     isApprentice: false,

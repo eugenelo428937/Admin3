@@ -69,7 +69,7 @@ vi.mock('../../../config.js', () => ({
 }));
 
 // Mock child components
-vi.mock('../../User/CountryAutocomplete.js', () => ({
+vi.mock('../../User/CountryAutocomplete.tsx', () => ({
   __esModule: true,
   default: function MockCountryAutocomplete({ value, onChange, label, name }) {
     return (

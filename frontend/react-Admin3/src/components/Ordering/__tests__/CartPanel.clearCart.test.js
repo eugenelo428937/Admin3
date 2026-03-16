@@ -12,7 +12,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn()
 }));
 
@@ -32,7 +32,7 @@ import { BrowserRouter } from 'react-router-dom';
 import CartPanel from '../CartPanel.js';
 import { useCart } from '../../../contexts/CartContext.js';
 import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 
 describe('CartPanel Clear Cart Navigation', () => {
   const mockClearCart = vi.fn();

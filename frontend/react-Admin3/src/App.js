@@ -9,7 +9,7 @@ import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
-import { AuthProvider } from "./hooks/useAuth.js";
+import { AuthProvider } from "./hooks/useAuth.tsx";
 import { ConfigProvider } from "./contexts/ConfigContext.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import Home from "./pages/Home.js";

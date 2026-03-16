@@ -35,7 +35,7 @@ const mockUseAuth = {
   isStudyPlus: false,
 };
 
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockUseAuth,
 }));
 
