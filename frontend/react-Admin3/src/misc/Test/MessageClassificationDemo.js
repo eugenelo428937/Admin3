@@ -7,7 +7,7 @@ import {
   requiresUserAction,
   getMessagePriority,
   sortMessagesByPriority
-} from '../../utils/rulesEngineUtils.js';
+} from '../../utils/rulesEngineUtils';
 
 /**
  * Demo component to showcase message classification utilities

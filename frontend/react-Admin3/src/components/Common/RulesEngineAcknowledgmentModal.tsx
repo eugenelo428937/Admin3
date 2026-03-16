@@ -10,7 +10,6 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
-  Alert,
   Divider,
   Link
 } from '@mui/material';
@@ -21,23 +20,15 @@ import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PolicyIcon from '@mui/icons-material/Policy';
 import DownloadIcon from '@mui/icons-material/Download';
+import type { RulesEngineAcknowledgmentModalProps, RawRulesMessage } from '../../types/rulesEngine';
 
 /**
  * Rules Engine Acknowledgment Modal Component
  *
  * Displays rules engine messages that require user acknowledgment with a checkbox.
  * Supports Terms & Conditions, warnings, and other acknowledgment types.
- *
- * @param {Object} props
- * @param {boolean} props.open - Whether the modal is open
- * @param {Function} props.onClose - Callback when modal is closed
- * @param {Function} props.onAcknowledge - Callback when user acknowledges (receives acknowledgment data)
- * @param {Object} props.message - Message object from rules engine
- * @param {string} props.entryPointLocation - Entry point where acknowledgment occurred
- * @param {boolean} props.required - Whether acknowledgment is required to proceed
- * @param {boolean} props.blocking - Whether modal should block user interaction
  */
-const RulesEngineAcknowledgmentModal = ({
+const RulesEngineAcknowledgmentModal: React.FC<RulesEngineAcknowledgmentModalProps> = ({
   open = false,
   onClose,
   onAcknowledge,
@@ -47,11 +38,11 @@ const RulesEngineAcknowledgmentModal = ({
   required = true,
   blocking = true
 }) => {
-  const [acknowledgments, setAcknowledgments] = useState({});
-  const [submitting, setSubmitting] = useState(false);
+  const [acknowledgments, setAcknowledgments] = useState<Record<number, boolean>>({});
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Support both single message and multiple messages
-  const messagesList = messages || (message ? [message] : []);
+  const messagesList: RawRulesMessage[] = messages || (message ? [message] : []);
 
   // Ensure body overflow is properly restored when modal closes
   useEffect(() => {
@@ -59,7 +50,6 @@ const RulesEngineAcknowledgmentModal = ({
       const timer = setTimeout(() => {
         const currentOverflow = document.body.style.overflow;
         if (currentOverflow === 'hidden') {
-          // Use combined overflow property for better MUI compatibility
           document.body.style.overflow = 'visible auto';
         }
         document.body.classList.remove('mui-fixed');
@@ -71,9 +61,8 @@ const RulesEngineAcknowledgmentModal = ({
   // Reset acknowledgment state when modal opens/closes or messages change
   useEffect(() => {
     if (open && messagesList.length > 0) {
-      // Reset acknowledgments for all messages
-      const initialAcknowledgments = {};
-      messagesList.forEach((msg, index) => {
+      const initialAcknowledgments: Record<number, boolean> = {};
+      messagesList.forEach((_msg, index) => {
         initialAcknowledgments[index] = false;
       });
       setAcknowledgments(initialAcknowledgments);
@@ -82,8 +71,8 @@ const RulesEngineAcknowledgmentModal = ({
   }, [open, messagesList.length]);
 
   // Get icon based on message type or variant
-  const getMessageIcon = (message) => {
-    const variant = message?.variant || message?.content?.variant || message?.message_type || 'info';
+  const getMessageIcon = (msg: RawRulesMessage): React.ReactNode => {
+    const variant = msg?.variant || msg?.content?.variant || msg?.message_type || 'info';
     const iconProps = { sx: { mr: 1, fontSize: 24 } };
 
     switch (variant) {
@@ -105,7 +94,7 @@ const RulesEngineAcknowledgmentModal = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     // Only allow closing if not required or if all messages are acknowledged
     const allAcknowledged = messagesList.every((_, index) => acknowledgments[index]);
     if (!required || allAcknowledged || !blocking) {
@@ -115,7 +104,7 @@ const RulesEngineAcknowledgmentModal = ({
     }
   };
 
-  const handleCheckboxChange = (messageIndex) => (event) => {
+  const handleCheckboxChange = (messageIndex: number) => (event: React.ChangeEvent<HTMLInputElement>): void => {
     const isChecked = event.target.checked;
     setAcknowledgments(prev => ({
       ...prev,
@@ -123,7 +112,7 @@ const RulesEngineAcknowledgmentModal = ({
     }));
   };
 
-  const handleAcknowledgeAll = async () => {
+  const handleAcknowledgeAll = async (): Promise<void> => {
     setSubmitting(true);
     try {
       // Submit acknowledgment for each message

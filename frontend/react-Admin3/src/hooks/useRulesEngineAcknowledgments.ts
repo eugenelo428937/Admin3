@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { rulesEngineHelpers, executeAndProcessRules, buildRulesContext } from '../utils/rulesEngineUtils.js';
+import { rulesEngineHelpers, executeAndProcessRules, buildRulesContext } from '../utils/rulesEngineUtils';
 import acknowledgmentService from '../services/acknowledgmentService.ts';
 import type { AcknowledgmentModalState, AcknowledgmentMessage } from '../types/checkout';
 

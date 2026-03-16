@@ -7,26 +7,27 @@ import {
     ListItemText,
     Link,
     Container,
-    Paper
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import type { JsonContentRendererProps, JsonContentItem } from '../../types/rulesEngine';
+
 /**
  * Component to render JSON-based content structure with Material UI components
  * Supports markdown-like syntax for bold text and links
  */
-const JsonContentRenderer = ({ content, className }) => {
+const JsonContentRenderer: React.FC<JsonContentRendererProps> = ({ content, className }) => {
     const theme = useTheme();
     if (!content) return null;
 
     // Parse markdown-like syntax in text
-    const parseText = (text) => {
-        if (!text || typeof text !== 'string') return text;
+    const parseText = (text: string | string[] | undefined): React.ReactNode => {
+        if (!text || typeof text !== 'string') return text as React.ReactNode;
 
         // Handle bold text **text**
         const boldRegex = /\*\*(.*?)\*\*/g;
-        let parts = [];
+        const parts: React.ReactNode[] = [];
         let lastIndex = 0;
-        let match;
+        let match: RegExpExecArray | null;
 
         while ((match = boldRegex.exec(text)) !== null) {
             // Add text before the match
@@ -39,7 +40,7 @@ const JsonContentRenderer = ({ content, className }) => {
             );
             lastIndex = match.index + match[0].length;
         }
-        
+
         // Add remaining text
         if (lastIndex < text.length) {
             parts.push(text.slice(lastIndex));
@@ -49,9 +50,9 @@ const JsonContentRenderer = ({ content, className }) => {
         return parts.map((part, index) => {
             if (typeof part === 'string') {
                 const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-                const linkParts = [];
+                const linkParts: React.ReactNode[] = [];
                 let linkLastIndex = 0;
-                let linkMatch;
+                let linkMatch: RegExpExecArray | null;
 
                 while ((linkMatch = linkRegex.exec(part)) !== null) {
                     // Add text before the link
@@ -60,7 +61,7 @@ const JsonContentRenderer = ({ content, className }) => {
                     }
                     // Add link
                     linkParts.push(
-                        <Link 
+                        <Link
                             key={`link-${index}-${linkMatch.index}`}
                             href={linkMatch[1]}
                             target="_blank"
@@ -84,28 +85,28 @@ const JsonContentRenderer = ({ content, className }) => {
     };
 
     // Render different element types
-    const renderElement = (item, index) => {
+    const renderElement = (item: JsonContentItem, index: number): React.ReactNode => {
         const { element, text, seq, class: cssClass, text_align, title } = item;
         const key = seq || index;
 
         switch (element) {
             case 'container':
                 return (
-                    <Container 
-                        key={key} 
+                    <Container
+                        key={key}
                         className={cssClass}
-                        sx={{ textAlign: text_align }}
+                        sx={{ textAlign: text_align as any }}
                     >
                         {title && (
-                            <Typography 
-                                component={title || 'h4'} 
+                            <Typography
+                                component={(title || 'h4') as any}
                                 variant={title === 'h1' ? 'h4' : title === 'h2' ? 'h5' : 'h6'}
                                 gutterBottom
                             >
-                                {parseText(text)}
+                                {parseText(text as string)}
                             </Typography>
                         )}
-                        {item.content && item.content.map((child, childIndex) => 
+                        {item.content && item.content.map((child, childIndex) =>
                             renderElement(child, childIndex)
                         )}
                     </Container>
@@ -113,15 +114,15 @@ const JsonContentRenderer = ({ content, className }) => {
 
             case 'p':
                 return (
-                    <Typography 
+                    <Typography
                         key={key}
                         component="p"
                         variant="body1"
                         paragraph
                         className={cssClass}
-                        sx={{ textAlign: text_align }}
+                        sx={{ textAlign: text_align as any }}
                     >
-                        {parseText(text)}
+                        {parseText(text as string)}
                     </Typography>
                 );
 
@@ -130,7 +131,7 @@ const JsonContentRenderer = ({ content, className }) => {
                     <List key={key} className={cssClass}>
                         {Array.isArray(text) ? text.map((listItem, listIndex) => (
                             <ListItem key={listIndex} disablePadding>
-                                <ListItemText 
+                                <ListItemText
                                     primary={parseText(listItem)}
                                     sx={{
                                         "& .MuiTypography-root": {
@@ -141,8 +142,8 @@ const JsonContentRenderer = ({ content, className }) => {
                             </ListItem>
                         )) : (
                             <ListItem disablePadding>
-                                <ListItemText 
-                                    primary={parseText(text)}
+                                <ListItemText
+                                    primary={parseText(text as string)}
                                     sx={{
                                         "& .MuiTypography-root": {
                                             fontSize: theme.typography.body1.fontSize,
@@ -159,8 +160,8 @@ const JsonContentRenderer = ({ content, className }) => {
             case 'h3':
             case 'h4':
             case 'h5':
-            case 'h6':
-                const variantMap = {
+            case 'h6': {
+                const variantMap: Record<string, any> = {
                     'h1': 'h4',
                     'h2': 'h5',
                     'h3': 'h6',
@@ -168,27 +169,28 @@ const JsonContentRenderer = ({ content, className }) => {
                     'h5': 'subtitle1',
                     'h6': 'subtitle2'
                 };
-                
+
                 return (
-                    <Typography 
+                    <Typography
                         key={key}
-                        component={element}
+                        component={element as any}
                         variant={variantMap[element]}
                         gutterBottom
                         className={cssClass}
-                        sx={{ textAlign: text_align }}
+                        sx={{ textAlign: text_align as any }}
                     >
-                        {parseText(text)}
+                        {parseText(text as string)}
                     </Typography>
                 );
+            }
 
             case 'box':
                 return (
-                    <Box 
+                    <Box
                         key={key}
                         className={cssClass}
-                        sx={{ 
-                            textAlign: text_align,
+                        sx={{
+                            textAlign: text_align as any,
                             // Add some styling for alert boxes
                             ...(cssClass && cssClass.includes('alert') && {
                                 padding: '12px 16px',
@@ -208,8 +210,8 @@ const JsonContentRenderer = ({ content, className }) => {
                             })
                         }}
                     >
-                        {parseText(text)}
-                        {item.content && item.content.map((child, childIndex) => 
+                        {parseText(text as string)}
+                        {item.content && item.content.map((child, childIndex) =>
                             renderElement(child, childIndex)
                         )}
                     </Box>
@@ -218,13 +220,13 @@ const JsonContentRenderer = ({ content, className }) => {
             default:
                 // Fallback to Typography for unknown elements
                 return (
-                    <Typography 
+                    <Typography
                         key={key}
                         variant="body1"
                         className={cssClass}
-                        sx={{ textAlign: text_align }}
+                        sx={{ textAlign: text_align as any }}
                     >
-                        {parseText(text)}
+                        {parseText(text as string)}
                     </Typography>
                 );
         }
@@ -233,7 +235,7 @@ const JsonContentRenderer = ({ content, className }) => {
     return (
         <Box className={className}>
             {content.message_container && renderElement(content.message_container, 0)}
-            {content.content && content.content.map((item, index) => 
+            {content.content && content.content.map((item, index) =>
                 renderElement(item, index)
             )}
         </Box>

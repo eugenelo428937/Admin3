@@ -30,7 +30,7 @@ vi.mock('../../services/acknowledgmentService', () => ({
   },
 }));
 
-vi.mock('../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   __esModule: true,
   rulesEngineHelpers: {},
   executeAndProcessRules: vi.fn(),
@@ -38,7 +38,7 @@ vi.mock('../../utils/rulesEngineUtils.js', () => ({
 }));
 
 import acknowledgmentService from '../../services/acknowledgmentService';
-import { executeAndProcessRules } from '../../utils/rulesEngineUtils.js';
+import { executeAndProcessRules } from '../../utils/rulesEngineUtils';
 
 describe('useRulesEngineAcknowledgments', () => {
   beforeEach(() => {
