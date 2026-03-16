@@ -8,8 +8,8 @@ import {
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.js';
 import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
-import examSessionService from '../../../services/examSessionService.js';
-import subjectService from '../../../services/subjectService.js';
+import examSessionService from '../../../services/examSessionService';
+import subjectService from '../../../services/subjectService';
 
 const AdminExamSessionSubjectForm = () => {
     const { isSuperuser } = useAuth();

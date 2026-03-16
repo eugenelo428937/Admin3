@@ -13,21 +13,21 @@ import { vi } from 'vitest';
  */
 
 describe('examSessionService', () => {
-  let examSessionService;
-  let httpService;
+  let examSessionService: any;
+  let httpService: any;
 
   beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         catalogUrl: 'http://test-api/catalog',
       },
     }));
 
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -37,8 +37,8 @@ describe('examSessionService', () => {
       },
     }));
 
-    { const _mod_examSessionService = await import('../examSessionService.js'); examSessionService = _mod_examSessionService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod = await import('../examSessionService'); examSessionService = _mod.default; }
+    { const _mod = await import('../httpService'); httpService = (_mod as any).default; }
   });
 
   afterEach(() => {
