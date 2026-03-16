@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import RulesEngineAcknowledgmentModal from '../RulesEngineAcknowledgmentModal.js';
+import RulesEngineAcknowledgmentModal from '../RulesEngineAcknowledgmentModal';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

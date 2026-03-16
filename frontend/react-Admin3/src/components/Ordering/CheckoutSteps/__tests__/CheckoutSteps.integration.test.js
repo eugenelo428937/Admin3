@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme.js';
+import theme from '../../../../theme/theme';
 import CheckoutSteps from '../../CheckoutSteps.tsx';
 
 // Custom render function with ThemeProvider
@@ -54,7 +54,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../../services/httpService.js', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn().mockResolvedValue({ data: {} }),
@@ -86,7 +86,7 @@ vi.mock('../../../../hooks/useCheckoutValidation.ts', () => ({
   })
 }));
 
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn().mockResolvedValue({

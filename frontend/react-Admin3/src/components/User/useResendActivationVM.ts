@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../../services/authService.ts";
+import authService from "../../services/authService";
 
 type ResendStatus = "success" | "error" | null;
 

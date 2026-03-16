@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import CheckoutPage from '../CheckoutPage.js';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import cartService from '../../../services/cartService.ts';
 
 // Mock react-router-dom

@@ -5,7 +5,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import RulesEngineInlineAlert from '../RulesEngineInlineAlert.js';
+import RulesEngineInlineAlert from '../RulesEngineInlineAlert';
 
 describe('RulesEngineInlineAlert Component', () => {
     // Format 1: ProductList message format

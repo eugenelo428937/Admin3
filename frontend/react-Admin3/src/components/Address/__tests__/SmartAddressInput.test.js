@@ -47,7 +47,7 @@ const usMetadata = {
 };
 
 // Mock services
-vi.mock('../../../services/addressMetadataService.ts', () => ({
+vi.mock('../../../services/address/addressMetadataService.ts', () => ({
   __esModule: true,
   default: {
     getCountryCode: vi.fn(),
@@ -113,7 +113,7 @@ vi.mock('../DynamicAddressForm.tsx', () => ({
 }));
 
 // Import mocked service
-import addressMetadataService from '../../../services/addressMetadataService.ts';
+import addressMetadataService from '../../../services/address/addressMetadataService.ts';
 import appTheme from '../../../theme';
 
 // Helper function to render component

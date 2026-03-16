@@ -12,14 +12,14 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock authService
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     resendActivationEmail: vi.fn(),
   },
 }));
 
-import authService from '../../../services/authService.ts';
+import authService from '../../../services/authService';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import BundleCard from '../BundleCard.js';
 
 // Mock bundleService
-vi.mock('../../../../services/bundleService.js', () => ({
+vi.mock('../../../../services/bundleService', () => ({
   __esModule: true,
   default: {
     getBundleContents: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../contexts/CartContext.tsx', () => ({
   }),
 }));
 
-import bundleService from '../../../../services/bundleService.js';
+import bundleService from '../../../../services/bundleService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

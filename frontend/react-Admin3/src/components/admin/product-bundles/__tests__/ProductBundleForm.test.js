@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService.js', () => ({
+vi.mock('../../../../services/catalogBundleService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/catalogBundleService.js', () => ({
   },
 }));
 
-import catalogBundleService from '../../../../services/catalogBundleService.js';
+import catalogBundleService from '../../../../services/catalogBundleService';
 
 // Mock subjectService
 vi.mock('../../../../services/subjectService', () => ({

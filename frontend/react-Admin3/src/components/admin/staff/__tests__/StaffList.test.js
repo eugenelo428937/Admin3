@@ -15,7 +15,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock staffService
-vi.mock('../../../../services/staffService.js', () => ({
+vi.mock('../../../../services/staffService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../services/staffService.js', () => ({
   },
 }));
 
-import staffService from '../../../../services/staffService.js';
+import staffService from '../../../../services/staffService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

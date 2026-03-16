@@ -5,10 +5,10 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import AddressEditModal from '../AddressEditModal.tsx';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import userService from '../../../services/userService.ts';
-import addressValidationService from '../../../services/addressValidationService.ts';
-import addressMetadataService from '../../../services/addressMetadataService.ts';
+import addressValidationService from '../../../services/address/addressValidationService.ts';
+import addressMetadataService from '../../../services/address/addressMetadataService.ts';
 
 // Mock userService
 vi.mock('../../../services/userService.ts', () => ({
@@ -22,7 +22,7 @@ vi.mock('../../../services/userService.ts', () => ({
 }));
 
 // Mock addressValidationService
-vi.mock('../../../services/addressValidationService.ts', () => ({
+vi.mock('../../../services/address/addressValidationService.ts', () => ({
   __esModule: true,
   default: {
     validateAddress: vi.fn(() => Promise.resolve({
@@ -36,7 +36,7 @@ vi.mock('../../../services/addressValidationService.ts', () => ({
 }));
 
 // Mock addressMetadataService
-vi.mock('../../../services/addressMetadataService.ts', () => ({
+vi.mock('../../../services/address/addressMetadataService.ts', () => ({
   __esModule: true,
   default: {
     supportsAddressLookup: vi.fn(() => true),

@@ -15,7 +15,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock authService
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     verifyEmailChange: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../services/authService.ts', () => ({
 }));
 
 // Mock loggerService
-vi.mock('../../../services/loggerService.js', () => ({
+vi.mock('../../../services/loggerService', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -32,7 +32,7 @@ vi.mock('../../../services/loggerService.js', () => ({
   },
 }));
 
-import authService from '../../../services/authService.ts';
+import authService from '../../../services/authService';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

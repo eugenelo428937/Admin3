@@ -8,8 +8,8 @@ import type {
 	CartData,
 	CartItem,
 } from "../types/cart";
-import httpService from "./httpService.js";
-import config from "../config.js";
+import httpService from "./httpService";
+import config from "../config";
 
 const API_BASE: string = (config as any).cartUrl;
 const ORDERS_API_URL: string = `${(config as any).apiBaseUrl}/api/orders`;

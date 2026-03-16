@@ -8,7 +8,7 @@
  * - COUNTRY_CODE_MAPPINGS: Country name to ISO code mappings
  */
 
-import { ADDRESS_METADATA, COUNTRY_CODE_MAPPINGS } from '../addressMetadataConfig.ts';
+import { ADDRESS_METADATA, COUNTRY_CODE_MAPPINGS } from '../address/addressMetadataConfig.ts';
 
 describe('addressMetadataConfig', () => {
   describe('ADDRESS_METADATA', () => {

@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock storeBundleService
-vi.mock('../../../../services/storeBundleService.js', () => ({
+vi.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('../../../../services/storeBundleService.js', () => ({
 }));
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService.js', () => ({
+vi.mock('../../../../services/catalogBundleService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -44,16 +44,16 @@ vi.mock('../../../../services/catalogBundleService.js', () => ({
 }));
 
 // Mock examSessionSubjectService
-vi.mock('../../../../services/examSessionSubjectService.js', () => ({
+vi.mock('../../../../services/examSessionSubjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import storeBundleService from '../../../../services/storeBundleService.js';
-import catalogBundleService from '../../../../services/catalogBundleService.js';
-import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
+import storeBundleService from '../../../../services/storeBundleService';
+import catalogBundleService from '../../../../services/catalogBundleService';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService';
 
 const theme = appTheme;
 

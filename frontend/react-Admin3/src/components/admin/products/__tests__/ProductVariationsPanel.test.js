@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import ProductVariationsPanel from '../ProductVariationsPanel.js';
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService.js', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
     getByProduct: vi.fn(),
@@ -17,15 +17,15 @@ vi.mock('../../../../services/productProductVariationService.js', () => ({
 }));
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService.js', () => ({
+vi.mock('../../../../services/productVariationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import productProductVariationService from '../../../../services/productProductVariationService.js';
-import productVariationService from '../../../../services/productVariationService.js';
+import productProductVariationService from '../../../../services/productProductVariationService';
+import productVariationService from '../../../../services/productVariationService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
