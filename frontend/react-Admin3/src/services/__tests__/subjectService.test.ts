@@ -15,21 +15,21 @@ import { vi } from 'vitest';
  */
 
 describe('subjectService', () => {
-  let subjectService;
-  let httpService;
+  let subjectService: any;
+  let httpService: any;
 
   beforeEach(async () => {
     vi.resetModules();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         catalogUrl: 'http://test-api/catalog',
       },
     }));
 
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -39,8 +39,8 @@ describe('subjectService', () => {
       },
     }));
 
-    { const _mod_subjectService = await import('../subjectService.js'); subjectService = _mod_subjectService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_subjectService = await import('../subjectService'); subjectService = _mod_subjectService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = (_mod_httpService as any).default; }
   });
 
   afterEach(() => {

@@ -1,67 +1,16 @@
-// src/components/admin/subjects/SubjectList.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
   Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, Alert, Paper, Typography, Box, CircularProgress, TablePagination
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth.js';
-import subjectService from '../../../services/subjectService.js';
+import useSubjectListVM from './useSubjectListVM';
 
-const AdminSubjectList = () => {
-	const { isSuperuser } = useAuth();
-	const [subjects, setSubjects] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-	const [page, setPage] = useState(0);
-	const [rowsPerPage, setRowsPerPage] = useState(50);
-	const [totalCount, setTotalCount] = useState(0);
+const AdminSubjectList: React.FC = () => {
+	const vm = useSubjectListVM();
 
-	const fetchSubjects = useCallback(async () => {
-		try {
-			setLoading(true);
-			const { results, count } = await subjectService.list({
-				page: page + 1,
-				page_size: rowsPerPage,
-			});
-			setSubjects(results);
-			setTotalCount(count);
-			setError(null);
-		} catch (err) {
-			console.error("Error fetching subjects:", err);
-			setError("Failed to fetch subjects. Please try again later.");
-			setSubjects([]);
-		} finally {
-			setLoading(false);
-		}
-	}, [page, rowsPerPage]);
-
-	useEffect(() => {
-		fetchSubjects();
-	}, [fetchSubjects]);
-
-	const handleDelete = async (id) => {
-		if (window.confirm("Are you sure you want to delete this subject?")) {
-			try {
-				await subjectService.delete(id);
-				fetchSubjects();
-			} catch (err) {
-				setError("Failed to delete subject. Please try again later.");
-			}
-		}
-	};
-
-	const handleChangePage = (event, newPage) => {
-		setPage(newPage);
-	};
-
-	const handleChangeRowsPerPage = (event) => {
-		setRowsPerPage(parseInt(event.target.value, 10));
-		setPage(0);
-	};
-
-	if (!isSuperuser) return <Navigate to="/" replace />;
-	if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+	if (!vm.isSuperuser) return <Navigate to="/" replace />;
+	if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
 	return (
 		<Container sx={{ mt: 4 }}>
@@ -77,9 +26,9 @@ const AdminSubjectList = () => {
 				</Box>
 			</Box>
 
-			{error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+			{vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
 
-			{subjects.length === 0 && !error ? (
+			{vm.subjects.length === 0 && !vm.error ? (
 				<Alert severity="info">No subjects found.</Alert>
 			) : (
 				<TableContainer component={Paper}>
@@ -93,7 +42,7 @@ const AdminSubjectList = () => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{subjects.map((subject) => (
+							{vm.subjects.map((subject) => (
 								<TableRow key={subject.id} hover>
 									<TableCell>{subject.code}</TableCell>
 									<TableCell>{subject.description}</TableCell>
@@ -122,7 +71,7 @@ const AdminSubjectList = () => {
 												variant="contained"
 												color="error"
 												size="small"
-												onClick={() => handleDelete(subject.id)}
+												onClick={() => vm.handleDelete(subject.id)}
 											>
 												Delete
 											</Button>
@@ -134,14 +83,14 @@ const AdminSubjectList = () => {
 					</Table>
 				</TableContainer>
 			)}
-			{totalCount > rowsPerPage && (
+			{vm.totalCount > vm.rowsPerPage && (
 				<TablePagination
 					component="div"
-					count={totalCount}
-					page={page}
-					onPageChange={handleChangePage}
-					rowsPerPage={rowsPerPage}
-					onRowsPerPageChange={handleChangeRowsPerPage}
+					count={vm.totalCount}
+					page={vm.page}
+					onPageChange={vm.handleChangePage}
+					rowsPerPage={vm.rowsPerPage}
+					onRowsPerPageChange={vm.handleChangeRowsPerPage}
 					rowsPerPageOptions={[25, 50, 100]}
 				/>
 			)}

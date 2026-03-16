@@ -1,9 +1,8 @@
 import { vi } from 'vitest';
-// src/components/admin/exam-sessions/__tests__/ExamSessionForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminExamSessionForm from '../ExamSessionForm.js';
+import AdminExamSessionForm from '../ExamSessionForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.js', () => ({
@@ -21,12 +20,12 @@ vi.mock('react-router-dom', () => {
   return {
     useNavigate: vi.fn(() => mockNavigate),
     useParams: vi.fn(() => ({})),
-    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
+    Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,15 +34,15 @@ vi.mock('../../../../services/examSessionService.js', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionService from '../../../../services/examSessionService';
 
 const theme = appTheme;
 
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
 import appTheme from '../../../../theme';
-const setMockParams = (params) => {
-  useParams.mockReturnValue(params);
+const setMockParams = (params: Record<string, string>) => {
+  (useParams as any).mockReturnValue(params);
 };
 
 const renderComponent = (isEditMode = false) => {
@@ -63,7 +62,7 @@ const renderComponent = (isEditMode = false) => {
 describe('AdminExamSessionForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
       isStudyPlus: false,
@@ -116,7 +115,7 @@ describe('AdminExamSessionForm', () => {
     };
 
     beforeEach(() => {
-      examSessionService.getById.mockResolvedValue(mockSession);
+      (examSessionService.getById as any).mockResolvedValue(mockSession);
     });
 
     test('renders edit form title', async () => {
@@ -164,7 +163,7 @@ describe('AdminExamSessionForm', () => {
 
   describe('error handling', () => {
     test('shows error when fetch fails in edit mode', async () => {
-      examSessionService.getById.mockRejectedValueOnce(new Error('Fetch error'));
+      (examSessionService.getById as any).mockRejectedValueOnce(new Error('Fetch error'));
 
       renderComponent(true);
 

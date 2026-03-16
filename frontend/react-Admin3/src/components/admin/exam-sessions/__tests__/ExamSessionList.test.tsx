@@ -1,10 +1,9 @@
 import { vi } from 'vitest';
-// src/components/admin/exam-sessions/__tests__/ExamSessionList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminExamSessionList from '../ExamSessionList.js';
+import AdminExamSessionList from '../ExamSessionList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.js', () => ({
@@ -15,7 +14,7 @@ vi.mock('../../../../hooks/useAuth.js', () => ({
 import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +23,7 @@ vi.mock('../../../../services/examSessionService.js', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionService from '../../../../services/examSessionService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
@@ -57,12 +56,12 @@ const renderComponent = () => {
 describe('AdminExamSessionList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
       isStudyPlus: false,
     });
-    examSessionService.list.mockResolvedValue({ results: mockExamSessions, count: mockExamSessions.length });
+    (examSessionService.list as any).mockResolvedValue({ results: mockExamSessions, count: mockExamSessions.length });
   });
 
   describe('rendering', () => {
@@ -127,7 +126,7 @@ describe('AdminExamSessionList', () => {
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      examSessionService.delete.mockResolvedValue({});
+      (examSessionService.delete as any).mockResolvedValue({});
 
       renderComponent();
 
@@ -162,7 +161,7 @@ describe('AdminExamSessionList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      examSessionService.list.mockRejectedValueOnce(new Error('Network error'));
+      (examSessionService.list as any).mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -173,7 +172,7 @@ describe('AdminExamSessionList', () => {
 
     test('displays error when delete fails', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      examSessionService.delete.mockRejectedValueOnce(new Error('Delete error'));
+      (examSessionService.delete as any).mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();
 
@@ -192,7 +191,7 @@ describe('AdminExamSessionList', () => {
 
   describe('empty state', () => {
     test('renders empty table when no sessions', async () => {
-      examSessionService.list.mockResolvedValueOnce({ results: [], count: 0 });
+      (examSessionService.list as any).mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 
