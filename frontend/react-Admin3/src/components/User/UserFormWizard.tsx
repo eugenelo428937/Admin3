@@ -13,7 +13,7 @@ import {
    Snackbar,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import AddressComparisonModal from "../Address/AddressComparisonModal.js";
+import AddressComparisonModal from "../Address/AddressComparisonModal.tsx";
 import {
    PersonalInfoStep,
    HomeAddressStep,

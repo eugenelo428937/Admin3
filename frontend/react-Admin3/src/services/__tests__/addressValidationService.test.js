@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // frontend/react-Admin3/src/services/__tests__/addressValidationService.test.js
-import addressValidationService from '../addressValidationService.js';
+import addressValidationService from '../addressValidationService.ts';
 
 // Mock fetch
 global.fetch = vi.fn();

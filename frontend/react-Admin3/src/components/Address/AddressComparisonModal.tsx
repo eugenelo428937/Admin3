@@ -13,9 +13,18 @@ import {
   IconButton
 } from '@mui/material';
 import { Close as CloseIcon, Check as CheckIcon, Edit as EditIcon } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 
-const AddressComparisonModal = ({
+interface AddressComparisonModalProps {
+  open: boolean;
+  userAddress?: Record<string, string>;
+  suggestedAddress?: Record<string, string>;
+  onAcceptSuggested: (address: Record<string, string>) => void;
+  onKeepOriginal: (address: Record<string, string>) => void;
+  onClose: () => void;
+  loading?: boolean;
+}
+
+const AddressComparisonModal: React.FC<AddressComparisonModalProps> = ({
   open = false,
   userAddress = {},
   suggestedAddress = {},
@@ -24,11 +33,10 @@ const AddressComparisonModal = ({
   onClose,
   loading = false
 }) => {
-  // Helper to format address for display
-  const formatAddressLines = (address) => {
+  const formatAddressLines = (address: Record<string, string>): string[] => {
     if (!address) return [];
 
-    const lines = [];
+    const lines: string[] = [];
     if (address.building) lines.push(address.building);
     if (address.address) lines.push(address.address);
     if (address.district) lines.push(address.district);
@@ -81,7 +89,6 @@ const AddressComparisonModal = ({
         </Typography>
 
         <Grid container spacing={3}>
-          {/* User's Address */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={1}
@@ -109,7 +116,6 @@ const AddressComparisonModal = ({
             </Paper>
           </Grid>
 
-          {/* Suggested Address */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={1}
@@ -161,16 +167,6 @@ const AddressComparisonModal = ({
       </DialogActions>
     </Dialog>
   );
-};
-
-AddressComparisonModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  userAddress: PropTypes.object,
-  suggestedAddress: PropTypes.object,
-  onAcceptSuggested: PropTypes.func.isRequired,
-  onKeepOriginal: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-  loading: PropTypes.bool
 };
 
 export default AddressComparisonModal;

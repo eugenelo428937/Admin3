@@ -7,14 +7,21 @@
  * This provides address formats, required fields, and validation patterns for all countries.
  */
 
+import type {
+  GoogleAddressData,
+  AddressMetadata,
+  AddressFieldConfig,
+  LayoutRow,
+} from '../types/address/address.types';
+
 // Google's address metadata API base URL
 const GOOGLE_ADDRESS_DATA_URL = 'https://chromium-i18n.appspot.com/ssl-address/data';
 
 // Cache for fetched metadata (in-memory)
-const metadataCache = new Map();
+const metadataCache: Map<string, GoogleAddressData> = new Map();
 
 // Field type mappings from Google's format to our format
-const GOOGLE_FIELD_MAPPINGS = {
+const GOOGLE_FIELD_MAPPINGS: Record<string, string> = {
   'A': 'address',      // Street Address
   'C': 'city',         // City/Locality
   'S': 'state',        // State/Province/Region
@@ -28,17 +35,17 @@ const GOOGLE_FIELD_MAPPINGS = {
 /**
  * Fetch address metadata for a country from Google's API
  *
- * @param {string} countryCode - ISO 3166-1 alpha-2 country code (e.g., 'US', 'GB')
- * @returns {Promise<object|null>} - Address metadata or null if fetch fails
+ * @param countryCode - ISO 3166-1 alpha-2 country code (e.g., 'US', 'GB')
+ * @returns Address metadata or null if fetch fails
  */
-export const fetchGoogleAddressMetadata = async (countryCode) => {
+export const fetchGoogleAddressMetadata = async (countryCode: string): Promise<GoogleAddressData | null> => {
   if (!countryCode) return null;
 
   const upperCountryCode = countryCode.toUpperCase();
 
   // Check cache first
   if (metadataCache.has(upperCountryCode)) {
-    return metadataCache.get(upperCountryCode);
+    return metadataCache.get(upperCountryCode)!;
   }
 
   try {
@@ -50,7 +57,7 @@ export const fetchGoogleAddressMetadata = async (countryCode) => {
       return null;
     }
 
-    const data = await response.json();
+    const data: GoogleAddressData = await response.json();
 
     // Cache the result
     metadataCache.set(upperCountryCode, data);
@@ -69,13 +76,13 @@ export const fetchGoogleAddressMetadata = async (countryCode) => {
  * %N = Name, %O = Organization, %A = Address, %C = City, %S = State, %Z = Zip
  * %n = Newline
  *
- * @param {string} format - Google's format string
- * @returns {array} - Array of field names in display order
+ * @param format - Google's format string
+ * @returns Array of field names in display order
  */
-export const parseGoogleFormat = (format) => {
+export const parseGoogleFormat = (format: string): string[] => {
   if (!format) return [];
 
-  const fields = [];
+  const fields: string[] = [];
   const matches = format.match(/%[A-Z]/g) || [];
 
   matches.forEach(match => {
@@ -95,13 +102,13 @@ export const parseGoogleFormat = (format) => {
  *
  * Google format example: "ACZ" means Address, City, Zip are required
  *
- * @param {string} requireString - Google's require string (e.g., "ACZ")
- * @returns {array} - Array of required field names
+ * @param requireString - Google's require string (e.g., "ACZ")
+ * @returns Array of required field names
  */
-export const parseGoogleRequiredFields = (requireString) => {
+export const parseGoogleRequiredFields = (requireString: string): string[] => {
   if (!requireString) return [];
 
-  const required = [];
+  const required: string[] = [];
 
   for (let i = 0; i < requireString.length; i++) {
     const fieldKey = requireString[i];
@@ -118,11 +125,11 @@ export const parseGoogleRequiredFields = (requireString) => {
 /**
  * Transform Google's address metadata to our internal format
  *
- * @param {object} googleData - Raw data from Google's API
- * @param {string} countryCode - ISO country code
- * @returns {object} - Transformed metadata in our format
+ * @param googleData - Raw data from Google's API
+ * @param countryCode - ISO country code
+ * @returns Transformed metadata in our format
  */
-export const transformGoogleMetadata = (googleData, countryCode) => {
+export const transformGoogleMetadata = (googleData: GoogleAddressData, countryCode: string): AddressMetadata | null => {
   if (!googleData) return null;
 
   const format = googleData.fmt || '';
@@ -138,17 +145,17 @@ export const transformGoogleMetadata = (googleData, countryCode) => {
   const hasPostcode = fields.includes('postal_code');
 
   // Build field configurations
-  const fieldConfigs = {};
+  const fieldConfigs: Record<string, AddressFieldConfig> = {};
 
   fields.forEach(fieldName => {
-    const fieldConfig = {
+    const fieldConfig: AddressFieldConfig = {
       label: getFieldLabel(fieldName, googleData),
       placeholder: getFieldPlaceholder(fieldName, googleData)
     };
 
     // Add uppercase transform if specified by Google
     if (upperString.includes(getGoogleFieldKey(fieldName))) {
-      fieldConfig.transform = (value) => value.toUpperCase();
+      fieldConfig.transform = (value: string): string => value.toUpperCase();
     }
 
     // Add postcode pattern if available
@@ -179,8 +186,8 @@ export const transformGoogleMetadata = (googleData, countryCode) => {
 /**
  * Get field label from Google's data
  */
-const getFieldLabel = (fieldName, googleData) => {
-  const labelMap = {
+const getFieldLabel = (fieldName: string, googleData: GoogleAddressData): string => {
+  const labelMap: Record<string, string> = {
     'address': googleData.locality_name_type === 'district' ? 'Street Address' : 'Address',
     'city': googleData.locality_name_type || 'City',
     'state': googleData.state_name_type || 'State',
@@ -197,7 +204,7 @@ const getFieldLabel = (fieldName, googleData) => {
 /**
  * Get field placeholder from Google's data
  */
-const getFieldPlaceholder = (fieldName, googleData) => {
+const getFieldPlaceholder = (fieldName: string, googleData: GoogleAddressData): string => {
   // Use example data if available
   if (googleData.zipex) {
     if (fieldName === 'postal_code') {
@@ -206,7 +213,7 @@ const getFieldPlaceholder = (fieldName, googleData) => {
   }
 
   // Default placeholders
-  const placeholderMap = {
+  const placeholderMap: Record<string, string> = {
     'address': 'Enter street address',
     'city': 'Enter city',
     'state': 'Enter state/province',
@@ -223,7 +230,7 @@ const getFieldPlaceholder = (fieldName, googleData) => {
 /**
  * Get Google field key from our field name
  */
-const getGoogleFieldKey = (fieldName) => {
+const getGoogleFieldKey = (fieldName: string): string => {
   for (const [key, value] of Object.entries(GOOGLE_FIELD_MAPPINGS)) {
     if (value === fieldName) return key;
   }
@@ -233,8 +240,8 @@ const getGoogleFieldKey = (fieldName) => {
 /**
  * Generate simple layout from fields
  */
-const generateLayout = (fields, hasPostcode) => {
-  const layout = [];
+const generateLayout = (fields: string[], hasPostcode: boolean): LayoutRow[] => {
+  const layout: LayoutRow[] = [];
 
   // Address always full width
   if (fields.includes('address')) {
@@ -242,7 +249,7 @@ const generateLayout = (fields, hasPostcode) => {
   }
 
   // City, State, Postal Code on same row if all present
-  const row2 = [];
+  const row2: LayoutRow = [];
   if (fields.includes('city')) row2.push({ field: 'city', span: 6 });
   if (fields.includes('state')) row2.push({ field: 'state', span: 3 });
   if (fields.includes('postal_code')) row2.push({ field: 'postal_code', span: 3 });
@@ -259,7 +266,7 @@ const generateLayout = (fields, hasPostcode) => {
 /**
  * Clear metadata cache
  */
-export const clearMetadataCache = () => {
+export const clearMetadataCache = (): void => {
   metadataCache.clear();
 };
 

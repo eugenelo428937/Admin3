@@ -4,8 +4,8 @@ import type { SvgIconComponent } from "@mui/icons-material";
 import authService from "../../services/authService";
 import userService from "../../services/userService";
 import config from "../../config.js";
-import addressMetadataService from "../../services/addressMetadataService.js";
-import addressValidationService from "../../services/addressValidationService.js";
+import addressMetadataService from "../../services/addressMetadataService.ts";
+import addressValidationService from "../../services/addressValidationService.ts";
 import type { WizardMode } from "../../types/auth";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
