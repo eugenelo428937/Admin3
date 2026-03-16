@@ -13,7 +13,7 @@ import {
 	CircularProgress,
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
-import addressMetadataService from "../../services/addressMetadataService.ts";
+import addressMetadataService from "../../services/address/addressMetadataService.ts";
 import { useTheme } from "@mui/material/styles";
 import type { AddressMetadata, AddressFieldConfig, AddressChangeEvent, AddressValidationResult } from "../../types/address";
 

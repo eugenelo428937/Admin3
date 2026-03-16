@@ -20,7 +20,7 @@ import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceCo
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 
 // Mock tutorial service
-vi.mock('../../../../../services/tutorialService.js', () => ({
+vi.mock('../../../../../services/tutorialService', () => ({
   getTutorialVariations: vi.fn(() => Promise.resolve([]))
 }));
 

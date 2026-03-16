@@ -1,13 +1,38 @@
 import { vi } from 'vitest';
-// frontend/react-Admin3/src/services/__tests__/addressValidationService.test.js
-import addressValidationService from '../addressValidationService.ts';
-
-// Mock fetch
-global.fetch = vi.fn();
 
 describe('addressValidationService', () => {
-  beforeEach(() => {
-    fetch.mockClear();
+  let addressValidationService;
+  let httpService;
+
+  beforeEach(async () => {
+    vi.resetModules();
+
+    vi.doMock('../../config', () => ({
+      __esModule: true,
+      default: { apiBaseUrl: 'http://test-api' },
+    }));
+
+    vi.doMock('../httpService', () => ({
+      __esModule: true,
+      default: {
+        get: vi.fn(),
+        post: vi.fn(),
+      },
+    }));
+
+    // Mock addressMetadataService to return country codes
+    vi.doMock('../address/addressMetadataService', () => ({
+      __esModule: true,
+      default: {
+        getCountryCode: vi.fn((country) => {
+          if (country === 'United Kingdom') return 'GB';
+          return 'US';
+        }),
+      },
+    }));
+
+    addressValidationService = (await import('../address/addressValidationService')).default;
+    httpService = (await import('../httpService')).default;
   });
 
   describe('validateAddress', () => {
@@ -24,11 +49,7 @@ describe('addressValidationService', () => {
         ]
       };
 
-      fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockResponse
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockResponse });
 
       const userAddress = {
         address: '10 Downing St',
@@ -45,11 +66,7 @@ describe('addressValidationService', () => {
     });
 
     it('returns no match when API returns empty results', async () => {
-      fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ addresses: [] })
-      });
+      httpService.get.mockResolvedValueOnce({ data: { addresses: [] } });
 
       const userAddress = {
         address: 'Invalid Address 12345',
@@ -76,11 +93,7 @@ describe('addressValidationService', () => {
         ]
       };
 
-      fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockResponse
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockResponse });
 
       const userAddress = {
         address: '10 Downing Street',
@@ -108,11 +121,7 @@ describe('addressValidationService', () => {
         ]
       };
 
-      fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockResponse
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockResponse });
 
       const userAddress = {
         address: '10 Downing St',

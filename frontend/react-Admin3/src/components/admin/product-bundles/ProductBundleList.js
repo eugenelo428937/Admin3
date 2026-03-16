@@ -9,7 +9,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import catalogBundleService from '../../../services/catalogBundleService.js';
+import catalogBundleService from '../../../services/catalogBundleService';
 import BundleProductsPanel from './BundleProductsPanel.js';
 
 const AdminProductBundleList = () => {

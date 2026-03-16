@@ -18,7 +18,7 @@ import {
   Paper
 } from "@mui/material";
 import Papa from "papaparse";
-import catalogProductService from "../../../services/catalogProductService.js";
+import catalogProductService from "../../../services/catalogProductService";
 
 const AdminProductImport = () => {
     const navigate = useNavigate();

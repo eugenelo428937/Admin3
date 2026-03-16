@@ -7,9 +7,9 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import storeBundleService from '../../../services/storeBundleService.js';
-import catalogBundleService from '../../../services/catalogBundleService.js';
-import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
+import storeBundleService from '../../../services/storeBundleService';
+import catalogBundleService from '../../../services/catalogBundleService';
+import examSessionSubjectService from '../../../services/examSessionSubjectService';
 
 const AdminStoreBundleForm = () => {
     const { isSuperuser } = useAuth();

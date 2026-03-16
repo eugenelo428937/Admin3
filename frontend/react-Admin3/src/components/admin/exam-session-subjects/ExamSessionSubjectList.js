@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import examSessionSubjectService from '../../../services/examSessionSubjectService.js';
+import examSessionSubjectService from '../../../services/examSessionSubjectService';
 import examSessionService from '../../../services/examSessionService';
 
 const AdminExamSessionSubjectList = () => {

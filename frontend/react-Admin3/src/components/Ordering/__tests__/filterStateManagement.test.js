@@ -26,7 +26,7 @@ import FilterPanel from '../../Product/FilterPanel.js';
 import MainNavBar from '../../Navigation/MainNavBar.tsx';
 
 // Mock API calls
-vi.mock('../../../services/productService.js', () => ({
+vi.mock('../../../services/productService', () => ({
   __esModule: true,
   default: {
     getProducts: vi.fn(() =>

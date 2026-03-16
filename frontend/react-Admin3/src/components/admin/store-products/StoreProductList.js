@@ -9,7 +9,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import storeProductService from '../../../services/storeProductService.js';
+import storeProductService from '../../../services/storeProductService';
 import StoreProductVariationsPanel from './StoreProductVariationsPanel.js';
 
 /**

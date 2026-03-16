@@ -46,7 +46,7 @@ describe('tutorialService', () => {
     }));
 
     // Import after mocks are set up
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
@@ -481,7 +481,7 @@ describe('tutorialService URL fallback', () => {
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
@@ -520,7 +520,7 @@ describe('tutorialService apiUrl fallback', () => {
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
@@ -562,7 +562,7 @@ describe('tutorialService empty config', () => {
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
     { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
   });
 
