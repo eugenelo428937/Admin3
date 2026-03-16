@@ -15,10 +15,10 @@ import addressMetadataService, {
   isRequiredField,
   getCountryCode,
   ADDRESS_METADATA
-} from '../addressMetadataService.js';
+} from '../addressMetadataService.ts';
 
 // Mock the Google metadata service
-vi.mock('../googleAddressMetadata.js', () => ({
+vi.mock('../googleAddressMetadata.ts', () => ({
   fetchGoogleAddressMetadata: vi.fn(),
   transformGoogleMetadata: vi.fn(),
   clearMetadataCache: vi.fn()
@@ -27,7 +27,7 @@ vi.mock('../googleAddressMetadata.js', () => ({
 import {
   fetchGoogleAddressMetadata,
   transformGoogleMetadata
-} from '../googleAddressMetadata.js';
+} from '../googleAddressMetadata.ts';
 
 describe('Address Metadata Service', () => {
   beforeEach(() => {
