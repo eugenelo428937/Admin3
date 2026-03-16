@@ -38,14 +38,14 @@ vi.mock('../../../../services/catalogBundleService.js', () => ({
 import catalogBundleService from '../../../../services/catalogBundleService.js';
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 const theme = appTheme;
 

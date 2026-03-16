@@ -1,10 +1,9 @@
 import { vi } from 'vitest';
-// src/components/admin/subjects/__tests__/SubjectList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminSubjectList from '../SubjectList.js';
+import AdminSubjectList from '../SubjectList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.js', () => ({
@@ -15,7 +14,7 @@ vi.mock('../../../../hooks/useAuth.js', () => ({
 import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +23,7 @@ vi.mock('../../../../services/subjectService.js', () => ({
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
@@ -57,12 +56,12 @@ const renderComponent = () => {
 describe('AdminSubjectList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
       isStudyPlus: false,
     });
-    subjectService.list.mockResolvedValue({ results: mockSubjects, count: mockSubjects.length });
+    (subjectService.list as any).mockResolvedValue({ results: mockSubjects, count: mockSubjects.length });
   });
 
   describe('rendering', () => {
@@ -75,7 +74,7 @@ describe('AdminSubjectList', () => {
     });
 
     test('renders loading state initially', () => {
-      subjectService.list.mockReturnValue(new Promise(() => {}));
+      (subjectService.list as any).mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -160,7 +159,7 @@ describe('AdminSubjectList', () => {
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      subjectService.delete.mockResolvedValue({});
+      (subjectService.delete as any).mockResolvedValue({});
 
       renderComponent();
 
@@ -195,7 +194,7 @@ describe('AdminSubjectList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      subjectService.list.mockRejectedValueOnce(new Error('Network error'));
+      (subjectService.list as any).mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -206,7 +205,7 @@ describe('AdminSubjectList', () => {
 
     test('displays error when delete fails', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      subjectService.delete.mockRejectedValueOnce(new Error('Delete error'));
+      (subjectService.delete as any).mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();
 
@@ -225,7 +224,7 @@ describe('AdminSubjectList', () => {
 
   describe('empty state', () => {
     test('displays empty message when no subjects', async () => {
-      subjectService.list.mockResolvedValueOnce({ results: [], count: 0 });
+      (subjectService.list as any).mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 

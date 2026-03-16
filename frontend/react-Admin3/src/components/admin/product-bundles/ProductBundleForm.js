@@ -8,7 +8,7 @@ import {
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.js';
 import catalogBundleService from '../../../services/catalogBundleService.js';
-import subjectService from '../../../services/subjectService.js';
+import subjectService from '../../../services/subjectService';
 
 const AdminProductBundleForm = () => {
     const { isSuperuser } = useAuth();

@@ -1,9 +1,8 @@
 import { vi } from 'vitest';
-// src/components/admin/subjects/__tests__/SubjectDetail.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminSubjectDetail from '../SubjectDetail.js';
+import AdminSubjectDetail from '../SubjectDetail.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.js', () => ({
@@ -21,13 +20,13 @@ vi.mock('react-router-dom', () => {
   return {
     useNavigate: vi.fn(() => mockNavigate),
     useParams: vi.fn(() => ({ id: '1' })),
-    Link: ({ children, to }) => <a href={to}>{children}</a>,
-    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
+    Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+    Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +34,7 @@ vi.mock('../../../../services/subjectService.js', () => ({
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;
@@ -60,17 +59,17 @@ const renderComponent = () => {
 describe('AdminSubjectDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({
+    (useAuth as any).mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
       isStudyPlus: false,
     });
-    subjectService.getById.mockResolvedValue(mockSubject);
+    (subjectService.getById as any).mockResolvedValue(mockSubject);
   });
 
   describe('rendering', () => {
     test('renders loading state initially', () => {
-      subjectService.getById.mockReturnValue(new Promise(() => {}));
+      (subjectService.getById as any).mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -103,7 +102,7 @@ describe('AdminSubjectDetail', () => {
     });
 
     test('displays inactive status when subject is not active', async () => {
-      subjectService.getById.mockResolvedValueOnce({ ...mockSubject, active: false });
+      (subjectService.getById as any).mockResolvedValueOnce({ ...mockSubject, active: false });
 
       renderComponent();
 
@@ -113,7 +112,7 @@ describe('AdminSubjectDetail', () => {
     });
 
     test('displays "No description available" when description is empty', async () => {
-      subjectService.getById.mockResolvedValueOnce({ ...mockSubject, description: '' });
+      (subjectService.getById as any).mockResolvedValueOnce({ ...mockSubject, description: '' });
 
       renderComponent();
 
@@ -152,7 +151,7 @@ describe('AdminSubjectDetail', () => {
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      subjectService.delete.mockResolvedValue({});
+      (subjectService.delete as any).mockResolvedValue({});
 
       renderComponent();
 
@@ -200,7 +199,7 @@ describe('AdminSubjectDetail', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      subjectService.getById.mockRejectedValueOnce(new Error('Network error'));
+      (subjectService.getById as any).mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -211,7 +210,7 @@ describe('AdminSubjectDetail', () => {
 
     test('displays error when delete fails', async () => {
       window.confirm = vi.fn().mockReturnValue(true);
-      subjectService.delete.mockRejectedValueOnce(new Error('Delete error'));
+      (subjectService.delete as any).mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();
 
