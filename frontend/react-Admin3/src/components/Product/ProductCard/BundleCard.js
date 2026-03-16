@@ -39,7 +39,7 @@ import {
 } from "@mui/icons-material";
 import { Inventory2Outlined as BoxSeam } from "@mui/icons-material";
 import { ThemeProvider } from "@mui/material/styles";
-import { useCart } from "../../../contexts/CartContext.js";
+import { useCart } from "../../../contexts/CartContext.tsx";
 import bundleService from "../../../services/bundleService.js";
 
 const BundleCard = React.memo(({ bundle, onAddToCart }) => {

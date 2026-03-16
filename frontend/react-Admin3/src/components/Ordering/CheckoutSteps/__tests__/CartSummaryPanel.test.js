@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartSummaryPanel from '../CartSummaryPanel.js';
+import CartSummaryPanel from '../CartSummaryPanel.tsx';
 
 describe('CartSummaryPanel', () => {
   const mockCartItems = [

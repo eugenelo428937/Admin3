@@ -17,7 +17,7 @@ vi.mock('../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock useCart
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
@@ -30,7 +30,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import CartPanel from '../CartPanel.js';
-import { useCart } from '../../../contexts/CartContext.js';
+import { useCart } from '../../../contexts/CartContext.tsx';
 import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext.js';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 

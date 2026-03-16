@@ -44,7 +44,7 @@ import {
    ErrorOutline,
 } from "@mui/icons-material";
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext.js";
-import { useCart } from "../../../../contexts/CartContext.js";
+import { useCart } from "../../../../contexts/CartContext.tsx";
 import tutorialService from "../../../../services/tutorialService.js";
 import { formatPrice, getVatStatusDisplay } from "../../../../utils/vatUtils.js";
 import {

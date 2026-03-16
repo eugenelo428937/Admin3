@@ -4,7 +4,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import PaymentStep from '../PaymentStep.js';
+import PaymentStep from '../PaymentStep.tsx';
 
 import appTheme from '../../../../theme';
 // Create theme
@@ -29,7 +29,7 @@ const mockCartItems = [
 const mockRefreshCart = vi.fn(() => Promise.resolve());
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: mockCartData,
     cartItems: mockCartItems,

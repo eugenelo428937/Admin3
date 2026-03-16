@@ -26,7 +26,7 @@ vi.mock('../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../services/cartService.js', () => ({
+vi.mock('../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({ data: { items: [] } })),
@@ -90,7 +90,7 @@ vi.mock('../components/Product/ProductList.js', () => ({
   },
 }));
 
-vi.mock('../components/Ordering/CheckoutPage.js', () => ({
+vi.mock('../components/Ordering/CheckoutPage.tsx', () => ({
   __esModule: true,
   default: function MockCheckoutPage() {
     return <div data-testid="checkout-page">Checkout Page</div>;
@@ -196,7 +196,7 @@ import { Navigate } from 'react-router-dom';
 // Import mocked components at top level
 import Home from '../pages/Home.js';
 import ProductList from '../components/Product/ProductList.js';
-import CheckoutPage from '../components/Ordering/CheckoutPage.js';
+import CheckoutPage from '../components/Ordering/CheckoutPage.tsx';
 import ProfilePage from '../pages/ProfilePage.js';
 import OrderHistory from '../components/User/OrderHistory.tsx';
 import NoMatch from '../components/NoMatch.js';

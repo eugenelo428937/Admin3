@@ -15,7 +15,7 @@ import ErrorBoundary from "./components/ErrorBoundary.js";
 import Home from "./pages/Home.js";
 import MainNavBar from "./components/Navigation/MainNavBar.js";
 import NoMatch from "./components/NoMatch.js";
-import { CartProvider } from "./contexts/CartContext.js";
+import { CartProvider } from "./contexts/CartContext.tsx";
 import { ProductProvider } from "./contexts/ProductContext.js";
 import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext.js";
 import { Container } from "@mui/material";
@@ -27,7 +27,7 @@ import "./App.scss";
 // Public pages
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage.js"));
 const ProductList = React.lazy(() => import("./components/Product/ProductList.js"));
-const CheckoutPage = React.lazy(() => import("./components/Ordering/CheckoutPage.js"));
+const CheckoutPage = React.lazy(() => import("./components/Ordering/CheckoutPage.tsx"));
 const OrderHistory = React.lazy(() => import("./components/User/OrderHistory.tsx"));
 const TutorialSummaryBarContainer = React.lazy(() => import("./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js"));
 const ForgotPasswordForm = React.lazy(() => import("./components/User/ForgotPasswordForm.tsx"));

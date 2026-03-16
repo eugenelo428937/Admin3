@@ -21,7 +21,7 @@ import {
    MenuBook as KnowledgeBaseIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../../hooks/useAuth.tsx";
-import { useCart } from "../../contexts/CartContext.js";
+import { useCart } from "../../contexts/CartContext.tsx";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
