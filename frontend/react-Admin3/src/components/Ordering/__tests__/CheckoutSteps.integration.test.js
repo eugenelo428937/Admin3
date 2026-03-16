@@ -23,7 +23,7 @@ import theme from '../../../theme/theme.js';
 import CartReviewStep from '../CheckoutSteps/CartReviewStep.tsx';
 import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.tsx';
 import CheckoutSteps from '../CheckoutSteps.tsx';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 // Mock useMediaQuery so CartSummaryPanel expands in tests
 vi.mock('@mui/material/useMediaQuery', () => ({
@@ -55,7 +55,7 @@ vi.mock('../../../utils/productCodeGenerator.js', () => ({
 }));
 
 // Mock services for integration tests
-vi.mock('../../../services/rulesEngineService.js', () => {
+vi.mock('../../../services/rulesEngineService', () => {
   const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],

@@ -85,7 +85,7 @@ vi.mock('../../components/SearchResults.js', () => ({
 }));
 
 // Mock rulesEngineService
-vi.mock('../../services/rulesEngineService.js', () => ({
+vi.mock('../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
@@ -93,7 +93,7 @@ vi.mock('../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock rulesEngineUtils
-vi.mock('../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
     executeHomePage: vi.fn().mockResolvedValue({
       success: true,
@@ -134,7 +134,7 @@ vi.mock('../../components/Effects/CopperRoseBackground.js', () => ({
 }));
 
 import Home from '../Home.js';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';
+import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
 
 describe('Home Page', () => {
   beforeEach(() => {

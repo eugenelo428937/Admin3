@@ -16,21 +16,19 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import InfoIcon from '@mui/icons-material/Info';
 import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import type { RulesEngineModalProps, RawRulesMessage } from '../../types/rulesEngine';
+
+interface MessageContent {
+  title: string;
+  body: string;
+  details: string[];
+}
 
 /**
  * Generic modal component for displaying rules engine messages
  * Supports single or multiple messages with Material-UI pagination
- *
- * @param {Object} props
- * @param {boolean} props.open - Whether the modal is open
- * @param {Function} props.onClose - Callback when modal is closed
- * @param {Array|Object} props.messages - Single message object or array of message objects
- * @param {string} props.closeButtonText - Text for the close button (default: "I Understand")
- * @param {boolean} props.backdrop - Whether clicking backdrop closes modal (default: "static")
- * @param {boolean} props.disableEscapeKeyDown - Whether ESC key closes modal (default: true)
- * @param {Function} props.onPageChange - Optional callback when page changes
  */
-const RulesEngineModal = ({
+const RulesEngineModal: React.FC<RulesEngineModalProps> = ({
   open = false,
   onClose,
   messages = [],
@@ -41,8 +39,8 @@ const RulesEngineModal = ({
   maxWidth = "sm",
   fullWidth = true
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [messageArray, setMessageArray] = useState([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [messageArray, setMessageArray] = useState<RawRulesMessage[]>([]);
 
   // Normalize messages to always be an array
   useEffect(() => {
@@ -57,19 +55,13 @@ const RulesEngineModal = ({
   }, [messages]);
 
   // Ensure body overflow is properly restored when modal closes
-  // Material-UI's ModalManager tracks overflow state, but rapid open/close can cause sync issues
-  // This ensures overflow is restored after MUI's cleanup completes
   useEffect(() => {
     if (!open) {
       const timer = setTimeout(() => {
-        // Check if overflow is still 'hidden' after modal close
         const currentOverflow = document.body.style.overflow;
         if (currentOverflow === 'hidden') {
-          // Restore to default (visible auto) using combined overflow property
-          // This works with MUI's restoration mechanism better than separate overflow-x/y
           document.body.style.overflow = 'visible auto';
         }
-        // Remove any lingering MUI modal classes
         document.body.classList.remove('mui-fixed');
       }, 100);
 
@@ -78,7 +70,7 @@ const RulesEngineModal = ({
   }, [open]);
 
   // Get icon based on message type or variant
-  const getMessageIcon = (message) => {
+  const getMessageIcon = (message: RawRulesMessage): React.ReactNode => {
     const variant = message?.variant || message?.content?.variant || 'info';
     const iconProps = { sx: { mr: 1, fontSize: 24 } };
 
@@ -96,14 +88,14 @@ const RulesEngineModal = ({
     }
   };
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number): void => {
     setCurrentPage(value);
     if (onPageChange) {
       onPageChange(value);
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     if (onClose) {
       onClose();
     }
@@ -118,7 +110,7 @@ const RulesEngineModal = ({
   const currentMessage = messageArray[currentPage - 1];
 
   // Extract content from the message
-  const getMessageContent = (message) => {
+  const getMessageContent = (message: RawRulesMessage | undefined): MessageContent => {
     if (!message) return { title: '', body: '', details: [] };
 
     const content = message.content || message;
@@ -132,12 +124,10 @@ const RulesEngineModal = ({
   const currentContent = getMessageContent(currentMessage);
 
   // Determine the main modal title
-  const getModalTitle = () => {
+  const getModalTitle = (): string => {
     if (isSingleMessage) {
-      // For single message, use the message's title
       return currentContent.title || 'Important Notice';
     } else {
-      // For multiple messages, use "Important Notice" as main title
       return 'Important Notice';
     }
   };

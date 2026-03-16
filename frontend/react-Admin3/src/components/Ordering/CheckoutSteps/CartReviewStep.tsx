@@ -10,7 +10,7 @@ import {
 import { LocationOn, Receipt } from '@mui/icons-material';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel.tsx';
 import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel.js';
-import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert.js';
+import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert';
 
 import type { CartItem, VATCalculations } from '../../../types/cart';
 import type {

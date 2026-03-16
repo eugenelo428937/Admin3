@@ -1,25 +1,3 @@
-/**
- * RulesEngineInlineAlert Component
- *
- * Displays rules engine messages with collapsible content.
- * Shows title and first line by default, with "see more" to expand full content.
- *
- * Supports multiple message formats:
- * - Format 1: { title, message, variant, template_id } (ProductList)
- * - Format 2: { message_type, content: { title, message }, template_id } (CartReviewStep)
- * - Format 3: { parsed: { title, message, variant } } (Home page rules engine)
- *
- * @param {Array} messages - Array of message objects
- * @param {boolean} loading - Loading state indicator
- * @param {string} loadingMessage - Custom loading message text
- * @param {Function} onDismiss - Optional callback when alert is dismissed
- * @param {boolean} fullWidth - If true, alert container takes full width (default: false)
- * @param {string} width - Custom width for the alert (e.g., '400px', '50%', '30rem')
- * @param {boolean} float - If true, enables floating positioning (default: false)
- * @param {string} floatPosition - Position when floating: 'left', 'right', 'center' (default: 'left')
- * @param {boolean} showMoreLess - If true, shows collapsible expand/collapse functionality (default: true)
- */
-
 import React, { useState } from 'react';
 import {
     Alert,
@@ -32,8 +10,26 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import type { RulesEngineInlineAlertProps, NormalizedMessage, RawRulesMessage } from '../../types/rulesEngine';
 
-const RulesEngineInlineAlert = ({
+type AlertSeverity = 'info' | 'warning' | 'error' | 'success';
+
+/**
+ * RulesEngineInlineAlert Component
+ *
+ * Displays rules engine messages with collapsible content.
+ * Shows title and first line by default, with "see more" to expand full content.
+ *
+ * Supports multiple message formats:
+ * - Format 1: { title, message, variant, template_id } (ProductList)
+ * - Format 2: { message_type, content: { title, message }, template_id } (CartReviewStep)
+ * - Format 3: { parsed: { title, message, variant } } (Home page rules engine)
+ *
+ * Note: dangerouslySetInnerHTML is used intentionally here to render server-controlled
+ * rules engine HTML content. The content is sanitized server-side via the Rules Engine's
+ * MessageTemplateService XSS sanitization (whitelist approach).
+ */
+const RulesEngineInlineAlert: React.FC<RulesEngineInlineAlertProps> = ({
     messages = [],
     loading = false,
     loadingMessage = 'Loading information...',
@@ -45,12 +41,12 @@ const RulesEngineInlineAlert = ({
     showMoreLess = true
 }) => {
     // Track expanded state for each message by index
-    const [expandedMessages, setExpandedMessages] = useState({});
+    const [expandedMessages, setExpandedMessages] = useState<Record<number, boolean>>({});
 
     /**
      * Toggle expand/collapse for a specific message
      */
-    const handleToggleExpand = (index) => {
+    const handleToggleExpand = (index: number): void => {
         setExpandedMessages(prev => ({
             ...prev,
             [index]: !prev[index]
@@ -60,7 +56,7 @@ const RulesEngineInlineAlert = ({
     /**
      * Extract first line of message content for preview
      */
-    const getFirstLine = (htmlContent) => {
+    const getFirstLine = (htmlContent: string): string => {
         if (!htmlContent) return '';
 
         // Strip HTML tags and get first sentence or 200 characters
@@ -77,15 +73,15 @@ const RulesEngineInlineAlert = ({
     /**
      * Normalize message format to handle ProductList, CartReviewStep, and Home page formats
      */
-    const normalizeMessage = (message) => {
+    const normalizeMessage = (message: RawRulesMessage): NormalizedMessage => {
         // Format 1: { title, message, variant } (ProductList)
-        if (message.title && message.message) {
+        if (message.title && (message as any).message) {
             return {
-                title: message.title,
-                message: message.message,
-                variant: message.variant,
-                template_id: message.template_id,
-                dismissible: message.dismissible
+                title: message.title as string,
+                message: (message as any).message,
+                variant: message.variant || 'info',
+                template_id: message.template_id || null,
+                dismissible: message.dismissible !== false
             };
         }
 
@@ -95,20 +91,20 @@ const RulesEngineInlineAlert = ({
                 title: message.content?.title || 'Notice',
                 message: message.content?.message || message.content,
                 variant: message.message_type,
-                template_id: message.template_id,
-                dismissible: message.dismissible
+                template_id: message.template_id || null,
+                dismissible: message.dismissible !== false
             };
         }
 
         // Format 3: { parsed: { title, message, variant } } (Home page rules engine)
-        if (message.parsed) {
-            const parsed = message.parsed;
+        if ((message as any).parsed) {
+            const parsed = (message as any).parsed;
             return {
                 title: parsed.title || 'Notice',
                 message: parsed.message || 'No message content',
-                variant: parsed.variant,
-                template_id: message.template_id,
-                dismissible: parsed.dismissible
+                variant: parsed.variant || 'info',
+                template_id: message.template_id || null,
+                dismissible: parsed.dismissible !== false
             };
         }
 
@@ -125,8 +121,8 @@ const RulesEngineInlineAlert = ({
     /**
      * Determine Material-UI Alert severity from message variant
      */
-    const getSeverity = (variant) => {
-        const severityMap = {
+    const getSeverity = (variant: string): AlertSeverity => {
+        const severityMap: Record<string, AlertSeverity> = {
             'warning': 'warning',
             'error': 'error',
             'info': 'info',
@@ -138,8 +134,8 @@ const RulesEngineInlineAlert = ({
     /**
      * Compute container styles based on props
      */
-    const getContainerStyles = () => {
-        const styles = {};
+    const getContainerStyles = (): Record<string, any> => {
+        const styles: Record<string, any> = {};
 
         // Width handling
         if (fullWidth) {
@@ -171,8 +167,8 @@ const RulesEngineInlineAlert = ({
     /**
      * Compute alert styles based on props
      */
-    const getAlertStyles = () => {
-        const styles = {
+    const getAlertStyles = (): Record<string, any> => {
+        const styles: Record<string, any> = {
             mb: 2,
             alignItems: 'start',
             justifyContent: 'start'
@@ -216,7 +212,7 @@ const RulesEngineInlineAlert = ({
                 const normalized = normalizeMessage(message);
                 const isExpanded = expandedMessages[index] || false;
                 const firstLine = getFirstLine(normalized.message);
-                const severity = getSeverity(normalized.variant);
+                const severity = getSeverity(normalized.variant as string);
 
                 return (
                     <Alert
@@ -280,6 +276,7 @@ const RulesEngineInlineAlert = ({
                                     {/* Full Content (Expanded) */}
                                     <Collapse in={isExpanded} timeout="auto" unmountOnExit sx={{ textAlign: 'left', width: '100%' }}>
                                         <Box>
+                                            {/* Server-controlled HTML content, sanitized by backend MessageTemplateService */}
                                             <div
                                                 dangerouslySetInnerHTML={{
                                                     __html: normalized.message || 'No message content'
@@ -304,6 +301,7 @@ const RulesEngineInlineAlert = ({
                             ) : (
                                 /* Full content always visible when showMoreLess is disabled */
                                 <Box sx={{ textAlign: 'left', width: '100%' }}>
+                                    {/* Server-controlled HTML content, sanitized by backend MessageTemplateService */}
                                     <div
                                         dangerouslySetInnerHTML={{
                                             __html: normalized.message || 'No message content'
