@@ -22,7 +22,7 @@ vi.mock('./pages/ProfilePage.js', () => ({ __esModule: true, default: () => <div
 vi.mock('./pages/Registration.js', () => ({ __esModule: true, default: () => <div data-testid="registration-page">Registration Page</div> }));
 vi.mock('./components/Navigation/MainNavBar.js', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
 vi.mock('./components/Product/ProductList.js', () => ({ __esModule: true, default: () => <div data-testid="product-list">Products</div> }));
-vi.mock('./components/Ordering/CheckoutPage.js', () => ({ __esModule: true, default: () => <div data-testid="checkout-page">Checkout</div> }));
+vi.mock('./components/Ordering/CheckoutPage.tsx', () => ({ __esModule: true, default: () => <div data-testid="checkout-page">Checkout</div> }));
 vi.mock('./components/User/OrderHistory.tsx', () => ({ __esModule: true, default: () => <div data-testid="order-history">Orders</div> }));
 vi.mock('./components/User/ForgotPasswordForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="forgot-password">Forgot Password</div> }));
 vi.mock('./components/User/ResetPasswordForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="reset-password">Reset Password</div> }));

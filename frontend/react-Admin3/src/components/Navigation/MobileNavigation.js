@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.tsx";
 import { useConfig } from "../../contexts/ConfigContext.js";
-import { useCart } from "../../contexts/CartContext.js";
+import { useCart } from "../../contexts/CartContext.tsx";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
 import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from "@mui/material";
 

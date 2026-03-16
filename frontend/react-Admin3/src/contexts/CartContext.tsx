@@ -1,13 +1,33 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import cartService from "../services/cartService.js";
+import cartService from "../services/cartService.ts";
 import { useConfig } from "./ConfigContext.js";
+import type { CartItem, CartData, PriceInfo } from "../types/cart";
 
-const CartContext = createContext();
+// ─── Context Value Interface ────────────────────────────────────
 
-export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-  const [cartData, setCartData] = useState(null); // Store full cart object
-  const [loading, setLoading] = useState(true);
+interface CartContextValue {
+  cartItems: CartItem[];
+  cartData: CartData | null;
+  addToCart: (product: any, priceInfo?: PriceInfo) => Promise<void>;
+  addVoucherToCart: (voucherId: number, quantity?: number) => Promise<any>;
+  updateCartItem: (itemId: number, product: any, priceInfo?: PriceInfo) => Promise<any>;
+  removeFromCart: (cartItemId: number) => Promise<any>;
+  clearCart: () => Promise<void>;
+  refreshCart: () => Promise<any>;
+  cartCount: number;
+  loading: boolean;
+}
+
+// ─── Context ────────────────────────────────────────────────────
+
+const CartContext = createContext<CartContextValue | undefined>(undefined);
+
+// ─── Provider ───────────────────────────────────────────────────
+
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartData, setCartData] = useState<CartData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const { isInternal, configLoaded } = useConfig();
 
   // Fetch cart from backend on mount (skip in internal mode)
@@ -22,8 +42,7 @@ export const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       try {
         const res = await cartService.fetchCart();
-
-        setCartData(res.data); // Store full cart object
+        setCartData(res.data);
         setCartItems(res.data.items || []);
       } catch (err) {
         console.error('🛒 [CartContext] Error fetching cart:', err);
@@ -35,15 +54,16 @@ export const CartProvider = ({ children }) => {
     };
     fetchCart();
   }, [configLoaded, isInternal]);
-  const addToCart = async (product, priceInfo = {}) => {
+
+  const addToCart = async (product: any, priceInfo: PriceInfo = {}) => {
     try {
       // Extract quantity from priceInfo or metadata, default to 1
-      const quantity = priceInfo.quantity || priceInfo.metadata?.quantity || 1;
+      const quantity = priceInfo.quantity || (priceInfo.metadata as any)?.quantity || 1;
       const res = await cartService.addToCart(product, quantity, priceInfo);
 
       // The backend should return the complete updated cart
       if (res.data && res.data.items) {
-        setCartData(res.data); // Store full cart object
+        setCartData(res.data);
         setCartItems(res.data.items);
       } else {
         console.error('🛒 [CartContext] Invalid response structure:', res.data);
@@ -53,13 +73,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Add a marking voucher to cart
-   * Uses dedicated voucher endpoint that expects voucher_id
-   * @param {number} voucherId - The marking voucher ID
-   * @param {number} quantity - Number of vouchers to add
-   */
-  const addVoucherToCart = async (voucherId, quantity = 1) => {
+  const addVoucherToCart = async (voucherId: number, quantity: number = 1) => {
     try {
       const res = await cartService.addVoucherToCart(voucherId, quantity);
 
@@ -73,14 +87,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Update an existing cart item
-   * Used for tutorial cart integration to merge choices into existing item
-   * @param {number} itemId - Cart item ID to update
-   * @param {Object} product - Updated product data
-   * @param {Object} priceInfo - Updated price information with metadata
-   */
-  const updateCartItem = async (itemId, product, priceInfo = {}) => {
+  const updateCartItem = async (itemId: number, product: any, priceInfo: PriceInfo = {}) => {
     try {
       const res = await cartService.updateItem(itemId, product, priceInfo);
 
@@ -97,11 +104,10 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (cartItemId) => {
-    // Remove cart item by cart item ID
+  const removeFromCart = async (cartItemId: number) => {
     try {
       const res = await cartService.removeItem(cartItemId);
-      setCartData(res.data); // Store full cart object
+      setCartData(res.data);
       setCartItems(res.data.items || []);
       return res.data;
     } catch (err) {
@@ -113,7 +119,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
     try {
       const res = await cartService.clearCart();
-      setCartData(res.data); // Store full cart object
+      setCartData(res.data);
       setCartItems(res.data.items || []);
     } catch (err) {
       // Optionally handle error
@@ -123,8 +129,7 @@ export const CartProvider = ({ children }) => {
   const refreshCart = async () => {
     try {
       const res = await cartService.fetchCart();
-
-      setCartData(res.data); // Store full cart object
+      setCartData(res.data);
       setCartItems(res.data.items || []);
       return res.data;
     } catch (err) {
@@ -142,4 +147,10 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export const useCart = () => useContext(CartContext);
+export const useCart = (): CartContextValue => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};

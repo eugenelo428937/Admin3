@@ -9,7 +9,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Import context providers for optional use
-import { CartContext } from '../contexts/CartContext.js';
+import { CartContext } from '../contexts/CartContext.tsx';
 import { ProductContext } from '../contexts/ProductContext.js';
 import { TutorialChoiceContext } from '../contexts/TutorialChoiceContext.js';
 

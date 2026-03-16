@@ -17,10 +17,41 @@ import {
    Snackbar,
    Alert as MuiAlert,
 } from "@mui/material";
-import { useCart } from "../../../contexts/CartContext.js";
+import { useCart } from "../../../contexts/CartContext.tsx";
 import rulesEngineService from "../../../services/rulesEngineService.js";
 
-const PaymentStep = ({
+import type {
+   PaymentMethod,
+   AcknowledgmentStates,
+   AcknowledgmentInfo,
+   AcknowledgmentMessage,
+   TestCard,
+} from "../../../types/checkout";
+
+interface PaymentStepProps {
+   paymentMethod: PaymentMethod;
+   setPaymentMethod: React.Dispatch<React.SetStateAction<PaymentMethod>>;
+   cardNumber: string;
+   setCardNumber: React.Dispatch<React.SetStateAction<string>>;
+   cardholderName: string;
+   setCardholderName: React.Dispatch<React.SetStateAction<string>>;
+   expiryMonth: string;
+   setExpiryMonth: React.Dispatch<React.SetStateAction<string>>;
+   expiryYear: string;
+   setExpiryYear: React.Dispatch<React.SetStateAction<string>>;
+   cvv: string;
+   setCvv: React.Dispatch<React.SetStateAction<string>>;
+   employerCode: string;
+   setEmployerCode: React.Dispatch<React.SetStateAction<string>>;
+   isDevelopment: boolean;
+   isUAT: boolean;
+   acknowledgmentStates?: AcknowledgmentStates;
+   setAcknowledgmentStates?: React.Dispatch<React.SetStateAction<AcknowledgmentStates>>;
+   requiredAcknowledgments?: AcknowledgmentInfo[];
+   setRequiredAcknowledgments?: React.Dispatch<React.SetStateAction<AcknowledgmentInfo[]>>;
+}
+
+const PaymentStep: React.FC<PaymentStepProps> = ({
    paymentMethod,
    setPaymentMethod,
    cardNumber,
@@ -44,19 +75,19 @@ const PaymentStep = ({
    setRequiredAcknowledgments,
 }) => {
    const { cartData, cartItems, refreshCart } = useCart();
-   const [bookingFeeNotification, setBookingFeeNotification] = useState(null);
-   const [rulesLoading, setRulesLoading] = useState(false);
-   const [acknowledgmentMessages, setAcknowledgmentMessages] = useState([]);
+   const [bookingFeeNotification, setBookingFeeNotification] = useState<string | null>(null);
+   const [rulesLoading, setRulesLoading] = useState<boolean>(false);
+   const [acknowledgmentMessages, setAcknowledgmentMessages] = useState<AcknowledgmentMessage[]>([]);
 
    // Local state for acknowledgments if props not provided (backward compatibility)
-   const [localAcknowledgmentStates, setLocalAcknowledgmentStates] = useState(
+   const [localAcknowledgmentStates, setLocalAcknowledgmentStates] = useState<AcknowledgmentStates>(
       {}
    );
    const actualAcknowledgmentStates =
       acknowledgmentStates || localAcknowledgmentStates;
    const actualSetAcknowledgmentStates =
       setAcknowledgmentStates || setLocalAcknowledgmentStates;
-   const testCards = [
+   const testCards: TestCard[] = [
       { name: "VISA Test Card", number: "4929 0000 0000 6", cvv: "123" },
       { name: "VISA Debit", number: "4462 0000 0000 0003", cvv: "123" },
       { name: "Mastercard", number: "5404 0000 0000 0001", cvv: "123" },
@@ -77,8 +108,8 @@ const PaymentStep = ({
 
             // Calculate cart total
             const total = sanitizedItems.reduce(
-               (sum, item) =>
-                  sum + parseFloat(item.actual_price) * item.quantity,
+               (sum: number, item) =>
+                  sum + parseFloat(String(item.actual_price)) * item.quantity,
                0
             );
 
@@ -110,14 +141,14 @@ const PaymentStep = ({
             // Handle acknowledgment messages
             if (result.messages) {
                const inlineAcknowledgments = result.messages.filter(
-                  (msg) =>
+                  (msg: AcknowledgmentMessage) =>
                      msg.type === "acknowledge" && msg.display_type === "inline"
                );
                setAcknowledgmentMessages(inlineAcknowledgments);
 
                // Reset acknowledgment states when rules change
-               const newStates = {};
-               inlineAcknowledgments.forEach((msg) => {
+               const newStates: AcknowledgmentStates = {};
+               inlineAcknowledgments.forEach((msg: AcknowledgmentMessage) => {
                   newStates[msg.ack_key] = false; // Default unchecked as per requirement
                });
                actualSetAcknowledgmentStates(newStates);
@@ -143,7 +174,7 @@ const PaymentStep = ({
                // Check for added fees
                if (result.updates.cart_fees) {
                   const bookingFee = result.updates.cart_fees.find(
-                     (fee) => fee.fee_type === "tutorial_booking_fee"
+                     (fee: any) => fee.fee_type === "tutorial_booking_fee"
                   );
                   if (bookingFee) {
                      setBookingFeeNotification(
@@ -160,7 +191,7 @@ const PaymentStep = ({
                // Check for removed fees
                if (result.updates.cart_fees_removed) {
                   const removedFee = result.updates.cart_fees_removed.find(
-                     (fee) => fee.fee_type === "tutorial_booking_fee"
+                     (fee: any) => fee.fee_type === "tutorial_booking_fee"
                   );
                   if (removedFee && removedFee.removed) {
                      setBookingFeeNotification(
@@ -184,7 +215,7 @@ const PaymentStep = ({
       executePaymentRules();
    }, [paymentMethod, cartData?.id]); // Only depend on cartData.id, not cartItems to avoid loop
 
-   const handleCardSelection = (card) => {
+   const handleCardSelection = (card: TestCard) => {
       setCardNumber(card.number);
       setCvv(card.cvv);
       setExpiryMonth("12");
@@ -192,7 +223,7 @@ const PaymentStep = ({
       setCardholderName("Test User");
    };
 
-   const handleAcknowledgmentChange = async (ackKey, checked) => {
+   const handleAcknowledgmentChange = async (ackKey: string, checked: boolean) => {
       // Update local state
       actualSetAcknowledgmentStates((prev) => ({
          ...prev,
@@ -245,7 +276,7 @@ const PaymentStep = ({
                <RadioGroup
                   name="payment-method"
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                >
                   <FormControlLabel
                      value="card"
@@ -381,7 +412,7 @@ const PaymentStep = ({
                         <FormControl fullWidth>
                            <Select
                               value={expiryMonth}
-                              onChange={(e) => setExpiryMonth(e.target.value)}
+                              onChange={(e) => setExpiryMonth(e.target.value as string)}
                               displayEmpty
                               variant="standard"
                               label="Expiry Month"
@@ -402,7 +433,7 @@ const PaymentStep = ({
                         <FormControl fullWidth>
                            <Select
                               value={expiryYear}
-                              onChange={(e) => setExpiryYear(e.target.value)}
+                              onChange={(e) => setExpiryYear(e.target.value as string)}
                               displayEmpty
                               variant="standard"
                               label="Expiry Year"

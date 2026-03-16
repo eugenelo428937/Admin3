@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../theme/theme.js';
-import CartReviewStep from '../CartReviewStep.js';
+import CartReviewStep from '../CartReviewStep.tsx';
 
 // Mock components that aren't available in test environment
 vi.mock('../../../../utils/productCodeGenerator.js', () => ({

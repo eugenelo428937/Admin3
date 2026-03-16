@@ -4,10 +4,10 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useCheckoutValidation from '../useCheckoutValidation.js';
+import useCheckoutValidation from '../useCheckoutValidation.ts';
 
 // Mock dependencies
-vi.mock('../../services/acknowledgmentService.js', () => ({
+vi.mock('../../services/acknowledgmentService', () => ({
   __esModule: true,
   default: {
     validateCheckoutReadiness: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock('libphonenumber-js', () => ({
   parsePhoneNumber: vi.fn()
 }));
 
-import acknowledgmentService from '../../services/acknowledgmentService.js';
+import acknowledgmentService from '../../services/acknowledgmentService';
 import { parsePhoneNumber } from 'libphonenumber-js';
 
 describe('useCheckoutValidation', () => {

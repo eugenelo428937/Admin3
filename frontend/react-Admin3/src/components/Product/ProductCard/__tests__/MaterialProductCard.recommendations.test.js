@@ -4,11 +4,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import MaterialProductCard from '../MaterialProductCard.js';
-import { useCart } from '../../../../contexts/CartContext.js';
+import { useCart } from '../../../../contexts/CartContext.tsx';
 import appTheme from '../../../../theme';
 
 // Mock the CartContext
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn(),
 }));
 

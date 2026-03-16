@@ -11,7 +11,7 @@ import appTheme from '../../../../theme';
 const theme = appTheme;
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: {
       vat_calculations: {

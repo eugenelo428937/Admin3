@@ -8,12 +8,6 @@
  * - Unit price
  * - VAT display using CartVATDisplay component
  * - Loading state for VAT calculation
- *
- * Props:
- * - item (object): Cart item with product, quantity, price, and VAT data
- * - onQuantityChange (function): Callback for quantity changes
- * - onRemove (function): Callback for item removal
- * - className (string): Optional custom CSS class
  */
 import React from 'react';
 import {
@@ -33,10 +27,17 @@ import {
   Remove as RemoveIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import PropTypes from 'prop-types';
-import CartVATDisplay from './CartVATDisplay.js';
+import type { CartItem } from '../../types/cart';
+import CartVATDisplay from './CartVATDisplay';
 
-const CartItemWithVAT = ({
+interface CartItemWithVATProps {
+  item: CartItem;
+  onQuantityChange: (id: number, quantity: number) => void;
+  onRemove: (id: number) => void;
+  className?: string;
+}
+
+const CartItemWithVAT: React.FC<CartItemWithVATProps> = ({
   item,
   onQuantityChange,
   onRemove,
@@ -70,7 +71,7 @@ const CartItemWithVAT = ({
   /**
    * Format currency (simplified for unit price display)
    */
-  const formatCurrency = (amount, currency = 'GBP') => {
+  const formatCurrency = (amount: number | null | undefined, currency: string = 'GBP'): string => {
     if (amount == null) return '-';
     const rounded = Math.round(amount * 100) / 100;
     const formatted = rounded.toFixed(2);
@@ -196,31 +197,6 @@ const CartItemWithVAT = ({
       </Box>
     </ListItem>
   );
-};
-
-CartItemWithVAT.propTypes = {
-  item: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    product: PropTypes.shape({
-      id: PropTypes.number,
-      name: PropTypes.string.isRequired,
-      image: PropTypes.string
-    }).isRequired,
-    quantity: PropTypes.number.isRequired,
-    actualPrice: PropTypes.number.isRequired,
-    vat: PropTypes.shape({
-      netAmount: PropTypes.number.isRequired,
-      vatAmount: PropTypes.number.isRequired,
-      grossAmount: PropTypes.number.isRequired,
-      vatRate: PropTypes.number.isRequired,
-      vatRegion: PropTypes.string,
-      currency: PropTypes.string
-    }),
-    vatCalculating: PropTypes.bool
-  }).isRequired,
-  onQuantityChange: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
-  className: PropTypes.string
 };
 
 export default CartItemWithVAT;

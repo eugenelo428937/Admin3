@@ -24,7 +24,7 @@ vi.mock('../httpService.js', () => ({
   },
 }));
 
-import acknowledgmentService from '../acknowledgmentService.js';
+import acknowledgmentService from '../acknowledgmentService';
 import httpService from '../httpService.js';
 
 describe('acknowledgmentService', () => {

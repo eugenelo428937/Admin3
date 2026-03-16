@@ -1,12 +1,33 @@
 import { useState, useCallback } from 'react';
 import { rulesEngineHelpers, executeAndProcessRules, buildRulesContext } from '../utils/rulesEngineUtils.js';
-import acknowledgmentService from '../services/acknowledgmentService.js';
+import acknowledgmentService from '../services/acknowledgmentService.ts';
+import type { AcknowledgmentModalState, AcknowledgmentMessage } from '../types/checkout';
 
-/**
- * Hook for managing rules engine acknowledgments
- */
-const useRulesEngineAcknowledgments = () => {
-  const [acknowledgmentModal, setAcknowledgmentModal] = useState({
+interface UseRulesEngineAcknowledgmentsReturn {
+  acknowledgmentModal: AcknowledgmentModalState;
+  loading: boolean;
+  error: string | null;
+  showAcknowledgmentModal: (params: ShowModalParams) => void;
+  closeAcknowledgmentModal: () => void;
+  submitAcknowledgment: (acknowledgmentData: any) => Promise<any>;
+  executeRulesWithAcknowledgments: (entryPoint: string, context: Record<string, any>, rulesEngineService: any) => Promise<boolean>;
+  hasAcknowledgment: (ackKey: string, entryPointLocation: string) => Promise<boolean>;
+  validateCheckoutAcknowledgments: () => Promise<any>;
+  handleAddToCartAcknowledgments: (productId: number, context: Record<string, any>, rulesEngineService: any) => Promise<boolean>;
+  handleCheckoutTermsAcknowledgments: (context: Record<string, any>, rulesEngineService: any) => Promise<boolean>;
+  clearError: () => void;
+}
+
+interface ShowModalParams {
+  message: AcknowledgmentMessage;
+  entryPointLocation: string;
+  onAcknowledge?: (data: any) => void;
+  onClose?: () => void;
+  required?: boolean;
+}
+
+const useRulesEngineAcknowledgments = (): UseRulesEngineAcknowledgmentsReturn => {
+  const [acknowledgmentModal, setAcknowledgmentModal] = useState<AcknowledgmentModalState>({
     open: false,
     message: null,
     entryPointLocation: null,
@@ -15,51 +36,39 @@ const useRulesEngineAcknowledgments = () => {
     required: true
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Show acknowledgment modal
-   */
   const showAcknowledgmentModal = useCallback(({
     message,
     entryPointLocation,
     onAcknowledge,
     onClose,
     required = true
-  }) => {
+  }: ShowModalParams) => {
     setAcknowledgmentModal({
       open: true,
       message,
       entryPointLocation,
-      onAcknowledge,
-      onClose,
+      onAcknowledge: onAcknowledge || null,
+      onClose: onClose || null,
       required
     });
   }, []);
 
-  /**
-   * Close acknowledgment modal
-   */
   const closeAcknowledgmentModal = useCallback(() => {
     if (acknowledgmentModal.onClose) {
       acknowledgmentModal.onClose();
     }
-    setAcknowledgmentModal(prev => ({
-      ...prev,
-      open: false
-    }));
+    setAcknowledgmentModal(prev => ({ ...prev, open: false }));
   }, [acknowledgmentModal.onClose]);
 
-  /**
-   * Submit acknowledgment
-   */
-  const submitAcknowledgment = useCallback(async (acknowledgmentData) => {
+  const submitAcknowledgment = useCallback(async (acknowledgmentData: any) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await acknowledgmentService.submitAcknowledgment(acknowledgmentData);
+      const result = await (acknowledgmentService as any).submitAcknowledgment(acknowledgmentData);
 
       if (acknowledgmentModal.onAcknowledge) {
         acknowledgmentModal.onAcknowledge(acknowledgmentData);
@@ -67,7 +76,7 @@ const useRulesEngineAcknowledgments = () => {
 
       closeAcknowledgmentModal();
       return result;
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
@@ -75,28 +84,23 @@ const useRulesEngineAcknowledgments = () => {
     }
   }, [acknowledgmentModal.onAcknowledge, closeAcknowledgmentModal]);
 
-  /**
-   * Execute rules for entry point and handle acknowledgments automatically
-   */
-  const executeRulesWithAcknowledgments = useCallback(async (entryPoint, context = {}, rulesEngineService) => {
+  const executeRulesWithAcknowledgments = useCallback(async (entryPoint: string, context: Record<string, any> = {}, rulesEngineService: any): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
     try {
-      // Use the new processing pipeline
       const result = await executeAndProcessRules(entryPoint, context, rulesEngineService, {
         processAcknowledgments: true,
         sortByPriority: true
       });
 
-      // Auto-show acknowledgment modals if they exist
       const modalAcks = result.messages?.classified?.acknowledgments?.modal || [];
       if (modalAcks.length > 0) {
-        modalAcks.forEach(message => {
+        modalAcks.forEach((message: AcknowledgmentMessage) => {
           showAcknowledgmentModal({
             message,
             entryPointLocation: entryPoint,
-            onAcknowledge: (ackData) => submitAcknowledgment(ackData),
+            onAcknowledge: (ackData: any) => submitAcknowledgment(ackData),
             onClose: closeAcknowledgmentModal,
             required: message.required !== false
           });
@@ -104,7 +108,7 @@ const useRulesEngineAcknowledgments = () => {
       }
 
       return result.success && !result.blocked;
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       return false;
     } finally {
@@ -112,29 +116,23 @@ const useRulesEngineAcknowledgments = () => {
     }
   }, [showAcknowledgmentModal, submitAcknowledgment, closeAcknowledgmentModal]);
 
-  /**
-   * Check if acknowledgment exists
-   */
-  const hasAcknowledgment = useCallback(async (ackKey, entryPointLocation) => {
+  const hasAcknowledgment = useCallback(async (ackKey: string, entryPointLocation: string): Promise<boolean> => {
     try {
-      return await acknowledgmentService.hasAcknowledgment(ackKey, entryPointLocation);
-    } catch (err) {
+      return await (acknowledgmentService as any).hasAcknowledgment(ackKey, entryPointLocation);
+    } catch (err: any) {
       setError(err.message);
       return false;
     }
   }, []);
 
-  /**
-   * Validate checkout acknowledgments
-   */
   const validateCheckoutAcknowledgments = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await acknowledgmentService.validateCheckoutAcknowledgments();
+      const result = await (acknowledgmentService as any).validateCheckoutAcknowledgments();
       return result;
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       return {
         canProceed: false,
@@ -149,42 +147,29 @@ const useRulesEngineAcknowledgments = () => {
     }
   }, []);
 
-  /**
-   * Execute rules for add to cart and handle acknowledgments
-   */
-  const handleAddToCartAcknowledgments = useCallback(async (productId, context = {}, rulesEngineService) => {
+  const handleAddToCartAcknowledgments = useCallback(async (productId: number, context: Record<string, any> = {}, rulesEngineService: any): Promise<boolean> => {
     return executeRulesWithAcknowledgments('add_to_cart', {
       product: { product_id: productId },
       ...context
     }, rulesEngineService);
   }, [executeRulesWithAcknowledgments]);
 
-  /**
-   * Execute rules for checkout terms and handle acknowledgments
-   */
-  const handleCheckoutTermsAcknowledgments = useCallback(async (context = {}, rulesEngineService) => {
+  const handleCheckoutTermsAcknowledgments = useCallback(async (context: Record<string, any> = {}, rulesEngineService: any): Promise<boolean> => {
     return executeRulesWithAcknowledgments('checkout_terms', context, rulesEngineService);
   }, [executeRulesWithAcknowledgments]);
 
   return {
-    // State
     acknowledgmentModal,
     loading,
     error,
-
-    // Actions
     showAcknowledgmentModal,
     closeAcknowledgmentModal,
     submitAcknowledgment,
     executeRulesWithAcknowledgments,
     hasAcknowledgment,
     validateCheckoutAcknowledgments,
-
-    // Convenience methods for specific entry points
     handleAddToCartAcknowledgments,
     handleCheckoutTermsAcknowledgments,
-
-    // Reset error
     clearError: () => setError(null)
   };
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Snackbar, Alert } from '@mui/material';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
-import { useCart } from '../../../../contexts/CartContext.js';
+import { useCart } from '../../../../contexts/CartContext.tsx';
 import TutorialSelectionSummaryBar from './TutorialSelectionSummaryBar.js';
 import TutorialSelectionDialog from './TutorialSelectionDialog.js';
 import {
