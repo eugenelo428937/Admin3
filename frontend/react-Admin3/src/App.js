@@ -46,28 +46,28 @@ const AdminSubjectList = React.lazy(() => import("./components/admin/subjects/Su
 const AdminSubjectForm = React.lazy(() => import("./components/admin/subjects/SubjectForm.tsx"));
 const AdminSubjectDetail = React.lazy(() => import("./components/admin/subjects/SubjectDetail.tsx"));
 const AdminSubjectImport = React.lazy(() => import("./components/admin/subjects/SubjectImport.tsx"));
-const AdminProductList = React.lazy(() => import("./components/admin/products/ProductList.js"));
-const AdminProductDetail = React.lazy(() => import("./components/admin/products/ProductDetail.js"));
-const AdminProductForm = React.lazy(() => import("./components/admin/products/ProductForm.js"));
-const AdminProductImport = React.lazy(() => import("./components/admin/products/ProductImport.js"));
+const AdminProductList = React.lazy(() => import("./components/admin/products/ProductList.tsx"));
+const AdminProductDetail = React.lazy(() => import("./components/admin/products/ProductDetail.tsx"));
+const AdminProductForm = React.lazy(() => import("./components/admin/products/ProductForm.tsx"));
+const AdminProductImport = React.lazy(() => import("./components/admin/products/ProductImport.tsx"));
 
 // Admin: Catalog (US3)
 const AdminExamSessionSubjectList = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectList.js"));
 const AdminExamSessionSubjectForm = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectForm.js"));
-const AdminProductVariationList = React.lazy(() => import("./components/admin/product-variations/ProductVariationList.js"));
-const AdminProductVariationForm = React.lazy(() => import("./components/admin/product-variations/ProductVariationForm.js"));
-const AdminProductBundleList = React.lazy(() => import("./components/admin/product-bundles/ProductBundleList.js"));
-const AdminProductBundleForm = React.lazy(() => import("./components/admin/product-bundles/ProductBundleForm.js"));
+const AdminProductVariationList = React.lazy(() => import("./components/admin/product-variations/ProductVariationList.tsx"));
+const AdminProductVariationForm = React.lazy(() => import("./components/admin/product-variations/ProductVariationForm.tsx"));
+const AdminProductBundleList = React.lazy(() => import("./components/admin/product-bundles/ProductBundleList.tsx"));
+const AdminProductBundleForm = React.lazy(() => import("./components/admin/product-bundles/ProductBundleForm.tsx"));
 
 // Admin: Store (US4)
-const AdminStoreProductList = React.lazy(() => import("./components/admin/store-products/StoreProductList.js"));
-const AdminStoreProductForm = React.lazy(() => import("./components/admin/store-products/StoreProductForm.js"));
+const AdminStoreProductList = React.lazy(() => import("./components/admin/store-products/StoreProductList.tsx"));
+const AdminStoreProductForm = React.lazy(() => import("./components/admin/store-products/StoreProductForm.tsx"));
 const AdminRecommendationList = React.lazy(() => import("./components/admin/recommendations/RecommendationList.js"));
 const AdminRecommendationForm = React.lazy(() => import("./components/admin/recommendations/RecommendationForm.js"));
-const AdminPriceList = React.lazy(() => import("./components/admin/prices/PriceList.js"));
-const AdminPriceForm = React.lazy(() => import("./components/admin/prices/PriceForm.js"));
-const AdminStoreBundleList = React.lazy(() => import("./components/admin/store-bundles/StoreBundleList.js"));
-const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-bundles/StoreBundleForm.js"));
+const AdminPriceList = React.lazy(() => import("./components/admin/prices/PriceList.tsx"));
+const AdminPriceForm = React.lazy(() => import("./components/admin/prices/PriceForm.tsx"));
+const AdminStoreBundleList = React.lazy(() => import("./components/admin/store-bundles/StoreBundleList.tsx"));
+const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-bundles/StoreBundleForm.tsx"));
 
 // Admin: New Session Setup wizard
 const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.js"));
