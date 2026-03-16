@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import AddressEditModal from '../AddressEditModal.tsx';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import userService from '../../../services/userService.ts';
 import addressValidationService from '../../../services/addressValidationService.ts';
 import addressMetadataService from '../../../services/addressMetadataService.ts';
