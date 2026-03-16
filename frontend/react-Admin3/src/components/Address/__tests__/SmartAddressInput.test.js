@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import SmartAddressInput from '../SmartAddressInput.js';
+import SmartAddressInput from '../SmartAddressInput.tsx';
 
 // Create mock theme
 const theme = appTheme;
@@ -47,7 +47,7 @@ const usMetadata = {
 };
 
 // Mock services
-vi.mock('../../../services/addressMetadataService.js', () => ({
+vi.mock('../../../services/addressMetadataService.ts', () => ({
   __esModule: true,
   default: {
     getCountryCode: vi.fn(),
@@ -91,7 +91,7 @@ vi.mock('../../User/CountryAutocomplete.tsx', () => ({
   },
 }));
 
-vi.mock('../DynamicAddressForm.js', () => ({
+vi.mock('../DynamicAddressForm.tsx', () => ({
   __esModule: true,
   default: function MockDynamicAddressForm({ country, values, onChange, fieldPrefix }) {
     return (
@@ -113,7 +113,7 @@ vi.mock('../DynamicAddressForm.js', () => ({
 }));
 
 // Import mocked service
-import addressMetadataService from '../../../services/addressMetadataService.js';
+import addressMetadataService from '../../../services/addressMetadataService.ts';
 import appTheme from '../../../theme';
 
 // Helper function to render component
