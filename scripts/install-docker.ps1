@@ -1,31 +1,59 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Install Docker Engine on Windows Server 2019 for running Linux containers.
-    Based on diagnostic results from network-diagnostic.ps1.
+    Set up WSL2 with Docker Engine for running Linux containers on Windows 11.
+    Hosts the Admin3 staging environment (PostgreSQL, Django, Nginx, Redis).
 
 .DESCRIPTION
-    This script performs a 3-phase installation:
-      Phase 1: Enable Windows features (Hyper-V + Containers)
-               Uses Install-WindowsFeature on Server, Enable-WindowsOptionalFeature on Client
+    This script performs a multi-phase setup:
+      Phase 1: Enable WSL2 and Virtual Machine Platform features
                MAY REQUIRE REBOOT
-      Phase 2: Install Docker CE via static binaries from download.docker.com
-               (The old DockerMsftProvider/NuGet method is deprecated and broken)
-               NO REBOOT REQUIRED
-      Phase 3: Validate installation, install Docker Compose V2, and check
-               Linux container support (WSL2 required on Server 2019)
+      Phase 2: Install/update WSL2 and Ubuntu distro
+      Phase 3: Configure WSL2 (systemd, memory limits, mirrored networking)
+      Phase 4: Install Docker Engine inside WSL2 Ubuntu
+      Phase 5: Set up port forwarding for external access (if needed)
+      Phase 6: Check port conflicts on the host
+      Phase 7: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
 
-    Run this script multiple times - it detects which phase to execute next.
+    Run this script multiple times safely -- it detects completed phases.
+
+    WHY WSL2 + Docker Engine (not Docker Desktop):
+      Docker Desktop requires a paid license for enterprise/commercial use.
+      WSL2 with Docker Engine is free, lightweight, and fully supported on Windows 11.
+      No Hyper-V VM management overhead -- WSL2 handles the Linux kernel natively.
 
 .NOTES
     - Must be run as Administrator
-    - Phase 1 may require a reboot if features are not yet enabled
-    - Phase 2 (Docker CE binary install) does not require a reboot
-    - Phase 3 may prompt to enable WSL2 features (requires reboot)
-    - Ports 8080/8443 must be free (stop IIS if running)
+    - Phase 1 may require a reboot -- re-run this script afterwards
+    - Target: Windows 11 (build 22000+)
 #>
 
 $ErrorActionPreference = 'Stop'
+
+# ============================================================
+# CONFIGURATION -- Edit these values to match your environment
+# ============================================================
+
+$WSLDistro = "Ubuntu"
+
+# Ports to forward from host to WSL2 (for external network access)
+$DockerPorts = @(
+    @{ HostPort = 8080;  Description = "HTTP (nginx)" },
+    @{ HostPort = 8443;  Description = "HTTPS (nginx)" }
+)
+
+# WSL2 resource limits (applied via .wslconfig)
+$WSLMemory     = "4GB"
+$WSLProcessors = 2
+$WSLSwap       = "2GB"
+
+# Manual install (when Microsoft Store is blocked)
+$UbuntuDownloadUrl = "https://aka.ms/wslubuntu2204"
+$WSLInstallDir     = Join-Path $env:LOCALAPPDATA "WSL\Ubuntu"
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
 
 function Write-Step($step, $message) {
     Write-Host "`n[$step] $message" -ForegroundColor Cyan
@@ -43,139 +71,100 @@ function Write-Fail($message) {
     Write-Host "  [FAIL] $message" -ForegroundColor Red
 }
 
-function Invoke-Download($Url, $OutFile, $Description) {
-    # Download large files reliably. Invoke-WebRequest on PS 5.1 is painfully slow
-    # for large files — it buffers everything in memory. Try faster alternatives first.
-
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    # Method 1: curl.exe (ships with Windows Server 2019, handles redirects, shows progress)
-    $curlExe = "$env:SystemRoot\System32\curl.exe"
-    if (Test-Path $curlExe) {
-        Write-Host "  Downloading $Description via curl.exe..." -ForegroundColor Gray
-        & $curlExe -L -o $OutFile --fail --retry 3 --connect-timeout 30 $Url
-        if ($LASTEXITCODE -eq 0 -and (Test-Path $OutFile)) {
-            return $true
-        }
-        Write-Host "  curl.exe failed, trying fallback..." -ForegroundColor Yellow
-    }
-
-    # Method 2: .NET WebClient (much faster than Invoke-WebRequest, no memory buffering)
-    Write-Host "  Downloading $Description via .NET WebClient..." -ForegroundColor Gray
-    try {
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile($Url, $OutFile)
-        if (Test-Path $OutFile) {
-            return $true
-        }
-    } catch {
-        Write-Host "  WebClient failed: $($_.Exception.Message)" -ForegroundColor Yellow
-    }
-
-    # Method 3: BITS Transfer (supports resume, good for flaky connections)
-    Write-Host "  Downloading $Description via BITS Transfer..." -ForegroundColor Gray
-    try {
-        Start-BitsTransfer -Source $Url -Destination $OutFile -ErrorAction Stop
-        if (Test-Path $OutFile) {
-            return $true
-        }
-    } catch {
-        Write-Host "  BITS failed: $($_.Exception.Message)" -ForegroundColor Yellow
-    }
-
-    return $false
-}
+# ============================================================
+# BANNER
+# ============================================================
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host " Docker Installation for Windows Server 2019" -ForegroundColor Cyan
-Write-Host " Staging Environment" -ForegroundColor Cyan
+Write-Host " Admin3 Staging -- WSL2 Docker Setup" -ForegroundColor Cyan
+Write-Host " Windows 11" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
-# -- Detect OS type (Server vs Client) --
+# ============================================================
+# PRE-FLIGHT: Windows Version Check
+# ============================================================
 
-$isServer = (Get-CimInstance Win32_OperatingSystem).ProductType -ne 1  # 1 = Workstation
+$osBuild = [System.Environment]::OSVersion.Version.Build
+if ($osBuild -lt 22000) {
+    Write-Fail "Windows 11 required (build 22000+). Current build: $osBuild"
+    Write-Host "  WSL2 with systemd requires Windows 11." -ForegroundColor Gray
+    exit 1
+}
+Write-OK "Windows 11 detected (build $osBuild)"
 
-# -- Detect current state --
+# ============================================================
+# STATE DETECTION
+# ============================================================
 
-if ($isServer) {
-    # Windows Server: use Get-WindowsFeature (Server Manager)
-    $hypervFeature = Get-WindowsFeature -Name Hyper-V -ErrorAction SilentlyContinue
-    $containersFeature = Get-WindowsFeature -Name Containers -ErrorAction SilentlyContinue
-    $hypervEnabled = $hypervFeature.InstallState -eq 'Installed'
-    $containersEnabled = $containersFeature.InstallState -eq 'Installed'
-} else {
-    # Windows Client (10/11): use Get-WindowsOptionalFeature
-    $hypervFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -ErrorAction SilentlyContinue
-    $containersFeature = Get-WindowsOptionalFeature -Online -FeatureName Containers -ErrorAction SilentlyContinue
-    $hypervEnabled = $hypervFeature.State -eq 'Enabled'
-    $containersEnabled = $containersFeature.State -eq 'Enabled'
+$wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -ErrorAction SilentlyContinue
+$vmFeature  = Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -ErrorAction SilentlyContinue
+$wslEnabled = $wslFeature -and $wslFeature.State -eq 'Enabled'
+$vmEnabled  = $vmFeature -and $vmFeature.State -eq 'Enabled'
+
+$wslExe = Get-Command wsl.exe -ErrorAction SilentlyContinue
+$distroInstalled = $false
+$distroReady     = $false
+if ($wslExe) {
+    # wsl -l -q outputs UTF-16; join and clean null bytes for reliable matching
+    $distroList = (wsl -l -q 2>&1 | Out-String) -replace "`0", ""
+    if ($LASTEXITCODE -eq 0 -and $distroList -match $WSLDistro) {
+        $distroInstalled = $true
+        # Check if first-time setup is done (can we run a command?)
+        $whoami = wsl -d $WSLDistro -e whoami 2>&1
+        if ($LASTEXITCODE -eq 0 -and $whoami.Trim() -ne '') {
+            $distroReady = $true
+        }
+    }
 }
 
-$dockerInstalled = Get-Command docker -ErrorAction SilentlyContinue
-$dockerReady = $null -ne $dockerInstalled
+$dockerInstalled = $false
+if ($distroReady) {
+    $dockerVer = wsl -d $WSLDistro -e bash -c "docker --version 2>/dev/null" 2>&1
+    if ($LASTEXITCODE -eq 0 -and $dockerVer -match 'Docker version') {
+        $dockerInstalled = $true
+    }
+}
 
 Write-Host "Current state:" -ForegroundColor White
-Write-Host "  Hyper-V:    $(if ($hypervEnabled) { 'Enabled' } else { 'Not enabled' })"
-Write-Host "  Containers: $(if ($containersEnabled) { 'Enabled' } else { 'Not enabled' })"
-Write-Host "  Docker:     $(if ($dockerReady) { 'Installed' } else { 'Not installed' })"
+Write-Host "  WSL Feature:      $(if ($wslEnabled) { 'Enabled' } else { 'Not enabled' })"
+Write-Host "  VM Platform:      $(if ($vmEnabled) { 'Enabled' } else { 'Not enabled' })"
+Write-Host "  Ubuntu Distro:    $(if ($distroReady) { 'Ready' } elseif ($distroInstalled) { 'Installed (needs first-time setup)' } else { 'Not installed' })"
+Write-Host "  Docker Engine:    $(if ($dockerInstalled) { 'Installed' } else { 'Not installed' })"
 
 
 # ============================================================
-# PHASE 1: Enable Windows Features
+# PHASE 1: Enable WSL2 Features
 # ============================================================
 
-if (-not $hypervEnabled -or -not $containersEnabled) {
-    Write-Step "PHASE 1" "Enabling Windows features (Hyper-V + Containers)"
-    Write-Host "  This phase requires a reboot. After reboot, re-run this script." -ForegroundColor Gray
+if (-not $wslEnabled -or -not $vmEnabled) {
+    Write-Step "PHASE 1" "Enabling WSL2 features"
 
     $rebootNeeded = $false
 
-    if ($isServer) {
-        # Windows Server: use Install-WindowsFeature
-        if (-not $containersEnabled) {
-            Write-Step "1a" "Enabling Containers feature..."
-            $result = Install-WindowsFeature -Name Containers
-            if ($result.RestartNeeded -ne 'No') { $rebootNeeded = $true }
-            Write-OK "Containers feature enabled"
-        } else {
-            Write-OK "Containers feature already enabled"
-        }
-
-        if (-not $hypervEnabled) {
-            Write-Step "1b" "Enabling Hyper-V feature..."
-            $result = Install-WindowsFeature -Name Hyper-V -IncludeManagementTools
-            if ($result.RestartNeeded -ne 'No') { $rebootNeeded = $true }
-            Write-OK "Hyper-V feature enabled (with management tools)"
-        } else {
-            Write-OK "Hyper-V already enabled"
-        }
+    if (-not $wslEnabled) {
+        Write-Step "1a" "Enabling Windows Subsystem for Linux..."
+        $result = Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
+        if ($result.RestartNeeded) { $rebootNeeded = $true }
+        Write-OK "WSL feature enabled"
     } else {
-        # Windows Client (10/11): use Enable-WindowsOptionalFeature
-        if (-not $containersEnabled) {
-            Write-Step "1a" "Enabling Containers feature..."
-            $result = Enable-WindowsOptionalFeature -Online -FeatureName Containers -NoRestart
-            if ($result.RestartNeeded) { $rebootNeeded = $true }
-            Write-OK "Containers feature enabled"
-        } else {
-            Write-OK "Containers feature already enabled"
-        }
+        Write-OK "WSL feature already enabled"
+    }
 
-        if (-not $hypervEnabled) {
-            Write-Step "1b" "Enabling Hyper-V feature..."
-            $result = Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -NoRestart
-            if ($result.RestartNeeded) { $rebootNeeded = $true }
-            Write-OK "Hyper-V feature enabled"
-        } else {
-            Write-OK "Hyper-V already enabled"
-        }
+    if (-not $vmEnabled) {
+        Write-Step "1b" "Enabling Virtual Machine Platform..."
+        $result = Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
+        if ($result.RestartNeeded) { $rebootNeeded = $true }
+        Write-OK "Virtual Machine Platform enabled"
+    } else {
+        Write-OK "Virtual Machine Platform already enabled"
     }
 
     if ($rebootNeeded) {
         Write-Host "`n========================================" -ForegroundColor Yellow
         Write-Host " REBOOT REQUIRED" -ForegroundColor Yellow
         Write-Host "========================================" -ForegroundColor Yellow
-        Write-Host " Windows features have been enabled." -ForegroundColor White
-        Write-Host " Please reboot the server, then re-run this script." -ForegroundColor White
+        Write-Host " WSL2 features have been enabled." -ForegroundColor White
+        Write-Host " Please reboot, then re-run this script." -ForegroundColor White
         Write-Host ""
         $confirm = Read-Host "Reboot now? (y/n)"
         if ($confirm -eq 'y') {
@@ -183,485 +172,705 @@ if (-not $hypervEnabled -or -not $containersEnabled) {
         }
         exit 0
     }
+} else {
+    Write-Step "PHASE 1" "WSL2 features already enabled -- skipping"
 }
 
 
 # ============================================================
-# PHASE 2: Install Docker Engine
+# PHASE 2: Install WSL2 and Ubuntu Distro
 # ============================================================
 
-if (-not $dockerReady) {
-    Write-Step "PHASE 2" "Installing Docker Engine (CE static binaries)"
+Write-Step "PHASE 2" "Installing WSL2 and Ubuntu distro"
 
-    # Method: Download Docker CE static binaries directly from Docker
-    # The old DockerMsftProvider/NuGet method is deprecated and broken
+# Set WSL2 as default version
+Write-Step "2a" "Setting WSL2 as default version..."
+wsl --set-default-version 2 2>&1 | Out-Null
+Write-OK "WSL2 set as default"
 
-    $dockerVersion = "29.3.0"
-    $dockerZipUrl = "https://download.docker.com/win/static/stable/x86_64/docker-$dockerVersion.zip"
-    $dockerZipPath = Join-Path $env:TEMP "docker-$dockerVersion.zip"
-    $dockerInstallDir = "$env:ProgramFiles\docker"
+# Update WSL to latest
+Write-Step "2b" "Updating WSL to latest version..."
+wsl --update 2>&1 | Out-Null
+Write-OK "WSL updated"
 
-    Write-Step "2a" "Downloading Docker CE $dockerVersion..."
-    $downloaded = Invoke-Download -Url $dockerZipUrl -OutFile $dockerZipPath -Description "Docker CE $dockerVersion"
-    if ($downloaded) {
-        Write-OK "Downloaded docker-$dockerVersion.zip"
-    } else {
-        Write-Fail "All download methods failed."
-        Write-Host "  Manual download: $dockerZipUrl" -ForegroundColor Gray
+if (-not $distroInstalled) {
+    Write-Step "2c" "Installing Ubuntu distro..."
+
+    # ── Strategy 1: wsl --install (requires Microsoft Store) ──
+    Write-Host "  Attempting install via Microsoft Store..." -ForegroundColor Gray
+    wsl --install -d $WSLDistro 2>&1 | Out-Null
+    Start-Sleep -Seconds 5
+
+    $postList = (wsl -l -q 2>&1 | Out-String) -replace "`0", ""
+    if ($postList -match $WSLDistro) {
+        Write-OK "Ubuntu installed via Microsoft Store"
+        Write-Host ""
+        Write-Host "  ========================================" -ForegroundColor Yellow
+        Write-Host "  UBUNTU FIRST-TIME SETUP" -ForegroundColor Yellow
+        Write-Host "  ========================================" -ForegroundColor Yellow
+        Write-Host "  Ubuntu may have opened in a new console window." -ForegroundColor White
+        Write-Host "  Create your username and password there." -ForegroundColor White
+        Write-Host "  If no window appeared, run:  wsl -d Ubuntu" -ForegroundColor White
+        Write-Host "  Then re-run this script to continue." -ForegroundColor White
+        Write-Host "  ========================================" -ForegroundColor Yellow
+        exit 0
+    }
+
+    # ── Strategy 2: Download appxbundle and sideload ──
+    Write-Warn "Microsoft Store appears blocked. Downloading Ubuntu manually..."
+    $downloadPath = Join-Path $env:TEMP "Ubuntu2204.appxbundle"
+
+    Write-Step "2c-i" "Downloading Ubuntu 22.04 LTS (~500MB)..."
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $oldProgress = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'  # speeds up Invoke-WebRequest
+        Invoke-WebRequest -Uri $UbuntuDownloadUrl -OutFile $downloadPath -UseBasicParsing
+        $ProgressPreference = $oldProgress
+        $sizeMB = [math]::Round((Get-Item $downloadPath).Length / 1MB)
+        Write-OK "Downloaded ($sizeMB MB)"
+    } catch {
+        Write-Fail "Download failed: $($_.Exception.Message)"
+        Write-Host "  Try downloading manually from: $UbuntuDownloadUrl" -ForegroundColor Gray
         exit 1
     }
 
-    Write-Step "2b" "Extracting to $dockerInstallDir..."
-    Expand-Archive -Path $dockerZipPath -DestinationPath $env:ProgramFiles -Force
-    Write-OK "Extracted Docker binaries"
-
-    Write-Step "2c" "Adding Docker to system PATH..."
-    $machinePath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
-    if ($machinePath -notlike "*$dockerInstallDir*") {
-        [Environment]::SetEnvironmentVariable("PATH", "$machinePath;$dockerInstallDir", [EnvironmentVariableTarget]::Machine)
-        $env:PATH += ";$dockerInstallDir"
-    }
-    Write-OK "Docker added to PATH"
-
-    Write-Step "2d" "Registering Docker as a Windows service..."
-    & "$dockerInstallDir\dockerd.exe" --register-service
-    Write-OK "Docker service registered"
-
-    Write-Step "2e" "Starting Docker service..."
-    Start-Service Docker
-    Start-Sleep -Seconds 5
-    Write-OK "Docker service started"
-
-    # Clean up zip
-    Remove-Item $dockerZipPath -Force -ErrorAction SilentlyContinue
-
-    Write-Host "`n  Docker CE $dockerVersion installed successfully." -ForegroundColor Green
-    Write-Host "  No reboot required for binary install." -ForegroundColor Gray
-}
-
-
-# ============================================================
-# PHASE 3: Validate and Configure
-# ============================================================
-
-Write-Step "PHASE 3" "Validating Docker installation"
-
-# 3a: Check Docker service
-Write-Step "3a" "Checking Docker service..."
-$dockerService = Get-Service -Name Docker -ErrorAction SilentlyContinue
-if (-not $dockerService) {
-    Write-Fail "Docker service not found. Installation may have failed."
-    Write-Host "  Try re-running this script to install Docker CE binaries." -ForegroundColor Gray
-    exit 1
-}
-
-if ($dockerService.Status -ne 'Running') {
-    Write-Warn "Docker service is not running. Starting..."
-    Start-Service Docker
-    Start-Sleep -Seconds 5
-    $dockerService = Get-Service -Name Docker
-}
-
-if ($dockerService.Status -eq 'Running') {
-    Write-OK "Docker service is running"
-} else {
-    Write-Fail "Docker service failed to start. Check: Get-EventLog -LogName Application -Source Docker -Newest 10"
-    exit 1
-}
-
-# 3b: Docker version
-Write-Step "3b" "Docker version..."
-$version = docker version 2>&1
-Write-Host $version -ForegroundColor Gray
-
-# 3c: Check Linux container support (required for Admin3 stack)
-Write-Step "3c" "Checking container mode..."
-$osType = docker info --format '{{.OSType}}' 2>&1
-if ($osType -eq 'linux') {
-    Write-OK "Already using Linux containers"
-} else {
-    Write-Warn "Currently using Windows containers."
-    Write-Host "  Admin3 stack requires Linux containers (PostgreSQL, Nginx, Python)." -ForegroundColor Gray
-    Write-Host "  On Server 2019, Linux containers run via WSL2 with Docker Engine inside the distro." -ForegroundColor Gray
-    Write-Host "" -ForegroundColor Gray
-
-    # --- Manual WSL2 Installation for Windows Server 2019 ---
-    # Reference: https://learn.microsoft.com/en-us/windows/wsl/install-on-server
-    # Server 2019 does NOT support 'wsl --install'. Must install manually.
-
-    # Step 1: Check and enable required Windows features
-    $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -ErrorAction SilentlyContinue
-    $vmpFeature = Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -ErrorAction SilentlyContinue
-
-    $wslEnabled = $wslFeature -and $wslFeature.State -eq 'Enabled'
-    $vmpEnabled = $vmpFeature -and $vmpFeature.State -eq 'Enabled'
-
-    if (-not $wslEnabled -or -not $vmpEnabled) {
-        Write-Step "3c.1" "Enabling WSL2 Windows features..."
-
-        $rebootNeeded = $false
-        if (-not $wslEnabled) {
-            Write-Host "  Enabling Microsoft-Windows-Subsystem-Linux..." -ForegroundColor Gray
-            $result = Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
-            if ($result.RestartNeeded) { $rebootNeeded = $true }
-            Write-OK "WSL feature enabled"
-        } else {
-            Write-OK "WSL feature already enabled"
-        }
-
-        if (-not $vmpEnabled) {
-            Write-Host "  Enabling VirtualMachinePlatform..." -ForegroundColor Gray
-            $result = Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-            if ($result.RestartNeeded) { $rebootNeeded = $true }
-            Write-OK "VirtualMachinePlatform feature enabled"
-        } else {
-            Write-OK "VirtualMachinePlatform already enabled"
-        }
-
-        if ($rebootNeeded) {
-            Write-Host "`n========================================" -ForegroundColor Yellow
-            Write-Host " REBOOT REQUIRED" -ForegroundColor Yellow
-            Write-Host "========================================" -ForegroundColor Yellow
-            Write-Host " WSL2 features have been enabled." -ForegroundColor White
-            Write-Host " Please reboot the server, then re-run this script." -ForegroundColor White
+    Write-Step "2c-ii" "Attempting sideload via Add-AppxPackage..."
+    $sideloadOK = $false
+    try {
+        Add-AppxPackage $downloadPath -ErrorAction Stop
+        Start-Sleep -Seconds 3
+        $postSideload = (wsl -l -q 2>&1 | Out-String) -replace "`0", ""
+        if ($postSideload -match $WSLDistro) {
+            $sideloadOK = $true
+            Write-OK "Ubuntu installed via sideload"
+            Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
             Write-Host ""
-            $rebootConfirm = Read-Host "Reboot now? (y/n)"
-            if ($rebootConfirm -eq 'y') {
-                Restart-Computer -Force
-            }
+            Write-Host "  ========================================" -ForegroundColor Yellow
+            Write-Host "  UBUNTU FIRST-TIME SETUP" -ForegroundColor Yellow
+            Write-Host "  ========================================" -ForegroundColor Yellow
+            Write-Host "  Run:  wsl -d Ubuntu" -ForegroundColor Cyan
+            Write-Host "  Create your username and password." -ForegroundColor White
+            Write-Host "  Then re-run this script to continue." -ForegroundColor White
+            Write-Host "  ========================================" -ForegroundColor Yellow
             exit 0
         }
-    } else {
-        Write-OK "WSL and VirtualMachinePlatform features already enabled"
+    } catch {
+        Write-Warn "Sideload blocked by policy. Using manual import..."
     }
 
-    # Step 2: Download and install the WSL2 Linux kernel update
-    Write-Step "3c.2" "WSL2 Linux kernel update..."
-    $wsl2KernelMsi = Join-Path $env:TEMP "wsl_update_x64.msi"
-    $wsl2KernelUrl = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+    if (-not $sideloadOK) {
+        # ── Strategy 3: Extract rootfs from appxbundle and wsl --import ──
+        Write-Step "2c-iii" "Extracting rootfs from appxbundle..."
 
-    # Check if WSL2 kernel is already installed by looking for the kernel file
-    $wsl2KernelInstalled = Test-Path "$env:SystemRoot\System32\lxss\tools\kernel"
+        $extractPath = Join-Path $env:TEMP "Ubuntu2204-extract"
+        $zipPath     = Join-Path $env:TEMP "Ubuntu2204.zip"
 
-    if (-not $wsl2KernelInstalled) {
-        $downloaded = 
-        
-        Invoke-Download -Url $wsl2KernelUrl -OutFile $wsl2KernelMsi -Description "WSL2 kernel update"
-        if ($downloaded) {
-            Write-OK "Downloaded wsl_update_x64.msi"
+        # Clean up any previous extraction
+        if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
 
-            Write-Host "  Installing WSL2 kernel (silent)..." -ForegroundColor Gray
-            Start-Process "msiexec.exe" -ArgumentList "/i `"$wsl2KernelMsi`" /quiet /norestart" -NoNewWindow -Wait
-            Write-OK "WSL2 kernel update installed"
+        # appxbundle is a zip -- rename and extract
+        Copy-Item $downloadPath $zipPath -Force
+        Expand-Archive $zipPath $extractPath -Force
 
-            Remove-Item $wsl2KernelMsi -Force -ErrorAction SilentlyContinue
-        } else {
-            Write-Fail "Failed to download WSL2 kernel."
-            Write-Host "  Download manually: $wsl2KernelUrl" -ForegroundColor Gray
-            Write-Host "  Then run: msiexec /i wsl_update_x64.msi /quiet" -ForegroundColor Gray
-            exit 1
+        # Find the x64 appx inside the bundle
+        $x64Appx = Get-ChildItem $extractPath -Filter "*.appx" | Where-Object {
+            $_.Name -match 'x64|amd64'
+        } | Select-Object -First 1
+
+        if (-not $x64Appx) {
+            # Some bundles have a single .appx without arch in the name
+            $x64Appx = Get-ChildItem $extractPath -Filter "Ubuntu*.appx" | Select-Object -First 1
         }
-    } else {
-        Write-OK "WSL2 kernel already installed"
-    }
 
-    # Step 3: Set WSL default version to 2
-    Write-Step "3c.3" "Setting WSL default version to 2..."
-    wsl --set-default-version 2 2>&1 | Out-Null
-    Write-OK "WSL default version set to 2"
-
-    # Step 4: Download and install Ubuntu distro (manual method for Server 2019)
-    Write-Step "3c.4" "Installing Ubuntu WSL2 distro..."
-
-    # Check if any WSL distro is already installed
-    $wslList = wsl -l -q 2>&1
-    $hasDistro = $false
-    if ($LASTEXITCODE -eq 0 -and $wslList -and $wslList.Trim()) {
-        # Filter out empty lines and check for actual distro names
-        $distros = $wslList | Where-Object { $_.Trim() -ne '' }
-        if ($distros) {
-            $hasDistro = $true
-            Write-OK "WSL distro already installed: $($distros -join ', ')"
-        }
-    }
-
-    if (-not $hasDistro) {
-        $ubuntuAppxUrl = "https://aka.ms/wslubuntu"
-        $ubuntuAppxPath = "D:\Docker Setup\Ubuntu.appx"
-        $ubuntuInstallDir = "D:\Docker Setup\Ubuntu"
-
-        $downloaded = Invoke-Download -Url $ubuntuAppxUrl -OutFile $ubuntuAppxPath -Description "Ubuntu 22"
-        if ($downloaded) {
-            Write-OK "Downloaded Ubuntu 22.04 appx"
-        } else {
-            Write-Fail "Failed to download Ubuntu."
-            Write-Host "  Download manually from: $ubuntuAppxUrl" -ForegroundColor Gray
-            Write-Host "  Save to: $ubuntuAppxPath" -ForegroundColor Gray
+        if (-not $x64Appx) {
+            Write-Fail "Could not find x64 .appx inside the bundle"
+            Write-Host "  Contents of $extractPath`:" -ForegroundColor Gray
+            Get-ChildItem $extractPath | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
             exit 1
         }
 
-        # Extract the appx (it's a zip) to the install directory
-        Write-Host "  Extracting Ubuntu to $ubuntuInstallDir..." -ForegroundColor Gray
-        if (-not (Test-Path $ubuntuInstallDir)) {
-            New-Item -ItemType Directory -Path $ubuntuInstallDir -Force | Out-Null
+        Write-OK "Found: $($x64Appx.Name)"
+
+        # The .appx is also a zip -- extract to find install.tar.gz (the rootfs)
+        $appxExtract = Join-Path $extractPath "appx-content"
+        $appxZip     = Join-Path $extractPath "ubuntu-appx.zip"
+        Copy-Item $x64Appx.FullName $appxZip -Force
+        Expand-Archive $appxZip $appxExtract -Force
+
+        $rootfs = Get-ChildItem $appxExtract -Filter "install.tar*" | Select-Object -First 1
+        if (-not $rootfs) {
+            Write-Fail "Could not find rootfs tarball (install.tar*) inside .appx"
+            Write-Host "  Contents of appx:" -ForegroundColor Gray
+            Get-ChildItem $appxExtract | ForEach-Object { Write-Host "    $($_.Name)" -ForegroundColor Gray }
+            exit 1
         }
 
-        # Rename .appx to .zip for extraction
-        $ubuntuZipPath = $ubuntuAppxPath -replace '\.appx$', '.zip'
-        Copy-Item $ubuntuAppxPath $ubuntuZipPath -Force
-        Expand-Archive -Path $ubuntuZipPath -DestinationPath $ubuntuInstallDir -Force
+        Write-OK "Found rootfs: $($rootfs.Name)"
 
-        # Find the inner x64 appx (e.g., Ubuntu_2204.1.7.0_x64.appx)
-        $innerAppx = Get-ChildItem -Path $ubuntuInstallDir -Filter "*x64*.appx" | Select-Object -First 1
-        if ($innerAppx) {
-            Write-Host "  Extracting inner x64 package: $($innerAppx.Name)..." -ForegroundColor Gray
-            $innerZip = $innerAppx.FullName -replace '\.appx$', '.zip'
-            Copy-Item $innerAppx.FullName $innerZip -Force
-            Expand-Archive -Path $innerZip -DestinationPath $ubuntuInstallDir -Force
-            Remove-Item $innerZip -Force -ErrorAction SilentlyContinue
+        # Create install directory
+        if (-not (Test-Path $WSLInstallDir)) {
+            New-Item -ItemType Directory -Path $WSLInstallDir -Force | Out-Null
         }
 
-        # Add to PATH so ubuntu.exe / ubuntu2204.exe can be found
-        $machinePath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
-        if ($machinePath -notlike "*$ubuntuInstallDir*") {
-            [Environment]::SetEnvironmentVariable("PATH", "$machinePath;$ubuntuInstallDir", [EnvironmentVariableTarget]::Machine)
-            $env:PATH += ";$ubuntuInstallDir"
+        # Import into WSL2
+        Write-Step "2c-iv" "Importing Ubuntu into WSL2..."
+        wsl --import $WSLDistro $WSLInstallDir $rootfs.FullName --version 2 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "wsl --import failed"
+            exit 1
         }
+        Write-OK "Ubuntu imported into WSL2 at $WSLInstallDir"
 
-        # Clean up downloaded files
-        Remove-Item $ubuntuAppxPath -Force -ErrorAction SilentlyContinue
-        Remove-Item $ubuntuZipPath -Force -ErrorAction SilentlyContinue
+        # Create a non-root default user
+        Write-Step "2c-v" "Creating Ubuntu user..."
+        $wslUser = Read-Host "  Enter a username for Ubuntu (default: admin)"
+        if (-not $wslUser -or $wslUser.Trim() -eq '') { $wslUser = "admin" }
 
-        Write-OK "Ubuntu 22.04 extracted to $ubuntuInstallDir"
+        wsl -d $WSLDistro -e bash -c "useradd -m -s /bin/bash $wslUser 2>/dev/null" 2>&1 | Out-Null
+        wsl -d $WSLDistro -e bash -c "usermod -aG sudo $wslUser" 2>&1 | Out-Null
+        wsl -d $WSLDistro -e bash -c "echo '$wslUser ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$wslUser && chmod 440 /etc/sudoers.d/$wslUser" 2>&1 | Out-Null
+        Write-OK "User '$wslUser' created with sudo access"
 
-        # Find the Ubuntu launcher executable
-        $ubuntuExe = Get-ChildItem -Path $ubuntuInstallDir -Filter "ubuntu*.exe" | Select-Object -First 1
-        if ($ubuntuExe) {
-            Write-Host ""
-            Write-Host "========================================" -ForegroundColor Yellow
-            Write-Host " MANUAL STEP REQUIRED: Initialize Ubuntu" -ForegroundColor Yellow
-            Write-Host "========================================" -ForegroundColor Yellow
-            Write-Host " Run this command to initialize Ubuntu (creates user account):" -ForegroundColor White
-            Write-Host "   $($ubuntuExe.FullName)" -ForegroundColor Cyan
-            Write-Host "" -ForegroundColor White
-            Write-Host " After Ubuntu initializes, install Docker Engine inside WSL2:" -ForegroundColor White
-            Write-Host "   # Inside the Ubuntu terminal:" -ForegroundColor Gray
-            Write-Host "   curl -fsSL https://get.docker.com | sh" -ForegroundColor Cyan
-            Write-Host "   sudo usermod -aG docker `$USER" -ForegroundColor Cyan
-            Write-Host "   # Close and reopen Ubuntu for group change to take effect" -ForegroundColor Gray
-            Write-Host "   sudo service docker start" -ForegroundColor Cyan
-            Write-Host "" -ForegroundColor White
-            Write-Host " Then ensure D:\AMS has the repo files (see summary below) and run:" -ForegroundColor White
-            Write-Host "   cd /mnt/d/AMS" -ForegroundColor Cyan
-            Write-Host "   docker compose up -d" -ForegroundColor Cyan
-            Write-Host ""
-        } else {
-            Write-Warn "Could not find Ubuntu launcher in $ubuntuInstallDir"
-            Write-Host "  Check the directory and run the ubuntu*.exe to initialize." -ForegroundColor Gray
-        }
+        Write-Host ""
+        Write-Host "  Set a password for '$wslUser':" -ForegroundColor Yellow
+        wsl -d $WSLDistro -e passwd $wslUser
+
+        # Write /etc/wsl.conf with default user and systemd
+        wsl -d $WSLDistro -e bash -c "cat > /etc/wsl.conf << 'WSLEOF'
+[user]
+default=$wslUser
+
+[boot]
+systemd=true
+
+[interop]
+enabled=true
+appendWindowsPath=true
+WSLEOF" 2>&1 | Out-Null
+        Write-OK "Configured /etc/wsl.conf (default user + systemd)"
+
+        # Restart WSL for wsl.conf to take effect
+        Write-Host "  Restarting WSL..." -ForegroundColor Gray
+        wsl --shutdown 2>&1 | Out-Null
+        Start-Sleep -Seconds 3
+        wsl -d $WSLDistro -e bash -c "echo WSL restarted" 2>&1 | Out-Null
+        Start-Sleep -Seconds 2
+        Write-OK "WSL restarted"
+
+        # Clean up temp files
+        Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
+        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+        Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
+
+        # Update state so subsequent phases proceed
+        $distroInstalled = $true
+        $distroReady = $true
+    }
+
+} elseif (-not $distroReady) {
+    Write-Host ""
+    Write-Host "  ========================================" -ForegroundColor Yellow
+    Write-Host "  UBUNTU FIRST-TIME SETUP REQUIRED" -ForegroundColor Yellow
+    Write-Host "  ========================================" -ForegroundColor Yellow
+    Write-Host "  Ubuntu is installed but not yet initialized." -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Run this command:" -ForegroundColor White
+    Write-Host "    wsl -d Ubuntu" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  Create your username and password when prompted." -ForegroundColor White
+    Write-Host "  Then type 'exit' and re-run this script." -ForegroundColor White
+    Write-Host "  ========================================" -ForegroundColor Yellow
+    exit 0
+
+} else {
+    Write-OK "Ubuntu distro already installed and ready"
+
+    # Verify WSL version is 2 (clean UTF-16 null bytes from wsl output)
+    $verOutput = (wsl -l -v 2>&1 | Out-String) -replace "`0", ""
+    $ubuntuLine = $verOutput -split "`n" | Where-Object { $_ -match $WSLDistro }
+    if ($ubuntuLine -and $ubuntuLine -match '\s2\s*$') {
+        Write-OK "Ubuntu is running WSL version 2"
     } else {
-        # Distro already installed - check if Docker Engine is running inside WSL2
-        Write-Step "3c.5" "Checking Docker Engine inside WSL2..."
-        wsl -e docker version 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) {
-            Write-OK "Docker Engine is running inside WSL2"
-            Write-Host ""
-            Write-Host "  To run Admin3 staging stack:" -ForegroundColor White
-            Write-Host "    wsl -e bash -c 'cd /mnt/d/AMS && docker compose up -d'" -ForegroundColor Cyan
+        Write-Warn "Ubuntu may not be WSL2 -- converting..."
+        wsl --set-version $WSLDistro 2 2>&1 | Out-Null
+        Write-OK "Converted to WSL2"
+    }
+}
+
+
+# ============================================================
+# PHASE 3: Configure WSL2 (systemd, memory, networking)
+# ============================================================
+
+Write-Step "PHASE 3" "Configuring WSL2"
+
+# 3a: Enable systemd inside the distro (required for Docker service management)
+Write-Step "3a" "Ensuring systemd is enabled in WSL2..."
+$wslConf = wsl -d $WSLDistro -e bash -c "cat /etc/wsl.conf 2>/dev/null" 2>&1
+$hasSystemd = ($wslConf | Out-String) -match 'systemd\s*=\s*true'
+
+if (-not $hasSystemd) {
+    Write-Host "  Enabling systemd in /etc/wsl.conf..." -ForegroundColor Gray
+    # Write wsl.conf with systemd enabled
+    wsl -d $WSLDistro -e bash -c "sudo bash -c 'cat > /etc/wsl.conf << WSLEOF
+[boot]
+systemd=true
+
+[interop]
+enabled=true
+appendWindowsPath=true
+WSLEOF'" 2>&1 | Out-Null
+
+    Write-OK "systemd enabled -- restarting WSL..."
+    wsl --shutdown 2>&1 | Out-Null
+    Start-Sleep -Seconds 3
+    # Trigger restart
+    wsl -d $WSLDistro -e bash -c "echo WSL restarted" 2>&1 | Out-Null
+    Start-Sleep -Seconds 2
+    Write-OK "WSL restarted with systemd"
+} else {
+    Write-OK "systemd already enabled"
+}
+
+# 3b: Configure .wslconfig for resource limits
+Write-Step "3b" "Configuring WSL2 resource limits..."
+$wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+$needsUpdate = $false
+
+if (Test-Path $wslConfigPath) {
+    $currentConfig = Get-Content $wslConfigPath -Raw
+    # Check if key settings exist
+    if ($currentConfig -match 'memory=' -and $currentConfig -match 'processors=') {
+        Write-OK ".wslconfig already configured: $wslConfigPath"
+    } else {
+        $needsUpdate = $true
+    }
+} else {
+    $needsUpdate = $true
+}
+
+if ($needsUpdate) {
+    # Detect if mirrored networking is supported (build 22621+ = Win11 22H2+)
+    $networkingMode = "nat"
+    if ($osBuild -ge 22621) {
+        $networkingMode = "mirrored"
+    }
+
+    $configContent = @"
+[wsl2]
+memory=$WSLMemory
+processors=$WSLProcessors
+swap=$WSLSwap
+networkingMode=$networkingMode
+"@
+
+    Set-Content -Path $wslConfigPath -Value $configContent -Encoding UTF8
+    Write-OK "Created .wslconfig: memory=$WSLMemory, processors=$WSLProcessors, networking=$networkingMode"
+    Write-Host "  Location: $wslConfigPath" -ForegroundColor Gray
+
+    if ($networkingMode -eq 'mirrored') {
+        Write-OK "Mirrored networking enabled -- WSL2 shares the host IP (no portproxy needed)"
+    } else {
+        Write-Warn "NAT networking (build $osBuild). Upgrade to Win11 22H2+ for mirrored networking."
+    }
+
+    # Restart WSL for config to take effect
+    Write-Host "  Restarting WSL for new config..." -ForegroundColor Gray
+    wsl --shutdown 2>&1 | Out-Null
+    Start-Sleep -Seconds 3
+    wsl -d $WSLDistro -e bash -c "echo WSL restarted" 2>&1 | Out-Null
+    Start-Sleep -Seconds 2
+    Write-OK "WSL restarted with new resource limits"
+} else {
+    # Read current networking mode
+    $currentConfig = Get-Content $wslConfigPath -Raw
+    if ($currentConfig -match 'networkingMode\s*=\s*mirrored') {
+        Write-OK "Mirrored networking already configured -- no portproxy needed"
+    }
+}
+
+
+# ============================================================
+# PHASE 4: Install Docker Engine in WSL2 Ubuntu
+# ============================================================
+
+Write-Step "PHASE 4" "Installing Docker Engine in WSL2 Ubuntu"
+
+if (-not $dockerInstalled) {
+    Write-Step "4a" "Installing Docker Engine via official install script..."
+    Write-Host "  This may take 2-5 minutes..." -ForegroundColor Gray
+
+    wsl -d $WSLDistro -e bash -c "curl -fsSL https://get.docker.com | sudo sh" 2>&1 | Out-Null
+    $installExitCode = $LASTEXITCODE
+
+    if ($installExitCode -ne 0) {
+        Write-Fail "Docker installation failed (exit code: $installExitCode)"
+        Write-Host "  Try manually:" -ForegroundColor Gray
+        Write-Host "    wsl -d Ubuntu" -ForegroundColor Cyan
+        Write-Host "    curl -fsSL https://get.docker.com | sudo sh" -ForegroundColor Cyan
+        exit 1
+    }
+    Write-OK "Docker Engine installed"
+
+    # Add current WSL user to docker group
+    Write-Step "4b" "Adding user to docker group..."
+    $wslUser = (wsl -d $WSLDistro -e whoami 2>&1).Trim()
+    wsl -d $WSLDistro -e bash -c "sudo usermod -aG docker $wslUser" 2>&1 | Out-Null
+    Write-OK "User '$wslUser' added to docker group"
+
+    # Enable and start Docker service via systemd
+    Write-Step "4c" "Enabling Docker service..."
+    wsl -d $WSLDistro -e bash -c "sudo systemctl enable docker && sudo systemctl start docker" 2>&1 | Out-Null
+    Start-Sleep -Seconds 3
+
+    # Verify Docker
+    $dockerVer = wsl -d $WSLDistro -e bash -c "sudo docker --version" 2>&1
+    if ($dockerVer -match 'Docker version') {
+        Write-OK "Docker Engine running: $($dockerVer.Trim())"
+    } else {
+        Write-Warn "Docker may not be running yet."
+        Write-Host "  Check: wsl -d Ubuntu -e sudo systemctl status docker" -ForegroundColor Gray
+    }
+
+    # Verify Docker Compose
+    $composeVer = wsl -d $WSLDistro -e bash -c "sudo docker compose version" 2>&1
+    if ($composeVer -match 'Docker Compose') {
+        Write-OK "Docker Compose: $($composeVer.Trim())"
+    } else {
+        Write-Warn "Docker Compose plugin not found."
+        Write-Host "  Install: wsl -d Ubuntu -e sudo apt install -y docker-compose-plugin" -ForegroundColor Gray
+    }
+
+    # Note about newgrp
+    Write-Host ""
+    Write-Warn "IMPORTANT: The docker group change requires a new WSL session."
+    Write-Host "  After this script finishes, close and reopen your WSL terminal" -ForegroundColor Gray
+    Write-Host "  or run: wsl --shutdown" -ForegroundColor Gray
+    Write-Host "  Then 'docker' commands will work without 'sudo'." -ForegroundColor Gray
+
+} else {
+    Write-OK "Docker Engine already installed"
+    $dockerVer = wsl -d $WSLDistro -e bash -c "docker --version" 2>&1
+    Write-Host "  Version: $($dockerVer.Trim())" -ForegroundColor Gray
+
+    # Ensure Docker service is running
+    $dockerStatus = wsl -d $WSLDistro -e bash -c "systemctl is-active docker 2>/dev/null" 2>&1
+    if ($dockerStatus.Trim() -eq 'active') {
+        Write-OK "Docker service is running"
+    } else {
+        Write-Warn "Docker service is not running -- starting..."
+        wsl -d $WSLDistro -e bash -c "sudo systemctl start docker" 2>&1 | Out-Null
+        Write-OK "Docker service started"
+    }
+}
+
+
+# ============================================================
+# PHASE 5: Port Forwarding for External Access
+# ============================================================
+
+Write-Step "PHASE 5" "Configuring port forwarding for external access"
+Write-Host "  Docker ports in WSL2 are accessible on localhost automatically." -ForegroundColor Gray
+Write-Host "  Port forwarding is only needed for access from other machines." -ForegroundColor Gray
+
+# Check if mirrored networking is active
+$wslConfigPath = Join-Path $env:USERPROFILE ".wslconfig"
+$mirroredActive = $false
+if (Test-Path $wslConfigPath) {
+    $cfgContent = Get-Content $wslConfigPath -Raw
+    if ($cfgContent -match 'networkingMode\s*=\s*mirrored') {
+        $mirroredActive = $true
+    }
+}
+
+if ($mirroredActive) {
+    Write-OK "Mirrored networking is configured -- ports are directly accessible on host IP"
+    Write-Host "  No portproxy rules needed." -ForegroundColor Gray
+
+    # Still set up firewall rules for inbound access
+    Write-Step "5a" "Ensuring Windows Firewall allows Docker ports..."
+    foreach ($pf in $DockerPorts) {
+        $ruleName = "Admin3-$($pf.Description -replace '\s','-')-$($pf.HostPort)"
+        $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+        if (-not $existing) {
+            New-NetFirewallRule -DisplayName $ruleName `
+                -Direction Inbound -Protocol TCP -LocalPort $pf.HostPort `
+                -Action Allow -Profile Any | Out-Null
+            Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort))"
         } else {
-            Write-Warn "Docker Engine not found inside WSL2 distro."
-            Write-Host "  Install Docker Engine inside your WSL2 Ubuntu:" -ForegroundColor Yellow
-            Write-Host "    wsl" -ForegroundColor Cyan
-            Write-Host "    # Inside Ubuntu terminal:" -ForegroundColor Gray
-            Write-Host "    curl -fsSL https://get.docker.com | sh" -ForegroundColor Cyan
-            Write-Host "    sudo usermod -aG docker `$USER" -ForegroundColor Cyan
-            Write-Host "    sudo service docker start" -ForegroundColor Cyan
-            Write-Host ""
-            Write-Host "  Then re-run this script to verify." -ForegroundColor Yellow
+            Write-OK "Firewall rule exists: $ruleName"
+        }
+    }
+} else {
+    # NAT mode: need portproxy rules
+    Write-Host "  Using NAT networking mode -- setting up portproxy rules." -ForegroundColor Gray
+
+    # Get WSL2 IP
+    $wslIP = (wsl -d $WSLDistro -e bash -c "hostname -I" 2>&1).Trim()
+    # Take first IP if multiple
+    if ($wslIP -match '(\d+\.\d+\.\d+\.\d+)') {
+        $wslIP = $Matches[1]
+    }
+
+    if ($wslIP -match '^\d+\.\d+\.\d+\.\d+$') {
+        Write-OK "WSL2 IP: $wslIP"
+
+        Write-Step "5a" "Setting up port forwarding rules..."
+        foreach ($pf in $DockerPorts) {
+            # Remove existing rule first (WSL2 IP may have changed)
+            netsh interface portproxy delete v4tov4 listenport=$($pf.HostPort) listenaddress=0.0.0.0 2>&1 | Out-Null
+            netsh interface portproxy add v4tov4 `
+                listenport=$($pf.HostPort) listenaddress=0.0.0.0 `
+                connectport=$($pf.HostPort) connectaddress=$wslIP | Out-Null
+            Write-OK "Forward: *:$($pf.HostPort) -> ${wslIP}:$($pf.HostPort) ($($pf.Description))"
+        }
+
+        Write-Step "5b" "Ensuring Windows Firewall allows forwarded ports..."
+        foreach ($pf in $DockerPorts) {
+            $ruleName = "Admin3-$($pf.Description -replace '\s','-')-$($pf.HostPort)"
+            $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+            if (-not $existing) {
+                New-NetFirewallRule -DisplayName $ruleName `
+                    -Direction Inbound -Protocol TCP -LocalPort $pf.HostPort `
+                    -Action Allow -Profile Any | Out-Null
+                Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort))"
+            } else {
+                Write-OK "Firewall rule exists: $ruleName"
+            }
+        }
+
+        Write-Host "`n  Active port forwarding rules:" -ForegroundColor Gray
+        netsh interface portproxy show v4tov4
+
+        Write-Host ""
+        Write-Warn "NOTE: WSL2 NAT IP may change after reboot."
+        Write-Host "  Re-run this script after reboot to update portproxy rules." -ForegroundColor Gray
+        Write-Host "  Or upgrade to Windows 11 22H2+ for mirrored networking." -ForegroundColor Gray
+    } else {
+        Write-Warn "Could not determine WSL2 IP -- port forwarding skipped"
+        Write-Host "  WSL2 may not be running. Try: wsl -d Ubuntu -e hostname -I" -ForegroundColor Gray
+    }
+}
+
+
+# ============================================================
+# PHASE 6: Port Conflict Check
+# ============================================================
+
+Write-Step "PHASE 6" "Checking port conflicts on host"
+foreach ($pf in $DockerPorts) {
+    $inUse = Get-NetTCPConnection -LocalPort $pf.HostPort -State Listen -ErrorAction SilentlyContinue
+    if ($inUse) {
+        $proc = Get-Process -Id $inUse.OwningProcess -ErrorAction SilentlyContinue
+        $procName = "unknown"
+        if ($proc) { $procName = $proc.Name }
+        Write-Warn "Port $($pf.HostPort) in use by: $procName (PID: $($inUse.OwningProcess))"
+    } else {
+        Write-OK "Port $($pf.HostPort) available ($($pf.Description))"
+    }
+}
+
+
+# ============================================================
+# PHASE 7: Cleanup Previous Hyper-V / Docker Desktop Artifacts
+# ============================================================
+
+Write-Step "PHASE 7" "Checking for previous Hyper-V/Docker Desktop artifacts"
+
+$cleanupItems = @()
+
+# Docker Desktop
+$ddKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Docker Desktop"
+$ddInstalled = Test-Path $ddKey
+if ($ddInstalled) {
+    $cleanupItems += @{
+        Name   = "Docker Desktop"
+        Detail = "Not needed -- Docker Engine runs directly in WSL2"
+        Action = "Uninstall via Settings > Apps > Docker Desktop"
+    }
+}
+
+# Docker Windows service (from previous Docker CE install)
+$dockerSvc = Get-Service -Name Docker -ErrorAction SilentlyContinue
+if ($dockerSvc) {
+    $cleanupItems += @{
+        Name   = "Docker Windows service"
+        Detail = "Not needed -- Docker runs inside WSL2"
+        Action = "Stop-Service Docker; sc.exe delete Docker"
+    }
+}
+
+# Docker CE binaries on Windows
+if (Test-Path "$env:ProgramFiles\docker\dockerd.exe") {
+    $cleanupItems += @{
+        Name   = "Docker CE binaries"
+        Detail = "$env:ProgramFiles\docker"
+        Action = "Remove-Item '$env:ProgramFiles\docker' -Recurse -Force"
+    }
+}
+
+# Old Hyper-V VM from previous approach
+$hypervModule = Get-Module -ListAvailable Hyper-V -ErrorAction SilentlyContinue
+if ($hypervModule) {
+    $oldVM = Get-VM -Name "Admin3-Docker" -ErrorAction SilentlyContinue
+    if ($oldVM) {
+        $cleanupItems += @{
+            Name   = "Hyper-V VM (Admin3-Docker)"
+            Detail = "From previous Hyper-V approach -- not needed for WSL2"
+            Action = "Stop-VM 'Admin3-Docker' -Force; Remove-VM 'Admin3-Docker' -Force"
+        }
+    }
+
+    $oldSwitch = Get-VMSwitch -Name "DockerNAT" -ErrorAction SilentlyContinue
+    if ($oldSwitch) {
+        $cleanupItems += @{
+            Name   = "Hyper-V Virtual Switch (DockerNAT)"
+            Detail = "From previous Hyper-V approach"
+            Action = "Remove-VMSwitch 'DockerNAT' -Force"
         }
     }
 }
 
-# 3d: Test container run
-Write-Step "3d" "Testing container run..."
-# Use appropriate test image based on container mode
-if ($osType -eq 'linux') {
-    Write-Host "  Running Linux hello-world..." -ForegroundColor Gray
-    $hello = docker run --rm hello-world 2>&1
-} else {
-    Write-Host "  Running Windows hello-world (Linux containers not yet configured)..." -ForegroundColor Gray
-    $hello = docker run --rm mcr.microsoft.com/hello-world 2>&1
-}
-if ($LASTEXITCODE -eq 0) {
-    Write-OK "Test container ran successfully"
-} else {
-    Write-Fail "Test container failed: $hello"
-    Write-Host "  Check Docker logs: Get-EventLog -LogName Application -Source Docker -Newest 10" -ForegroundColor Gray
-}
-
-# 3e: Test Docker Compose
-Write-Step "3e" "Checking Docker Compose..."
-$composeVersion = docker compose version 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-OK "Docker Compose available: $composeVersion"
-} else {
-    Write-Warn "Docker Compose V2 not found. Installing..."
-    Write-Host "  Docker Compose V2 is a Docker CLI plugin." -ForegroundColor Gray
-
-    $composeDir = "$env:ProgramFiles\Docker\cli-plugins"
-    if (-not (Test-Path $composeDir)) {
-        New-Item -ItemType Directory -Path $composeDir -Force | Out-Null
-    }
-
-    $composeUrl = 'https://github.com/docker/compose/releases/latest/download/docker-compose-windows-x86_64.exe'
-    $composePath = Join-Path $composeDir 'docker-compose.exe'
-
-    $downloaded = Invoke-Download -Url $composeUrl -OutFile $composePath -Description "Docker Compose V2"
-    if ($downloaded) {
-        Write-OK "Docker Compose V2 installed"
-        $composeVersion = docker compose version 2>&1
-        Write-Host "  $composeVersion" -ForegroundColor Gray
-    } else {
-        Write-Fail "Could not download Docker Compose."
-        Write-Host "  Download manually from: https://github.com/docker/compose/releases" -ForegroundColor Gray
+# Old NAT rule
+$oldNat = Get-NetNat -Name "DockerNAT" -ErrorAction SilentlyContinue
+if ($oldNat) {
+    $cleanupItems += @{
+        Name   = "NAT Rule (DockerNAT)"
+        Detail = "From previous Hyper-V approach"
+        Action = "Remove-NetNat 'DockerNAT' -Confirm:`$false"
     }
 }
 
-# 3f: Port conflict check
-Write-Step "3f" "Checking port conflicts (8080, 8443)..."
-Write-Host "  Docker Compose maps 8080->80 and 8443->443 to avoid IIS conflicts." -ForegroundColor Gray
-$port8080 = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue
-$port8443 = Get-NetTCPConnection -LocalPort 8443 -State Listen -ErrorAction SilentlyContinue
-
-if ($port8080) {
-    $proc8080 = Get-Process -Id $port8080.OwningProcess -ErrorAction SilentlyContinue
-    Write-Warn "Port 8080 in use by: $($proc8080.Name) (PID: $($port8080.OwningProcess))"
-} else {
-    Write-OK "Port 8080 is available"
+# Old port forwarding rules that point to the VM IP (192.168.100.10)
+$oldPortProxy = netsh interface portproxy show v4tov4 2>&1
+if ($oldPortProxy -match '192\.168\.100\.10') {
+    $cleanupItems += @{
+        Name   = "Old portproxy rules (192.168.100.10)"
+        Detail = "Port forwarding to old Hyper-V VM IP"
+        Action = "netsh interface portproxy reset"
+    }
 }
 
-if ($port8443) {
-    $proc8443 = Get-Process -Id $port8443.OwningProcess -ErrorAction SilentlyContinue
-    Write-Warn "Port 8443 in use by: $($proc8443.Name) (PID: $($port8443.OwningProcess))"
+if ($cleanupItems.Count -gt 0) {
+    Write-Warn "Found $($cleanupItems.Count) artifact(s) from previous setup:"
+    Write-Host ""
+    foreach ($item in $cleanupItems) {
+        Write-Host "    $($item.Name)" -ForegroundColor Yellow
+        Write-Host "      $($item.Detail)" -ForegroundColor Gray
+        Write-Host "      Cleanup: $($item.Action)" -ForegroundColor DarkGray
+    }
+    Write-Host ""
+    Write-Host "  These are NOT needed for the WSL2 approach." -ForegroundColor Gray
+    Write-Host "  Manual cleanup recommended -- see commands above." -ForegroundColor Gray
 } else {
-    Write-OK "Port 8443 is available"
+    Write-OK "No old artifacts found"
 }
 
-# 3g: Pull a test image
-Write-Step "3g" "Pulling test image..."
-if ($osType -eq 'linux') {
-    Write-Host "  Pulling alpine:latest (Linux)..." -ForegroundColor Gray
-    $pullResult = docker pull alpine:latest 2>&1
-} else {
-    Write-Host "  Pulling mcr.microsoft.com/windows/nanoserver:ltsc2019 (Windows)..." -ForegroundColor Gray
-    $pullResult = docker pull mcr.microsoft.com/windows/nanoserver:ltsc2019 2>&1
-}
-if ($LASTEXITCODE -eq 0) {
-    Write-OK "Image pull successful"
-} else {
-    Write-Fail "Image pull failed: $pullResult"
-}
 
-# -- Summary --
+# ============================================================
+# SUMMARY: Post-Setup Instructions
+# ============================================================
 
 Write-Host "`n========================================" -ForegroundColor Green
-Write-Host " INSTALLATION COMPLETE" -ForegroundColor Green
+Write-Host " SETUP COMPLETE" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "----------------------------------------" -ForegroundColor Green
-Write-Host " DEPLOYMENT FOLDER SETUP" -ForegroundColor Green
+Write-Host " Deploy Admin3 Staging Stack" -ForegroundColor Green
 Write-Host "----------------------------------------" -ForegroundColor Green
 Write-Host ""
-Write-Host "Step A: Create deployment folder on the server:" -ForegroundColor White
-Write-Host "  mkdir D:\AMS" -ForegroundColor Cyan
+Write-Host "1. Open WSL2 Ubuntu:" -ForegroundColor White
+Write-Host "   wsl -d Ubuntu" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Step B: Copy the following files/folders from the repo to D:\AMS:" -ForegroundColor White
+Write-Host "2. Clone the repo:" -ForegroundColor White
+Write-Host "   git clone -b staging https://github.com/eugenelo428937/Admin3.git ~/Admin3" -ForegroundColor Cyan
+Write-Host "   cd ~/Admin3" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  D:\AMS\" -ForegroundColor Gray
-Write-Host "  |-- docker-compose.yml          # Main compose stack definition" -ForegroundColor Gray
-Write-Host "  |-- .env                         # Created from .env.example (see Step C)" -ForegroundColor Gray
-Write-Host "  |-- .dockerignore                # Build context exclusions" -ForegroundColor Gray
-Write-Host "  |" -ForegroundColor Gray
-Write-Host "  |-- docker\" -ForegroundColor Gray
-Write-Host "  |   |-- init.sql                 # PostgreSQL schema init (acted, adm)" -ForegroundColor Gray
-Write-Host "  |" -ForegroundColor Gray
-Write-Host "  |-- backend\" -ForegroundColor Gray
-Write-Host "  |   |-- django_Admin3\" -ForegroundColor Gray
-Write-Host "  |       |-- Dockerfile           # Django multi-stage build" -ForegroundColor Gray
-Write-Host "  |       |-- requirements.txt     # Python dependencies" -ForegroundColor Gray
-Write-Host "  |       |-- manage.py            # Django management" -ForegroundColor Gray
-Write-Host "  |       |-- django_Admin3\        # Django settings package" -ForegroundColor Gray
-Write-Host "  |       |-- apps\                 # All Django apps" -ForegroundColor Gray
-Write-Host "  |       |-- railway-start.sh     # Container entrypoint script" -ForegroundColor Gray
-Write-Host "  |       |-- .dockerignore        # Backend build exclusions" -ForegroundColor Gray
-Write-Host "  |" -ForegroundColor Gray
-Write-Host "  |-- frontend\" -ForegroundColor Gray
-Write-Host "  |   |-- react-Admin3\" -ForegroundColor Gray
-Write-Host "  |       |-- package.json         # Node dependencies" -ForegroundColor Gray
-Write-Host "  |       |-- package-lock.json    # Lock file for reproducible builds" -ForegroundColor Gray
-Write-Host "  |       |-- public\               # Static assets" -ForegroundColor Gray
-Write-Host "  |       |-- src\                  # React source code" -ForegroundColor Gray
-Write-Host "  |       |-- .env.staging         # Frontend staging env vars" -ForegroundColor Gray
-Write-Host "  |" -ForegroundColor Gray
-Write-Host "  |-- nginx\" -ForegroundColor Gray
-Write-Host "      |-- Dockerfile               # Nginx multi-stage build (builds React)" -ForegroundColor Gray
-Write-Host "      |-- nginx.conf               # Reverse proxy + SSL config" -ForegroundColor Gray
-Write-Host "      |-- generate-cert.sh         # Self-signed SSL cert generator" -ForegroundColor Gray
+Write-Host "   Required files (all included in the git clone):" -ForegroundColor White
 Write-Host ""
-Write-Host "  Easiest method (from a machine with Git access):" -ForegroundColor White
-Write-Host "    git clone -b staging https://github.com/eugenelo428937/Admin3.git D:\AMS" -ForegroundColor Cyan
+Write-Host "   ~/Admin3/" -ForegroundColor Gray
+Write-Host "   |-- docker-compose.yml          # Compose stack (db, redis, backend, worker, nginx)" -ForegroundColor Gray
+Write-Host "   |-- .env                         # Created from .env.example (see step 3)" -ForegroundColor Gray
+Write-Host "   |-- .dockerignore                # Build context exclusions" -ForegroundColor Gray
+Write-Host "   |" -ForegroundColor Gray
+Write-Host "   |-- docker/" -ForegroundColor Gray
+Write-Host "   |   |-- init.sql                 # PostgreSQL schema init (acted, adm)" -ForegroundColor Gray
+Write-Host "   |" -ForegroundColor Gray
+Write-Host "   |-- backend/" -ForegroundColor Gray
+Write-Host "   |   |-- django_Admin3/" -ForegroundColor Gray
+Write-Host "   |       |-- Dockerfile           # Django multi-stage build" -ForegroundColor Gray
+Write-Host "   |       |-- requirements.txt     # Python dependencies" -ForegroundColor Gray
+Write-Host "   |       |-- manage.py            # Django management" -ForegroundColor Gray
+Write-Host "   |       |-- django_Admin3/       # Django settings package" -ForegroundColor Gray
+Write-Host "   |       |-- apps/                # All Django apps" -ForegroundColor Gray
+Write-Host "   |       |-- railway-start.sh     # Container entrypoint" -ForegroundColor Gray
+Write-Host "   |" -ForegroundColor Gray
+Write-Host "   |-- frontend/" -ForegroundColor Gray
+Write-Host "   |   |-- react-Admin3/" -ForegroundColor Gray
+Write-Host "   |       |-- package.json         # Node dependencies" -ForegroundColor Gray
+Write-Host "   |       |-- package-lock.json    # Lock file" -ForegroundColor Gray
+Write-Host "   |       |-- public/              # Static assets" -ForegroundColor Gray
+Write-Host "   |       |-- src/                 # React source" -ForegroundColor Gray
+Write-Host "   |       |-- .env.staging         # Frontend staging env vars" -ForegroundColor Gray
+Write-Host "   |" -ForegroundColor Gray
+Write-Host "   |-- nginx/" -ForegroundColor Gray
+Write-Host "       |-- Dockerfile               # Nginx multi-stage build (builds React)" -ForegroundColor Gray
+Write-Host "       |-- nginx.conf               # Reverse proxy + SSL config" -ForegroundColor Gray
+Write-Host "       |-- generate-cert.sh         # Self-signed SSL cert generator" -ForegroundColor Gray
 Write-Host ""
-Write-Host "  Or copy via network share / USB / RDP file transfer." -ForegroundColor Gray
-Write-Host "  NOTE: Do NOT copy node_modules, .venv, __pycache__, or .git (saves ~1GB)." -ForegroundColor Yellow
+Write-Host "3. Create the .env file:" -ForegroundColor White
+Write-Host "   cp .env.example .env" -ForegroundColor Cyan
+Write-Host "   nano .env" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Step C: Create the .env file:" -ForegroundColor White
-Write-Host "  copy D:\AMS\.env.example D:\AMS\.env" -ForegroundColor Cyan
-Write-Host "  notepad D:\AMS\.env" -ForegroundColor Cyan
+Write-Host "   Required edits in .env:" -ForegroundColor White
+Write-Host "     POSTGRES_PASSWORD=<strong-password>" -ForegroundColor Gray
+Write-Host "     REDIS_PASSWORD=<strong-password>" -ForegroundColor Gray
+Write-Host "     DJANGO_SECRET_KEY=<random-50-char-string>" -ForegroundColor Gray
+Write-Host "     SERVER_NAME=localhost" -ForegroundColor Gray
+Write-Host "     ALLOWED_HOSTS=localhost,127.0.0.1" -ForegroundColor Gray
+Write-Host "     CORS_ALLOWED_ORIGINS=https://localhost:8443" -ForegroundColor Gray
+Write-Host "     CSRF_TRUSTED_ORIGINS=https://localhost:8443" -ForegroundColor Gray
+Write-Host "     FRONTEND_URL=https://localhost:8443" -ForegroundColor Gray
+Write-Host "     HTTP_PORT=8080" -ForegroundColor Gray
+Write-Host "     HTTPS_PORT=8443" -ForegroundColor Gray
 Write-Host ""
-Write-Host "  Required edits in .env:" -ForegroundColor White
-Write-Host "    POSTGRES_PASSWORD=<strong-password>" -ForegroundColor Gray
-Write-Host "    REDIS_PASSWORD=<strong-password>" -ForegroundColor Gray
-Write-Host "    DJANGO_SECRET_KEY=<random-50-char-string>" -ForegroundColor Gray
-Write-Host "    SERVER_NAME=7.0.240.83" -ForegroundColor Gray
-Write-Host "    ALLOWED_HOSTS=7.0.240.83,localhost,127.0.0.1" -ForegroundColor Gray
-Write-Host "    CORS_ALLOWED_ORIGINS=https://7.0.240.83:8443,https://localhost:8443" -ForegroundColor Gray
-Write-Host "    CSRF_TRUSTED_ORIGINS=https://7.0.240.83:8443,https://localhost:8443" -ForegroundColor Gray
-Write-Host "    FRONTEND_URL=https://7.0.240.83:8443" -ForegroundColor Gray
-Write-Host "    HTTP_PORT=8080" -ForegroundColor Gray
-Write-Host "    HTTPS_PORT=8443" -ForegroundColor Gray
+Write-Host "4. Start the stack:" -ForegroundColor White
+Write-Host "   docker compose up -d" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "5. Verify:" -ForegroundColor White
+Write-Host "   docker compose ps                        # All services healthy" -ForegroundColor Cyan
+Write-Host "   docker compose logs -f backend           # Check Django logs" -ForegroundColor Cyan
+Write-Host "   curl -k https://localhost:8443            # Test from WSL2" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "6. Access from browser (on the same machine):" -ForegroundColor White
+Write-Host "   https://localhost:8443" -ForegroundColor Cyan
 Write-Host ""
 
-if ($osType -ne 'linux') {
-    Write-Host "----------------------------------------" -ForegroundColor Yellow
-    Write-Host " WSL2 SETUP (Server 2019)" -ForegroundColor Yellow
-    Write-Host "----------------------------------------" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "IMPORTANT: Linux containers run inside WSL2 on Server 2019." -ForegroundColor Yellow
-    Write-Host "The Windows Docker service only runs Windows containers." -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "If WSL2 setup did not complete above, follow these manual steps:" -ForegroundColor White
-    Write-Host "  1. Enable features (this script does this automatically):" -ForegroundColor White
-    Write-Host "     Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" -ForegroundColor Gray
-    Write-Host "  2. Reboot the server" -ForegroundColor White
-    Write-Host "  3. Re-run this script (installs WSL2 kernel + Ubuntu automatically)" -ForegroundColor White
-    Write-Host "  4. Initialize Ubuntu: run the ubuntu*.exe launcher" -ForegroundColor White
-    Write-Host "  5. Install Docker Engine inside WSL2 Ubuntu:" -ForegroundColor White
-    Write-Host "     curl -fsSL https://get.docker.com | sh" -ForegroundColor Cyan
-    Write-Host "     sudo usermod -aG docker `$USER" -ForegroundColor Cyan
-    Write-Host "     sudo service docker start" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Step D: Start the Admin3 stack from WSL2:" -ForegroundColor White
-    Write-Host "  wsl" -ForegroundColor Cyan
-    Write-Host "  cd /mnt/d/AMS && docker compose up -d" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Step E: Verify at https://7.0.240.83:8443" -ForegroundColor White
-    Write-Host ""
-} else {
-    Write-Host "Step D: Start the Admin3 stack:" -ForegroundColor White
-    Write-Host "  cd D:\AMS" -ForegroundColor Cyan
-    Write-Host "  docker compose up -d" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Step E: Verify at https://7.0.240.83:8443" -ForegroundColor White
-    Write-Host ""
-}
+Write-Host "----------------------------------------" -ForegroundColor White
+Write-Host " QUICK REFERENCE" -ForegroundColor White
+Write-Host "----------------------------------------" -ForegroundColor White
+Write-Host ""
+Write-Host "  WSL2 Management (from PowerShell):" -ForegroundColor White
+Write-Host "    wsl -d Ubuntu                           # Open Ubuntu shell" -ForegroundColor Gray
+Write-Host "    wsl --shutdown                          # Stop all WSL instances" -ForegroundColor Gray
+Write-Host "    wsl -l -v                               # List distros + status" -ForegroundColor Gray
+Write-Host "    wsl --status                            # WSL configuration info" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  Docker commands (inside WSL2 Ubuntu):" -ForegroundColor White
+Write-Host "    docker compose up -d                    # Start stack" -ForegroundColor Gray
+Write-Host "    docker compose down                     # Stop stack" -ForegroundColor Gray
+Write-Host "    docker compose ps                       # Service status" -ForegroundColor Gray
+Write-Host "    docker compose logs -f SERVICE          # Stream logs" -ForegroundColor Gray
+Write-Host "    docker compose pull && docker compose up -d  # Update images" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  Ports:" -ForegroundColor White
+Write-Host "    localhost:8080  -- HTTP  (nginx)" -ForegroundColor Gray
+Write-Host "    localhost:8443  -- HTTPS (nginx)" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  Files:" -ForegroundColor White
+Write-Host "    WSL config:    $env:USERPROFILE\.wslconfig" -ForegroundColor Gray
+Write-Host "    WSL distro:    \\wsl$\Ubuntu\home\" -ForegroundColor Gray
+Write-Host "    Admin3 repo:   \\wsl$\Ubuntu\home\USER\Admin3\" -ForegroundColor Gray
+Write-Host ""
