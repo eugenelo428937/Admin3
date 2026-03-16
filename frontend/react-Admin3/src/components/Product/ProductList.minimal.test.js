@@ -4,7 +4,7 @@ import { vi } from 'vitest';
  */
 
 // Mock services BEFORE any imports
-vi.mock("../../services/httpService.js", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),

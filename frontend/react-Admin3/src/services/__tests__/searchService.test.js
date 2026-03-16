@@ -11,7 +11,7 @@ import { vi } from 'vitest';
  * - debounce: Utility debounce function
  */
 
-vi.mock('../httpService.js', () => ({
+vi.mock('../httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock('../../config.js', () => ({
 }));
 
 import searchService from '../searchService';
-import httpService from '../httpService.js';
+import httpService from '../httpService';
 
 describe('searchService', () => {
   beforeEach(() => {

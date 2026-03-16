@@ -31,7 +31,7 @@ vi.mock('../../../config.js', () => ({
 
 // Mock authService
 const mockRegister = vi.fn();
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     register: (...args: any[]) => mockRegister(...args),

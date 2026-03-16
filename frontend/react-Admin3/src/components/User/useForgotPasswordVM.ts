@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import authService from "../../services/authService.ts";
+import authService from "../../services/authService";
 
 export interface ForgotPasswordVM {
   // State
