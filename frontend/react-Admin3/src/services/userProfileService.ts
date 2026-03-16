@@ -1,6 +1,6 @@
 // src/services/userProfileService.ts
-import httpService from "./httpService.js";
-import config from "../config.js";
+import httpService from "./httpService";
+import config from "../config";
 import { parsePaginatedResponse } from "./paginationHelper";
 import type { UserProfile, Address, ContactNumber } from "../types/auth";
 

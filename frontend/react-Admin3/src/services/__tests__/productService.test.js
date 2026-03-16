@@ -9,7 +9,7 @@ import { vi } from 'vitest';
 vi.unmock('../productService');
 
 // Mock dependencies BEFORE imports
-vi.mock('../httpService.js', () => ({
+vi.mock('../httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('../../config.js', () => ({
 }));
 
 import productService from '../productService';
-import httpService from '../httpService.js';
+import httpService from '../httpService';
 
 describe('productService', () => {
   beforeEach(() => {

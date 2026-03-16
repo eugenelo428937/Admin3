@@ -7,7 +7,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const mockConfirmPasswordReset = vi.fn();
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: { confirmPasswordReset: (...args: any[]) => mockConfirmPasswordReset(...args) },
 }));

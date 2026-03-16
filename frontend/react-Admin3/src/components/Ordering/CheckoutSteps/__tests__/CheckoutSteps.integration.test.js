@@ -54,7 +54,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../../services/httpService.js', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn().mockResolvedValue({ data: {} }),
