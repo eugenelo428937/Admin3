@@ -1,30 +1,27 @@
 import { vi } from 'vitest';
-/**
- * Tests for phoneValidationService
- *
- * Comprehensive tests for phone validation including:
- * - validatePhoneNumber: Validate phone with country code
- * - validateInternationalPhoneNumber: Validate international format
- * - formatPhoneNumber: Format phone in various formats
- * - getCountryCallingCode: Get country calling code
- * - getCountryCodeFromName: Get ISO code from country name (async)
- * - getCountryName: Get country name from ISO code (async)
- * - detectCountryFromPhoneNumber: Detect country from phone
- * - fetchCountries: Fetch countries list (async)
- * - getValidationErrorMessage: Get validation error (async)
- */
-
-import phoneValidationService from '../phoneValidationService.js';
-
-// Mock global fetch
-global.fetch = vi.fn();
 
 describe('PhoneValidationService', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    // Clear cache between tests
-    phoneValidationService.countriesCache = null;
-    phoneValidationService.countriesFetchPromise = null;
+  let phoneValidationService;
+  let httpService;
+
+  beforeEach(async () => {
+    vi.resetModules();
+
+    vi.doMock('../../config', () => ({
+      __esModule: true,
+      default: { apiBaseUrl: 'http://test-api' },
+    }));
+
+    vi.doMock('../httpService', () => ({
+      __esModule: true,
+      default: {
+        get: vi.fn(),
+        post: vi.fn(),
+      },
+    }));
+
+    phoneValidationService = (await import('../phoneValidationService')).default;
+    httpService = (await import('../httpService')).default;
   });
 
   describe('validatePhoneNumber', () => {
@@ -62,8 +59,8 @@ describe('PhoneValidationService', () => {
     });
 
     test('rejects invalid UK number', async () => {
-      global.fetch.mockResolvedValue({
-        json: () => Promise.resolve([{ iso_code: 'GB', name: 'United Kingdom' }])
+      httpService.get.mockResolvedValue({
+        data: [{ iso_code: 'GB', name: 'United Kingdom' }]
       });
 
       const result = await phoneValidationService.validatePhoneNumber('123', 'GB');
@@ -102,11 +99,10 @@ describe('PhoneValidationService', () => {
     });
 
     test('handles parsing errors gracefully', async () => {
-      global.fetch.mockResolvedValue({
-        json: () => Promise.resolve([{ iso_code: 'ZZ', name: 'Unknown' }])
+      httpService.get.mockResolvedValue({
+        data: [{ iso_code: 'ZZ', name: 'Unknown' }]
       });
 
-      // Use a malformed number that causes parsePhoneNumber to throw
       const result = await phoneValidationService.validatePhoneNumber('+++invalid', 'ZZ');
 
       expect(result.isValid).toBe(false);
@@ -184,33 +180,31 @@ describe('PhoneValidationService', () => {
         { iso_code: 'GB', name: 'United Kingdom' },
         { iso_code: 'US', name: 'United States' }
       ];
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockCountries)
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockCountries });
 
       const result = await phoneValidationService.fetchCountries();
 
       expect(result).toEqual(mockCountries);
-      expect(phoneValidationService.countriesCache).toEqual(mockCountries);
     });
 
     test('returns cached countries on subsequent calls', async () => {
       const mockCountries = [{ iso_code: 'GB', name: 'United Kingdom' }];
-      phoneValidationService.countriesCache = mockCountries;
+      httpService.get.mockResolvedValueOnce({ data: mockCountries });
 
-      const result = await phoneValidationService.fetchCountries();
+      // First call fetches
+      const result1 = await phoneValidationService.fetchCountries();
+      // Second call should use cache
+      const result2 = await phoneValidationService.fetchCountries();
 
-      expect(result).toEqual(mockCountries);
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result1).toEqual(mockCountries);
+      expect(result2).toEqual(mockCountries);
+      expect(httpService.get).toHaveBeenCalledTimes(1);
     });
 
     test('returns existing promise if fetch in progress', async () => {
       const mockCountries = [{ iso_code: 'GB', name: 'United Kingdom' }];
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockCountries)
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockCountries });
 
-      // Start two fetches simultaneously
       const promise1 = phoneValidationService.fetchCountries();
       const promise2 = phoneValidationService.fetchCountries();
 
@@ -218,14 +212,12 @@ describe('PhoneValidationService', () => {
 
       expect(result1).toEqual(mockCountries);
       expect(result2).toEqual(mockCountries);
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(httpService.get).toHaveBeenCalledTimes(1);
     });
 
     test('handles API response with results array', async () => {
       const mockData = { results: [{ iso_code: 'GB', name: 'United Kingdom' }] };
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockData)
-      });
+      httpService.get.mockResolvedValueOnce({ data: mockData });
 
       const result = await phoneValidationService.fetchCountries();
 
@@ -233,7 +225,7 @@ describe('PhoneValidationService', () => {
     });
 
     test('returns empty array on fetch error', async () => {
-      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+      httpService.get.mockRejectedValueOnce(new Error('Network error'));
       vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await phoneValidationService.fetchCountries();
@@ -246,8 +238,8 @@ describe('PhoneValidationService', () => {
 
   describe('getCountryCodeFromName', () => {
     test('maps United Kingdom to GB', async () => {
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve([{ iso_code: 'GB', name: 'United Kingdom' }])
+      httpService.get.mockResolvedValueOnce({
+        data: [{ iso_code: 'GB', name: 'United Kingdom' }]
       });
 
       const code = await phoneValidationService.getCountryCodeFromName('United Kingdom');
@@ -255,8 +247,8 @@ describe('PhoneValidationService', () => {
     });
 
     test('maps United States to US', async () => {
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve([{ iso_code: 'US', name: 'United States' }])
+      httpService.get.mockResolvedValueOnce({
+        data: [{ iso_code: 'US', name: 'United States' }]
       });
 
       const code = await phoneValidationService.getCountryCodeFromName('United States');
@@ -264,8 +256,8 @@ describe('PhoneValidationService', () => {
     });
 
     test('returns null for unknown country', async () => {
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve([{ iso_code: 'GB', name: 'United Kingdom' }])
+      httpService.get.mockResolvedValueOnce({
+        data: [{ iso_code: 'GB', name: 'United Kingdom' }]
       });
 
       const code = await phoneValidationService.getCountryCodeFromName('Unknown Country');
@@ -273,7 +265,7 @@ describe('PhoneValidationService', () => {
     });
 
     test('returns null on fetch error', async () => {
-      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+      httpService.get.mockRejectedValueOnce(new Error('Network error'));
       vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const code = await phoneValidationService.getCountryCodeFromName('United Kingdom');
@@ -286,8 +278,8 @@ describe('PhoneValidationService', () => {
 
   describe('getCountryName', () => {
     test('returns country name for valid ISO code', async () => {
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve([{ iso_code: 'GB', name: 'United Kingdom' }])
+      httpService.get.mockResolvedValueOnce({
+        data: [{ iso_code: 'GB', name: 'United Kingdom' }]
       });
 
       const name = await phoneValidationService.getCountryName('GB');
@@ -295,8 +287,8 @@ describe('PhoneValidationService', () => {
     });
 
     test('returns ISO code if country not found', async () => {
-      global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve([{ iso_code: 'US', name: 'United States' }])
+      httpService.get.mockResolvedValueOnce({
+        data: [{ iso_code: 'US', name: 'United States' }]
       });
 
       const name = await phoneValidationService.getCountryName('XX');
@@ -304,7 +296,7 @@ describe('PhoneValidationService', () => {
     });
 
     test('returns ISO code on error', async () => {
-      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+      httpService.get.mockRejectedValueOnce(new Error('Network error'));
       vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const name = await phoneValidationService.getCountryName('GB');
@@ -317,8 +309,8 @@ describe('PhoneValidationService', () => {
 
   describe('getValidationErrorMessage', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        json: () => Promise.resolve([{ iso_code: 'GB', name: 'United Kingdom' }])
+      httpService.get.mockResolvedValue({
+        data: [{ iso_code: 'GB', name: 'United Kingdom' }]
       });
     });
 
@@ -427,7 +419,6 @@ describe('PhoneValidationService', () => {
       const result = phoneValidationService.validateInternationalPhoneNumber('+++invalid');
 
       expect(result.isValid).toBe(false);
-      // Error can be either from catch block or validation
       expect(result.error).toMatch(/Invalid.*phone/i);
     });
   });

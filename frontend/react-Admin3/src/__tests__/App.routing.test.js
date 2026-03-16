@@ -12,11 +12,11 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../theme/theme.js';
+import theme from '../theme/theme';
 import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Mock all services before component imports
-vi.mock('../services/httpService.js', () => ({
+vi.mock('../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -37,7 +37,7 @@ vi.mock('../services/cartService.ts', () => ({
   },
 }));
 
-vi.mock('../services/productService.js', () => ({
+vi.mock('../services/productService', () => ({
   __esModule: true,
   default: {
     getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
@@ -48,11 +48,11 @@ vi.mock('../services/productService.js', () => ({
   },
 }));
 
-vi.mock('../services/subjectService.js', () => ({
+vi.mock('../services/subjectService', () => ({
   getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock('../services/rulesEngineService.js', () => ({
+vi.mock('../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),

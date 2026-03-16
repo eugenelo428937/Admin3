@@ -12,7 +12,7 @@ import { vi } from 'vitest';
 vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 // Mock httpService BEFORE importing anything else
-vi.mock('../../../../../services/httpService.js', () => ({
+vi.mock('../../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),

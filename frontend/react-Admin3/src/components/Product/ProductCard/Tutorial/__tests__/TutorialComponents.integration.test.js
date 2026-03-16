@@ -4,7 +4,7 @@ vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 vi.unmock('../../../../../contexts/CartContext.tsx');
 
 // Mock httpService before importing anything else
-vi.mock('../../../../../services/httpService.js', () => ({
+vi.mock('../../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -18,11 +18,11 @@ import '@testing-library/jest-dom';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 import TutorialProductCard from '../TutorialProductCard.js';
-import tutorialService from '../../../../../services/tutorialService.js';
+import tutorialService from '../../../../../services/tutorialService';
 import cartService from '../../../../../services/cartService.ts';
 
 // Mock tutorial service
-vi.mock('../../../../../services/tutorialService.js', () => ({
+vi.mock('../../../../../services/tutorialService', () => ({
   getTutorialVariations: vi.fn(() => Promise.resolve([]))
 }));
 

@@ -38,7 +38,7 @@ describe('tutorialService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn(),
@@ -46,8 +46,8 @@ describe('tutorialService', () => {
     }));
 
     // Import after mocks are set up
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -474,15 +474,15 @@ describe('tutorialService URL fallback', () => {
       },
     }));
 
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -513,15 +513,15 @@ describe('tutorialService apiUrl fallback', () => {
       },
     }));
 
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {
@@ -555,15 +555,15 @@ describe('tutorialService empty config', () => {
       },
     }));
 
-    vi.doMock('../httpService.js', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
         get: vi.fn().mockResolvedValue({ data: [] }),
       },
     }));
 
-    { const _mod_tutorialService = await import('../tutorialService.js'); tutorialService = _mod_tutorialService.default; }
-    { const _mod_httpService = await import('../httpService.js'); httpService = _mod_httpService.default; }
+    { const _mod_tutorialService = await import('../tutorialService'); tutorialService = _mod_tutorialService.default; }
+    { const _mod_httpService = await import('../httpService'); httpService = _mod_httpService.default; }
   });
 
   afterEach(() => {

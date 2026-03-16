@@ -19,11 +19,11 @@ import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { MemoryRouter } from 'react-router-dom';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import CartReviewStep from '../CheckoutSteps/CartReviewStep.tsx';
 import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.tsx';
 import CheckoutSteps from '../CheckoutSteps.tsx';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 // Mock useMediaQuery so CartSummaryPanel expands in tests
 vi.mock('@mui/material/useMediaQuery', () => ({
@@ -55,7 +55,7 @@ vi.mock('../../../utils/productCodeGenerator.js', () => ({
 }));
 
 // Mock services for integration tests
-vi.mock('../../../services/rulesEngineService.js', () => {
+vi.mock('../../../services/rulesEngineService', () => {
   const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
@@ -82,7 +82,7 @@ vi.mock('../../../services/rulesEngineService.js', () => {
   };
 });
 
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(),

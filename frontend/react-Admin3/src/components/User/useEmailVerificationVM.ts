@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import authService from "../../services/authService.ts";
-import logger from "../../services/loggerService.js";
+import authService from "../../services/authService";
+import logger from "../../services/loggerService";
 
 type VerificationStatus = "success" | null;
 

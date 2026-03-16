@@ -39,7 +39,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchModal from '../Navigation/SearchModal.js';
+import SearchModal from '../Navigation/SearchModal.tsx';
 import filtersReducer from '../../store/slices/filtersSlice.js';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 

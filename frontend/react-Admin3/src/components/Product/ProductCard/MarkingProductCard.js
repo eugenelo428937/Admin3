@@ -41,7 +41,7 @@ import {
 	RuleOutlined,
 	CalendarMonthOutlined,
 } from "@mui/icons-material";
-import productService from "../../../services/productService.js";
+import productService from "../../../services/productService";
 
 const MarkingProductCard = React.memo(
 	({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {

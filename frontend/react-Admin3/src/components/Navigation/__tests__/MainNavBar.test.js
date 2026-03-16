@@ -19,7 +19,7 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -47,7 +47,7 @@ vi.mock('../../../services/cartService.ts', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../services/productService.js', () => ({
+vi.mock('../../../services/productService', () => ({
   __esModule: true,
   default: {
     getNavigationData: vi.fn(() => Promise.resolve({
@@ -130,9 +130,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import MainNavBar from '../MainNavBar.js';
+import MainNavBar from '../MainNavBar.tsx';
 import filtersReducer from '../../../store/slices/filtersSlice.js';
-import theme from '../../../theme/theme.js';
+import theme from '../../../theme/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
 

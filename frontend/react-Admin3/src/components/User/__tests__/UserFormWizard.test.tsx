@@ -31,7 +31,7 @@ vi.mock('../../../config.js', () => ({
 
 // Mock authService
 const mockRegister = vi.fn();
-vi.mock('../../../services/authService.ts', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     register: (...args: any[]) => mockRegister(...args),
@@ -51,7 +51,7 @@ vi.mock('../../../services/userService.ts', () => ({
 // The component imports from ../../services/addressMetadataService
 // From /src/components/User/UserFormWizard.tsx -> /src/services/addressMetadataService
 // From test at /src/components/User/__tests__/ -> need ../../../services/addressMetadataService
-vi.mock('../../../services/addressMetadataService.js', () => {
+vi.mock('../../../services/address/addressMetadataService.ts', () => {
   const mockGetCountryCode = vi.fn(() => 'GB');
   const mockGetAddressMetadata = vi.fn(() => ({
     required: [],  // No required fields for easy test navigation

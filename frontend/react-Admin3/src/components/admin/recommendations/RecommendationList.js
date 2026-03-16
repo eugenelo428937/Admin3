@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import recommendationService from '../../../services/recommendationService.js';
+import recommendationService from '../../../services/recommendationService';
 
 const AdminRecommendationList = () => {
     const { isSuperuser } = useAuth();
