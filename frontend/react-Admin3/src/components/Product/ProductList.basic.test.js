@@ -71,13 +71,13 @@ vi.mock("./FilterDebugger.js", () => ({
    default: () => null,
 }));
 
-vi.mock("../Common/RulesEngineInlineAlert.js", () => ({
+vi.mock("../Common/RulesEngineInlineAlert", () => ({
    __esModule: true,
    default: () => null,
 }));
 
 // Mock rulesEngineUtils to prevent actual API calls
-vi.mock("../../utils/rulesEngineUtils.js", () => ({
+vi.mock("../../utils/rulesEngineUtils", () => ({
    __esModule: true,
    rulesEngineHelpers: {
       executeProductListRules: vi.fn(() => Promise.resolve({ messages: [] })),
@@ -108,7 +108,7 @@ import { createMockStore } from "../../test-utils/reduxMockStore.js";
 
 import appTheme from '../../theme';
 // Mock the rules engine service to prevent actual API calls during tests
-vi.mock("../../services/rulesEngineService.js", () => ({
+vi.mock("../../services/rulesEngineService", () => ({
    __esModule: true,
    default: {
       ENTRY_POINTS: {

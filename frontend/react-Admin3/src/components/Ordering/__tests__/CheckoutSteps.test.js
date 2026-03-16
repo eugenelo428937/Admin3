@@ -6,7 +6,7 @@ import theme from '../../../theme/theme.js';
 import CheckoutSteps from '../CheckoutSteps.tsx';
 import { CartContext } from '../../../contexts/CartContext.tsx';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -17,7 +17,7 @@ const renderWithTheme = (ui, options = {}) => {
 };
 
 // Mock the rules engine service
-vi.mock('../../../services/rulesEngineService.js', () => {
+vi.mock('../../../services/rulesEngineService', () => {
   const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],

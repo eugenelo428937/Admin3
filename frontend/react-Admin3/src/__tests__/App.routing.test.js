@@ -52,7 +52,7 @@ vi.mock('../services/subjectService.js', () => ({
   getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock('../services/rulesEngineService.js', () => ({
+vi.mock('../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),

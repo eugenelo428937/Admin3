@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Alert, Card, CardActions, CardContent, Grid, Box, Stepper, Step, StepLabel, Typography } from '@mui/material';
-import RulesEngineModal from '../Common/RulesEngineModal.js';
+import RulesEngineModal from '../Common/RulesEngineModal';
 import './CheckoutSteps/CheckoutSteps.css';
 
 // Import step components

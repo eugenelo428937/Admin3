@@ -3,8 +3,32 @@
  * Centralized utilities for processing and classifying rules engine messages
  */
 
+import type {
+  MessageTypes as MessageTypesInterface,
+  MessageVariant,
+  MessageDisplayType,
+  RawRulesMessage,
+  ProcessedMessage,
+  ParsedMessageContent,
+  ParsedLink,
+  ParsedButton,
+  AcknowledgmentConfig,
+  ClassifiedMessages,
+  ProcessRulesResult,
+  ProcessRulesSummary,
+  ProcessForUIResult,
+  ProcessRulesOptions,
+  ContextValidationResult,
+  CheckoutContext,
+  HomePageContext,
+  ProductCardContext,
+  ProductListContext,
+  UserRegistrationContext,
+  RulesEngineService,
+} from '../types/rulesEngine';
+
 // Message Type Constants
-export const MessageTypes = {
+export const MessageTypes: MessageTypesInterface = {
   ACKNOWLEDGE: 'acknowledge',
   USER_ACKNOWLEDGE: 'user_acknowledge',
   DISPLAY: 'display',
@@ -15,10 +39,8 @@ export const MessageTypes = {
 
 /**
  * Check if a message is an acknowledgment type
- * @param {Object} msg - Message object from rules engine
- * @returns {boolean} True if message is acknowledgment type
  */
-export const isAcknowledgmentMessage = (msg) => {
+export const isAcknowledgmentMessage = (msg: RawRulesMessage | null | undefined): boolean => {
   if (!msg) return false;
 
   return msg.type === MessageTypes.ACKNOWLEDGE ||
@@ -28,13 +50,10 @@ export const isAcknowledgmentMessage = (msg) => {
 
 /**
  * Classify messages into different categories
- * @param {Array} messages - Array of messages from rules engine
- * @returns {Object} Classified messages object with acknowledgments and displays
  */
-export const classifyMessages = (messages = []) => {
+export const classifyMessages = (messages: RawRulesMessage[] = []): ClassifiedMessages => {
   // Ensure we have an array
   if (!Array.isArray(messages)) {
-
     messages = [];
   }
 
@@ -43,7 +62,7 @@ export const classifyMessages = (messages = []) => {
   const displays = messages.filter(msg => !isAcknowledgmentMessage(msg));
 
   // Further classify by display type
-  const result = {
+  const result: ClassifiedMessages = {
     acknowledgments: {
       inline: acknowledgments.filter(msg => msg.display_type === 'inline'),
       modal: acknowledgments.filter(msg => msg.display_type === 'modal' || !msg.display_type),
@@ -71,10 +90,8 @@ export const classifyMessages = (messages = []) => {
 
 /**
  * Get message variant for styling
- * @param {Object} message - Message object
- * @returns {string} Variant type for styling (info, warning, error, success)
  */
-export const getMessageVariant = (message) => {
+export const getMessageVariant = (message: RawRulesMessage | null | undefined): MessageVariant => {
   if (!message) return 'info';
 
   // Check multiple possible locations for variant/type
@@ -103,10 +120,8 @@ export const getMessageVariant = (message) => {
 
 /**
  * Check if a message requires user action
- * @param {Object} message - Message object
- * @returns {boolean} True if message requires action
  */
-export const requiresUserAction = (message) => {
+export const requiresUserAction = (message: RawRulesMessage | null | undefined): boolean => {
   if (!message) return false;
 
   return isAcknowledgmentMessage(message) ||
@@ -116,10 +131,8 @@ export const requiresUserAction = (message) => {
 
 /**
  * Get display priority for message ordering
- * @param {Object} message - Message object
- * @returns {number} Priority number (higher = more important)
  */
-export const getMessagePriority = (message) => {
+export const getMessagePriority = (message: RawRulesMessage | null | undefined): number => {
   if (!message) return 0;
 
   // Explicit priority
@@ -140,10 +153,8 @@ export const getMessagePriority = (message) => {
 
 /**
  * Sort messages by priority
- * @param {Array} messages - Array of messages
- * @returns {Array} Sorted messages (highest priority first)
  */
-export const sortMessagesByPriority = (messages = []) => {
+export const sortMessagesByPriority = (messages: RawRulesMessage[] = []): RawRulesMessage[] => {
   return [...messages].sort((a, b) => getMessagePriority(b) - getMessagePriority(a));
 };
 
@@ -151,14 +162,23 @@ export const sortMessagesByPriority = (messages = []) => {
 // CONTENT PARSING UTILITIES
 // ============================================================================
 
+interface ParseMessageDefaults {
+  title?: string;
+  message?: string;
+  checkboxText?: string;
+  icon?: string;
+  variant?: MessageVariant;
+  dismissible?: boolean;
+  link?: ParsedLink | null;
+  details?: string[];
+  buttons?: ParsedButton[];
+}
+
 /**
  * Parse message content from various formats into normalized structure
- * @param {Object} message - Message object from rules engine
- * @param {Object} defaults - Default values for missing fields
- * @returns {Object} Normalized content object
  */
-export const parseMessageContent = (message, defaults = {}) => {
-  const fallback = {
+export const parseMessageContent = (message: any, defaults: ParseMessageDefaults = {}): ParsedMessageContent => {
+  const fallback: ParsedMessageContent = {
     title: defaults.title || 'Notice',
     message: defaults.message || '',
     checkboxText: defaults.checkboxText || 'I acknowledge',
@@ -167,7 +187,10 @@ export const parseMessageContent = (message, defaults = {}) => {
     dismissible: defaults.dismissible !== undefined ? defaults.dismissible : false,
     link: defaults.link || null,
     details: defaults.details || [],
-    buttons: defaults.buttons || []
+    buttons: defaults.buttons || [],
+    required: true,
+    blocking: false,
+    displayType: 'inline'
   };
 
   if (!message) {
@@ -191,7 +214,7 @@ export const parseMessageContent = (message, defaults = {}) => {
   }
 
   // Parse and normalize fields
-  const parsed = {
+  const parsed: ParsedMessageContent = {
     title: content.title || message.title || fallback.title,
     message: extractMessage(content, fallback.message),
     checkboxText: content.checkbox_text || content.checkboxText || fallback.checkboxText,
@@ -214,11 +237,8 @@ export const parseMessageContent = (message, defaults = {}) => {
 
 /**
  * Extract message text from various possible locations
- * @param {Object} content - Content object
- * @param {string} fallback - Fallback message
- * @returns {string} Extracted message text
  */
-const extractMessage = (content, fallback) => {
+const extractMessage = (content: any, fallback: string): string => {
   if (!content) return fallback;
 
   // Check various possible message field names
@@ -234,13 +254,8 @@ const extractMessage = (content, fallback) => {
   }
 
   // Handle object with text property
-  if (typeof messageText === 'object' && messageText.text) {
+  if (typeof messageText === 'object' && messageText?.text) {
     return messageText.text;
-  }
-
-  // Debug logging for development
-  if (import.meta.env?.DEV && !messageText) {
-
   }
 
   return messageText || fallback;
@@ -248,10 +263,8 @@ const extractMessage = (content, fallback) => {
 
 /**
  * Parse link information
- * @param {Object|string} link - Link data
- * @returns {Object|null} Parsed link object
  */
-const parseLink = (link) => {
+const parseLink = (link: any): ParsedLink | null => {
   if (!link) return null;
 
   if (typeof link === 'string') {
@@ -271,10 +284,8 @@ const parseLink = (link) => {
 
 /**
  * Parse details/items list
- * @param {Object} content - Content object
- * @returns {Array} Parsed details array
  */
-const parseDetails = (content) => {
+const parseDetails = (content: any): string[] => {
   if (!content) return [];
 
   // Check various possible detail field names
@@ -291,7 +302,7 @@ const parseDetails = (content) => {
   }
 
   // Normalize each detail item
-  return details.map(detail => {
+  return details.map((detail: any) => {
     if (typeof detail === 'string') {
       return detail;
     }
@@ -304,15 +315,13 @@ const parseDetails = (content) => {
 
 /**
  * Parse button configurations
- * @param {Object} content - Content object
- * @returns {Array} Parsed buttons array
  */
-const parseButtons = (content) => {
+const parseButtons = (content: any): ParsedButton[] => {
   if (!content || !content.buttons) return [];
 
   const buttons = Array.isArray(content.buttons) ? content.buttons : [content.buttons];
 
-  return buttons.map(button => ({
+  return buttons.map((button: any) => ({
     label: button.label || button.text || 'OK',
     action: button.action || button.onClick || 'close',
     variant: button.variant || button.type || 'primary',
@@ -322,10 +331,8 @@ const parseButtons = (content) => {
 
 /**
  * Format content for display with markdown support
- * @param {string} text - Text to format
- * @returns {string} Formatted text with basic markdown support
  */
-export const formatMessageText = (text) => {
+export const formatMessageText = (text: string | null | undefined): string | null | undefined => {
   if (!text || typeof text !== 'string') return text;
 
   // Basic markdown support
@@ -344,10 +351,8 @@ export const formatMessageText = (text) => {
 
 /**
  * Extract acknowledgment configuration from message
- * @param {Object} message - Message object
- * @returns {Object} Acknowledgment configuration
  */
-export const extractAcknowledgmentConfig = (message) => {
+export const extractAcknowledgmentConfig = (message: RawRulesMessage): AcknowledgmentConfig => {
   const content = parseMessageContent(message, {
     checkboxText: 'I have read and accept'
   });
@@ -375,44 +380,41 @@ export const extractAcknowledgmentConfig = (message) => {
 export const buildRulesContext = {
   /**
    * Build context for checkout-related entry points
-   * @param {Object} cartData - Cart data object
-   * @param {Array} cartItems - Array of cart items
-   * @returns {Object} Checkout context
    */
-  checkout: (cartData, cartItems = []) => {
+  checkout: (cartData: any, cartItems: any[] = []): CheckoutContext => {
 
     if (!cartData) {
       console.error('❌ [checkout] No cart data provided');
-      return { cart: null };
+      return { cart: null, user: null, session: { ip_address: '127.0.0.1', session_id: 'guest_session' }, acknowledgments: {} };
     }
 
     if (!cartData.id) {
       console.error('❌ [checkout] Cart data missing ID:', cartData);
-      return { cart: null };
+      return { cart: null, user: null, session: { ip_address: '127.0.0.1', session_id: 'guest_session' }, acknowledgments: {} };
     }
 
     // Parse cart ID and check for NaN
     const cartId = parseInt(cartData.id, 10);
     if (isNaN(cartId)) {
       console.error('❌ [checkout] Cart ID is not a valid number:', cartData.id);
-      return { cart: null };
+      return { cart: null, user: null, session: { ip_address: '127.0.0.1', session_id: 'guest_session' }, acknowledgments: {} };
     }
 
     // Calculate total from cart items
-    const total = cartItems.reduce((sum, item) => {
+    const total = cartItems.reduce((sum: number, item: any) => {
       const price = parseFloat(item.actual_price || item.price || 0);
       const quantity = parseInt(item.quantity || 1, 10);
       return sum + (price * quantity);
     }, 0);
 
     // Build schema-compliant context
-    const context = {
+    const context: CheckoutContext = {
       // Cart object - matches backend schema exactly
       cart: {
         // Required fields
-        id: cartId, // Already validated as integer
+        id: cartId,
         user_id: cartData.user_id || null,
-        items: cartItems.map(item => ({
+        items: cartItems.map((item: any) => ({
           // Required fields per schema
           id: parseInt(item.id, 10),
           quantity: parseInt(item.quantity || 1, 10),
@@ -475,10 +477,8 @@ export const buildRulesContext = {
 
   /**
    * Build context for home page entry point
-   * @param {Object} user - Optional user data
-   * @returns {Object} Home page context
    */
-  homePage: (user = null) => {
+  homePage: (user: any = null): HomePageContext => {
     const now = new Date();
 
     return {
@@ -503,13 +503,10 @@ export const buildRulesContext = {
 
   /**
    * Build context for product card entry points
-   * @param {Object} product - Product data
-   * @param {Object} options - Additional options
-   * @returns {Object} Product card context
    */
-  productCard: (product, options = {}) => {
+  productCard: (product: any, options: any = {}): ProductCardContext => {
     if (!product) {
-      return { product: null };
+      return { product: null, page: { name: options.pageName || 'product_list', path: options.pagePath || window.location.pathname } };
     }
 
     return {
@@ -550,19 +547,16 @@ export const buildRulesContext = {
 
   /**
    * Build context for product list entry points
-   * @param {Array} products - Array of products
-   * @param {Object} filters - Applied filters
-   * @returns {Object} Product list context
    */
-  productList: (products = [], filters = {}) => {
+  productList: (products: any[] = [], filters: any = {}): ProductListContext => {
     return {
       products: {
         count: products.length,
         items: products.slice(0, 10), // Limit to first 10 for performance
 
         // Aggregate data
-        types: [...new Set(products.map(p => p.product_type).filter(Boolean))],
-        subjects: [...new Set(products.map(p => p.subject).filter(Boolean))],
+        types: [...new Set(products.map((p: any) => p.product_type).filter(Boolean))],
+        subjects: [...new Set(products.map((p: any) => p.subject).filter(Boolean))],
 
         // Filter state
         filters: {
@@ -583,10 +577,8 @@ export const buildRulesContext = {
 
   /**
    * Build context for user registration
-   * @param {Object} formData - Registration form data
-   * @returns {Object} Registration context
    */
-  userRegistration: (formData = {}) => {
+  userRegistration: (formData: any = {}): UserRegistrationContext => {
     return {
       registration: {
         email: formData.email || null,
@@ -607,12 +599,8 @@ export const buildRulesContext = {
 
   /**
    * Build context for checkout terms
-   * @param {Object} cartData - Cart data
-   * @param {Array} cartItems - Cart items
-   * @param {Object} user - User data
-   * @returns {Object} Checkout terms context
    */
-  checkoutTerms: (cartData, cartItems = [], user = null) => {
+  checkoutTerms: (cartData: any, cartItems: any[] = [], user: any = null): any => {
     // Use the checkout context as base
     const checkoutContext = buildRulesContext.checkout(cartData, cartItems);
 
@@ -655,12 +643,8 @@ export const buildRulesContext = {
 
   /**
    * Build context for checkout payment
-   * @param {Object} cartData - Cart data
-   * @param {Array} cartItems - Cart items
-   * @param {Object} paymentMethod - Selected payment method
-   * @returns {Object} Checkout payment context
    */
-  checkoutPayment: (cartData, cartItems = [], paymentMethod = null) => {
+  checkoutPayment: (cartData: any, cartItems: any[] = [], paymentMethod: any = null): any => {
     const checkoutContext = buildRulesContext.checkout(cartData, cartItems);
 
     return {
@@ -682,11 +666,8 @@ export const buildRulesContext = {
 
   /**
    * Build generic context with common fields
-   * @param {string} entryPoint - Entry point name
-   * @param {Object} customData - Custom data to include
-   * @returns {Object} Generic context
    */
-  generic: (entryPoint, customData = {}) => {
+  generic: (entryPoint: string, customData: Record<string, any> = {}): Record<string, any> => {
     const now = new Date();
 
     return {
@@ -713,13 +694,10 @@ export const buildRulesContext = {
 
 /**
  * Validate context against expected structure
- * @param {Object} context - Context object to validate
- * @param {string} entryPoint - Entry point name
- * @returns {Object} Validation result with any errors
  */
-export const validateContext = (context, entryPoint) => {
-  const errors = [];
-  const warnings = [];
+export const validateContext = (context: any, entryPoint: string): ContextValidationResult => {
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
   // Check for required fields based on entry point
   switch (entryPoint) {
@@ -785,11 +763,8 @@ export const validateContext = (context, entryPoint) => {
 
 /**
  * Complete message processing pipeline that combines all utilities
- * @param {Object} response - Raw response from rules engine
- * @param {Object} options - Processing options
- * @returns {Object} Fully processed response ready for UI consumption
  */
-export const processRulesResponse = (response, options = {}) => {
+export const processRulesResponse = (response: any, options: ProcessRulesOptions = {}): ProcessRulesResult => {
   const {
     filterModal = false,
     filterInline = false,
@@ -800,7 +775,7 @@ export const processRulesResponse = (response, options = {}) => {
   } = options;
 
   // Initialize result structure
-  const result = {
+  const result: ProcessRulesResult = {
     success: response?.success !== false,
     blocked: response?.blocked || false,
     requires_acknowledgment: response?.requires_acknowledgment || false,
@@ -809,7 +784,16 @@ export const processRulesResponse = (response, options = {}) => {
       processed: [],
       classified: {
         acknowledgments: { inline: [], modal: [], all: [] },
-        displays: { inline: [], modal: [], all: [] }
+        displays: { inline: [], modal: [], all: [] },
+        summary: {
+          totalMessages: 0,
+          totalAcknowledgments: 0,
+          totalDisplays: 0,
+          hasInlineAcknowledgments: false,
+          hasModalAcknowledgments: false,
+          hasInlineDisplays: false,
+          hasModalDisplays: false
+        }
       },
       summary: {
         totalMessages: 0,
@@ -836,7 +820,7 @@ export const processRulesResponse = (response, options = {}) => {
     result.messages.classified = classified;
 
     // Step 2: Process and parse each message
-    const processedMessages = response.messages.map((message, index) => {
+    const processedMessages: ProcessedMessage[] = response.messages.map((message: RawRulesMessage, index: number) => {
       try {
         // Parse message content
         const parsedContent = parseMessageContent(message, {
@@ -850,7 +834,7 @@ export const processRulesResponse = (response, options = {}) => {
         const needsAction = requiresUserAction(message);
 
         // Create processed message
-        const processed = {
+        const processed: ProcessedMessage = {
           ...message,
           index,
           parsed: parsedContent,
@@ -872,7 +856,7 @@ export const processRulesResponse = (response, options = {}) => {
         }
 
         return processed;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error processing message:', error, message);
         result.errors.push(`Failed to process message ${index}: ${error.message}`);
 
@@ -882,11 +866,16 @@ export const processRulesResponse = (response, options = {}) => {
           index,
           parsed: parseMessageContent(null, { title: 'Error', message: 'Failed to process message' }),
           priority: 0,
-          variant: 'error',
+          variant: 'error' as MessageVariant,
           needsAction: false,
           isAcknowledgment: false,
+          processing: {
+            timestamp: new Date().toISOString(),
+            entryPoint: entryPoint,
+            processedBy: 'rulesEngineUtils'
+          },
           error: error.message
-        };
+        } as ProcessedMessage;
       }
     });
 
@@ -909,11 +898,11 @@ export const processRulesResponse = (response, options = {}) => {
 
     // Step 4: Sort by priority if requested
     if (sortByPriority) {
-      filteredMessages = sortMessagesByPriority(filteredMessages);
+      filteredMessages = sortMessagesByPriority(filteredMessages) as ProcessedMessage[];
     }
 
     // Step 5: Generate summary statistics
-    const summary = {
+    const summary: ProcessRulesSummary = {
       totalMessages: processedMessages.length,
       filteredMessages: filteredMessages.length,
       hasAcknowledgments: classified.acknowledgments.all.length > 0,
@@ -939,13 +928,12 @@ export const processRulesResponse = (response, options = {}) => {
         ackKey: msg.ack_key || msg.parsed?.ackKey,
         templateId: msg.template_id || msg.parsed?.templateId,
         required: msg.required !== false,
-        displayType: msg.display_type || msg.parsed?.displayType || 'modal',
+        displayType: (msg.display_type || msg.parsed?.displayType || 'modal') as MessageDisplayType,
         config: msg.acknowledgmentConfig,
         message: msg
       }));
 
     // Step 7: Content validation if requested (validate original context, not response)
-    // Note: response.context doesn't exist in API responses, this was validating wrong thing
     if (validateContent && entryPoint && options.originalContext) {
       const contextValidation = validateContext(options.originalContext, entryPoint);
       if (!contextValidation.valid) {
@@ -954,7 +942,7 @@ export const processRulesResponse = (response, options = {}) => {
       }
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in processRulesResponse:', error);
     result.errors.push(`Pipeline processing failed: ${error.message}`);
   }
@@ -965,11 +953,8 @@ export const processRulesResponse = (response, options = {}) => {
 /**
  * Process rules response specifically for UI components
  * Returns data in the format expected by existing components
- * @param {Object} response - Raw rules engine response
- * @param {Object} options - Processing options
- * @returns {Object} UI-ready data structure
  */
-export const processForUI = (response, options = {}) => {
+export const processForUI = (response: any, options: ProcessRulesOptions = {}): ProcessForUIResult => {
   const processed = processRulesResponse(response, options);
 
   return {
@@ -995,13 +980,13 @@ export const processForUI = (response, options = {}) => {
 
 /**
  * End-to-end rules execution and processing
- * @param {string} entryPoint - Entry point to execute
- * @param {Object} context - Context data (will be validated)
- * @param {Function} rulesEngineService - Rules engine service instance
- * @param {Object} options - Processing options
- * @returns {Promise<Object>} Complete processed response
  */
-export const executeAndProcessRules = async (entryPoint, context, rulesEngineService, options = {}) => {
+export const executeAndProcessRules = async (
+  entryPoint: string,
+  context: Record<string, any>,
+  rulesEngineService: RulesEngineService,
+  options: ProcessRulesOptions = {}
+): Promise<ProcessRulesResult> => {
   try {
     // Validate context before sending
     const contextValidation = validateContext(context, entryPoint);
@@ -1016,11 +1001,11 @@ export const executeAndProcessRules = async (entryPoint, context, rulesEngineSer
     const processed = processRulesResponse(response, {
       ...options,
       entryPoint,
-      originalContext: context // Pass the original context for validation if needed
+      originalContext: context
     });
 
     return processed;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`❌ [executeAndProcessRules] Error:`, error);
 
     // Log specific details for backend attribute errors
@@ -1039,11 +1024,23 @@ export const executeAndProcessRules = async (entryPoint, context, rulesEngineSer
         processed: [],
         classified: {
           acknowledgments: { inline: [], modal: [], all: [] },
-          displays: { inline: [], modal: [], all: [] }
+          displays: { inline: [], modal: [], all: [] },
+          summary: {
+            totalMessages: 0,
+            totalAcknowledgments: 0,
+            totalDisplays: 0,
+            hasInlineAcknowledgments: false,
+            hasModalAcknowledgments: false,
+            hasInlineDisplays: false,
+            hasModalDisplays: false
+          }
         },
         summary: {
           totalMessages: 0,
-          hasErrors: true
+          hasAcknowledgments: false,
+          hasDisplays: false,
+          hasErrors: true,
+          highestPriority: 0
         }
       },
       acknowledgments: [],
@@ -1060,23 +1057,31 @@ export const rulesEngineHelpers = {
   /**
    * Execute checkout terms rules and process for UI
    */
-  executeCheckoutTerms: async (cartData, cartItems, rulesEngineService, user = null) => {
+  executeCheckoutTerms: async (
+    cartData: any,
+    cartItems: any[],
+    rulesEngineService: RulesEngineService,
+    user: any = null
+  ): Promise<ProcessRulesResult> => {
     const context = buildRulesContext.checkoutTerms(cartData, cartItems, user);
 
     return executeAndProcessRules('checkout_terms', context, rulesEngineService, {
       processAcknowledgments: true,
       sortByPriority: true,
-      strictValidation: false // Allow execution even if validation fails, to see backend response
+      strictValidation: false
     });
   },
 
   /**
    * Execute home page rules and process for UI
    */
-  executeHomePage: async (user, rulesEngineService) => {
+  executeHomePage: async (
+    user: any,
+    rulesEngineService: RulesEngineService
+  ): Promise<ProcessRulesResult> => {
     const context = buildRulesContext.homePage(user);
     return executeAndProcessRules('home_page_mount', context, rulesEngineService, {
-      filterModal: true, // Home page typically only shows inline messages
+      filterModal: true,
       sortByPriority: true
     });
   },
@@ -1084,10 +1089,14 @@ export const rulesEngineHelpers = {
   /**
    * Execute product card rules and process for UI
    */
-  executeProductCard: async (product, rulesEngineService, options = {}) => {
+  executeProductCard: async (
+    product: any,
+    rulesEngineService: RulesEngineService,
+    options: any = {}
+  ): Promise<ProcessRulesResult> => {
     const context = buildRulesContext.productCard(product, options);
     return executeAndProcessRules('product_card_mount', context, rulesEngineService, {
-      processAcknowledgments: false, // Product cards typically don't have acknowledgments
+      processAcknowledgments: false,
       sortByPriority: true
     });
   }

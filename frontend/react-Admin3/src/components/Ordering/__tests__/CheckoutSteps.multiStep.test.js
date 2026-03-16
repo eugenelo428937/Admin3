@@ -26,7 +26,7 @@ const renderWithTheme = (component) => {
 };
 
 // Mock the rules engine service
-vi.mock('../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),

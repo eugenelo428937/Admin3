@@ -12,7 +12,7 @@ vi.mock('../../../../hooks/useAuth.tsx', () => ({
 }));
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('../../../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock rulesEngineUtils
-vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
     executeCheckoutTerms: vi.fn(),
   },
@@ -35,11 +35,11 @@ vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
   })),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService.js';
-import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils.js';
+import rulesEngineService from '../../../../services/rulesEngineService';
+import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils';
 
 // Mock RulesEngineAcknowledgmentModal
-vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
+vi.mock('../../../Common/RulesEngineAcknowledgmentModal', () => ({
   __esModule: true,
   default: function MockRulesEngineAcknowledgmentModal({ open }) {
     if (!open) return null;
