@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminUserProfileForm from '../UserProfileForm.js';
+import AdminUserProfileForm from '../UserProfileForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
