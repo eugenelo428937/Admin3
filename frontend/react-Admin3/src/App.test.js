@@ -10,16 +10,16 @@ import { MemoryRouter } from 'react-router-dom';
 import App from './App.js';
 
 // Mock ConfigContext - App wraps content in ConfigProvider
-vi.mock('./contexts/ConfigContext.js', () => ({
+vi.mock('./contexts/ConfigContext', () => ({
   __esModule: true,
   useConfig: () => ({ isInternal: false, configLoaded: true }),
   ConfigProvider: ({ children }) => children,
 }));
 
 // Mock all the heavy components to speed up tests
-vi.mock('./pages/Home.js', () => ({ __esModule: true, default: () => <div data-testid="home-page">Home Page</div> }));
-vi.mock('./pages/ProfilePage.js', () => ({ __esModule: true, default: () => <div data-testid="profile-page">Profile Page</div> }));
-vi.mock('./pages/Registration.js', () => ({ __esModule: true, default: () => <div data-testid="registration-page">Registration Page</div> }));
+vi.mock('./pages/Home.tsx', () => ({ __esModule: true, default: () => <div data-testid="home-page">Home Page</div> }));
+vi.mock('./pages/ProfilePage.tsx', () => ({ __esModule: true, default: () => <div data-testid="profile-page">Profile Page</div> }));
+vi.mock('./pages/Registration.tsx', () => ({ __esModule: true, default: () => <div data-testid="registration-page">Registration Page</div> }));
 vi.mock('./components/Navigation/MainNavBar.tsx', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
 vi.mock('./components/Product/ProductList.tsx', () => ({ __esModule: true, default: () => <div data-testid="product-list">Products</div> }));
 vi.mock('./components/Ordering/CheckoutPage.tsx', () => ({ __esModule: true, default: () => <div data-testid="checkout-page">Checkout</div> }));
@@ -29,7 +29,7 @@ vi.mock('./components/User/ResetPasswordForm.tsx', () => ({ __esModule: true, de
 vi.mock('./components/User/AccountActivation.tsx', () => ({ __esModule: true, default: () => <div data-testid="account-activation">Activation</div> }));
 vi.mock('./components/User/ResendActivation.tsx', () => ({ __esModule: true, default: () => <div data-testid="resend-activation">Resend</div> }));
 vi.mock('./components/User/EmailVerification.tsx', () => ({ __esModule: true, default: () => <div data-testid="email-verification">Email Verify</div> }));
-vi.mock('./pages/StyleGuide.js', () => ({ __esModule: true, default: () => <div data-testid="styleguide">Style Guide</div> }));
+vi.mock('./pages/StyleGuide.tsx', () => ({ __esModule: true, default: () => <div data-testid="styleguide">Style Guide</div> }));
 vi.mock('./components/NoMatch.tsx', () => ({ __esModule: true, default: () => <div data-testid="no-match">404 Not Found</div> }));
 vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.tsx', () => ({ __esModule: true, default: () => null }));
 

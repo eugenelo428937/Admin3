@@ -87,7 +87,7 @@ vi.mock('../../../contexts/CartContext.tsx', () => ({
 }));
 
 // Mock TutorialChoiceContext
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     getTutorialChoice: vi.fn(),
     addTutorialChoice: vi.fn(),

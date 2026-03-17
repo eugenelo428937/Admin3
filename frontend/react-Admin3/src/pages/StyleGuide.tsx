@@ -27,14 +27,20 @@ import TablesSection from "../components/styleguide/TablesSection.js";
 import ProductCardsSection from "../components/styleguide/ProductCardsSection.js";
 import Sandbox from "../components/styleguide/Sandbox.js";
 
-function TabPanel({ children, value, index }) {
+interface TabPanelProps {
+	children: React.ReactNode;
+	value: number;
+	index: number;
+}
+
+function TabPanel({ children, value, index }: TabPanelProps) {
 	return value === index ? <Box sx={{ pt: 2 }}>{children}</Box> : null;
 }
 
-const StyleGuide = () => {
+const StyleGuide: React.FC = () => {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [tabValue, setTabValue] = useState(0);
-	const theme = useTheme();
+	const theme = useTheme() as any;
 
 	return (
 		<Container
@@ -64,7 +70,7 @@ const StyleGuide = () => {
 				}}>
 				<MuiTabs
 					value={tabValue}
-					onChange={(e, newValue) => setTabValue(newValue)}
+					onChange={(_e: React.SyntheticEvent, newValue: number) => setTabValue(newValue)}
 					variant="scrollable"
 					scrollButtons="auto"
 				>

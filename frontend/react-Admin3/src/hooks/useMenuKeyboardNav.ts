@@ -1,19 +1,30 @@
-// frontend/react-Admin3/src/hooks/useMenuKeyboardNav.js
+// frontend/react-Admin3/src/hooks/useMenuKeyboardNav.ts
 import { useState, useCallback } from 'react';
+
+interface UseMenuKeyboardNavReturn {
+  focusedIndex: number;
+  setFocusedIndex: React.Dispatch<React.SetStateAction<number>>;
+  handleKeyDown: (event: React.KeyboardEvent) => void;
+  resetFocus: () => void;
+}
 
 /**
  * Hook for keyboard navigation in menus.
  * Handles arrow keys, Home/End, Escape, Enter/Space, and Tab.
  *
- * @param {number} itemCount - Total number of items in the menu
- * @param {function} onClose - Callback when menu should close
- * @param {function} onSelect - Callback when item is selected, receives focusedIndex
- * @returns {object} { focusedIndex, setFocusedIndex, handleKeyDown, resetFocus }
+ * @param itemCount - Total number of items in the menu
+ * @param onClose - Callback when menu should close
+ * @param onSelect - Callback when item is selected, receives focusedIndex
+ * @returns { focusedIndex, setFocusedIndex, handleKeyDown, resetFocus }
  */
-const useMenuKeyboardNav = (itemCount, onClose, onSelect) => {
+const useMenuKeyboardNav = (
+  itemCount: number,
+  onClose?: () => void,
+  onSelect?: (index: number) => void
+): UseMenuKeyboardNavReturn => {
   const [focusedIndex, setFocusedIndex] = useState(0);
 
-  const handleKeyDown = useCallback((event) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     // Handle empty menu gracefully
     if (itemCount <= 0) {
       if (event.key === 'Escape' || event.key === 'Tab') {

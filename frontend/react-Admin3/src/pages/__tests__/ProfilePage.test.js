@@ -59,7 +59,7 @@ vi.mock('../../components/User/UserFormWizard.tsx', () => ({
   },
 }));
 
-import ProfilePage from '../ProfilePage.js';
+import ProfilePage from '../ProfilePage.tsx';
 
 describe('ProfilePage', () => {
   beforeEach(() => {

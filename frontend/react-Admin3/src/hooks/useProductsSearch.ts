@@ -25,15 +25,66 @@ import { API_CALL_BUDGET } from '../config/performanceBudgets.js';
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 250;
 
+interface UseProductsSearchOptions {
+  autoSearch?: boolean;
+  debounceDelay?: number;
+}
+
+interface Pagination {
+  page: number;
+  page_size: number;
+  total_count: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+interface SearchData {
+  products: any[];
+  filterCounts: Record<string, any>;
+  pagination: Pagination;
+}
+
+interface SearchResultMeta {
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: any;
+  data: any;
+}
+
+interface UseProductsSearchReturn {
+  // Search data
+  products: any[];
+  filterCounts: Record<string, any>;
+  pagination: Pagination;
+
+  // Loading and error states
+  isLoading: boolean;
+  error: string | null;
+
+  // Search functions
+  search: (forceSearch?: boolean) => void;
+  refresh: () => void;
+  reset: () => void;
+  debouncedSearch: (forceSearch?: boolean) => void;
+
+  // Search metadata
+  hasSearched: boolean;
+  isInitialLoading: boolean;
+
+  // RTK Query metadata (for advanced usage)
+  searchResult: SearchResultMeta;
+}
+
 /**
  * Custom hook for debounced product search
- * 
- * @param {Object} options - Configuration options
- * @param {boolean} options.autoSearch - Whether to automatically search when filters change
- * @param {number} options.debounceDelay - Custom debounce delay (default: 250ms)
- * @returns {Object} Search state and functions
+ *
+ * @param options - Configuration options
+ * @param options.autoSearch - Whether to automatically search when filters change
+ * @param options.debounceDelay - Custom debounce delay (default: 250ms)
+ * @returns Search state and functions
  */
-export const useProductsSearch = (options = {}) => {
+export const useProductsSearch = (options: UseProductsSearchOptions = {}): UseProductsSearchReturn => {
   const {
     autoSearch = true,
     debounceDelay = DEBOUNCE_DELAY,
@@ -42,24 +93,24 @@ export const useProductsSearch = (options = {}) => {
   const dispatch = useDispatch();
 
   // Redux state selectors
-  const filters = useSelector(selectFilters);
-  const searchQuery = useSelector(selectSearchQuery);
-  const currentPage = useSelector(selectCurrentPage);
-  const pageSize = useSelector(selectPageSize);
-  const hasValidationErrors = useSelector(selectHasValidationErrors);
-  const isLoading = useSelector(state => state.filters.isLoading);
-  const error = useSelector(state => state.filters.error);
+  const filters = useSelector(selectFilters) as any;
+  const searchQuery = useSelector(selectSearchQuery) as string;
+  const currentPage = useSelector(selectCurrentPage) as number;
+  const pageSize = useSelector(selectPageSize) as number;
+  const hasValidationErrors = useSelector(selectHasValidationErrors) as boolean;
+  const isLoading = useSelector((state: any) => state.filters.isLoading) as boolean;
+  const error = useSelector((state: any) => state.filters.error) as string | null;
 
   // Story 1.4: Navbar filters from Redux state (not URL)
-  const tutorial = useSelector(state => state.filters.tutorial);
-  const tutorialFormat = useSelector(state => state.filters.tutorial_format);
-  const distanceLearning = useSelector(state => state.filters.distance_learning);
+  const tutorial = useSelector((state: any) => state.filters.tutorial);
+  const tutorialFormat = useSelector((state: any) => state.filters.tutorial_format);
+  const distanceLearning = useSelector((state: any) => state.filters.distance_learning);
 
   // RTK Query lazy search hook
   const [triggerSearch, searchResult] = useLazyUnifiedSearchQuery();
-  
+
   // Local state
-  const [searchData, setSearchData] = useState({
+  const [searchData, setSearchData] = useState<SearchData>({
     products: [],
     filterCounts: {},
     pagination: {
@@ -70,12 +121,12 @@ export const useProductsSearch = (options = {}) => {
       has_previous: false,
     },
   });
-  
+
   // Refs for debouncing
-  const debounceTimerRef = useRef(null);
-  const lastSearchParamsRef = useRef(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSearchParamsRef = useRef<string | null>(null);
   const searchParamsCache = useRef(new WeakMap());
-  
+
   /**
    * Clear any pending debounced search
    */
@@ -85,11 +136,11 @@ export const useProductsSearch = (options = {}) => {
       debounceTimerRef.current = null;
     }
   }, []);
-  
+
   /**
    * Execute the search with current parameters
    */
-  const executeSearch = useCallback(async (forceSearch = false) => {
+  const executeSearch = useCallback(async (forceSearch: boolean = false) => {
     // Story 1.12: Prevent API calls when validation errors exist
     if (hasValidationErrors) {
       console.warn('Skipping API call due to filter validation errors');
@@ -105,7 +156,7 @@ export const useProductsSearch = (options = {}) => {
       // searchQuery parameter triggers fuzzy search + relevance sorting on backend
 
       // Story 1.4: Build navbarFilters object (only include non-empty values)
-      const navbarFilters = {};
+      const navbarFilters: Record<string, string> = {};
       if (tutorial) navbarFilters.tutorial = '1';
       if (tutorialFormat) navbarFilters.tutorial_format = tutorialFormat;
       if (distanceLearning) navbarFilters.distance_learning = '1';
@@ -147,7 +198,7 @@ export const useProductsSearch = (options = {}) => {
       if (PerformanceTracker.isSupported()) {
         PerformanceTracker.startMeasure('api.products', {
           hasSearchQuery: !!searchQuery,
-          filterCount: Object.keys(filters).reduce((count, key) =>
+          filterCount: Object.keys(filters).reduce((count: number, key: string) =>
             count + (Array.isArray(filters[key]) ? filters[key].length : (filters[key] ? 1 : 0)), 0
           ),
           page: currentPage
@@ -170,7 +221,7 @@ export const useProductsSearch = (options = {}) => {
       }
 
       // Update local state with results
-      const data = {
+      const data: SearchData = {
         products: result.products || [],
         filterCounts: result.filterCounts || {},
         pagination: result.pagination || {
@@ -183,15 +234,15 @@ export const useProductsSearch = (options = {}) => {
       };
 
       setSearchData(data);
-      
+
       // Update Redux store with filter counts for FilterPanel
       dispatch(setFilterCounts(data.filterCounts));
-      
+
       dispatch(setLoading(false));
-      
-    } catch (error) {
+
+    } catch (error: any) {
       console.error('🔍 [SEARCH] Search failed:', error);
-      
+
       // Format error message consistently
       let errorMessage = 'Search request failed';
       if (error?.message) {
@@ -203,18 +254,18 @@ export const useProductsSearch = (options = {}) => {
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
-      
+
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
   }, [hasValidationErrors, filters, searchQuery, currentPage, pageSize, tutorial, tutorialFormat, distanceLearning, triggerSearch, dispatch]);
-  
+
   /**
    * Debounced search function
    */
-  const debouncedSearch = useCallback((forceSearch = false) => {
+  const debouncedSearch = useCallback((forceSearch: boolean = false) => {
     clearDebounce();
-    
+
     if (forceSearch) {
       executeSearch(true);
     } else {
@@ -223,21 +274,21 @@ export const useProductsSearch = (options = {}) => {
       }, debounceDelay);
     }
   }, [clearDebounce, executeSearch, debounceDelay]);
-  
+
   /**
    * Manual search trigger (bypasses debounce)
    */
-  const search = useCallback((forceSearch = true) => {
+  const search = useCallback((forceSearch: boolean = true) => {
     debouncedSearch(forceSearch);
   }, [debouncedSearch]);
-  
+
   /**
    * Refresh current search
    */
   const refresh = useCallback(() => {
     search(true);
   }, [search]);
-  
+
   /**
    * Reset search state
    */
@@ -257,7 +308,7 @@ export const useProductsSearch = (options = {}) => {
     dispatch(clearError());
     lastSearchParamsRef.current = null;
   }, [clearDebounce, dispatch]);
-  
+
   // Create stable references for effect dependencies
   // Include searchQuery, products filter, AND navbar filters to trigger search when they change
   const filterHash = useMemo(() => {
@@ -285,11 +336,11 @@ export const useProductsSearch = (options = {}) => {
       }
     };
   }, [filterHash, autoSearch, debounceDelay]); // Use stable hash instead of complex objects
-  
+
   // Update search data from RTK Query result
   useEffect(() => {
     if (searchResult.data && !searchResult.isLoading && !searchResult.error) {
-      const data = {
+      const data: SearchData = {
         products: searchResult.data.products || [],
         filterCounts: searchResult.data.filterCounts || {},
         pagination: searchResult.data.pagination || {
@@ -300,54 +351,55 @@ export const useProductsSearch = (options = {}) => {
           has_previous: false,
         },
       };
-      
+
       setSearchData(data);
-      
+
       // Update Redux store with filter counts for FilterPanel
       dispatch(setFilterCounts(data.filterCounts));
     }
   }, [searchResult.data, searchResult.isLoading, searchResult.error, currentPage, pageSize, dispatch]);
-  
+
   // Handle RTK Query errors
   useEffect(() => {
     if (searchResult.error) {
       // Format error message consistently
       let errorMessage = 'Search request failed';
-      if (searchResult.error?.message) {
-        errorMessage = searchResult.error.message;
-      } else if (searchResult.error?.error) {
-        errorMessage = searchResult.error.error;
-      } else if (searchResult.error?.data?.message) {
-        errorMessage = searchResult.error.data.message;
+      const err = searchResult.error as any;
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.error) {
+        errorMessage = err.error;
+      } else if (err?.data?.message) {
+        errorMessage = err.data.message;
       } else if (typeof searchResult.error === 'string') {
         errorMessage = searchResult.error;
       }
-      
+
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
   }, [searchResult.error, dispatch]);
-  
+
   return {
     // Search data
     products: searchData.products,
     filterCounts: searchData.filterCounts,
     pagination: searchData.pagination,
-    
+
     // Loading and error states
     isLoading: isLoading || searchResult.isLoading,
     error: error || (searchResult.error ? 'Search request failed' : null),
-    
+
     // Search functions
     search,
     refresh,
     reset,
     debouncedSearch,
-    
+
     // Search metadata
     hasSearched: lastSearchParamsRef.current !== null,
     isInitialLoading: isLoading && searchData.products.length === 0,
-    
+
     // RTK Query metadata (for advanced usage)
     searchResult: {
       isLoading: searchResult.isLoading,

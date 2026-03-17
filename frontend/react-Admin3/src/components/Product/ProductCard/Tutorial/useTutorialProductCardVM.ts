@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTheme } from '@mui/material';
 import type { Theme } from '@mui/material';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
 import { useCart } from '../../../../contexts/CartContext.tsx';
 import tutorialService from '../../../../services/tutorialService';
 import {

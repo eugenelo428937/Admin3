@@ -10,8 +10,8 @@ import filtersReducer from '../store/slices/filtersSlice.js';
 
 // Import context providers for optional use
 import { CartContext } from '../contexts/CartContext.tsx';
-import { ProductContext } from '../contexts/ProductContext.js';
-import { TutorialChoiceContext } from '../contexts/TutorialChoiceContext.js';
+import { ProductContext } from '../contexts/ProductContext';
+import { TutorialChoiceContext } from '../contexts/TutorialChoiceContext';
 
 /**
  * Default mock values for CartContext

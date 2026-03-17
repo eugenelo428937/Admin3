@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
 import { useCart } from '../../../../contexts/CartContext.tsx';
 import {
   buildTutorialMetadata,

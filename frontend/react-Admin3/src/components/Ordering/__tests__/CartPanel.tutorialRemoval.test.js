@@ -55,7 +55,7 @@ vi.mock('../../../contexts/CartContext.tsx', () => ({
 const mockRestoreChoicesToDraft = vi.fn();
 const mockRemoveAllChoices = vi.fn();
 
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices,
     restoreChoicesToDraft: mockRestoreChoicesToDraft,

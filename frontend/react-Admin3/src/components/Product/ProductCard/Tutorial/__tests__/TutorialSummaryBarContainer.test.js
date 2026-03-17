@@ -43,7 +43,7 @@ import theme from '../../../../../theme/theme';
 import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
 
 // Import the mocked modules to allow vi.spyOn
-import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';
+import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext';
 import * as CartContextModule from '../../../../../contexts/CartContext.tsx';
 
 // Helper to render with theme provider only (contexts are mocked globally)
