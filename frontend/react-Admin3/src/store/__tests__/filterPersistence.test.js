@@ -17,14 +17,14 @@ import {
   waitForStateUpdate,
   simulateUrlChange,
   createMockHistory,
-} from '../../test-utils/testHelpers.js';
+} from '../../test-utils/testHelpers';
 import {
   setSubjects,
   setCategories,
   setProductTypes,
   setSearchQuery,
   setCurrentPage,
-} from '../slices/filtersSlice.js';
+} from '../slices/filtersSlice';
 
 describe('Filter State Persistence', () => {
   // Story 1.16: Ensure window.location is properly initialized for each test

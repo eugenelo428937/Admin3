@@ -22,7 +22,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock config
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',

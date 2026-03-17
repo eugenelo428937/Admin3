@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
 import { useCart } from '../../../../contexts/CartContext.tsx';
 import {
   buildTutorialProductData,
   buildTutorialPriceData,
   buildTutorialMetadata,
-} from '../../../../utils/tutorialMetadataBuilder.js';
+} from '../../../../utils/tutorialMetadataBuilder';
 import type {
   FlattenedTutorialEvent,
   TutorialChoiceData,

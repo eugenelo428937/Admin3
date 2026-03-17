@@ -16,7 +16,7 @@ import { vi } from 'vitest';
 vi.unmock('../../services/cartService.ts');
 
 // Mock config before cartService tries to use it
-vi.mock('../../config.js', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     cartUrl: '/api/cart'

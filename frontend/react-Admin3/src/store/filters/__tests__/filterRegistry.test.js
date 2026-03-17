@@ -1,4 +1,4 @@
-import { FilterRegistry } from '../filterRegistry.js';
+import { FilterRegistry } from '../filterRegistry';
 
 describe('FilterRegistry', () => {
   beforeEach(async () => {
@@ -599,7 +599,7 @@ describe('FilterRegistry', () => {
 
       // Re-import the module to trigger registration code
       vi.resetModules();
-      const _reqmod____filterRegistry_js = await import('../filterRegistry.js'); const { FilterRegistry: FreshRegistry } = _reqmod____filterRegistry_js;
+      const _reqmod____filterRegistry = await import('../filterRegistry'); const { FilterRegistry: FreshRegistry } = _reqmod____filterRegistry;
 
       // Verify all 6 default filters are registered
       expect(FreshRegistry.has('subjects')).toBe(true);

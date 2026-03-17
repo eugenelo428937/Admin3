@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/useAuth.tsx';
 import rulesEngineService from '../../services/rulesEngineService';
 import userService from '../../services/userService.ts';
 import useCheckoutValidation from '../../hooks/useCheckoutValidation.ts';
-import config from '../../config.js';
+import config from '../../config';
 import type { CartItem, CartData, VATCalculations, CartFee } from '../../types/cart';
 import type {
   ContactData,

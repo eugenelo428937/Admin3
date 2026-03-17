@@ -16,7 +16,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import FilterPanel from '../FilterPanel';
-import filtersReducer from '../../../store/slices/filtersSlice.js';
+import filtersReducer from '../../../store/slices/filtersSlice';
 
 /**
  * Create mock Redux store with validation errors
