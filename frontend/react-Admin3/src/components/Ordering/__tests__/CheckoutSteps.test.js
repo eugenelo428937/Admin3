@@ -57,7 +57,7 @@ vi.mock('../../../services/httpService', () => ({
 }));
 
 // Mock config
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: {
     API_BASE_URL: 'http://localhost:8888'

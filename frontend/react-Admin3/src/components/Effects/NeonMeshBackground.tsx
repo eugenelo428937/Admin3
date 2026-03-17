@@ -1,12 +1,17 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface NeonMeshBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Neon/Stripe palette.
+ * Stripe-style twisted wave -- Neon/Stripe palette.
  * Colors matched to the stripe.com/gb hero wave:
  * lavender, hot pink, warm orange, peach, rose.
  */
-const NeonMeshBackground = ({ style }) => {
-  const palette = [
+const NeonMeshBackground: React.FC<NeonMeshBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.76, 0.62, 0.96], // Lavender     (#c29ef5)
     [0.96, 0.28, 0.58], // Hot pink     (#f54794)
     [1.00, 0.55, 0.22], // Warm orange  (#ff8c38)

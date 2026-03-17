@@ -9,7 +9,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Close as CloseIcon, Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from "@mui/icons-material";
-import { generateProductCode } from "../../utils/productCodeGenerator.js";
+import { generateProductCode } from "../../utils/productCodeGenerator";
 import useCartPanelVM from './useCartPanelVM';
 import type { CartItem } from '../../types/cart';
 

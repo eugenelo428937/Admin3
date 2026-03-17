@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
-import { navSelectProductGroup } from "../store/slices/filtersSlice.js";
+import { navSelectProductGroup } from "../store/slices/filtersSlice";
 import {
    MenuBook,
    RateReview,

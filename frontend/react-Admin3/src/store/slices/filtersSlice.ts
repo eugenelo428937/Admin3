@@ -5,18 +5,18 @@
  * Maintains 100% backward compatibility via re-exports.
  *
  * Module Structure:
- * - baseFilters.slice.js: Core filter state and operations
- * - navigationFilters.slice.js: Navigation-specific drill-down actions
- * - filterSelectors.js: All selectors for accessing filter state
- * - filtersSlice.js (this file): Main facade that combines everything
+ * - baseFilters.slice.ts: Core filter state and operations
+ * - navigationFilters.slice.ts: Navigation-specific drill-down actions
+ * - filterSelectors.ts: All selectors for accessing filter state
+ * - filtersSlice.ts (this file): Main facade that combines everything
  *
  * IMPORTANT: This file adds FilterValidator integration on top of base modules.
  */
 
 import { createSlice } from '@reduxjs/toolkit';
-import FilterValidator from '../filters/filterValidator.js';
-import { baseFiltersInitialState, baseFiltersReducers } from './baseFilters.slice.js';
-import { navigationFiltersReducers } from './navigationFilters.slice.js';
+import FilterValidator from '../filters/filterValidator';
+import { baseFiltersInitialState, baseFiltersReducers, FilterState } from './baseFilters.slice';
+import { navigationFiltersReducers } from './navigationFilters.slice';
 
 /**
  * Create the main filters slice
@@ -57,7 +57,7 @@ const filtersSlice = createSlice({
         if (validationTriggers.includes(key)) {
           return [
             key,
-            (state, action) => {
+            (state: FilterState, action: any) => {
               reducer(state, action);
               // Auto-validate after filter change (Story 1.12)
               state.validationErrors = FilterValidator.validate(state);
@@ -77,7 +77,7 @@ const filtersSlice = createSlice({
     ...Object.fromEntries(
       Object.entries(navigationFiltersReducers).map(([key, reducer]) => [
         key,
-        (state, action) => {
+        (state: FilterState, action: any) => {
           reducer(state, action);
           // Auto-validate after navigation filter change (Story 1.12)
           state.validationErrors = FilterValidator.validate(state);
@@ -94,7 +94,7 @@ const filtersSlice = createSlice({
      * validateFilters
      * Manually trigger filter validation
      */
-    validateFilters: (state) => {
+    validateFilters: (state: FilterState) => {
       const errors = FilterValidator.validate(state);
       state.validationErrors = errors;
     },
@@ -175,7 +175,7 @@ export const {
 // ========================================
 // Export Selectors
 // ========================================
-// Re-export ALL selectors from filterSelectors.js
+// Re-export ALL selectors from filterSelectors.ts
 
 export {
   // Basic selectors
@@ -199,7 +199,7 @@ export {
   selectHasActiveFilters,
   selectActiveFilterCount,
   selectActiveFilterSummary,
-} from './filterSelectors.js';
+} from './filterSelectors';
 
 // ========================================
 // Export Reducer

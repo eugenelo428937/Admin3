@@ -23,62 +23,63 @@
  * });
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker.js';
-import { REGISTRY_LOOKUP_BUDGET } from '../../config/performanceBudgets.js';
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { REGISTRY_LOOKUP_BUDGET } from '../../config/performanceBudgets';
 
 /**
  * Filter configuration schema
- * @typedef {Object} FilterConfig
- * @property {string} type - Redux state key (e.g., 'subjects')
- * @property {string} label - Human-readable label (e.g., 'Subject')
- * @property {string} pluralLabel - Plural form (e.g., 'Subjects')
- * @property {string} urlParam - Primary URL parameter name (e.g., 'subject_code')
- * @property {string[]} [urlParamAliases] - Alternative URL parameter names (e.g., ['subject'])
- * @property {string} color - Material-UI chip color variant
- * @property {boolean} multiple - Supports multiple selections
- * @property {'array'|'string'|'boolean'|'number'} dataType - Data type of filter value
- * @property {'single'|'comma-separated'|'indexed'} urlFormat - URL parameter format
- * @property {function} getDisplayValue - Format value for display in UI
- * @property {string} [icon] - Material-UI icon name (optional)
- * @property {number} [order] - Display order in FilterPanel (optional)
  */
+export interface FilterConfig {
+  type: string;
+  label: string;
+  pluralLabel: string;
+  urlParam: string;
+  urlParamAliases?: string[];
+  color: string;
+  multiple: boolean;
+  dataType: 'array' | 'string' | 'boolean' | 'number';
+  urlFormat: 'single' | 'comma-separated' | 'indexed';
+  getDisplayValue: (value: any, counts?: any) => string;
+  icon?: string | null;
+  order: number;
+}
 
 export class FilterRegistry {
-  static #filters = new Map();
+  static #filters: Map<string, FilterConfig> = new Map();
 
   /**
    * Register a new filter type
-   * @param {FilterConfig} config - Filter configuration
+   * @param config - Filter configuration
    */
-  static register(config) {
+  static register(config: Partial<FilterConfig> & { type: string; label: string; urlParam: string }): void {
     // Validate required fields
     if (!config.type) throw new Error('Filter config must have "type" field');
     if (!config.label) throw new Error('Filter config must have "label" field');
     if (!config.urlParam) throw new Error('Filter config must have "urlParam" field');
 
     // Set defaults
-    const completeConfig = {
+    const completeConfig: FilterConfig = {
       pluralLabel: config.label + 's',
       urlParamAliases: [],
       color: 'default',
       multiple: true,
       dataType: 'array',
       urlFormat: 'comma-separated',
-      getDisplayValue: (value) => value,
+      getDisplayValue: (value: any) => value,
       icon: null,
       order: 100, // Default order
       ...config,
-    };
+    } as FilterConfig;
 
     this.#filters.set(config.type, completeConfig);
   }
 
   /**
    * Get filter configuration by type
-   * @param {string} type - Filter type (Redux state key)
-   * @returns {FilterConfig|undefined}
+   * @param type - Filter type (Redux state key)
+   * @returns FilterConfig or undefined
    */
-  static get(type) {
+  static get(type: string): FilterConfig | undefined {
     // Start performance tracking (Story 1.15)
     if (PerformanceTracker.isSupported()) {
       PerformanceTracker.startMeasure('registry.lookup', { type });
@@ -92,7 +93,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && !import.meta.env?.PROD) {
+      if (metric && !(import.meta as any).env?.PROD) {
         PerformanceTracker.checkBudget('registry.lookup', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }
@@ -102,25 +103,25 @@ export class FilterRegistry {
 
   /**
    * Get all registered filters
-   * @returns {FilterConfig[]} Array of filter configurations
+   * @returns Array of filter configurations
    */
-  static getAll() {
+  static getAll(): FilterConfig[] {
     return Array.from(this.#filters.values())
       .sort((a, b) => a.order - b.order);
   }
 
   /**
    * Find filter by URL parameter name
-   * @param {string} paramName - URL parameter name
-   * @returns {FilterConfig|undefined}
+   * @param paramName - URL parameter name
+   * @returns FilterConfig or undefined
    */
-  static getByUrlParam(paramName) {
+  static getByUrlParam(paramName: string): FilterConfig | undefined {
     // Start performance tracking (Story 1.15)
     if (PerformanceTracker.isSupported()) {
       PerformanceTracker.startMeasure('registry.getByUrlParam', { paramName });
     }
 
-    let result = undefined;
+    let result: FilterConfig | undefined = undefined;
     for (const config of this.#filters.values()) {
       if (config.urlParam === paramName || config.urlParamAliases?.includes(paramName)) {
         result = config;
@@ -134,7 +135,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && !import.meta.env?.PROD) {
+      if (metric && !(import.meta as any).env?.PROD) {
         PerformanceTracker.checkBudget('registry.getByUrlParam', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }
@@ -144,41 +145,41 @@ export class FilterRegistry {
 
   /**
    * Get filters that support multiple selections
-   * @returns {FilterConfig[]}
+   * @returns FilterConfig[]
    */
-  static getMultipleSelectFilters() {
+  static getMultipleSelectFilters(): FilterConfig[] {
     return this.getAll().filter(config => config.multiple);
   }
 
   /**
    * Get boolean filters
-   * @returns {FilterConfig[]}
+   * @returns FilterConfig[]
    */
-  static getBooleanFilters() {
+  static getBooleanFilters(): FilterConfig[] {
     return this.getAll().filter(config => config.dataType === 'boolean');
   }
 
   /**
    * Get array filters
-   * @returns {FilterConfig[]}
+   * @returns FilterConfig[]
    */
-  static getArrayFilters() {
+  static getArrayFilters(): FilterConfig[] {
     return this.getAll().filter(config => config.dataType === 'array');
   }
 
   /**
    * Check if filter type is registered
-   * @param {string} type - Filter type
-   * @returns {boolean}
+   * @param type - Filter type
+   * @returns boolean
    */
-  static has(type) {
+  static has(type: string): boolean {
     return this.#filters.has(type);
   }
 
   /**
    * Clear all registrations (mainly for testing)
    */
-  static clear() {
+  static clear(): void {
     this.#filters.clear();
   }
 
@@ -192,14 +193,14 @@ export class FilterRegistry {
    * Always re-registers searchQuery (not returned by backend but
    * required for URL sync).
    *
-   * @param {Object} backendConfigs - Response from /api/products/filter-configuration/
+   * @param backendConfigs - Response from /api/products/filter-configuration/
    *   Keys are config names, values are config objects with filter_key, label, etc.
    */
-  static registerFromBackend(backendConfigs) {
+  static registerFromBackend(backendConfigs: Record<string, any>): void {
     this.#filters.clear();
 
     // URL param mapping for known filter keys
-    const URL_PARAM_MAP = {
+    const URL_PARAM_MAP: Record<string, { urlParam: string; urlParamAliases: string[]; urlFormat: string; color: string }> = {
       subjects: { urlParam: 'subject_code', urlParamAliases: ['subject'], urlFormat: 'indexed', color: 'primary' },
       categories: { urlParam: 'category_code', urlParamAliases: ['category'], urlFormat: 'indexed', color: 'info' },
       product_types: { urlParam: 'group', urlParamAliases: [], urlFormat: 'comma-separated', color: 'success' },
@@ -227,8 +228,8 @@ export class FilterRegistry {
         color: urlDefaults.color,
         multiple: config.allow_multiple !== false,
         dataType: 'array',
-        urlFormat: urlDefaults.urlFormat,
-        getDisplayValue: (value) => value,
+        urlFormat: urlDefaults.urlFormat as FilterConfig['urlFormat'],
+        getDisplayValue: (value: any) => value,
         order: config.display_order || 100,
       });
     }
@@ -245,7 +246,7 @@ export class FilterRegistry {
         multiple: false,
         dataType: 'string',
         urlFormat: 'single',
-        getDisplayValue: (value) => value,
+        getDisplayValue: (value: any) => value,
         order: 0,
       });
     }
@@ -267,7 +268,7 @@ FilterRegistry.register({
   multiple: true,
   dataType: 'array',
   urlFormat: 'indexed', // subject_code, subject_1, subject_2, ...
-  getDisplayValue: (value) => value,
+  getDisplayValue: (value: any) => value,
   order: 1,
 });
 
@@ -282,7 +283,7 @@ FilterRegistry.register({
   multiple: true,
   dataType: 'array',
   urlFormat: 'indexed', // category_code, category_1, category_2, ...
-  getDisplayValue: (value) => value,
+  getDisplayValue: (value: any) => value,
   order: 2,
 });
 
@@ -296,7 +297,7 @@ FilterRegistry.register({
   multiple: true,
   dataType: 'array',
   urlFormat: 'comma-separated',
-  getDisplayValue: (value) => value,
+  getDisplayValue: (value: any) => value,
   order: 3,
 });
 
@@ -310,7 +311,7 @@ FilterRegistry.register({
   multiple: true,
   dataType: 'array',
   urlFormat: 'comma-separated',
-  getDisplayValue: (value, counts) => {
+  getDisplayValue: (value: any, counts?: any) => {
     // Try to get product name from filterCounts
     if (counts && counts[value]) {
       const productData = counts[value];
@@ -336,7 +337,7 @@ FilterRegistry.register({
   multiple: true,
   dataType: 'array',
   urlFormat: 'comma-separated',
-  getDisplayValue: (value) => value,
+  getDisplayValue: (value: any) => value,
   order: 5,
 });
 
@@ -351,6 +352,6 @@ FilterRegistry.register({
   multiple: false,
   dataType: 'string',
   urlFormat: 'single',
-  getDisplayValue: (value) => value,
+  getDisplayValue: (value: any) => value,
   order: 0, // First in order but not rendered in FilterPanel
 });

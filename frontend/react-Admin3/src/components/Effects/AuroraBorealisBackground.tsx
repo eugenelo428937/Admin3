@@ -1,11 +1,16 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface AuroraBorealisBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Aurora palette.
+ * Stripe-style twisted wave -- Aurora palette.
  * Cool greens, teals, and violet flowing ribbons.
  */
-const AuroraBorealisBackground = ({ style }) => {
-  const palette = [
+const AuroraBorealisBackground: React.FC<AuroraBorealisBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.05, 0.35, 0.30], // Deep forest teal
     [0.10, 0.70, 0.55], // Emerald green
     [0.20, 0.88, 0.72], // Bright mint

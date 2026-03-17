@@ -1,11 +1,16 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface IrisDawnBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Iris Dawn palette.
+ * Stripe-style twisted wave -- Iris Dawn palette.
  * Cool violets and periwinkle blues with slower, airy motion.
  */
-const IrisDawnBackground = ({ style }) => {
-  const palette = [
+const IrisDawnBackground: React.FC<IrisDawnBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.58, 0.55, 0.96], // Periwinkle
     [0.44, 0.65, 0.98], // Sky blue
     [0.33, 0.45, 0.82], // Deep blue

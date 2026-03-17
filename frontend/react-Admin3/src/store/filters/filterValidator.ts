@@ -6,8 +6,14 @@
  * Performance monitoring: Tracks validation timing against budget
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker.js';
-import { VALIDATION_BUDGET } from '../../config/performanceBudgets.js';
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { VALIDATION_BUDGET } from '../../config/performanceBudgets';
+
+interface ValidationError {
+  severity: 'error' | 'warning';
+  message: string;
+  field?: string;
+}
 
 class FilterValidator {
   /**
@@ -18,10 +24,10 @@ class FilterValidator {
    * This validator provides the architecture for future validation rules
    * on existing filter fields (subjects, categories, product_types, products, modes_of_delivery).
    *
-   * @param {Object} filters - Complete filter state from Redux
-   * @returns {Array} Array of validation errors (empty if valid)
+   * @param filters - Complete filter state from Redux
+   * @returns Array of validation errors (empty if valid)
    */
-  static validate(filters) {
+  static validate(filters: any): ValidationError[] {
     // Start performance tracking (Story 1.15)
     if (PerformanceTracker.isSupported()) {
       PerformanceTracker.startMeasure('validation', {
@@ -37,7 +43,7 @@ class FilterValidator {
       return [];
     }
 
-    const errors = [];
+    const errors: ValidationError[] = [];
 
     // Run all validation rules
     // NOTE: Currently returns empty array as placeholder validation rules
@@ -47,7 +53,7 @@ class FilterValidator {
 
     // Sort by severity (errors before warnings)
     const sortedErrors = errors.sort((a, b) => {
-      const severityOrder = { error: 0, warning: 1 };
+      const severityOrder: Record<string, number> = { error: 0, warning: 1 };
       return severityOrder[a.severity] - severityOrder[b.severity];
     });
 
@@ -57,7 +63,7 @@ class FilterValidator {
         errorCount: errors.length
       });
 
-      if (metric && !import.meta.env?.PROD) {
+      if (metric && !(import.meta as any).env?.PROD) {
         PerformanceTracker.checkBudget('validation', metric.duration, VALIDATION_BUDGET);
       }
     }
@@ -73,10 +79,10 @@ class FilterValidator {
    *
    * Example future rule: Validate products must belong to selected product_types
    *
-   * @param {Object} filters - Filter state
-   * @returns {Array} Empty array (placeholder)
+   * @param filters - Filter state
+   * @returns Empty array (placeholder)
    */
-  static validateProductGroups(filters) {
+  static validateProductGroups(filters: any): ValidationError[] {
     // Placeholder for future implementation
     // Example rule: products must belong to selected product_types
     // Example rule: categories must be compatible with selected subjects
@@ -85,30 +91,30 @@ class FilterValidator {
 
   /**
    * Check if any error-severity issues exist
-   * @param {Object} filters - Filter state
-   * @returns {boolean} True if error-severity issues exist
+   * @param filters - Filter state
+   * @returns True if error-severity issues exist
    */
-  static hasErrors(filters) {
+  static hasErrors(filters: any): boolean {
     const validationResults = this.validate(filters);
     return validationResults.some(error => error.severity === 'error');
   }
 
   /**
    * Get only error-severity validation issues
-   * @param {Object} filters - Filter state
-   * @returns {Array} Array of error-severity issues
+   * @param filters - Filter state
+   * @returns Array of error-severity issues
    */
-  static getErrors(filters) {
+  static getErrors(filters: any): ValidationError[] {
     const validationResults = this.validate(filters);
     return validationResults.filter(error => error.severity === 'error');
   }
 
   /**
    * Get only warning-severity validation issues
-   * @param {Object} filters - Filter state
-   * @returns {Array} Array of warning-severity issues
+   * @param filters - Filter state
+   * @returns Array of warning-severity issues
    */
-  static getWarnings(filters) {
+  static getWarnings(filters: any): ValidationError[] {
     const validationResults = this.validate(filters);
     return validationResults.filter(error => error.severity === 'warning');
   }

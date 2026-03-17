@@ -17,7 +17,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(() => mockNavigate)
 }));
 
-vi.mock('../SearchBox.js', () => ({
+vi.mock('../SearchBox', () => ({
   __esModule: true,
   default: function MockSearchBox() {
     const React = require('react');
@@ -25,7 +25,7 @@ vi.mock('../SearchBox.js', () => ({
   },
 }));
 
-vi.mock('../SearchResults.js', () => ({
+vi.mock('../SearchResults', () => ({
   __esModule: true,
   default: function MockSearchResults() {
     const React = require('react');
@@ -40,7 +40,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import SearchModal from '../Navigation/SearchModal.tsx';
-import filtersReducer from '../../store/slices/filtersSlice.js';
+import filtersReducer from '../../store/slices/filtersSlice';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 /**

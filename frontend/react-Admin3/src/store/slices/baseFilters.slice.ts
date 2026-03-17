@@ -7,14 +7,71 @@
  * Contract: specs/007-docs-stories-story/contracts/baseFilters-module-contract.md
  *
  * IMPORTANT: This module does NOT include FilterValidator logic.
- * Validation is handled in the main filtersSlice.js during integration.
+ * Validation is handled in the main filtersSlice.ts during integration.
  */
+
+import { PayloadAction } from '@reduxjs/toolkit';
+
+export interface FilterCounts {
+  subjects: Record<string, any>;
+  categories: Record<string, any>;
+  product_types: Record<string, any>;
+  products: Record<string, any>;
+  modes_of_delivery: Record<string, any>;
+}
+
+export interface ValidationError {
+  severity: 'error' | 'warning';
+  message: string;
+  field?: string;
+}
+
+export interface FilterState {
+  // Filter values - arrays to support multiple selections
+  subjects: string[];
+  categories: string[];
+  product_types: string[];
+  products: string[];
+  modes_of_delivery: string[];
+
+  // Search query
+  searchQuery: string;
+
+  // Search filter ESSP IDs (from fuzzy search - Issue #2 fix)
+  searchFilterProductIds: number[];
+
+  // Pagination
+  currentPage: number;
+  pageSize: number;
+
+  // UI state
+  isFilterPanelOpen: boolean;
+  appliedFilters: Record<string, any>;
+
+  // Loading states
+  isLoading: boolean;
+  error: string | null;
+
+  // Filter counts from API responses
+  filterCounts: FilterCounts;
+
+  // Validation errors for filter combinations (Story 1.12)
+  validationErrors: ValidationError[];
+
+  // Dynamic filter configuration from backend (US5, FR-007)
+  filterConfiguration: any | null;
+  filterConfigurationLoading: boolean;
+  filterConfigurationError: string | null;
+
+  // Last updated timestamp for cache management
+  lastUpdated: number | null;
+}
 
 /**
  * Base filter initial state
  * Contains all filter values, pagination, UI state, loading states, and metadata
  */
-export const baseFiltersInitialState = {
+export const baseFiltersInitialState: FilterState = {
   // Filter values - arrays to support multiple selections
   subjects: [],
   categories: [],
@@ -73,37 +130,37 @@ export const baseFiltersReducers = {
   // Set Actions (7 reducers)
   // ========================================
 
-  setSubjects: (state, action) => {
+  setSubjects: (state: FilterState, action: PayloadAction<string[]>) => {
     state.subjects = action.payload;
     state.currentPage = 1; // Reset to first page when filters change
     state.lastUpdated = Date.now();
   },
 
-  setCategories: (state, action) => {
+  setCategories: (state: FilterState, action: PayloadAction<string[]>) => {
     state.categories = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  setProductTypes: (state, action) => {
+  setProductTypes: (state: FilterState, action: PayloadAction<string[]>) => {
     state.product_types = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  setProducts: (state, action) => {
+  setProducts: (state: FilterState, action: PayloadAction<string[]>) => {
     state.products = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  setModesOfDelivery: (state, action) => {
+  setModesOfDelivery: (state: FilterState, action: PayloadAction<string[]>) => {
     state.modes_of_delivery = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  setSearchQuery: (state, action) => {
+  setSearchQuery: (state: FilterState, action: PayloadAction<string>) => {
     state.searchQuery = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
@@ -112,7 +169,7 @@ export const baseFiltersReducers = {
   // Issue #2 Fix: Set ESSP IDs from fuzzy search
   // Receives ExamSessionSubjectProduct.id values (e.g., [2946, 2947, ...])
   // NOT product.id values - this ensures we only filter to the specific ESSPs returned
-  setSearchFilterProductIds: (state, action) => {
+  setSearchFilterProductIds: (state: FilterState, action: PayloadAction<number[]>) => {
     state.searchFilterProductIds = action.payload;
     state.currentPage = 1;
     state.lastUpdated = Date.now();
@@ -122,7 +179,7 @@ export const baseFiltersReducers = {
   // Toggle Actions (5 reducers)
   // ========================================
 
-  toggleSubjectFilter: (state, action) => {
+  toggleSubjectFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     const index = state.subjects.indexOf(value);
     if (index === -1) {
@@ -134,7 +191,7 @@ export const baseFiltersReducers = {
     state.lastUpdated = Date.now();
   },
 
-  toggleCategoryFilter: (state, action) => {
+  toggleCategoryFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     const index = state.categories.indexOf(value);
     if (index === -1) {
@@ -146,7 +203,7 @@ export const baseFiltersReducers = {
     state.lastUpdated = Date.now();
   },
 
-  toggleProductTypeFilter: (state, action) => {
+  toggleProductTypeFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     const index = state.product_types.indexOf(value);
     if (index === -1) {
@@ -158,7 +215,7 @@ export const baseFiltersReducers = {
     state.lastUpdated = Date.now();
   },
 
-  toggleProductFilter: (state, action) => {
+  toggleProductFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     const index = state.products.indexOf(value);
     if (index === -1) {
@@ -170,7 +227,7 @@ export const baseFiltersReducers = {
     state.lastUpdated = Date.now();
   },
 
-  toggleModeOfDeliveryFilter: (state, action) => {
+  toggleModeOfDeliveryFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     const index = state.modes_of_delivery.indexOf(value);
     if (index === -1) {
@@ -186,35 +243,35 @@ export const baseFiltersReducers = {
   // Remove Actions (5 reducers)
   // ========================================
 
-  removeSubjectFilter: (state, action) => {
+  removeSubjectFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.subjects = state.subjects.filter(item => item !== value);
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  removeCategoryFilter: (state, action) => {
+  removeCategoryFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.categories = state.categories.filter(item => item !== value);
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  removeProductTypeFilter: (state, action) => {
+  removeProductTypeFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.product_types = state.product_types.filter(item => item !== value);
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  removeProductFilter: (state, action) => {
+  removeProductFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.products = state.products.filter(item => item !== value);
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
 
-  removeModeOfDeliveryFilter: (state, action) => {
+  removeModeOfDeliveryFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.modes_of_delivery = state.modes_of_delivery.filter(item => item !== value);
     state.currentPage = 1;
@@ -226,7 +283,7 @@ export const baseFiltersReducers = {
   // ========================================
 
   // Clear specific filter type
-  clearFilterType: (state, action) => {
+  clearFilterType: (state: FilterState, action: PayloadAction<string>) => {
     const filterType = action.payload;
     switch (filterType) {
       case 'subjects':
@@ -252,7 +309,7 @@ export const baseFiltersReducers = {
   },
 
   // Clear all filters
-  clearAllFilters: (state) => {
+  clearAllFilters: (state: FilterState) => {
     state.subjects = [];
     state.categories = [];
     state.product_types = [];
@@ -270,7 +327,7 @@ export const baseFiltersReducers = {
   // ========================================
 
   // Multi-filter update action
-  setMultipleFilters: (state, action) => {
+  setMultipleFilters: (state: FilterState, action: PayloadAction<Partial<FilterState>>) => {
     const {
       subjects,
       categories,
@@ -308,11 +365,11 @@ export const baseFiltersReducers = {
   // Pagination Actions (2 reducers)
   // ========================================
 
-  setCurrentPage: (state, action) => {
+  setCurrentPage: (state: FilterState, action: PayloadAction<number>) => {
     state.currentPage = action.payload;
   },
 
-  setPageSize: (state, action) => {
+  setPageSize: (state: FilterState, action: PayloadAction<number>) => {
     state.pageSize = action.payload;
     state.currentPage = 1; // Reset to first page when page size changes
   },
@@ -321,11 +378,11 @@ export const baseFiltersReducers = {
   // UI Actions (2 reducers)
   // ========================================
 
-  toggleFilterPanel: (state) => {
+  toggleFilterPanel: (state: FilterState) => {
     state.isFilterPanelOpen = !state.isFilterPanelOpen;
   },
 
-  setFilterPanelOpen: (state, action) => {
+  setFilterPanelOpen: (state: FilterState, action: PayloadAction<boolean>) => {
     state.isFilterPanelOpen = action.payload;
   },
 
@@ -333,16 +390,16 @@ export const baseFiltersReducers = {
   // Loading/Error Actions (3 reducers)
   // ========================================
 
-  setLoading: (state, action) => {
+  setLoading: (state: FilterState, action: PayloadAction<boolean>) => {
     state.isLoading = action.payload;
   },
 
-  setError: (state, action) => {
+  setError: (state: FilterState, action: PayloadAction<string | null>) => {
     state.error = action.payload;
     state.isLoading = false;
   },
 
-  clearError: (state) => {
+  clearError: (state: FilterState) => {
     state.error = null;
   },
 
@@ -351,7 +408,7 @@ export const baseFiltersReducers = {
   // ========================================
 
   // Reset all filters to initial state
-  resetFilters: (state) => {
+  resetFilters: (state: FilterState) => {
     state.subjects = [];
     state.categories = [];
     state.product_types = [];
@@ -365,7 +422,7 @@ export const baseFiltersReducers = {
   },
 
   // Apply filters - used to cache current filter state
-  applyFilters: (state) => {
+  applyFilters: (state: FilterState) => {
     state.appliedFilters = {
       subjects: [...state.subjects],
       categories: [...state.categories],
@@ -378,13 +435,13 @@ export const baseFiltersReducers = {
   },
 
   // Set filter counts from API response
-  setFilterCounts: (state, action) => {
+  setFilterCounts: (state: FilterState, action: PayloadAction<FilterCounts>) => {
     state.filterCounts = action.payload;
   },
 
   // Validation actions - for validation error management
   // (Validation logic itself handled in main slice via FilterValidator)
-  clearValidationErrors: (state) => {
+  clearValidationErrors: (state: FilterState) => {
     state.validationErrors = [];
   },
 
@@ -392,17 +449,17 @@ export const baseFiltersReducers = {
   // Filter Configuration Actions (US5)
   // ========================================
 
-  setFilterConfiguration: (state, action) => {
+  setFilterConfiguration: (state: FilterState, action: PayloadAction<any>) => {
     state.filterConfiguration = action.payload;
     state.filterConfigurationLoading = false;
     state.filterConfigurationError = null;
   },
 
-  setFilterConfigurationLoading: (state, action) => {
+  setFilterConfigurationLoading: (state: FilterState, action: PayloadAction<boolean>) => {
     state.filterConfigurationLoading = action.payload;
   },
 
-  setFilterConfigurationError: (state, action) => {
+  setFilterConfigurationError: (state: FilterState, action: PayloadAction<string | null>) => {
     state.filterConfigurationError = action.payload;
     state.filterConfigurationLoading = false;
   },

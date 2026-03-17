@@ -12,9 +12,9 @@
 
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { renderWithProviders, createMockStore } from '../../../test-utils/testHelpers.js';
-import { FilterRegistry } from '../filterRegistry.js';
-import { setSubjects, setCategories, setProductTypes } from '../../slices/filtersSlice.js';
+import { renderWithProviders, createMockStore } from '../../../test-utils/testHelpers';
+import { FilterRegistry } from '../filterRegistry';
+import { setSubjects, setCategories, setProductTypes } from '../../slices/filtersSlice';
 
 // Simple component to test registry integration
 const TestFilterDisplay = () => {

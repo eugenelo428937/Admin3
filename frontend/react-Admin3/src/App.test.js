@@ -32,6 +32,9 @@ vi.mock('./components/User/EmailVerification.tsx', () => ({ __esModule: true, de
 vi.mock('./pages/StyleGuide.tsx', () => ({ __esModule: true, default: () => <div data-testid="styleguide">Style Guide</div> }));
 vi.mock('./components/NoMatch.tsx', () => ({ __esModule: true, default: () => <div data-testid="no-match">404 Not Found</div> }));
 vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.tsx', () => ({ __esModule: true, default: () => null }));
+vi.mock('./components/styleguide/MaterialThemeVisualizer.js', () => ({ __esModule: true, default: () => <div data-testid="theme-visualizer">Theme Visualizer</div> }));
+vi.mock('./components/Footer', () => ({ __esModule: true, default: () => <footer data-testid="footer">Footer</footer> }));
+vi.mock('./pages/Cart.tsx', () => ({ __esModule: true, default: () => <div data-testid="cart-page">Cart</div> }));
 
 // Mock admin components
 vi.mock('./components/admin/exam-sessions/ExamSessionList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-sessions">Exam Sessions</div> }));
@@ -44,6 +47,49 @@ vi.mock('./components/admin/products/ProductList.tsx', () => ({ __esModule: true
 vi.mock('./components/admin/products/ProductDetail.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-detail">Product Detail</div> }));
 vi.mock('./components/admin/products/ProductForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-form">Product Form</div> }));
 vi.mock('./components/admin/products/ProductImport.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-import">Product Import</div> }));
+
+// Mock admin catalog components (US3)
+vi.mock('./components/admin/exam-session-subjects/ExamSessionSubjectList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-ess-list">ESS List</div> }));
+vi.mock('./components/admin/exam-session-subjects/ExamSessionSubjectForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-ess-form">ESS Form</div> }));
+vi.mock('./components/admin/product-variations/ProductVariationList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-pv-list">PV List</div> }));
+vi.mock('./components/admin/product-variations/ProductVariationForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-pv-form">PV Form</div> }));
+vi.mock('./components/admin/product-bundles/ProductBundleList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-pb-list">PB List</div> }));
+vi.mock('./components/admin/product-bundles/ProductBundleForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-pb-form">PB Form</div> }));
+
+// Mock admin store components (US4)
+vi.mock('./components/admin/store-products/StoreProductList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-sp-list">SP List</div> }));
+vi.mock('./components/admin/store-products/StoreProductForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-sp-form">SP Form</div> }));
+vi.mock('./components/admin/recommendations/RecommendationList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-rec-list">Rec List</div> }));
+vi.mock('./components/admin/recommendations/RecommendationForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-rec-form">Rec Form</div> }));
+vi.mock('./components/admin/prices/PriceList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-price-list">Price List</div> }));
+vi.mock('./components/admin/prices/PriceForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-price-form">Price Form</div> }));
+vi.mock('./components/admin/store-bundles/StoreBundleList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-sb-list">SB List</div> }));
+vi.mock('./components/admin/store-bundles/StoreBundleForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-sb-form">SB Form</div> }));
+
+// Mock admin session setup wizard
+vi.mock('./components/admin/new-session-setup/NewSessionSetup.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-session-setup">Session Setup</div> }));
+
+// Mock admin users & staff (US5)
+vi.mock('./components/admin/user-profiles/UserProfileList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-user-list">User List</div> }));
+vi.mock('./components/admin/user-profiles/UserProfileForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-user-form">User Form</div> }));
+vi.mock('./components/admin/staff/StaffList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-staff-list">Staff List</div> }));
+vi.mock('./components/admin/staff/StaffForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-staff-form">Staff Form</div> }));
+
+// Mock admin email components (US6)
+vi.mock('./components/admin/email/settings/EmailSettingsList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-settings">Email Settings</div> }));
+vi.mock('./components/admin/email/templates/EmailTemplateList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-templates">Email Templates</div> }));
+vi.mock('./components/admin/email/templates/EmailTemplateForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-template-form">Email Template Form</div> }));
+vi.mock('./components/admin/email/queue/EmailQueueList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue">Email Queue</div> }));
+vi.mock('./components/admin/email/queue/EmailQueueDetail', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue-detail">Email Queue Detail</div> }));
+vi.mock('./components/admin/email/queue/EmailQueueDuplicateForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue-dup">Email Queue Dup</div> }));
+vi.mock('./components/admin/email/attachments/EmailAttachmentList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-attachments">Email Attachments</div> }));
+vi.mock('./components/admin/email/attachments/EmailAttachmentForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-attachment-form">Email Attachment Form</div> }));
+vi.mock('./components/admin/email/content-rules/EmailContentRuleList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-rules">Email Rules</div> }));
+vi.mock('./components/admin/email/content-rules/EmailContentRuleForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-rule-form">Email Rule Form</div> }));
+vi.mock('./components/admin/email/placeholders/EmailPlaceholderList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-placeholders">Email Placeholders</div> }));
+vi.mock('./components/admin/email/placeholders/EmailPlaceholderForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-placeholder-form">Email Placeholder Form</div> }));
+vi.mock('./components/admin/email/closing-salutations/ClosingSalutationList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-salutations">Email Salutations</div> }));
+vi.mock('./components/admin/email/closing-salutations/ClosingSalutationForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-salutation-form">Email Salutation Form</div> }));
 
 // Mock ErrorBoundary
 vi.mock('./components/ErrorBoundary.tsx', () => ({

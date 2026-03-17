@@ -85,7 +85,7 @@ vi.mock("../../utils/rulesEngineUtils", () => ({
 }));
 
 // Mock URL sync middleware - must return function directly, not jest.fn wrapper
-vi.mock("../../store/middleware/urlSyncMiddleware.js", () => ({
+vi.mock("../../store/middleware/urlSyncMiddleware", () => ({
    __esModule: true,
    parseUrlToFilters: () => ({
       subjects: [],
@@ -104,7 +104,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import ProductList from "./ProductList";
 import { CartProvider } from "../../contexts/CartContext.tsx";
-import { createMockStore } from "../../test-utils/reduxMockStore.js";
+import { createMockStore } from "../../test-utils/reduxMockStore";
 
 import appTheme from '../../theme';
 // Mock the rules engine service to prevent actual API calls during tests

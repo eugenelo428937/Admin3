@@ -7,17 +7,18 @@
  * Development-only - tree-shaken in production builds.
  */
 
-import PerformanceTracker from '../../utils/PerformanceTracker.js';
+import { Middleware } from '@reduxjs/toolkit';
+import PerformanceTracker from '../../utils/PerformanceTracker';
 import {
   PERFORMANCE_BUDGETS,
   PERFORMANCE_MONITORING_CONFIG
-} from '../../config/performanceBudgets.js';
+} from '../../config/performanceBudgets';
 
 /**
  * Performance monitoring middleware
  * Standard Redux middleware that tracks filter action performance.
  */
-const performanceMonitoringMiddleware = (store) => (next) => (action) => {
+const performanceMonitoringMiddleware: Middleware = (store) => (next) => (action: any) => {
   // Only track if monitoring is enabled and Performance API is supported
   if (!PERFORMANCE_MONITORING_CONFIG.enabled || !PerformanceTracker.isSupported()) {
     return next(action);
@@ -28,7 +29,7 @@ const performanceMonitoringMiddleware = (store) => (next) => (action) => {
     return next(action);
   }
 
-  const actionType = action.type;
+  const actionType = action.type as string;
   const operationName = `redux.${actionType.split('/')[1]}`; // e.g., 'redux.setSubjects'
 
   try {

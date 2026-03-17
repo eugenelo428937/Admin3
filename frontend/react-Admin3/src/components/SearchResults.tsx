@@ -8,7 +8,7 @@ import {
     ArrowForward as ArrowRightIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
-import { selectSearchQuery } from '../store/slices/filtersSlice.js';
+import { selectSearchQuery } from '../store/slices/filtersSlice';
 import ProductCard from './Product/ProductCard/MaterialProductCard';
 import useProductCardHelpers from '../hooks/useProductCardHelpers';
 
