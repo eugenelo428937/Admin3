@@ -14,7 +14,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider } from '@mui/material/styles';
 import FilterPanel from '../Product/FilterPanel.tsx';
-import filtersReducer from '../../store/slices/filtersSlice.js';
+import filtersReducer from '../../store/slices/filtersSlice';
 
 import appTheme from '../../theme';
 // Mock sessionStorage
@@ -29,7 +29,7 @@ Object.defineProperty(window, 'sessionStorage', {
 });
 
 // Mock PerformanceTracker used by FilterRegistry
-vi.mock('../../utils/PerformanceTracker.js', () => ({
+vi.mock('../../utils/PerformanceTracker', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,

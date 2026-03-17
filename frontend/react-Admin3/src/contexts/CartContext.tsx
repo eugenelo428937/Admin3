@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import cartService from "../services/cartService.ts";
-import { useConfig } from "./ConfigContext.js";
+import { useConfig } from "./ConfigContext";
 import type { CartItem, CartData, PriceInfo } from "../types/cart";
 
 // ─── Context Value Interface ────────────────────────────────────

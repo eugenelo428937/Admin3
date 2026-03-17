@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Form, Button, Alert, Row, Col } from "react-bootstrap";
 import authService from "../../services/authService";
-import config from '../../config.js';
+import config from '../../config';
 import CountryAutocomplete from "../CountryAutocomplete";
 import PhoneCodeDropdown from "./PhoneCodeDropdown";
 import PhoneCodeAutocomplete from "./PhoneCodeAutocomplete";

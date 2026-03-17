@@ -13,9 +13,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders } from '../../../test-utils/testHelpers.js';
+import { renderWithProviders } from '../../../test-utils/testHelpers';
 import ActiveFilters from '../ActiveFilters';
-import { setSubjects, setCategories } from '../../../store/slices/filtersSlice.js';
+import { setSubjects, setCategories } from '../../../store/slices/filtersSlice';
 
 describe('ActiveFilters Integration', () => {
 

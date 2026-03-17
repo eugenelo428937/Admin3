@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { formatPrice } from "../../../utils/priceFormatter.js";
+import { formatPrice } from "../../../utils/priceFormatter";
 import {
 	CardHeader,
 	CardContent,

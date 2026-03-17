@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import { useCart } from '../../contexts/CartContext';
-import useProductsSearch from '../../hooks/useProductsSearch.js';
-import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
+import useProductsSearch from '../../hooks/useProductsSearch';
+import useProductCardHelpers from '../../hooks/useProductCardHelpers';
 import rulesEngineService from '../../services/rulesEngineService';
 
 // Redux imports
@@ -31,8 +31,8 @@ import {
     resetFilters,
     setCurrentPage,
     clearError
-} from '../../store/slices/filtersSlice.js';
-import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware.js';
+} from '../../store/slices/filtersSlice';
+import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware';
 
 import type {
     BrowseProduct,

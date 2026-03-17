@@ -14,8 +14,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchBox from '../SearchBox.js';
-import filtersReducer from '../../store/slices/filtersSlice.js';
+import SearchBox from '../SearchBox';
+import filtersReducer from '../../store/slices/filtersSlice';
 import searchService from '../../services/searchService';
 
 // Mock searchService to avoid API calls during tests

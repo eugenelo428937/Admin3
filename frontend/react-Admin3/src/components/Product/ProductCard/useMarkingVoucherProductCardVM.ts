@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useTheme, Theme } from "@mui/material/styles";
 import { useCart } from "../../../contexts/CartContext.tsx";
-import { formatPrice } from "../../../utils/priceFormatter.js";
+import { formatPrice } from "../../../utils/priceFormatter";
 import type { BrowseProduct } from "../../../types/browse/browse.types";
 
 // ─── ViewModel Interface ────────────────────────────────────────

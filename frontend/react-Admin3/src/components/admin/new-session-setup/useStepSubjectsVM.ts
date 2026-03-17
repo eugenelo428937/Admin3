@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import httpService from '../../../services/httpService';
 import sessionSetupService from '../../../services/sessionSetupService';
-import config from '../../../config.js';
+import config from '../../../config';
 
 const CATALOG_URL = `${config.catalogUrl}`;
 

@@ -26,7 +26,7 @@ describe('cartService', () => {
     vi.resetModules();
 
     // Mock config
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         cartUrl: 'http://test-api/cart',

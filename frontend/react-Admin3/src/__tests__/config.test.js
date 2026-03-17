@@ -1,7 +1,7 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
 
 // Unmock config so we can test the real module
-vi.unmock('../config.js');
+vi.unmock('../config');
 
 /**
  * Tests for Config Module
@@ -27,14 +27,14 @@ describe('config', () => {
 
   describe('config structure', () => {
     test('exports default config object', async () => {
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config).toBeDefined();
       expect(typeof config).toBe('object');
     });
 
     test('has required API URL properties', async () => {
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect('apiBaseUrl' in config).toBe(true);
       expect('authUrl' in config).toBe(true);
@@ -50,20 +50,20 @@ describe('config', () => {
     });
 
     test('has environment detection properties', async () => {
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect('isDevelopment' in config).toBe(true);
       expect('isUAT' in config).toBe(true);
     });
 
     test('has page size property', async () => {
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect('pageSize' in config).toBe(true);
     });
 
     test('has enableDebugLogs property', async () => {
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect('enableDebugLogs' in config).toBe(true);
       expect(config.enableDebugLogs).toBe(true);
@@ -75,7 +75,7 @@ describe('config', () => {
       import.meta.env.MODE = 'development';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.isDevelopment).toBe(true);
     });
@@ -84,7 +84,7 @@ describe('config', () => {
       import.meta.env.MODE = 'production';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.isDevelopment).toBe(false);
     });
@@ -93,7 +93,7 @@ describe('config', () => {
       import.meta.env.VITE_ENV = 'uat';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.isUAT).toBe(true);
     });
@@ -103,7 +103,7 @@ describe('config', () => {
       delete import.meta.env.VITE_ENVIRONMENT;
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.isUAT).toBe(false);
     });
@@ -113,7 +113,7 @@ describe('config', () => {
       import.meta.env.VITE_ENVIRONMENT = 'uat';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.isUAT).toBe(true);
     });
@@ -134,7 +134,7 @@ describe('config', () => {
       import.meta.env.VITE_API_TUTORIAL_URL = '/tutorials';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.apiBaseUrl).toBe('http://api.example.com');
       expect(config.authUrl).toBe('http://api.example.com/auth');
@@ -152,7 +152,7 @@ describe('config', () => {
       delete import.meta.env.VITE_API_AUTH_URL;
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       // Config should still load even with undefined values
       expect(config).toBeDefined();
@@ -164,7 +164,7 @@ describe('config', () => {
       import.meta.env.VITE_API_PAGE_SIZE = '50';
       vi.resetModules();
 
-      const { default: config } = await import('../config.js');
+      const { default: config } = await import('../config');
 
       expect(config.pageSize).toBe('50');
     });

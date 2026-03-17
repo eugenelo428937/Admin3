@@ -12,7 +12,7 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useApi } from '../useApi.js';
+import { useApi } from '../useApi';
 
 describe('useApi', () => {
   describe('initial state', () => {

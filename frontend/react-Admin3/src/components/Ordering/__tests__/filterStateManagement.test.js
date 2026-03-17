@@ -19,8 +19,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
-import filtersReducer from '../../../store/slices/filtersSlice.js';
-import { urlSyncMiddleware } from '../../../store/middleware/urlSyncMiddleware.js';
+import filtersReducer from '../../../store/slices/filtersSlice';
+import { urlSyncMiddleware } from '../../../store/middleware/urlSyncMiddleware';
 import ProductList from '../../Product/ProductList.tsx';
 import FilterPanel from '../../Product/FilterPanel.tsx';
 import MainNavBar from '../../Navigation/MainNavBar.tsx';
@@ -134,8 +134,8 @@ describe('Integration Test: Clear All Filters (Story 1.5)', () => {
     const { store } = renderWithProviders(<ProductList />);
 
     // Given: User has applied multiple filters
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
-    const setCategories = (await import('../../../store/slices/filtersSlice.js')).setCategories;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
+    const setCategories = (await import('../../../store/slices/filtersSlice')).setCategories;
 
     store.dispatch(setSubjects(['CB1', 'CB2']));
     store.dispatch(setCategories(['MAT']));
@@ -174,9 +174,9 @@ describe('Integration Test: Clear All Filters (Story 1.5)', () => {
     const { store } = renderWithProviders(<ProductList />);
 
     // Apply navbar filters
-    const setTutorialFormat = (await import('../../../store/slices/filtersSlice.js')).setTutorialFormat;
-    const setDistanceLearning = (await import('../../../store/slices/filtersSlice.js')).setDistanceLearning;
-    const setTutorial = (await import('../../../store/slices/filtersSlice.js')).setTutorial;
+    const setTutorialFormat = (await import('../../../store/slices/filtersSlice')).setTutorialFormat;
+    const setDistanceLearning = (await import('../../../store/slices/filtersSlice')).setDistanceLearning;
+    const setTutorial = (await import('../../../store/slices/filtersSlice')).setTutorial;
 
     store.dispatch(setTutorialFormat('online'));
     store.dispatch(setDistanceLearning(true));
@@ -267,7 +267,7 @@ describe('Integration Test: URL Synchronization (Story 1.1)', () => {
     const initialHistoryLength = window.history.length;
 
     // When: User selects CB1 subject
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
     store.dispatch(setSubjects(['CB1']));
 
     // Then: URL updates immediately
@@ -279,7 +279,7 @@ describe('Integration Test: URL Synchronization (Story 1.1)', () => {
 
     // And: No new history entry created (replaceState used)
     mockReplaceState.mockClear();
-    const setCategories = (await import('../../../store/slices/filtersSlice.js')).setCategories;
+    const setCategories = (await import('../../../store/slices/filtersSlice')).setCategories;
     store.dispatch(setCategories(['MAT']));
 
     await waitFor(() => {
@@ -294,7 +294,7 @@ describe('Integration Test: URL Synchronization (Story 1.1)', () => {
   it.skip('should update URL within 5ms of filter change', async () => {
     const { store } = renderWithProviders(<FilterPanel />);
 
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
 
     const start = performance.now();
     store.dispatch(setSubjects(['CB1']));
@@ -311,7 +311,7 @@ describe('Integration Test: URL Synchronization (Story 1.1)', () => {
   it.skip('should debounce rapid filter changes', async () => {
     const { store } = renderWithProviders(<FilterPanel />);
 
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
 
     // Rapid filter changes
     store.dispatch(setSubjects(['CB1']));
@@ -405,9 +405,9 @@ describe('Integration Test: Shareable URLs (Stories 1.1, 1.6)', () => {
     // Phase 1: User applies filters
     const { store: store1 } = renderWithProviders(<ProductList />);
 
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
-    const setCategories = (await import('../../../store/slices/filtersSlice.js')).setCategories;
-    const setModesOfDelivery = (await import('../../../store/slices/filtersSlice.js')).setModesOfDelivery;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
+    const setCategories = (await import('../../../store/slices/filtersSlice')).setCategories;
+    const setModesOfDelivery = (await import('../../../store/slices/filtersSlice')).setModesOfDelivery;
 
     store1.dispatch(setSubjects(['CB1', 'CB2']));
     store1.dispatch(setCategories(['MAT']));
@@ -444,7 +444,7 @@ describe('Integration Test: Shareable URLs (Stories 1.1, 1.6)', () => {
   it('should make URLs bookmarkable', async () => {
     const { store } = renderWithProviders(<ProductList />);
 
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
     store.dispatch(setSubjects(['CB1']));
 
     await waitFor(() => {
@@ -484,8 +484,8 @@ describe('Integration Test: Search Integration (Story 1.4)', () => {
   it('should combine search text with filters', async () => {
     const { store } = renderWithProviders(<ProductList />);
 
-    const setSearchQuery = (await import('../../../store/slices/filtersSlice.js')).setSearchQuery;
-    const setSubjects = (await import('../../../store/slices/filtersSlice.js')).setSubjects;
+    const setSearchQuery = (await import('../../../store/slices/filtersSlice')).setSearchQuery;
+    const setSubjects = (await import('../../../store/slices/filtersSlice')).setSubjects;
 
     // Apply search and filters together
     store.dispatch(setSearchQuery('exam materials'));

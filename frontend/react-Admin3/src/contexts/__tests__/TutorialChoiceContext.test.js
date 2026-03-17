@@ -1,11 +1,11 @@
 import { vi } from 'vitest';
 // Unmock TutorialChoiceContext to test the real implementation
 // This must be before any imports
-vi.unmock('../TutorialChoiceContext.js');
+vi.unmock('../TutorialChoiceContext');
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { TutorialChoiceProvider, useTutorialChoice } from '../TutorialChoiceContext.js';
+import { TutorialChoiceProvider, useTutorialChoice } from '../TutorialChoiceContext';
 
 // Mock localStorage
 const localStorageMock = (() => {
