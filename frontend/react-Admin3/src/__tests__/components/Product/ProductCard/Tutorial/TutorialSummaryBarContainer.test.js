@@ -12,7 +12,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 
 // Mock Material-UI useMediaQuery hook

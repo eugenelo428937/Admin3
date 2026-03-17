@@ -10,14 +10,14 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../store/slices/filtersSlice.js';
-import { urlSyncMiddleware, setupUrlToReduxSync } from '../store/middleware/urlSyncMiddleware.js';
+import filtersReducer from '../store/slices/filtersSlice';
+import { urlSyncMiddleware, setupUrlToReduxSync } from '../store/middleware/urlSyncMiddleware';
 
 // Import MemoryRouter - Jest will use manual mock from __mocks__/react-router-dom.js
 import { MemoryRouter } from 'react-router-dom';
 
 // Import catalogApi directly (ESM compatible)
-import { catalogApi } from '../store/api/catalogApi.js';
+import { catalogApi } from '../store/api/catalogApi';
 import * as mockHandlersModule from './mockHandlers.js';
 
 function getCatalogApi() {

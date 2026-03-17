@@ -6,7 +6,7 @@ import {
     navSelectSubject,
     navSelectProductGroup,
     navSelectProduct,
-} from '../../store/slices/filtersSlice.js';
+} from '../../store/slices/filtersSlice';
 
 interface Subject {
     id: number;

@@ -40,7 +40,7 @@ vi.mock("./FilterDebugger.js", () => ({ __esModule: true, default: () => null })
 vi.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
 
 // Mock hooks
-vi.mock("../../hooks/useProductsSearch.js", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: [],
@@ -53,7 +53,7 @@ vi.mock("../../hooks/useProductsSearch.js", () => ({
    }),
 }));
 
-vi.mock("../../hooks/useProductCardHelpers.js", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: vi.fn(),

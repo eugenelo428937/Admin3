@@ -22,7 +22,7 @@ import filtersReducer, {
   validateFilters,
   selectValidationErrors,
   selectHasValidationErrors,
-} from '../filtersSlice.js';
+} from '../filtersSlice';
 
 describe('filtersSlice - Validation Integration', () => {
   let initialState;

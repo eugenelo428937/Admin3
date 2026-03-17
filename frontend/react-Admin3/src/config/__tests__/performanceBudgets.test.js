@@ -23,7 +23,7 @@ import {
   getBudgetForOperation,
   isOperationWithinBudget,
   PERFORMANCE_MONITORING_CONFIG
-} from '../performanceBudgets.js';
+} from '../performanceBudgets';
 
 describe('Performance Budgets Configuration', () => {
 

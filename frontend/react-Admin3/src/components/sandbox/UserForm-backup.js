@@ -27,7 +27,7 @@ import {
 } from "@mui/material";
 import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
 import authService from "../../services/authService";
-import config from '../../config.js';
+import config from '../../config';
 import ValidatedPhoneInput from "../User/ValidatedPhoneInput.tsx";
 import SmartAddressInput from "../Address/SmartAddressInput.tsx";
 import addressMetadataService from "../../services/address/addressMetadataService.ts";

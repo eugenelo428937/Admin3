@@ -40,7 +40,7 @@ import {
   LocationOn,
   InfoOutline,
 } from '@mui/icons-material';
-import { formatPrice, getVatStatusDisplay } from '../../../../utils/vatUtils.js';
+import { formatPrice, getVatStatusDisplay } from '../../../../utils/vatUtils';
 import TutorialSelectionDialog from './TutorialSelectionDialog';
 import useTutorialProductCardVM from './useTutorialProductCardVM';
 import type { SpeedDialIconFactory } from './useTutorialProductCardVM';

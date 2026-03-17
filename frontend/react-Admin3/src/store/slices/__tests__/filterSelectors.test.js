@@ -20,7 +20,7 @@ import {
   selectHasActiveFilters,
   selectActiveFilterCount,
   selectActiveFilterSummary,
-} from '../filterSelectors.js';
+} from '../filterSelectors';
 
 describe('filterSelectors', () => {
   // Mock state for testing

@@ -7,7 +7,7 @@ import CountryAutocomplete from '../CountryAutocomplete.tsx';
 
 import appTheme from '../../../theme';
 // Mock config
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: { apiBaseUrl: 'http://localhost:8888' },
 }));

@@ -9,7 +9,7 @@
  * These tests validate the validator framework is ready for future validation rules.
  */
 
-import FilterValidator from '../filterValidator.js';
+import FilterValidator from '../filterValidator';
 
 describe('FilterValidator', () => {
   // T005: validate() integration tests

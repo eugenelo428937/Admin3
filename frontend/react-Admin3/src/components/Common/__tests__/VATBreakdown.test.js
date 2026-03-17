@@ -11,7 +11,7 @@ import VATBreakdown from '../VATBreakdown.js';
 
 import appTheme from '../../../theme';
 // Mock vatUtils
-vi.mock('../../../utils/vatUtils.js', () => ({
+vi.mock('../../../utils/vatUtils', () => ({
   formatVatLabel: (rate) => {
     if (rate === 0 || rate === null || rate === undefined) return 'VAT (0%)';
     return `VAT (${rate}%)`;

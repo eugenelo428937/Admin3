@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Divider } from '@mui/material';
-import { formatVatLabel, formatPrice } from '../../utils/vatUtils.js';
+import { formatVatLabel, formatPrice } from '../../utils/vatUtils';
 
 interface VATTotals {
     subtotal?: number | string;

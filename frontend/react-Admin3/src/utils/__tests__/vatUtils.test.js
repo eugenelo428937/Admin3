@@ -19,7 +19,7 @@ import {
   getCurrencySymbol,
   formatVatAmount,
   getVatBreakdown,
-} from '../vatUtils.js';
+} from '../vatUtils';
 
 describe('vatUtils', () => {
   describe('formatVatLabel', () => {

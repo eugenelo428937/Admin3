@@ -87,7 +87,7 @@ vi.mock('../../../contexts/CartContext.tsx', () => ({
 }));
 
 // Mock TutorialChoiceContext
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     getTutorialChoice: vi.fn(),
     addTutorialChoice: vi.fn(),
@@ -131,7 +131,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import MainNavBar from '../MainNavBar.tsx';
-import filtersReducer from '../../../store/slices/filtersSlice.js';
+import filtersReducer from '../../../store/slices/filtersSlice';
 import theme from '../../../theme/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
