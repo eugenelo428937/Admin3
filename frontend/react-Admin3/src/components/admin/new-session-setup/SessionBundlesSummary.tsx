@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Typography, CircularProgress, Alert, Box, Button
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  CircularProgress,
+  Alert,
+  Box,
+  Button,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import storeBundleService from '../../../services/storeBundleService';
+import useSessionBundlesSummaryVM from './useSessionBundlesSummaryVM';
 
-const SessionBundlesSummary = ({ sessionId }) => {
-  const [bundles, setBundles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// ─── Interfaces ───────────────────────────────────────────────
 
-  useEffect(() => {
-    const fetchBundles = async () => {
-      try {
-        setLoading(true);
-        const { results } = await storeBundleService.adminList({
-          exam_session_id: sessionId,
-          page_size: 100,
-        });
-        setBundles(results || []);
-      } catch (err) {
-        setError('Failed to load bundles');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBundles();
-  }, [sessionId]);
+interface SessionBundlesSummaryProps {
+  sessionId: number | null;
+}
+
+// ─── Component ────────────────────────────────────────────────
+
+const SessionBundlesSummary: React.FC<SessionBundlesSummaryProps> = ({ sessionId }) => {
+  const { bundles, loading, error } = useSessionBundlesSummaryVM({ sessionId });
 
   if (loading) return <CircularProgress size={24} />;
   if (error) return <Alert severity="error">{error}</Alert>;

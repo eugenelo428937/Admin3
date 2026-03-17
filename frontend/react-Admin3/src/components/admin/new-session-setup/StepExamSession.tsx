@@ -1,97 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  TextField, Button, Alert, Box, Typography, Paper,
-  FormControl, FormLabel, Autocomplete, Divider, CircularProgress
+  TextField,
+  Button,
+  Alert,
+  Box,
+  Typography,
+  Paper,
+  FormControl,
+  FormLabel,
+  Autocomplete,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
-import examSessionService from '../../../services/examSessionService';
+import type { ExamSession } from '../../../types/examSession/examSession.types';
+import useStepExamSessionVM from './useStepExamSessionVM';
+import type { StepExamSessionProps } from './useStepExamSessionVM';
 
-const StepExamSession = ({ onSessionCreated }) => {
-  const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allSessions, setAllSessions] = useState([]);
-  const [loadingSessions, setLoadingSessions] = useState(true);
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [formData, setFormData] = useState({
-    session_code: '',
-    start_date: '',
-    end_date: '',
-  });
+const StepExamSession: React.FC<StepExamSessionProps> = ({ onSessionCreated }) => {
+  const vm = useStepExamSessionVM({ onSessionCreated });
 
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const sessions = await examSessionService.getAll();
-        // Sort by most recent first
-        sessions.sort((a, b) => b.id - a.id);
-        setAllSessions(sessions);
-      } catch (err) {
-        // Non-blocking — Autocomplete will be empty
-      } finally {
-        setLoadingSessions(false);
-      }
-    };
-    fetchSessions();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectExisting = () => {
-    if (!selectedSession) return;
-    onSessionCreated(selectedSession, { isExisting: true });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (formData.end_date <= formData.start_date) {
-      setError('End date must be after start date');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const created = await examSessionService.create(formData);
-      onSessionCreated(created, { isExisting: false });
-    } catch (err) {
-      const message =
-        err.response?.data?.end_date?.[0] ||
-        err.response?.data?.session_code?.[0] ||
-        'Failed to create exam session';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString();
-  };
+  const {
+    error,
+    isSubmitting,
+    allSessions,
+    loadingSessions,
+    selectedSession,
+    formData,
+    handleChange,
+    handleAutocompleteChange,
+    handleSelectExisting,
+    handleSubmit,
+    formatDate,
+  } = vm;
 
   return (
     <Paper sx={{ p: 3 }}>
       <Typography variant="h5" sx={{ mb: 3 }}>
         Step 1: Exam Session
       </Typography>
-
-      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-
-      {/* Select existing session */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
       <Typography variant="h6" sx={{ mb: 2 }}>
         Select Existing Session
       </Typography>
-
-      <Autocomplete
+      <Autocomplete<ExamSession>
         value={selectedSession}
-        onChange={(event, newValue) => {
-          setSelectedSession(newValue);
-          setError(null);
-        }}
+        onChange={handleAutocompleteChange}
         options={allSessions}
         getOptionLabel={(option) => option.session_code || ''}
         isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -126,7 +83,6 @@ const StepExamSession = ({ onSessionCreated }) => {
         )}
         sx={{ mb: 2 }}
       />
-
       {selectedSession && (
         <Box sx={{ p: 2, mb: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
           <Typography variant="body2" sx={{ mb: 1 }}>
@@ -143,18 +99,14 @@ const StepExamSession = ({ onSessionCreated }) => {
           </Button>
         </Box>
       )}
-
       <Divider sx={{ my: 3 }}>
         <Typography variant="body2" color="text.secondary">
           OR
         </Typography>
       </Divider>
-
-      {/* Create new session */}
       <Typography variant="h6" sx={{ mb: 2 }}>
         Create New Session
       </Typography>
-
       <Box component="form" onSubmit={handleSubmit}>
         <FormControl fullWidth sx={{ mb: 3 }}>
           <FormLabel>Session Code</FormLabel>
@@ -168,7 +120,6 @@ const StepExamSession = ({ onSessionCreated }) => {
             placeholder="e.g., 2026-09"
           />
         </FormControl>
-
         <FormControl fullWidth sx={{ mb: 3 }}>
           <FormLabel>Start Date</FormLabel>
           <TextField
@@ -182,7 +133,6 @@ const StepExamSession = ({ onSessionCreated }) => {
             slotProps={{ inputLabel: { shrink: true } }}
           />
         </FormControl>
-
         <FormControl fullWidth sx={{ mb: 3 }}>
           <FormLabel>End Date</FormLabel>
           <TextField
@@ -196,12 +146,7 @@ const StepExamSession = ({ onSessionCreated }) => {
             slotProps={{ inputLabel: { shrink: true } }}
           />
         </FormControl>
-
-        <Button
-          variant="contained"
-          type="submit"
-          disabled={isSubmitting}
-        >
+        <Button variant="contained" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creating...' : 'Create & Continue'}
         </Button>
       </Box>

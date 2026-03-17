@@ -1,53 +1,38 @@
-// src/components/admin/user-profiles/UserProfileList.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
-  Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Alert, Paper, Typography, Box, CircularProgress, TablePagination
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Alert,
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+  TablePagination,
 } from '@mui/material';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
-import userProfileService from '../../../services/userProfileService.ts';
+import useUserProfileListVM from './useUserProfileListVM';
 
-const AdminUserProfileList = () => {
+const AdminUserProfileList: React.FC = () => {
   const { isSuperuser } = useAuth();
-  const [profiles, setProfiles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(50);
-  const [totalCount, setTotalCount] = useState(0);
+  const vm = useUserProfileListVM();
 
-  const fetchProfiles = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { results, count } = await userProfileService.list({
-        page: page + 1,
-        page_size: rowsPerPage,
-      });
-      setProfiles(results);
-      setTotalCount(count);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching user profiles:', err);
-      setError('Failed to fetch user profiles. Please try again later.');
-      setProfiles([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, rowsPerPage]);
-
-  useEffect(() => {
-    fetchProfiles();
-  }, [fetchProfiles]);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  const {
+    profiles,
+    loading,
+    error,
+    page,
+    rowsPerPage,
+    totalCount,
+    handleChangePage,
+    handleChangeRowsPerPage,
+  } = vm;
 
   if (!isSuperuser) return <Navigate to="/" replace />;
   if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
@@ -57,9 +42,7 @@ const AdminUserProfileList = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h2">User Profiles</Typography>
       </Box>
-
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-
       {profiles.length === 0 && !error ? (
         <Alert severity="info">No user profiles found.</Alert>
       ) : (
@@ -102,7 +85,6 @@ const AdminUserProfileList = () => {
           </Table>
         </TableContainer>
       )}
-
       {totalCount > rowsPerPage && (
         <TablePagination
           component="div"
