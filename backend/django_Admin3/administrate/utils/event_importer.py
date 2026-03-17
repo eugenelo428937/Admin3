@@ -18,15 +18,15 @@ sys.path.insert(0, os.path.abspath(
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
-# Configure Django settings
-
-# Load the production environment file
-# env_path = os.path.join(project_root, '.env.production')
-env_path = os.path.join(project_root, '.env.development')
-load_dotenv(env_path)
-os.environ.setdefault('DJANGO_SETTINGS_MODULE',
-                      'django_Admin3.settings')
-django.setup()
+# Configure Django settings — only when run as standalone script.
+# When imported during Django tests, django.setup() has already been called
+# and calling it again creates lingering DB connections that block test teardown.
+if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+    env_path = os.path.join(project_root, '.env.development')
+    load_dotenv(env_path)
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                          'django_Admin3.settings')
+    django.setup()
 
 from datetime import datetime,date,time
 from django.core.exceptions import ValidationError

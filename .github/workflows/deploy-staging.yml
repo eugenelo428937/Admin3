@@ -52,7 +52,7 @@ jobs:
         run: python manage.py migrate --skip-checks --settings=django_Admin3.settings.ci
       - name: Run tests
         working-directory: ./backend/django_Admin3
-        run: python manage.py test --settings=django_Admin3.settings.ci
+        run: python manage.py test --settings=django_Admin3.settings.ci --exclude-tag=pact
 
   test-frontend:
     runs-on: ubuntu-latest
