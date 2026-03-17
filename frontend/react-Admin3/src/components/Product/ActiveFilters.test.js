@@ -17,7 +17,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import filtersReducer from "../../store/slices/filtersSlice.js";
-import ActiveFilters from "./ActiveFilters.js";
+import ActiveFilters from "./ActiveFilters";
 
 // Mock Material-UI's useMediaQuery
 vi.mock("@mui/material/useMediaQuery");

@@ -1,31 +1,53 @@
-import React, { useState } from 'react';
-import { Box, Snackbar, Alert } from '@mui/material';
+import { useState } from 'react';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
 import { useCart } from '../../../../contexts/CartContext.tsx';
-import TutorialSelectionSummaryBar from './TutorialSelectionSummaryBar.js';
-import TutorialSelectionDialog from './TutorialSelectionDialog.js';
 import {
   buildTutorialProductData,
   buildTutorialPriceData,
   buildTutorialMetadata,
 } from '../../../../utils/tutorialMetadataBuilder.js';
+import type {
+  FlattenedTutorialEvent,
+  TutorialChoiceData,
+} from '../../../../types/browse';
 
-/**
- * TutorialSummaryBarContainer
- * T012: Global container that renders summary bars for all subjects with draft choices
- *
- * Architecture:
- * - Rendered at App/Layout level for cross-route visibility
- * - Monitors TutorialChoiceContext for changes
- * - Renders one TutorialSelectionSummaryBar per subject with draft choices
- * - Handles Add to Cart, Edit, and Remove actions
- *
- * Layout:
- * - Fixed positioning at bottom center
- * - Vertical stacking with gap between bars
- * - Does not block SpeedDial or other UI elements
- */
-const TutorialSummaryBarContainer = () => {
+// ─── Unified Dialog Data ────────────────────────────────────────
+
+export interface UnifiedDialogData {
+  subjectCode: string;
+  location: string;
+  productId: number | string;
+  events: FlattenedTutorialEvent[];
+}
+
+// ─── ViewModel Interface ────────────────────────────────────────
+
+export interface TutorialSummaryBarContainerVM {
+  // Derived state
+  subjectCodesWithChoices: string[];
+
+  // Dialog state
+  unifiedDialogOpen: boolean;
+  unifiedDialogData: UnifiedDialogData | null;
+
+  // Snackbar state
+  snackbarOpen: boolean;
+  snackbarMessage: string;
+
+  // Loading state
+  isRemoving: boolean;
+
+  // Actions
+  handleEdit: (subjectCode: string) => void;
+  handleAddToCart: (subjectCode: string) => Promise<void>;
+  handleRemove: (subjectCode: string) => Promise<void>;
+  handleSnackbarClose: () => void;
+  closeUnifiedDialog: () => void;
+}
+
+// ─── ViewModel Hook ─────────────────────────────────────────────
+
+const useTutorialSummaryBarContainerVM = (): TutorialSummaryBarContainerVM => {
   const {
     tutorialChoices,
     getSubjectChoices,
@@ -40,7 +62,7 @@ const TutorialSummaryBarContainer = () => {
 
   // State for unified edit dialog
   const [unifiedDialogOpen, setUnifiedDialogOpen] = useState(false);
-  const [unifiedDialogData, setUnifiedDialogData] = useState(null);
+  const [unifiedDialogData, setUnifiedDialogData] = useState<UnifiedDialogData | null>(null);
 
   // State for error handling (T016)
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -55,22 +77,15 @@ const TutorialSummaryBarContainer = () => {
     return Object.keys(choices).length > 0;
   });
 
-  // T003: Return null if no subjects with choices
-  if (subjectCodesWithChoices.length === 0) {
-    return null;
-  }
-
   /**
    * T006: Handle Edit button click
    * Opens a unified dialog showing ALL tutorials for this subject across all locations
    */
-  const handleEdit = (subjectCode) => {
+  const handleEdit = (subjectCode: string): void => {
     const choices = getSubjectChoices(subjectCode);
 
-    // DEBUG: Log choices from context
-
     // Convert choices to events format
-    const events = Object.values(choices).map(choice => ({
+    const events: FlattenedTutorialEvent[] = Object.values(choices).map((choice: any) => ({
       eventId: choice.eventId,
       eventTitle: choice.eventTitle,
       eventCode: choice.eventCode,
@@ -87,25 +102,24 @@ const TutorialSummaryBarContainer = () => {
 
     // Sort events by location and start date
     events.sort((a, b) => {
-      if (a.location !== b.location) {
-        return a.location.localeCompare(b.location);
+      const locA = a.location || '';
+      const locB = b.location || '';
+      if (locA !== locB) {
+        return locA.localeCompare(locB);
       }
-      return new Date(a.startDate) - new Date(b.startDate);
+      return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
     });
 
-    
-
     // Get first choice for product metadata
-    const firstChoice = Object.values(choices)[0];
+    const firstChoice = Object.values(choices)[0] as TutorialChoiceData | undefined;
     if (!firstChoice) {
-
       return;
     }
 
-    const dialogData = {
+    const dialogData: UnifiedDialogData = {
       subjectCode,
       location: 'Current choices',  // Indicate these are current selections
-      productId: firstChoice.productId,
+      productId: firstChoice.productId || '',
       events: events,
     };
 
@@ -119,8 +133,8 @@ const TutorialSummaryBarContainer = () => {
    * Checks if tutorial already in cart and updates instead of adding duplicate
    * Allows adding tutorials with any choice level (1st, 2nd, or 3rd)
    */
-  const handleAddToCart = async (subjectCode) => {
-    const choices = getSubjectChoices(subjectCode);
+  const handleAddToCart = async (subjectCode: string): Promise<void> => {
+    const choices = getSubjectChoices(subjectCode) as Record<string, TutorialChoiceData>;
 
     // Get any available choice to extract product metadata
     const anyChoice = choices['1st'] || choices['2nd'] || choices['3rd'];
@@ -134,7 +148,7 @@ const TutorialSummaryBarContainer = () => {
     const { productId, productName, subjectName, location, variation } = anyChoice;
 
     // Get actual price from variation
-    const priceObj = variation?.prices?.find(p => p.price_type === 'standard');
+    const priceObj = variation?.prices?.find((p: any) => p.price_type === 'standard');
     const actualPrice = priceObj?.amount || 0;
 
     // Build metadata using utility function
@@ -157,7 +171,7 @@ const TutorialSummaryBarContainer = () => {
     const priceData = buildTutorialPriceData(actualPrice, tutorialMetadata);
 
     // Check if tutorial already in cart by subject code (same logic as TutorialProductCard)
-    const existingCartItem = cartItems.find(item => {
+    const existingCartItem = cartItems.find((item: any) => {
       const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
       return itemSubjectCode === subjectCode && item.product_type === "tutorial";
     });
@@ -166,11 +180,9 @@ const TutorialSummaryBarContainer = () => {
       if (existingCartItem) {
         // Update existing cart item with new choices
         await updateCartItem(existingCartItem.id, productData, priceData);
-
       } else {
         // Add new item to cart
         await addToCart(productData, priceData);
-
       }
       markChoicesAsAdded(subjectCode);
     } catch (error) {
@@ -184,7 +196,7 @@ const TutorialSummaryBarContainer = () => {
    * Integrates with cart API for carted selections
    * Includes error handling and loading states
    */
-  const handleRemove = async (subjectCode) => {
+  const handleRemove = async (subjectCode: string): Promise<void> => {
     const choices = getSubjectChoices(subjectCode);
 
     // T017: Set loading state
@@ -194,7 +206,7 @@ const TutorialSummaryBarContainer = () => {
       // T015: Remove from backend cart FIRST
       // ALWAYS check cart directly - don't rely on tutorialChoices isDraft flag
       // User may have selected different events, old one may still be in cart
-      const cartItem = cartItems.find(item => {
+      const cartItem = cartItems.find((item: any) => {
         const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
         return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
       });
@@ -222,74 +234,28 @@ const TutorialSummaryBarContainer = () => {
   };
 
   // T016: Handle Snackbar close
-  const handleSnackbarClose = () => {
+  const handleSnackbarClose = (): void => {
     setSnackbarOpen(false);
   };
 
-  return (
-    <>
-      <Box
-        sx={{
-          position: 'fixed',
-          // T017: Responsive positioning
-          // Mobile: Full width at bottom-0
-          // Desktop: Bottom-left with margins
-          bottom: { xs: 0, md: 16 },
-          left: { xs: 0, md: 16 },
-          right: { xs: 0, md: 'auto' },
-          zIndex: 1200,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          pointerEvents: 'none', // Allow clicks to pass through gaps
-          '& > *': {
-            pointerEvents: 'auto', // Re-enable pointer events on children
-          },
-        }}
-      >
-        {subjectCodesWithChoices.map(subjectCode => (
-          <TutorialSelectionSummaryBar
-            key={subjectCode}
-            subjectCode={subjectCode}
-            onEdit={() => handleEdit(subjectCode)}
-            onAddToCart={() => handleAddToCart(subjectCode)}
-            onRemove={() => handleRemove(subjectCode)}
-          />
-        ))}
-      </Box>
+  // Close unified dialog
+  const closeUnifiedDialog = (): void => {
+    setUnifiedDialogOpen(false);
+  };
 
-      {/* Unified Edit Dialog showing all locations */}
-      {unifiedDialogData && (() => {
-        // DEBUG: Log props being passed to unified dialog
-        
-
-        return (
-          <TutorialSelectionDialog
-            open={unifiedDialogOpen}
-            onClose={() => setUnifiedDialogOpen(false)}
-            product={{
-              subjectCode: unifiedDialogData.subjectCode,
-              location: unifiedDialogData.location,
-              productId: unifiedDialogData.productId,
-            }}
-            events={unifiedDialogData.events}
-          />
-        );
-      })()}
-
-      {/* T016: Error Snackbar for removal failures */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </>
-  );
+  return {
+    subjectCodesWithChoices,
+    unifiedDialogOpen,
+    unifiedDialogData,
+    snackbarOpen,
+    snackbarMessage,
+    isRemoving,
+    handleEdit,
+    handleAddToCart,
+    handleRemove,
+    handleSnackbarClose,
+    closeUnifiedDialog,
+  };
 };
 
-export default TutorialSummaryBarContainer;
+export default useTutorialSummaryBarContainerVM;

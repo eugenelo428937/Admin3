@@ -11,7 +11,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js';
+import TutorialSummaryBarContainer from '../../../../../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 

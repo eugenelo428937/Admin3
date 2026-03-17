@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   Card,
   CardContent,
@@ -11,7 +10,11 @@ import {
 } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import moment from 'moment';
-import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles.js';
+import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles';
+import type {
+  TutorialDetailCardProps,
+  ChoiceLevel,
+} from '../../../../types/browse';
 
 /**
  * TutorialDetailCard - Presentational component for displaying tutorial event details
@@ -27,7 +30,7 @@ const TutorialDetailCard = React.memo(({
   onSelectChoice,
   onResetChoice,
   subjectCode,
-}) => {
+}: TutorialDetailCardProps) => {
   const {
     eventId,
     eventTitle,
@@ -46,9 +49,8 @@ const TutorialDetailCard = React.memo(({
 
   /**
    * Handle choice button click and propagate event data to parent
-   * @param {string} choiceLevel - The choice level ('1st', '2nd', or '3rd')
    */
-  const handleChoiceClick = (choiceLevel) => {
+  const handleChoiceClick = (choiceLevel: ChoiceLevel): void => {
     const eventData = {
       eventId,
       eventTitle,
@@ -66,17 +68,15 @@ const TutorialDetailCard = React.memo(({
 
   /**
    * Determine button variant based on selection state
-   * @param {string} choiceLevel - The choice level to check
-   * @returns {string} 'contained' if selected, 'outlined' if not selected
    */
-  const getButtonVariant = (choiceLevel) => {
+  const getButtonVariant = (choiceLevel: ChoiceLevel): 'contained' | 'outlined' => {
     return selectedChoiceLevel === choiceLevel ? 'contained' : 'outlined';
   };
 
   /**
    * Handle reset button click - remove selection for this event
    */
-  const handleResetClick = () => {
+  const handleResetClick = (): void => {
     if (onResetChoice && selectedChoiceLevel) {
       onResetChoice(selectedChoiceLevel, eventId);
     }
@@ -184,7 +184,7 @@ const TutorialDetailCard = React.memo(({
             size="small"
             onClick={handleResetClick}
             aria-label="Reset choice"
-            sx={{                            
+            sx={{
               ...touchIconButtonStyle,
             }}
           >
@@ -197,26 +197,5 @@ const TutorialDetailCard = React.memo(({
 });
 
 TutorialDetailCard.displayName = 'TutorialDetailCard';
-
-TutorialDetailCard.propTypes = {
-  event: PropTypes.shape({
-    eventId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    eventTitle: PropTypes.string.isRequired,
-    eventCode: PropTypes.string.isRequired,
-    location: PropTypes.string.isRequired,
-    venue: PropTypes.string,
-    startDate: PropTypes.string.isRequired,
-    endDate: PropTypes.string.isRequired,
-  }).isRequired,
-  variation: PropTypes.shape({
-    variationId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    variationName: PropTypes.string.isRequired,
-    prices: PropTypes.array,
-  }).isRequired,
-  selectedChoiceLevel: PropTypes.oneOf(['1st', '2nd', '3rd', null]),
-  onSelectChoice: PropTypes.func.isRequired,
-  onResetChoice: PropTypes.func,
-  subjectCode: PropTypes.string.isRequired,
-};
 
 export default TutorialDetailCard;

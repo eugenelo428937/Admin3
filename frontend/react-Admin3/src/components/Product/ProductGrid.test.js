@@ -15,7 +15,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ProductGrid from './ProductGrid.js';
+import ProductGrid from './ProductGrid';
 
 // Mock MaterialProductCard component
 vi.mock('./ProductCard/MaterialProductCard.js', () => ({

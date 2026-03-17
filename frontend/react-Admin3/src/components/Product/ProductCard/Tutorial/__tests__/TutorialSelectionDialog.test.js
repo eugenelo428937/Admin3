@@ -7,7 +7,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../../theme/theme';
-import TutorialSelectionDialog from '../TutorialSelectionDialog.js';
+import TutorialSelectionDialog from '../TutorialSelectionDialog';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock CartContext - TutorialSelectionDialog uses useCart

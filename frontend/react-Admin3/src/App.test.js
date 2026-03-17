@@ -20,8 +20,8 @@ vi.mock('./contexts/ConfigContext.js', () => ({
 vi.mock('./pages/Home.js', () => ({ __esModule: true, default: () => <div data-testid="home-page">Home Page</div> }));
 vi.mock('./pages/ProfilePage.js', () => ({ __esModule: true, default: () => <div data-testid="profile-page">Profile Page</div> }));
 vi.mock('./pages/Registration.js', () => ({ __esModule: true, default: () => <div data-testid="registration-page">Registration Page</div> }));
-vi.mock('./components/Navigation/MainNavBar.js', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
-vi.mock('./components/Product/ProductList.js', () => ({ __esModule: true, default: () => <div data-testid="product-list">Products</div> }));
+vi.mock('./components/Navigation/MainNavBar.tsx', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
+vi.mock('./components/Product/ProductList.tsx', () => ({ __esModule: true, default: () => <div data-testid="product-list">Products</div> }));
 vi.mock('./components/Ordering/CheckoutPage.tsx', () => ({ __esModule: true, default: () => <div data-testid="checkout-page">Checkout</div> }));
 vi.mock('./components/User/OrderHistory.tsx', () => ({ __esModule: true, default: () => <div data-testid="order-history">Orders</div> }));
 vi.mock('./components/User/ForgotPasswordForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="forgot-password">Forgot Password</div> }));
@@ -30,23 +30,23 @@ vi.mock('./components/User/AccountActivation.tsx', () => ({ __esModule: true, de
 vi.mock('./components/User/ResendActivation.tsx', () => ({ __esModule: true, default: () => <div data-testid="resend-activation">Resend</div> }));
 vi.mock('./components/User/EmailVerification.tsx', () => ({ __esModule: true, default: () => <div data-testid="email-verification">Email Verify</div> }));
 vi.mock('./pages/StyleGuide.js', () => ({ __esModule: true, default: () => <div data-testid="styleguide">Style Guide</div> }));
-vi.mock('./components/NoMatch.js', () => ({ __esModule: true, default: () => <div data-testid="no-match">404 Not Found</div> }));
-vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js', () => ({ __esModule: true, default: () => null }));
+vi.mock('./components/NoMatch.tsx', () => ({ __esModule: true, default: () => <div data-testid="no-match">404 Not Found</div> }));
+vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.tsx', () => ({ __esModule: true, default: () => null }));
 
 // Mock admin components
-vi.mock('./components/admin/exam-sessions/ExamSessionList.js', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-sessions">Exam Sessions</div> }));
-vi.mock('./components/admin/exam-sessions/ExamSessionForm.js', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-session-form">Exam Session Form</div> }));
-vi.mock('./components/admin/subjects/SubjectList.js', () => ({ __esModule: true, default: () => <div data-testid="admin-subjects">Subjects</div> }));
-vi.mock('./components/admin/subjects/SubjectForm.js', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-form">Subject Form</div> }));
-vi.mock('./components/admin/subjects/SubjectDetail.js', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-detail">Subject Detail</div> }));
-vi.mock('./components/admin/subjects/SubjectImport.js', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-import">Subject Import</div> }));
-vi.mock('./components/admin/products/ProductList.js', () => ({ __esModule: true, default: () => <div data-testid="admin-products">Admin Products</div> }));
-vi.mock('./components/admin/products/ProductDetail.js', () => ({ __esModule: true, default: () => <div data-testid="admin-product-detail">Product Detail</div> }));
-vi.mock('./components/admin/products/ProductForm.js', () => ({ __esModule: true, default: () => <div data-testid="admin-product-form">Product Form</div> }));
-vi.mock('./components/admin/products/ProductImport.js', () => ({ __esModule: true, default: () => <div data-testid="admin-product-import">Product Import</div> }));
+vi.mock('./components/admin/exam-sessions/ExamSessionList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-sessions">Exam Sessions</div> }));
+vi.mock('./components/admin/exam-sessions/ExamSessionForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-session-form">Exam Session Form</div> }));
+vi.mock('./components/admin/subjects/SubjectList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-subjects">Subjects</div> }));
+vi.mock('./components/admin/subjects/SubjectForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-form">Subject Form</div> }));
+vi.mock('./components/admin/subjects/SubjectDetail.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-detail">Subject Detail</div> }));
+vi.mock('./components/admin/subjects/SubjectImport.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-subject-import">Subject Import</div> }));
+vi.mock('./components/admin/products/ProductList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-products">Admin Products</div> }));
+vi.mock('./components/admin/products/ProductDetail.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-detail">Product Detail</div> }));
+vi.mock('./components/admin/products/ProductForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-form">Product Form</div> }));
+vi.mock('./components/admin/products/ProductImport.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-product-import">Product Import</div> }));
 
 // Mock ErrorBoundary
-vi.mock('./components/ErrorBoundary.js', () => ({
+vi.mock('./components/ErrorBoundary.tsx', () => ({
   __esModule: true,
   default: ({ children }) => <>{children}</>,
 }));

@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import OnlineClassroomProductCard from '../OnlineClassroomProductCard.js';
+import OnlineClassroomProductCard from '../OnlineClassroomProductCard';
 
 import appTheme from '../../../../theme';
 // Mock useCart

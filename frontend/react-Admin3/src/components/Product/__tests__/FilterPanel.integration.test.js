@@ -14,7 +14,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, createMockStore, mockProductsApi } from '../../../test-utils/testHelpers.js';
-import FilterPanel from '../FilterPanel.js';
+import FilterPanel from '../FilterPanel';
 import { setSubjects, setCategories } from '../../../store/slices/filtersSlice.js';
 
 describe('FilterPanel Integration', () => {
