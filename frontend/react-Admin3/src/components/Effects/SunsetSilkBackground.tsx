@@ -1,11 +1,16 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface SunsetSilkBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Sunset Silk palette.
+ * Stripe-style twisted wave -- Sunset Silk palette.
  * Warm coral, amber, and rose ribbons with gentle motion.
  */
-const SunsetSilkBackground = ({ style }) => {
-  const palette = [
+const SunsetSilkBackground: React.FC<SunsetSilkBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.98, 0.44, 0.36], // Coral
     [1.00, 0.63, 0.33], // Amber
     [1.00, 0.80, 0.58], // Peach

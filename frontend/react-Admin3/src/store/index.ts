@@ -9,10 +9,10 @@
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import { catalogApi } from './api/catalogApi.js';
-import filtersReducer from './slices/filtersSlice.js';
-import { urlSyncMiddleware, setupUrlToReduxSync } from './middleware/urlSyncMiddleware.js';
-import performanceMonitoringMiddleware from './middleware/performanceMonitoring.js';
+import { catalogApi } from './api/catalogApi';
+import filtersReducer from './slices/filtersSlice';
+import { urlSyncMiddleware, setupUrlToReduxSync } from './middleware/urlSyncMiddleware';
+import performanceMonitoringMiddleware from './middleware/performanceMonitoring';
 
 export const store = configureStore({
   reducer: {
@@ -20,7 +20,7 @@ export const store = configureStore({
     [catalogApi.reducerPath]: catalogApi.reducer,
     filters: filtersReducer,
   },
-  
+
   // Adding the API middleware enables caching, invalidation, polling,
   // and other useful features of RTK Query
   middleware: (getDefaultMiddleware) =>
@@ -44,14 +44,17 @@ export const store = configureStore({
   // Redux Toolkit's configureStore automatically connects to Redux DevTools Extension
   // No need for window.__REDUX_DEVTOOLS_EXTENSION__ - it's handled internally!
   // See: https://redux-toolkit.js.org/api/configureStore#devtools
-  devTools: !import.meta.env?.PROD,
+  devTools: !(import.meta as any).env?.PROD,
 });
 
 // Setup URL → Redux synchronization (Story 1.16)
 // Listen for popstate events and update Redux when URL changes
 setupUrlToReduxSync(store.dispatch);
 
-// Export types for TypeScript (optional - can be used if converting to TS later)
+// Export types for TypeScript
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
 export const { dispatch, getState } = store;
 
 // Required for RTK Query

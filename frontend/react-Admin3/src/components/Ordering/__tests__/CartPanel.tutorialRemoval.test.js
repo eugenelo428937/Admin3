@@ -70,10 +70,10 @@ import { useAuth } from '../../../hooks/useAuth.tsx';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'MOCK-CODE')
 }));
-vi.mock('../../../utils/vatUtils.js', () => ({
+vi.mock('../../../utils/vatUtils', () => ({
   formatVatLabel: vi.fn(() => 'VAT')
 }));
 

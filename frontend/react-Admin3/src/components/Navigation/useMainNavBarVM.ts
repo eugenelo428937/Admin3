@@ -8,7 +8,7 @@ import {
    navViewAllProducts,
    navSelectProductGroup,
    navSelectProduct,
-} from '../../store/slices/filtersSlice.js';
+} from '../../store/slices/filtersSlice';
 import type {
    NavigationSubject,
    NavigationProductGroup,

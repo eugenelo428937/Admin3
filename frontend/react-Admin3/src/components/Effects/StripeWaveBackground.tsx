@@ -1,11 +1,16 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface StripeWaveBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
  * Stripe-style hero wave background.
  * Tuned to match the stripe.com/gb ribbon look with subtle silk creases.
  */
-const StripeWaveBackground = ({ style }) => {
-  const palette = [
+const StripeWaveBackground: React.FC<StripeWaveBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.77, 0.63, 0.96], // Lavender
     [0.96, 0.35, 0.64], // Hot pink
     [1.00, 0.56, 0.29], // Warm orange

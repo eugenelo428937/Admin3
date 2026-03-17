@@ -6,13 +6,13 @@ import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert"
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
 import { ArrowForward } from "@mui/icons-material";
-import StripeWaveBackground from "../components/Effects/StripeWaveBackground.js";
-import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground.js';
-import OceanDepthBackground from '../components/Effects/OceanDepthBackground.js';
-import NeonMeshBackground from '../components/Effects/NeonMeshBackground.js';
-import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground.js";
-import IrisDawnBackground from "../components/Effects/IrisDawnBackground.js";
-import CopperRoseBackground from "../components/Effects/CopperRoseBackground.js";
+import StripeWaveBackground from "../components/Effects/StripeWaveBackground";
+import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground';
+import OceanDepthBackground from '../components/Effects/OceanDepthBackground';
+import NeonMeshBackground from '../components/Effects/NeonMeshBackground';
+import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground";
+import IrisDawnBackground from "../components/Effects/IrisDawnBackground";
+import CopperRoseBackground from "../components/Effects/CopperRoseBackground";
 import useHomeVM from "./useHomeVM";
 
 const Home: React.FC = () => {

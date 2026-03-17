@@ -1,11 +1,16 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface CopperRoseBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Copper Rose palette.
+ * Stripe-style twisted wave -- Copper Rose palette.
  * Rich copper and rose tones with subdued saturation.
  */
-const CopperRoseBackground = ({ style }) => {
-  const palette = [
+const CopperRoseBackground: React.FC<CopperRoseBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.70, 0.34, 0.22], // Copper
     [0.90, 0.48, 0.32], // Terracotta
     [0.98, 0.72, 0.54], // Sand

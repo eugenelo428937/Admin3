@@ -14,7 +14,7 @@ vi.mock('../../../services/cartService.ts', () => ({
 }));
 
 // Mock productCodeGenerator
-vi.mock('../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn((item: any) => `CODE-${item.id || '001'}`),
 }));
 

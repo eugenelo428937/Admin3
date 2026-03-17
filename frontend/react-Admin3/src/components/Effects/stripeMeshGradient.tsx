@@ -10,8 +10,60 @@
  *
  * Each variation supplies a color palette and optional parameters.
  */
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type PaletteColor = [number, number, number];
+
+export interface WaveAnimationParams {
+  speed?: number;
+  twistFrequencyX?: number;
+  twistFrequencyY?: number;
+  twistFrequencyZ?: number;
+  twistPowerX?: number;
+  twistPowerY?: number;
+  twistPowerZ?: number;
+  displaceFrequencyX?: number;
+  displaceFrequencyZ?: number;
+  displaceAmount?: number;
+  colorSaturation?: number;
+  colorContrast?: number;
+  colorHueShift?: number;
+  glowAmount?: number;
+  glowPower?: number;
+  glowRamp?: number;
+  grainAmount?: number;
+  threadFrequency?: number;
+  threadIntensity?: number;
+  ribbons?: RibbonConfig[] | null;
+}
+
+interface RibbonConfig {
+  width?: number;
+  height?: number;
+  position?: [number, number, number];
+  rotation?: number;
+  paletteOffset?: number;
+  opacity?: number;
+  timeOffset?: number;
+  edgeFade?: number;
+  twistScale?: number;
+}
+
+interface MeshEntry {
+  mesh: THREE.Mesh;
+  material: THREE.ShaderMaterial;
+  geometry: THREE.PlaneGeometry;
+}
+
+export interface WaveContainerProps {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  style?: React.CSSProperties;
+}
 
 // ---------------------------------------------------------------------------
 // GLSL library chunks
@@ -82,7 +134,7 @@ float parabola(float x, float k) {
 `;
 
 // ---------------------------------------------------------------------------
-// Vertex shader — twist + noise displacement
+// Vertex shader -- twist + noise displacement
 // ---------------------------------------------------------------------------
 const vertexShader = `
 ${GLSL_HASH}
@@ -141,7 +193,7 @@ void main(void) {
 `;
 
 // ---------------------------------------------------------------------------
-// Fragment shader — palette texture + edge glow + soft alpha edges
+// Fragment shader -- palette texture + edge glow + soft alpha edges
 // ---------------------------------------------------------------------------
 const fragmentShader = `
 ${GLSL_HASH}
@@ -266,10 +318,8 @@ void main(void) {
 
 /**
  * Creates a 1D gradient texture from an array of color stops.
- * @param {Array<[number, number, number]>} colors - RGB arrays (0-1)
- * @returns {THREE.DataTexture}
  */
-function createPaletteTexture(colors) {
+function createPaletteTexture(colors: PaletteColor[]): THREE.DataTexture {
   const width = 256;
   const data = new Uint8Array(width * 4);
   const stops = colors.length;
@@ -301,7 +351,7 @@ function createPaletteTexture(colors) {
 // Default ribbon configurations (creates the multi-ribbon intertwining effect)
 // ---------------------------------------------------------------------------
 
-const DEFAULT_RIBBONS = [
+const DEFAULT_RIBBONS: RibbonConfig[] = [
   {
     width: 10, height: 2.5,
     position: [0.6, 0.6, 0],
@@ -348,13 +398,13 @@ const DEFAULT_RIBBONS = [
 // Default parameters
 // ---------------------------------------------------------------------------
 
-const DEFAULTS = {
+const DEFAULTS: Required<Omit<WaveAnimationParams, 'ribbons'>> & { ribbons: RibbonConfig[] | null } = {
   speed: 0.06,
-  // Twist — higher frequency = more dramatic twist
+  // Twist -- higher frequency = more dramatic twist
   twistFrequencyX: 1.8,
   twistFrequencyY: 1.5,
   twistFrequencyZ: 1.0,
-  // Power for parabola — lower = wider twist, higher = sharper center peak
+  // Power for parabola -- lower = wider twist, higher = sharper center peak
   twistPowerX: 0.8,
   twistPowerY: 1.0,
   twistPowerZ: 0.8,
@@ -385,14 +435,13 @@ const DEFAULTS = {
 
 /**
  * Creates and manages a Stripe-style hero wave animation with multiple ribbons.
- *
- * @param {Array<[number,number,number]>} paletteColors - gradient color stops [r,g,b] 0-1
- * @param {object} params - optional overrides for DEFAULTS
- * @returns {{ containerRef: React.RefObject }}
  */
-export function useStripeWaveAnimation(paletteColors, params = {}) {
-  const containerRef = useRef(null);
-  const frameRef = useRef(null);
+export function useStripeWaveAnimation(
+  paletteColors: PaletteColor[],
+  params: WaveAnimationParams = {}
+): { containerRef: React.RefObject<HTMLDivElement | null> } {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
 
   const cfg = { ...DEFAULTS, ...params };
   const ribbonConfigs = cfg.ribbons || DEFAULT_RIBBONS;
@@ -422,7 +471,7 @@ export function useStripeWaveAnimation(paletteColors, params = {}) {
     const paletteTexture = createPaletteTexture(paletteColors);
 
     // Create multiple ribbon meshes
-    const meshes = [];
+    const meshes: MeshEntry[] = [];
 
     ribbonConfigs.forEach((ribbon) => {
       const geometry = new THREE.PlaneGeometry(
@@ -485,7 +534,7 @@ export function useStripeWaveAnimation(paletteColors, params = {}) {
     // Animation
     const startTime = Date.now();
 
-    const animate = () => {
+    const animate = (): void => {
       const time = (Date.now() - startTime) / 1000;
       meshes.forEach(({ material }) => {
         material.uniforms.u_time.value = time;
@@ -497,7 +546,7 @@ export function useStripeWaveAnimation(paletteColors, params = {}) {
     animate();
 
     // Resize
-    const handleResize = () => {
+    const handleResize = (): void => {
       if (!container) return;
       const rw = container.clientWidth;
       const rh = container.clientHeight;
@@ -513,7 +562,9 @@ export function useStripeWaveAnimation(paletteColors, params = {}) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(frameRef.current);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
       meshes.forEach(({ mesh, material, geometry }) => {
         geometry.dispose();
         material.dispose();
@@ -533,7 +584,7 @@ export function useStripeWaveAnimation(paletteColors, params = {}) {
 /**
  * Shared container div for all wave animation variations.
  */
-export function WaveContainer({ containerRef, style }) {
+export const WaveContainer: React.FC<WaveContainerProps> = ({ containerRef, style }) => {
   return (
     <div
       ref={containerRef}
@@ -549,4 +600,4 @@ export function WaveContainer({ containerRef, style }) {
       }}
     />
   );
-}
+};

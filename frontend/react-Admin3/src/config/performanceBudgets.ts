@@ -10,44 +10,38 @@
 /**
  * Redux action budget: 16ms (60 FPS threshold)
  * Ensures Redux state updates don't block rendering.
- * @type {number}
  */
-export const REDUX_ACTION_BUDGET = 16;
+export const REDUX_ACTION_BUDGET: number = 16;
 
 /**
  * URL synchronization budget: 5ms
  * URL updates should be nearly instant to avoid interfering with user interactions.
- * @type {number}
  */
-export const URL_SYNC_BUDGET = 5;
+export const URL_SYNC_BUDGET: number = 5;
 
 /**
  * API call budget: 1000ms (1 second)
  * Standard timeout threshold for network requests.
- * @type {number}
  */
-export const API_CALL_BUDGET = 1000;
+export const API_CALL_BUDGET: number = 1000;
 
 /**
  * Validation budget: 10ms
  * Client-side validation should provide instant feedback.
- * @type {number}
  */
-export const VALIDATION_BUDGET = 10;
+export const VALIDATION_BUDGET: number = 10;
 
 /**
  * Registry lookup budget: 1ms
  * In-memory lookups should be nearly instant.
- * @type {number}
  */
-export const REGISTRY_LOOKUP_BUDGET = 1;
+export const REGISTRY_LOOKUP_BUDGET: number = 1;
 
 /**
  * Consolidated budgets object
  * Maps operation categories to their budgets.
- * @type {Object.<string, number>}
  */
-export const PERFORMANCE_BUDGETS = Object.freeze({
+export const PERFORMANCE_BUDGETS: Readonly<Record<string, number>> = Object.freeze({
   redux: REDUX_ACTION_BUDGET,
   urlSync: URL_SYNC_BUDGET,
   api: API_CALL_BUDGET,
@@ -57,9 +51,6 @@ export const PERFORMANCE_BUDGETS = Object.freeze({
 
 /**
  * Get budget for a specific operation by name
- * @param {string} operation - Operation name (e.g., 'redux.setSubjects', 'urlSync', 'api.products')
- * @returns {number|undefined} Budget in milliseconds, or undefined if no budget defined
- * @throws {Error} If operation is not a non-empty string
  *
  * @example
  * getBudgetForOperation('redux.setSubjects') // returns 16
@@ -68,7 +59,7 @@ export const PERFORMANCE_BUDGETS = Object.freeze({
  * getBudgetForOperation('validation.subjects') // returns 10
  * getBudgetForOperation('registry.lookup') // returns 1
  */
-export function getBudgetForOperation(operation) {
+export function getBudgetForOperation(operation: string): number | undefined {
   if (typeof operation !== 'string' || operation.trim() === '') {
     throw new Error('operation must be a non-empty string');
   }
@@ -78,7 +69,7 @@ export function getBudgetForOperation(operation) {
   const category = operation.split('.')[0].toLowerCase();
 
   // Map common variations to standardized keys
-  const categoryMap = {
+  const categoryMap: Record<string, string> = {
     'urlsync': 'urlSync',
     'redux': 'redux',
     'api': 'api',
@@ -92,17 +83,13 @@ export function getBudgetForOperation(operation) {
 
 /**
  * Check if operation duration is within its budget
- * @param {string} operation - Operation name
- * @param {number} duration - Actual duration in milliseconds
- * @returns {boolean} True if within budget, false if exceeded (or if no budget defined, returns true)
- * @throws {Error} If duration is invalid
  *
  * @example
  * isOperationWithinBudget('redux.setSubjects', 12) // returns true (12ms < 16ms)
  * isOperationWithinBudget('redux.setSubjects', 18) // returns false (18ms > 16ms)
  * isOperationWithinBudget('urlSync', 5) // returns true (5ms <= 5ms)
  */
-export function isOperationWithinBudget(operation, duration) {
+export function isOperationWithinBudget(operation: string, duration: number): boolean {
   if (typeof duration !== 'number' || isNaN(duration)) {
     throw new Error('duration must be a number');
   }
@@ -124,16 +111,22 @@ export function isOperationWithinBudget(operation, duration) {
 /**
  * Performance monitoring configuration
  * Controls how performance tracking behaves.
- * @type {Object}
  */
-export const PERFORMANCE_MONITORING_CONFIG = Object.freeze({
+export interface PerformanceMonitoringConfig {
+  enabled: boolean;
+  level: 'off' | 'minimal' | 'standard' | 'verbose';
+  consoleLogging: boolean;
+  reduxDevTools: boolean;
+  includeOperations: string[];
+}
+
+export const PERFORMANCE_MONITORING_CONFIG: Readonly<PerformanceMonitoringConfig> = Object.freeze({
   /**
    * Enable/disable performance monitoring
    * Automatically disabled in production builds.
    * Enabled in development and test environments.
-   * @type {boolean}
    */
-  enabled: !import.meta.env?.PROD,
+  enabled: !(import.meta as any).env?.PROD,
 
   /**
    * Monitoring level (off, minimal, standard, verbose)
@@ -141,25 +134,21 @@ export const PERFORMANCE_MONITORING_CONFIG = Object.freeze({
    * - minimal: Only budget violations
    * - standard: All filter operations (default)
    * - verbose: All operations including internals
-   * @type {string}
    */
-  level: 'standard',
+  level: 'standard' as const,
 
   /**
    * Enable console logging of performance metrics
-   * @type {boolean}
    */
-  consoleLogging: !import.meta.env?.PROD,
+  consoleLogging: !(import.meta as any).env?.PROD,
 
   /**
    * Enable Redux DevTools integration for performance data
-   * @type {boolean}
    */
-  reduxDevTools: !import.meta.env?.PROD,
+  reduxDevTools: !(import.meta as any).env?.PROD,
 
   /**
    * Operation name patterns to include (empty array = all)
-   * @type {string[]}
    * @example ['redux.*', 'urlSync', 'api.*']
    */
   includeOperations: []

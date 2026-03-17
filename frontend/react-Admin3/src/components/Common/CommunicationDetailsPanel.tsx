@@ -6,7 +6,7 @@ import {
 import { Phone, Email } from '@mui/icons-material';
 import ValidatedPhoneInput from '../User/ValidatedPhoneInput.tsx';
 import userService from '../../services/userService.ts';
-import config from '../../config.js';
+import config from '../../config';
 
 const ERROR_MESSAGES = {
     MOBILE_REQUIRED: 'Mobile phone is required',

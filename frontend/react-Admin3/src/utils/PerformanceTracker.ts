@@ -10,41 +10,36 @@
  * Development-only - tree-shaken in production builds.
  */
 
+export interface PerformanceMetric {
+  name: string;
+  duration: number;
+  timestamp: number;
+  exceeded: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export interface PerformanceReport {
+  operation: string;
+  count: number;
+  min: number;
+  max: number;
+  avg: number;
+  p50: number;
+  p95: number;
+  p99: number;
+}
+
 /**
  * Internal storage for performance metrics and metadata
  */
-const metricsStore = [];
-const metadataStore = new Map();
-
-/**
- * PerformanceMetric object structure
- * @typedef {Object} PerformanceMetric
- * @property {string} name - Operation name
- * @property {number} duration - Duration in milliseconds
- * @property {number} timestamp - Timestamp when measurement ended
- * @property {boolean} exceeded - Whether performance budget was exceeded
- * @property {Object} metadata - Additional context data
- */
-
-/**
- * PerformanceReport object structure
- * @typedef {Object} PerformanceReport
- * @property {string} operation - Operation name
- * @property {number} count - Number of measurements
- * @property {number} min - Minimum duration
- * @property {number} max - Maximum duration
- * @property {number} avg - Average duration
- * @property {number} p50 - 50th percentile (median)
- * @property {number} p95 - 95th percentile
- * @property {number} p99 - 99th percentile
- */
+const metricsStore: PerformanceMetric[] = [];
+const metadataStore: Map<string, Record<string, unknown>> = new Map();
 
 class PerformanceTracker {
   /**
    * Check if Performance API is supported
-   * @returns {boolean} True if Performance API available
    */
-  static isSupported() {
+  static isSupported(): boolean {
     return !!(
       typeof performance !== 'undefined' &&
       performance.mark &&
@@ -55,11 +50,8 @@ class PerformanceTracker {
 
   /**
    * Start measuring an operation
-   * @param {string} name - Operation name (must be non-empty string)
-   * @param {Object} metadata - Optional metadata to store with measurement
-   * @throws {Error} If name is not a non-empty string
    */
-  static startMeasure(name, metadata = {}) {
+  static startMeasure(name: string, metadata: Record<string, unknown> = {}): void {
     if (typeof name !== 'string' || name.trim() === '') {
       throw new Error('name must be a non-empty string');
     }
@@ -82,12 +74,8 @@ class PerformanceTracker {
 
   /**
    * End measuring an operation and return PerformanceMetric
-   * @param {string} name - Operation name (must match startMeasure call)
-   * @param {Object} metadata - Optional additional metadata to merge
-   * @returns {PerformanceMetric|null} Performance metric or null if startMeasure wasn't called
-   * @throws {Error} If name is not a non-empty string
    */
-  static endMeasure(name, metadata = {}) {
+  static endMeasure(name: string, metadata: Record<string, unknown> = {}): PerformanceMetric | null {
     if (typeof name !== 'string' || name.trim() === '') {
       throw new Error('name must be a non-empty string');
     }
@@ -121,7 +109,7 @@ class PerformanceTracker {
       const combinedMetadata = { ...startMetadata, ...metadata };
 
       // Create PerformanceMetric object
-      const metric = {
+      const metric: PerformanceMetric = {
         name,
         duration: measure.duration,
         timestamp: measure.startTime + measure.duration,
@@ -149,13 +137,8 @@ class PerformanceTracker {
 
   /**
    * Record a metric directly without using marks/measures
-   * @param {string} name - Operation name
-   * @param {number} value - Duration value in milliseconds
-   * @param {Object} metadata - Optional metadata
-   * @returns {PerformanceMetric} The recorded metric
-   * @throws {Error} If name is not a string or value is invalid
    */
-  static recordMetric(name, value, metadata = {}) {
+  static recordMetric(name: string, value: number, metadata: Record<string, unknown> = {}): PerformanceMetric {
     if (typeof name !== 'string' || name.trim() === '') {
       throw new Error('name must be a non-empty string');
     }
@@ -168,7 +151,7 @@ class PerformanceTracker {
       throw new Error('duration cannot be negative');
     }
 
-    const metric = {
+    const metric: PerformanceMetric = {
       name,
       duration: value,
       timestamp: performance.now(),
@@ -182,10 +165,8 @@ class PerformanceTracker {
 
   /**
    * Get stored metrics, optionally filtered by name prefix
-   * @param {string|null} filterName - Optional name prefix to filter by
-   * @returns {PerformanceMetric[]} Array of metrics
    */
-  static getMetrics(filterName = null) {
+  static getMetrics(filterName: string | null = null): PerformanceMetric[] {
     if (filterName === null) {
       return [...metricsStore];
     }
@@ -195,11 +176,9 @@ class PerformanceTracker {
 
   /**
    * Generate performance report for operation(s)
-   * @param {string|null} operationName - Specific operation or null for all
-   * @returns {PerformanceReport|PerformanceReport[]} Report(s)
    */
-  static getReport(operationName = null) {
-    if (operationName === null) {
+  static getReport(operationName?: string | null): PerformanceReport | PerformanceReport[] {
+    if (operationName === undefined || operationName === null) {
       // Generate reports for all unique operations
       const operationNames = [...new Set(metricsStore.map(m => m.name))];
       return operationNames.map(name => this._generateReport(name));
@@ -210,11 +189,8 @@ class PerformanceTracker {
 
   /**
    * Internal: Generate report for a specific operation
-   * @private
-   * @param {string} operationName - Operation name
-   * @returns {PerformanceReport} Performance report
    */
-  static _generateReport(operationName) {
+  private static _generateReport(operationName: string): PerformanceReport {
     const metrics = metricsStore.filter(m => m.name === operationName);
     const durations = metrics.map(m => m.duration).sort((a, b) => a - b);
 
@@ -248,12 +224,8 @@ class PerformanceTracker {
 
   /**
    * Internal: Calculate percentile from sorted array
-   * @private
-   * @param {number[]} sortedArray - Sorted array of numbers
-   * @param {number} percentile - Percentile (0-100)
-   * @returns {number} Percentile value
    */
-  static _percentile(sortedArray, percentile) {
+  private static _percentile(sortedArray: number[], percentile: number): number {
     if (sortedArray.length === 0) return 0;
     if (sortedArray.length === 1) return sortedArray[0];
 
@@ -267,10 +239,8 @@ class PerformanceTracker {
 
   /**
    * Clear stored metrics
-   * @param {string|null} operationName - Specific operation or null for all
-   * @returns {number} Number of metrics cleared
    */
-  static clearMetrics(operationName = null) {
+  static clearMetrics(operationName: string | null = null): number {
     if (operationName === null) {
       const count = metricsStore.length;
       metricsStore.length = 0;
@@ -288,12 +258,8 @@ class PerformanceTracker {
 
   /**
    * Check if duration is within budget and log warning if exceeded
-   * @param {string} name - Operation name
-   * @param {number} duration - Duration in milliseconds
-   * @param {number} budget - Budget threshold in milliseconds
-   * @returns {boolean} True if within budget, false if exceeded
    */
-  static checkBudget(name, duration, budget) {
+  static checkBudget(name: string, duration: number, budget: number): boolean {
     const withinBudget = duration <= budget;
 
     if (!withinBudget) {
@@ -307,9 +273,9 @@ class PerformanceTracker {
 }
 
 // Development-only export
-if (import.meta.env?.DEV) {
+if ((import.meta as any).env?.DEV) {
   // Export for development use
-  window.PerformanceTracker = PerformanceTracker;
+  (window as any).PerformanceTracker = PerformanceTracker;
 }
 
 export default PerformanceTracker;

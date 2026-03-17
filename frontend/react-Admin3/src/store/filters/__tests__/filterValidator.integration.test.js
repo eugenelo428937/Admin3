@@ -13,15 +13,15 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders, createMockStore, waitForStateUpdate } from '../../../test-utils/testHelpers.js';
-import FilterValidator from '../filterValidator.js';
+import { renderWithProviders, createMockStore, waitForStateUpdate } from '../../../test-utils/testHelpers';
+import FilterValidator from '../filterValidator';
 import {
   setSubjects,
   setCategories,
   setProductTypes,
   selectHasValidationErrors,
   selectValidationErrors,
-} from '../../slices/filtersSlice.js';
+} from '../../slices/filtersSlice';
 
 // Simple component to test validator integration
 const TestValidationDisplay = () => {

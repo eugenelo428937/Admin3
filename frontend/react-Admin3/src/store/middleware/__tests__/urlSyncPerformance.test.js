@@ -6,8 +6,8 @@ import { vi } from 'vitest';
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer, { setSubjects, setCategories, setProductTypes } from '../../slices/filtersSlice.js';
-import { urlSyncMiddleware } from '../urlSyncMiddleware.js';
+import filtersReducer, { setSubjects, setCategories, setProductTypes } from '../../slices/filtersSlice';
+import { urlSyncMiddleware } from '../urlSyncMiddleware';
 
 // Mock window.history
 const mockReplaceState = vi.fn();

@@ -10,18 +10,18 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import useProductsSearch from '../useProductsSearch';
-import filtersReducer from '../../store/slices/filtersSlice.js';
+import filtersReducer from '../../store/slices/filtersSlice';
 
 // Mock the RTK Query API
 let mockTriggerSearch;
 let mockSearchResult;
 
-vi.mock('../../store/api/catalogApi.js', () => ({
+vi.mock('../../store/api/catalogApi', () => ({
   useLazyUnifiedSearchQuery: vi.fn(),
 }));
 
 // Get the mocked module
-const _reqmod_______store_api_catalogApi_js = await import('../../store/api/catalogApi.js'); const { useLazyUnifiedSearchQuery } = _reqmod_______store_api_catalogApi_js;
+const _reqmod_______store_api_catalogApi = await import('../../store/api/catalogApi'); const { useLazyUnifiedSearchQuery } = _reqmod_______store_api_catalogApi;
 
 /**
  * Create a test Redux store with initial state
