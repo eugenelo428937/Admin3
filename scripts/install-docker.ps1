@@ -1,6 +1,6 @@
 #Requires -RunAsAdministrator
 param(
-    [ValidateRange(1,7)]
+    [ValidateRange(1,8)]
     [int]$StartPhase = 1
 )
 <#
@@ -16,11 +16,12 @@ param(
       Phase 3: Configure WSL2 (systemd, memory limits, mirrored networking)
       Phase 4: Install Docker Engine inside WSL2 Ubuntu
       Phase 5: Set up port forwarding for external access (if needed)
-      Phase 6: Check port conflicts on the host
-      Phase 7: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
+      Phase 6: Restore database from seed dump (if tables are missing)
+      Phase 7: Check port conflicts on the host
+      Phase 8: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
 
     Run this script multiple times safely -- it detects completed phases.
-    Use -StartPhase to skip to a specific phase (e.g., -StartPhase 3).
+    Use -StartPhase to skip to a specific phase (e.g., -StartPhase 6 to re-seed DB).
 
     WHY WSL2 + Docker Engine (not Docker Desktop):
       Docker Desktop requires a paid license for enterprise/commercial use.
@@ -28,7 +29,7 @@ param(
       No Hyper-V VM management overhead -- WSL2 handles the Linux kernel natively.
 
 .PARAMETER StartPhase
-    Phase number (1-7) to start from. Phases before this number are skipped.
+    Phase number (1-8) to start from. Phases before this number are skipped.
     Default: 1 (run all phases).
 
 .EXAMPLE
@@ -509,9 +510,18 @@ $needsUpdate = $false
 
 if (Test-Path $wslConfigPath) {
     $currentConfig = Get-Content $wslConfigPath -Raw
-    # Check if key settings exist
+    # Check if key settings exist AND networking mode matches
     if ($currentConfig -match 'memory=' -and $currentConfig -match 'processors=') {
-        Write-OK ".wslconfig already configured: $wslConfigPath"
+        # Also check if networking mode needs to change (e.g., mirrored -> nat)
+        if ($currentConfig -match 'networkingMode\s*=\s*mirrored' -and $networkingMode -eq 'nat') {
+            Write-Warn ".wslconfig has mirrored networking but NAT is configured -- updating..."
+            $needsUpdate = $true
+        } elseif ($currentConfig -match 'networkingMode\s*=\s*nat' -and $networkingMode -eq 'mirrored') {
+            Write-Warn ".wslconfig has NAT networking but mirrored is configured -- updating..."
+            $needsUpdate = $true
+        } else {
+            Write-OK ".wslconfig already configured: $wslConfigPath"
+        }
     } else {
         $needsUpdate = $true
     }
@@ -520,11 +530,10 @@ if (Test-Path $wslConfigPath) {
 }
 
 if ($needsUpdate) {
-    # Detect if mirrored networking is supported (build 22621+ = Win11 22H2+)
+    # Networking mode: "mirrored" shares host IP (no portproxy), "nat" gives WSL its own IP.
+    # Mirrored requires build 22621+ but may be blocked by enterprise security software.
+    # Default to NAT which is more reliable; set to "mirrored" if your network supports it.
     $networkingMode = "nat"
-    if ($osBuild -ge 22621) {
-        $networkingMode = "mirrored"
-    }
 
     $configContent = @"
 [wsl2]
@@ -637,6 +646,17 @@ if (-not $dockerInstalled) {
     $dockerVer = wsl -d $WSLDistro -e bash -c "docker --version" 2>&1
     Write-Host "  Version: $($dockerVer.Trim())" -ForegroundColor Gray
 
+    # Ensure current WSL user is in docker group (may have been missed or user changed)
+    $wslUser = (wsl -d $WSLDistro -e whoami 2>&1 | Out-String).Trim()
+    $inDockerGroup = (wsl -d $WSLDistro -e bash -c "id -nG $wslUser 2>/dev/null" 2>&1 | Out-String).Trim()
+    if ($inDockerGroup -notmatch '\bdocker\b') {
+        Write-Warn "User '$wslUser' not in docker group -- adding..."
+        wsl -d $WSLDistro -e bash -c "sudo usermod -aG docker $wslUser" 2>&1 | Out-Null
+        Write-OK "User '$wslUser' added to docker group (restart WSL session to take effect)"
+    } else {
+        Write-OK "User '$wslUser' is in docker group"
+    }
+
     # Check if systemd is running as PID 1
     $initPid = (wsl -d $WSLDistro -e bash -c "ps -p 1 -o comm= 2>/dev/null" 2>&1 | Out-String).Trim()
     if ($initPid -ne 'systemd') {
@@ -693,12 +713,15 @@ Write-Host "  Docker ports in WSL2 are accessible on localhost automatically." -
 Write-Host "  Port forwarding is only needed for access from other machines." -ForegroundColor Gray
 
 # Check if mirrored networking is active
-$wslConfigPath = Join-Path $WSLUserProfile ".wslconfig"
+# WSL reads .wslconfig from the user who launched wsl.exe (the admin), not necessarily $WSLUserProfile
 $mirroredActive = $false
-if (Test-Path $wslConfigPath) {
-    $cfgContent = Get-Content $wslConfigPath -Raw
-    if ($cfgContent -match 'networkingMode\s*=\s*mirrored') {
-        $mirroredActive = $true
+foreach ($cfgPath in @((Join-Path $env:USERPROFILE ".wslconfig"), (Join-Path $WSLUserProfile ".wslconfig"))) {
+    if (Test-Path $cfgPath) {
+        $cfgContent = Get-Content $cfgPath -Raw
+        if ($cfgContent -match 'networkingMode\s*=\s*mirrored') {
+            $mirroredActive = $true
+            break
+        }
     }
 }
 
@@ -775,14 +798,86 @@ if ($mirroredActive) {
 
 
 # ============================================================
-# PHASE 6: Port Conflict Check
+# PHASE 6: Restore Database from Seed Dump
 # ============================================================
 
 if ($StartPhase -gt 6) {
     Write-Step "PHASE 6" "Skipped (--StartPhase $StartPhase)"
 } else {
 
-Write-Step "PHASE 6" "Checking port conflicts on host"
+Write-Step "PHASE 6" "Restoring database from seed dump"
+
+# The seed.sql is a pg_dump of the full database (schemas, tables, data, constraints).
+# docker-compose.yml mounts ./docker/db_backup:/db_backup:ro on the db container.
+# This phase checks whether the database already has tables; if not, it restores from seed.sql.
+
+$savedEAP6 = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+
+# Check if the db container is running
+$dbRunning = (wsl -d $WSLDistro -e bash -c "cd ~/Admin3 && docker compose ps --status running db 2>/dev/null" 2>&1 | Out-String).Trim()
+
+if ($dbRunning -notmatch 'db') {
+    Write-Warn "Database container is not running."
+    Write-Host "  Start the stack first:  wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && docker compose up -d'" -ForegroundColor Gray
+    Write-Host "  Then re-run with: .\install-docker.ps1 -StartPhase 6" -ForegroundColor Gray
+} else {
+    Write-OK "Database container is running"
+
+    # Check if the seed file is accessible inside the container
+    $seedExists = (wsl -d $WSLDistro -e bash -c "cd ~/Admin3 && docker compose exec -T db test -f /db_backup/seed.sql && echo YES || echo NO" 2>&1 | Out-String).Trim()
+
+    if ($seedExists -ne 'YES') {
+        Write-Warn "Seed file not found at /db_backup/seed.sql inside the db container."
+        Write-Host "  Ensure docker/db_backup/seed.sql exists in the repo and the container was started" -ForegroundColor Gray
+        Write-Host "  with the updated docker-compose.yml (which mounts ./docker/db_backup:/db_backup:ro)." -ForegroundColor Gray
+        Write-Host "  You may need to: docker compose down && docker compose up -d" -ForegroundColor Gray
+    } else {
+        # Check if tables already exist in the acted schema (proxy for "has been seeded")
+        $pgUser = 'actedadmin'
+        $pgDb   = 'ACTEDDBSTAGE01'
+        $tableCount = (wsl -d $WSLDistro -e bash -c "cd ~/Admin3 && docker compose exec -T db psql -U $pgUser -d $pgDb -tAc `"SELECT count(*) FROM information_schema.tables WHERE table_schema = 'acted'`"" 2>&1 | Out-String).Trim()
+
+        if ($tableCount -match '^\d+$' -and [int]$tableCount -gt 5) {
+            Write-OK "Database already has $tableCount tables in 'acted' schema -- seed not needed"
+        } else {
+            Write-Host "  Found $tableCount tables in 'acted' schema -- restoring from seed.sql..." -ForegroundColor Yellow
+
+            # The seed.sql may contain \restrict / \unrestrict psql commands (pg_dump password protection).
+            # These cause errors during automated restore. Strip them with grep -v before piping to psql.
+            Write-Step "6a" "Restoring seed.sql into database (stripping pg_dump password protection)..."
+
+            wsl -d $WSLDistro -e bash -c "cd ~/Admin3 && docker compose exec -T db bash -c 'grep -v ''^\\\\restrict'' /db_backup/seed.sql | grep -v ''^\\\\unrestrict'' | psql -U $pgUser -d $pgDb --set ON_ERROR_STOP=off'" 2>&1 | Out-Null
+
+            # Verify restore worked
+            $postCount = (wsl -d $WSLDistro -e bash -c "cd ~/Admin3 && docker compose exec -T db psql -U $pgUser -d $pgDb -tAc `"SELECT count(*) FROM information_schema.tables WHERE table_schema = 'acted'`"" 2>&1 | Out-String).Trim()
+
+            if ($postCount -match '^\d+$' -and [int]$postCount -gt 5) {
+                Write-OK "Database restored successfully -- $postCount tables in 'acted' schema"
+            } else {
+                Write-Fail "Seed restore may have failed. Tables in 'acted' schema: $postCount"
+                Write-Host "  Check logs: wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && docker compose logs db'" -ForegroundColor Gray
+                Write-Host "  Manual restore:" -ForegroundColor Gray
+                Write-Host "    docker compose exec db bash -c `"grep -v '^\\\\restrict' /db_backup/seed.sql | grep -v '^\\\\unrestrict' | psql -U $pgUser -d $pgDb`"" -ForegroundColor Cyan
+            }
+        }
+    }
+}
+
+$ErrorActionPreference = $savedEAP6
+
+} # end Phase 6 skip guard
+
+
+# ============================================================
+# PHASE 7: Port Conflict Check
+# ============================================================
+
+if ($StartPhase -gt 7) {
+    Write-Step "PHASE 7" "Skipped (--StartPhase $StartPhase)"
+} else {
+
+Write-Step "PHASE 7" "Checking port conflicts on host"
 foreach ($pf in $DockerPorts) {
     $inUse = Get-NetTCPConnection -LocalPort $pf.HostPort -State Listen -ErrorAction SilentlyContinue
     if ($inUse) {
@@ -795,14 +890,14 @@ foreach ($pf in $DockerPorts) {
     }
 }
 
-} # end Phase 6 skip guard
+} # end Phase 7 skip guard
 
 
 # ============================================================
-# PHASE 7: Cleanup Previous Hyper-V / Docker Desktop Artifacts
+# PHASE 8: Cleanup Previous Hyper-V / Docker Desktop Artifacts
 # ============================================================
 
-Write-Step "PHASE 7" "Checking for previous Hyper-V/Docker Desktop artifacts"
+Write-Step "PHASE 8" "Checking for previous Hyper-V/Docker Desktop artifacts"
 
 $cleanupItems = @()
 
@@ -948,7 +1043,7 @@ Write-Host "       |-- generate-cert.sh         # Self-signed SSL cert generator
 Write-Host ""
 Write-Host "3. Create the .env file:" -ForegroundColor White
 Write-Host "   cp .env.example .env" -ForegroundColor Cyan
-Write-Host "   nano .env" -ForegroundColor Cyan
+Write-Host "   wsl -d Ubuntu -e bash -c ""sudo cp '/mnt/c/Temp/Docker Setup/wsl.conf' /etc/wsl.conf""" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "   Required edits in .env:" -ForegroundColor White
 Write-Host "     POSTGRES_PASSWORD=<strong-password>" -ForegroundColor Gray
@@ -963,7 +1058,7 @@ Write-Host "     HTTP_PORT=8080" -ForegroundColor Gray
 Write-Host "     HTTPS_PORT=8443" -ForegroundColor Gray
 Write-Host ""
 Write-Host "4. Start the stack:" -ForegroundColor White
-Write-Host "   docker compose up -d" -ForegroundColor Cyan
+Write-Host "   sudo docker compose up -d" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "5. Verify:" -ForegroundColor White
 Write-Host "   docker compose ps                        # All services healthy" -ForegroundColor Cyan
