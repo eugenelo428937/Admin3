@@ -1,28 +1,29 @@
 import React from 'react';
 import { Box, Typography, Chip } from '@mui/material';
+import type { FilterDebuggerProps } from '../../types/browse/browse.types';
 
-const FilterDebugger = ({ 
-    urlFilters, 
-    panelFilters, 
-    navbarFilters, 
-    finalParams 
+const FilterDebugger: React.FC<FilterDebuggerProps> = ({
+    urlFilters,
+    panelFilters,
+    navbarFilters,
+    finalParams
 }) => {
     if (!import.meta.env?.DEV) {
         return null;
     }
 
     return (
-        <Box sx={{ 
-            p: 2, 
-            mb: 2, 
-            backgroundColor: 'grey.100', 
+        <Box sx={{
+            p: 2,
+            mb: 2,
+            backgroundColor: 'grey.100',
             borderRadius: 1,
             fontSize: '0.875rem'
         }}>
             <Typography variant="h6" gutterBottom>
-                🔍 Filter Debug (Development Only)
+                Filter Debug (Development Only)
             </Typography>
-            
+
             <Box sx={{ mb: 1 }}>
                 <Typography variant="subtitle2">URL Filters:</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>

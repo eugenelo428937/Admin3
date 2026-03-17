@@ -1,22 +1,25 @@
-// src/components/ErrorBoundary.js
+// src/components/ErrorBoundary.tsx
 import React from 'react';
 import logger from '../services/loggerService';
 
-class ErrorBoundary extends React.Component {
-    constructor(props) {
+interface ErrorBoundaryState {
+    hasError: boolean;
+    error: Error | null;
+    errorInfo: React.ErrorInfo | null;
+}
+
+class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
+    constructor(props: React.PropsWithChildren) {
         super(props);
         this.state = { hasError: false, error: null, errorInfo: null };
     }
 
-    static getDerivedStateFromError(error) {
+    static getDerivedStateFromError(_error: Error): Partial<ErrorBoundaryState> {
         return { hasError: true };
     }
 
-    componentDidCatch(error, errorInfo) {
-        this.setState({
-            error: error,
-            errorInfo: errorInfo
-        });
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        this.setState({ error, errorInfo });
         logger.error('Error Boundary caught an error', { error, errorInfo });
     }
 

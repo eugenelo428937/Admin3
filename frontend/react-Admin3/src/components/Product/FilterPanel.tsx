@@ -24,8 +24,7 @@
  * <FilterPanel />
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { useSelector, useDispatch, shallowEqual } from 'react-redux';
+import React, { useCallback, useMemo } from 'react';
 import {
     Box,
     Paper,
@@ -39,8 +38,6 @@ import {
     Button,
     IconButton,
     Drawer,
-    useMediaQuery,
-    useTheme,
     Badge,
     Skeleton,
     Alert,
@@ -54,180 +51,23 @@ import {
     Clear as ClearIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
-import {
-    selectFilters,
-    selectFilterCounts,
-    selectValidationErrors,
-    toggleSubjectFilter,
-    toggleCategoryFilter,
-    toggleProductTypeFilter,
-    toggleProductFilter,
-    toggleModeOfDeliveryFilter,
-    clearAllFilters,
-    clearFilterType,
-    clearValidationErrors
-} from '../../store/slices/filtersSlice.js';
-import { FilterRegistry } from '../../store/filters/filterRegistry.js';
+import useFilterPanelVM, { SCROLLABLE_FILTER_STYLES } from './useFilterPanelVM';
+import type { FilterPanelProps, FilterCountData } from '../../types/browse/browse.types';
 
-// Deep equality check for objects (simple implementation)
-const deepEqual = (obj1, obj2) => {
-    if (obj1 === obj2) return true;
-    if (obj1 == null || obj2 == null) return false;
-    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return obj1 === obj2;
-
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-
-    if (keys1.length !== keys2.length) return false;
-
-    for (let key of keys1) {
-        if (!keys2.includes(key)) return false;
-        if (!deepEqual(obj1[key], obj2[key])) return false;
-    }
-
-    return true;
-};
-
-/**
- * Scrollable filter styling configuration
- * Viewport-relative max-heights prevent long filter lists from overwhelming the interface
- * Desktop (≥900px): 50vh | Mobile (<900px): 40vh
- */
-const SCROLLABLE_FILTER_STYLES = {
-    MAX_HEIGHT_DESKTOP: '50vh',
-    MAX_HEIGHT_MOBILE: '40vh',
-    OVERFLOW_Y: 'auto',
-    SCROLL_BEHAVIOR: {
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest'
-    }
-};
-
-const FilterPanel = ({
+const FilterPanel: React.FC<FilterPanelProps> = ({
     isSearchMode = false,
     showMobile = false
 }) => {
-
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const dispatch = useDispatch();
-
-    // Redux state - use deep equality check to prevent unnecessary re-renders
-    // This prevents re-renders when filterCounts object reference changes but values are the same
-    const filters = useSelector(selectFilters, deepEqual);
-    const filterCounts = useSelector(selectFilterCounts, deepEqual);
-    const validationErrors = useSelector(selectValidationErrors);
-    const isLoading = useSelector(state => state.filters.isLoading);
-    const error = useSelector(state => state.filters.error);
-
-    // Local state - persist expanded panels across remounts (React.StrictMode issue)
-    const [expandedPanels, setExpandedPanels] = useState(() => {
-        // Try to restore from sessionStorage
-        try {
-            const saved = sessionStorage.getItem('filterPanelExpandedState');
-            if (saved) {
-                return JSON.parse(saved);
-            }
-        } catch (e) {
-            console.warn('Failed to restore filter panel state:', e);
-        }
-        // Default state
-        return {
-            subjects: true,
-            categories: false,
-            product_types: false,  // Match Redux state key format
-            products: false,
-            modes_of_delivery: false  // Match Redux state key format
-        };
-    });
-    const [drawerOpen, setDrawerOpen] = useState(false);
-
-    // Persist expanded panels state to sessionStorage
-    React.useEffect(() => {
-        try {
-            sessionStorage.setItem('filterPanelExpandedState', JSON.stringify(expandedPanels));
-        } catch (e) {
-            console.warn('Failed to save filter panel state:', e);
-        }
-    }, [expandedPanels]);
-
-    /**
-     * Handle accordion panel expansion
-     */
-    const handlePanelChange = useCallback((panel) => (event, isExpanded) => {
-        setExpandedPanels(prev => {
-            const newState = {
-                ...prev,
-                [panel]: isExpanded
-            };
-            return newState;
-        });
-    }, []);
-
-    /**
-     * Handle filter selection
-     */
-    const handleFilterChange = useCallback((filterType, value) => {
-        switch (filterType) {
-            case 'subjects':
-                dispatch(toggleSubjectFilter(value));
-                break;
-            case 'categories':
-                dispatch(toggleCategoryFilter(value));
-                break;
-            case 'product_types':
-                dispatch(toggleProductTypeFilter(value));
-                break;
-            case 'products':
-                dispatch(toggleProductFilter(value));
-                break;
-            case 'modes_of_delivery':
-                dispatch(toggleModeOfDeliveryFilter(value));
-                break;
-            default:
-
-        }
-    }, [dispatch]);
-
-    /**
-     * Clear all filters
-     */
-    const handleClearAllFilters = useCallback(() => {
-        dispatch(clearAllFilters());
-    }, [dispatch]);
-
-    /**
-     * Clear specific filter type
-     */
-    const handleClearFilterType = useCallback((filterType) => {
-        dispatch(clearFilterType(filterType));
-    }, [dispatch]);
-
-    /**
-     * Dismiss validation errors
-     */
-    const handleDismissValidationErrors = useCallback(() => {
-        dispatch(clearValidationErrors());
-    }, [dispatch]);
-
-    /**
-     * Calculate total active filter count
-     */
-    const totalActiveFilters = useMemo(() => {
-        return Object.values(filters).reduce((total, filterArray) => {
-            return total + (Array.isArray(filterArray) ? filterArray.length : 0);
-        }, 0);
-    }, [filters]);
+    const vm = useFilterPanelVM({ isSearchMode, showMobile });
 
     /**
      * Render filter section with checkboxes
      */
-    const renderFilterSection = useCallback((title, filterType, options, counts) => {
-        const activeValues = filters[filterType] || [];
+    const renderFilterSection = useCallback((title: string, filterType: string, options: Record<string, FilterCountData | number>, counts: Record<string, FilterCountData | number>) => {
+        const activeValues = (vm.filters[filterType] || []) as string[];
         const hasActiveFilters = activeValues.length > 0;
-        
-        if (isLoading) {
+
+        if (vm.isLoading) {
             return (
                 <Box sx={{ p: 2 }}>
                     <Skeleton variant="text" width="60%" />
@@ -241,9 +81,9 @@ const FilterPanel = ({
         }
 
         return (
-            <Accordion 
-                expanded={expandedPanels[filterType]} 
-                onChange={handlePanelChange(filterType)}
+            <Accordion
+                expanded={vm.expandedPanels[filterType]}
+                onChange={vm.handlePanelChange(filterType)}
                 sx={{
                     '&:before': { display: 'none' },
                     boxShadow: 'none',
@@ -259,9 +99,9 @@ const FilterPanel = ({
                         }
                     }}
                 >
-                    <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
                         width: '100%',
                         mr: 1
@@ -276,11 +116,11 @@ const FilterPanel = ({
                             {hasActiveFilters && (
                                 <Box
                                     component="span"
-                                    onClick={(e) => {
+                                    onClick={(e: React.MouseEvent) => {
                                         e.stopPropagation();
-                                        handleClearFilterType(filterType);
+                                        vm.handleClearFilterType(filterType);
                                     }}
-                                    sx={{ 
+                                    sx={{
                                         p: 0.5,
                                         cursor: 'pointer',
                                         borderRadius: '50%',
@@ -303,7 +143,7 @@ const FilterPanel = ({
                     aria-label={`${title} filter options, scrollable`}
                     sx={{
                         pt: 0,
-                        maxHeight: isMobile
+                        maxHeight: vm.isMobile
                             ? SCROLLABLE_FILTER_STYLES.MAX_HEIGHT_MOBILE
                             : SCROLLABLE_FILTER_STYLES.MAX_HEIGHT_DESKTOP,
                         overflowY: SCROLLABLE_FILTER_STYLES.OVERFLOW_Y,
@@ -312,11 +152,11 @@ const FilterPanel = ({
                     <FormGroup>
                         {Object.entries(options).map(([value, filterData]) => {
                             // Handle new structure: filterData can be either a number (old) or object with {count, name} (new)
-                            const count = typeof filterData === 'object' && filterData !== null
-                                ? filterData.count
-                                : filterData || 0;
-                            const displayLabel = typeof filterData === 'object' && filterData !== null
-                                ? (filterData.display_name || filterData.name || value)
+                            const count: number = typeof filterData === 'object' && filterData !== null
+                                ? (filterData as FilterCountData).count
+                                : (filterData as number) || 0;
+                            const displayLabel: string = typeof filterData === 'object' && filterData !== null
+                                ? ((filterData as FilterCountData).display_name || (filterData as FilterCountData).name || value)
                                 : value;
                             const isChecked = activeValues.includes(value);
 
@@ -331,8 +171,8 @@ const FilterPanel = ({
                                     control={
                                         <Checkbox
                                             checked={isChecked}
-                                            onChange={() => handleFilterChange(filterType, value)}
-                                            onFocus={(e) => {
+                                            onChange={() => vm.handleFilterChange(filterType, value)}
+                                            onFocus={(e: React.FocusEvent<HTMLButtonElement>) => {
                                                 e.target.scrollIntoView(SCROLLABLE_FILTER_STYLES.SCROLL_BEHAVIOR);
                                             }}
                                             size="small"
@@ -344,8 +184,8 @@ const FilterPanel = ({
                                                 {displayLabel}
                                             </Typography>
                                             {count > 0 && (
-                                                <Typography 
-                                                    variant="caption" 
+                                                <Typography
+                                                    variant="caption"
                                                     color="text.secondary"
                                                     sx={{ ml: 1 }}
                                                 >
@@ -354,7 +194,7 @@ const FilterPanel = ({
                                             )}
                                         </Box>
                                     }
-                                    sx={{ 
+                                    sx={{
                                         margin: 0,
                                         '& .MuiFormControlLabel-label': {
                                             width: '100%'
@@ -367,31 +207,28 @@ const FilterPanel = ({
                 </AccordionDetails>
             </Accordion>
         );
-    }, [filters, expandedPanels, isLoading, isMobile, handlePanelChange, handleFilterChange, handleClearFilterType]);
+    }, [vm.filters, vm.expandedPanels, vm.isLoading, vm.isMobile, vm.handlePanelChange, vm.handleFilterChange, vm.handleClearFilterType]);
 
     /**
      * Filter panel content - uses FilterRegistry for dynamic rendering
      */
     const filterPanelContent = useMemo(() => {
-        // Get all registered filters from registry
-        const registeredFilters = FilterRegistry.getAll();
-
         return (
             <Box>
-                {error && (
+                {vm.error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
+                        {vm.error}
                     </Alert>
                 )}
 
                 {/* Validation Error Display (Story 1.12) */}
-                {validationErrors && validationErrors.length > 0 && (
+                {vm.validationErrors && vm.validationErrors.length > 0 && (
                     <Stack spacing={1} sx={{ mb: 2 }}>
-                        {validationErrors.map((validationError, index) => (
+                        {vm.validationErrors.map((validationError, index) => (
                             <Alert
                                 key={`${validationError.field}-${index}`}
                                 severity={validationError.severity}
-                                onClose={handleDismissValidationErrors}
+                                onClose={vm.handleDismissValidationErrors}
                                 sx={{
                                     '& .MuiAlert-message': {
                                         width: '100%'
@@ -415,11 +252,11 @@ const FilterPanel = ({
                     <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 'medium' }}>
                         Filters
                     </Typography>
-                    {totalActiveFilters > 0 && (
+                    {vm.totalActiveFilters > 0 && (
                         <Button
                             size="small"
                             startIcon={<ClearIcon />}
-                            onClick={handleClearAllFilters}
+                            onClick={vm.handleClearAllFilters}
                             sx={{ minWidth: 'auto' }}
                         >
                             Clear All
@@ -430,7 +267,7 @@ const FilterPanel = ({
                 <Divider sx={{ mb: 2 }} />
 
                 {/* Render all filters from registry (except searchQuery which is handled separately) */}
-                {registeredFilters.map((filterConfig) => {
+                {vm.registeredFilters.map((filterConfig) => {
                     // Skip searchQuery filter (not rendered in filter panel)
                     if (filterConfig.type === 'searchQuery') {
                         return null;
@@ -441,8 +278,8 @@ const FilterPanel = ({
                             {renderFilterSection(
                                 filterConfig.pluralLabel,
                                 filterConfig.type,
-                                filterCounts[filterConfig.type] || {},
-                                filterCounts[filterConfig.type]
+                                (vm.filterCounts[filterConfig.type] || {}) as Record<string, FilterCountData | number>,
+                                (vm.filterCounts[filterConfig.type] || {}) as Record<string, FilterCountData | number>
                             )}
                         </React.Fragment>
                     );
@@ -450,59 +287,58 @@ const FilterPanel = ({
             </Box>
         );
     }, [
-        error,
-        validationErrors,
-        totalActiveFilters,
-        filterCounts,
-        handleClearAllFilters,
-        handleDismissValidationErrors,
+        vm.error,
+        vm.validationErrors,
+        vm.totalActiveFilters,
+        vm.filterCounts,
+        vm.handleClearAllFilters,
+        vm.handleDismissValidationErrors,
+        vm.registeredFilters,
         renderFilterSection,
-        dispatch,
-        handlePanelChange
     ]);
 
     // Mobile drawer
-    if (isMobile || showMobile) {
+    if (vm.isMobile || showMobile) {
         return (
             <>
                 <Button
                     variant="outlined"
                     startIcon={<FilterListIcon />}
-                    onClick={() => setDrawerOpen(true)}
+                    onClick={() => vm.setDrawerOpen(true)}
                     sx={{ mb: 2 }}
                     endIcon={
-                        totalActiveFilters > 0 && (
-                            <Badge badgeContent={totalActiveFilters} color="primary" sx={{marginLeft : "0.5rem"}}/>
-                        )
+                        vm.totalActiveFilters > 0 ? (
+                            <Badge badgeContent={vm.totalActiveFilters} color="primary" sx={{ marginLeft: "0.5rem" }} />
+                        ) : undefined
                     }
                 >
                     Filters
                 </Button>
-                
+
                 <Drawer
                     anchor="left"
-                    open={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
+                    open={vm.drawerOpen}
+                    onClose={() => vm.setDrawerOpen(false)}
                     PaperProps={{
                         sx: { width: 320, p: 2 }
                     }}
                 >
-                    <Box sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        mb: 2 
+                        mb: 2
                     }}>
                         <Typography variant="h6">
                             Filters
                         </Typography>
-                        <IconButton onClick={() => setDrawerOpen(false)}>
+                        <IconButton onClick={() => vm.setDrawerOpen(false)}>
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    
+
                     <Divider sx={{ mb: 2 }} />
-                    
+
                     {filterPanelContent}
                 </Drawer>
             </>
@@ -511,9 +347,9 @@ const FilterPanel = ({
 
     // Desktop panel
     return (
-        <Paper 
-            elevation={1} 
-            sx={{ 
+        <Paper
+            elevation={1}
+            sx={{
                 p: 2,
                 backgroundColor: 'background.paper',
                 borderRadius: 1,
@@ -528,7 +364,7 @@ const FilterPanel = ({
 };
 
 // Custom comparison function for React.memo to prevent unnecessary re-renders
-const arePropsEqual = (prevProps, nextProps) => {
+const arePropsEqual = (prevProps: FilterPanelProps, nextProps: FilterPanelProps): boolean => {
     // Only re-render if props actually change
     return (
         prevProps.isSearchMode === nextProps.isSearchMode &&

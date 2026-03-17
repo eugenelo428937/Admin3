@@ -1,6 +1,6 @@
 /**
  * ProductGrid Component
- * 
+ *
  * Handles product display logic with loading states, empty states, and pagination.
  * Replaces the complex product rendering logic from the original ProductList component.
  * Integrates with Redux for loading states and provides clean separation of concerns.
@@ -20,10 +20,19 @@ import {
     useMediaQuery
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import MaterialProductCard from './ProductCard/MaterialProductCard.js';
+import MaterialProductCard from './ProductCard/MaterialProductCard';
+import type { ProductGridProps, BrowseProduct, SearchPagination } from '../../types/browse/browse.types';
+
+// Redux root state shape (minimal definition for selectors)
+interface RootState {
+    filters?: {
+        isLoading?: boolean;
+        error?: string | null;
+    };
+}
 
 // Memoized ProductGrid to prevent unnecessary re-renders
-const ProductGrid = React.memo(({
+const ProductGrid = React.memo<ProductGridProps>(({
     products = [],
     loading = false,
     error = null,
@@ -48,10 +57,10 @@ const ProductGrid = React.memo(({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-    
+
     // Redux state for additional loading information
-    const isSearchLoading = useSelector(state => state.filters?.isLoading);
-    const searchError = useSelector(state => state.filters?.error);
+    const isSearchLoading = useSelector((state: RootState) => state.filters?.isLoading);
+    const searchError = useSelector((state: RootState) => state.filters?.error);
 
     /**
      * Determine if we're currently loading
@@ -74,11 +83,11 @@ const ProductGrid = React.memo(({
         if (!products.length && !isLoading) {
             return 'No items to display';
         }
-        
-        const start = (pagination.page - 1) * pagination.page_size + 1;
-        const end = Math.min(start + products.length - 1, pagination.total_count);
-        const total = pagination.total_count;
-        
+
+        const start = ((pagination as SearchPagination).page - 1) * (pagination as SearchPagination).page_size + 1;
+        const end = Math.min(start + products.length - 1, (pagination as SearchPagination).total_count);
+        const total = (pagination as SearchPagination).total_count;
+
         return `Showing ${start}${products.length > 1 ? `-${end}` : ''} of ${total} items`;
     }, [products.length, pagination, isLoading]);
 
@@ -86,7 +95,7 @@ const ProductGrid = React.memo(({
      * Generate unique key for product items - Stable reference
      * Bundles and products may have the same numeric ID, so we prefix bundles
      */
-    const generateProductKey = React.useCallback((item) => {
+    const generateProductKey = React.useCallback((item: BrowseProduct): string | number => {
         // Check if this is a bundle first to avoid key collisions
         if (item.is_bundle || item.item_type === 'bundle') {
             return `bundle-${item.id}`;
@@ -95,7 +104,6 @@ const ProductGrid = React.memo(({
         // For regular products, use essp_id or id
         return item.essp_id ||
                item.id ||
-               item.product_id ||
                `item-${item.product_name}-${item.subject_code}`;
     }, []);
 
@@ -103,17 +111,17 @@ const ProductGrid = React.memo(({
      * Handle load more button click
      */
     const handleLoadMore = useCallback(() => {
-        if (onLoadMore && pagination.has_next && !isLoading) {
+        if (onLoadMore && (pagination as SearchPagination).has_next && !isLoading) {
             onLoadMore();
         }
-    }, [onLoadMore, pagination.has_next, isLoading]);
+    }, [onLoadMore, pagination, isLoading]);
 
     /**
      * Render loading skeleton
      */
     const renderLoadingSkeleton = useCallback(() => {
         const skeletonCount = isMobile ? 2 : isTablet ? 4 : 6;
-        
+
         return (
             <Grid container spacing={gridSpacing}>
                 {Array.from({ length: skeletonCount }).map((_, index) => (
@@ -136,36 +144,37 @@ const ProductGrid = React.memo(({
     /**
      * Format error message for display
      */
-    const formatErrorMessage = useCallback((error) => {
-        if (!error) {
+    const formatErrorMessage = useCallback((err: unknown): string => {
+        if (!err) {
             return 'Failed to load products. Please try again.';
         }
-        
-        if (typeof error === 'string') {
-            return error;
+
+        if (typeof err === 'string') {
+            return err;
         }
-        
-        if (typeof error === 'object') {
-            return error.message || 
-                   error.error || 
-                   error.details || 
-                   JSON.stringify(error);
+
+        if (typeof err === 'object' && err !== null) {
+            const errObj = err as Record<string, unknown>;
+            return (errObj.message as string) ||
+                   (errObj.error as string) ||
+                   (errObj.details as string) ||
+                   JSON.stringify(err);
         }
-        
-        return String(error);
+
+        return String(err);
     }, []);
 
     /**
      * Render error state
      */
     const renderErrorState = useCallback(() => (
-        <Alert 
-            severity="error" 
+        <Alert
+            severity="error"
             sx={{ mt: 2, mb: 2 }}
             action={
-                <Button 
-                    color="inherit" 
-                    size="small" 
+                <Button
+                    color="inherit"
+                    size="small"
                     onClick={() => window.location.reload()}
                 >
                     Retry
@@ -214,7 +223,7 @@ const ProductGrid = React.memo(({
                             >
                                 <MaterialProductCard
                                     product={item}
-                                    onAddToCart={onAddToCart}
+                                    onAddToCart={onAddToCart ?? undefined}
                                     allEsspIds={allEsspIds}
                                     bulkDeadlines={bulkDeadlines}
                                     vatCalculations={vatCalculations}
@@ -225,24 +234,24 @@ const ProductGrid = React.memo(({
                 })}
             </Grid>
         );
-    }, [products, gridSpacing, minCardWidth, bulkDeadlines, allEsspIds, onAddToCart, vatCalculations]); // Include all props passed to cards
+    }, [products, gridSpacing, minCardWidth, bulkDeadlines, allEsspIds, onAddToCart, vatCalculations]);
 
     /**
      * Render load more section
      */
     const renderLoadMoreSection = useCallback(() => {
-        if (!showLoadMoreButton || !pagination.has_next) {
+        if (!showLoadMoreButton || !(pagination as SearchPagination).has_next) {
             return null;
         }
 
-        const remainingCount = pagination.total_count - products.length;
+        const remainingCount = (pagination as SearchPagination).total_count - products.length;
 
         return (
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                mt: 4, 
-                mb: 2 
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mt: 4,
+                mb: 2
             }}>
                 <Button
                     variant="contained"
@@ -250,7 +259,7 @@ const ProductGrid = React.memo(({
                     onClick={handleLoadMore}
                     disabled={isLoading}
                     startIcon={isLoading ? <CircularProgress size={20} /> : <RefreshIcon />}
-                    sx={{ 
+                    sx={{
                         minWidth: 200,
                         py: 1.5
                     }}
@@ -279,9 +288,9 @@ const ProductGrid = React.memo(({
         if (!showProductCount) return null;
 
         return (
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 mb: 3,
                 flexDirection: { xs: 'column', md: 'row' },
@@ -290,15 +299,15 @@ const ProductGrid = React.memo(({
                 <Typography variant="body2" color="text.secondary">
                     {paginationText}
                 </Typography>
-                
-                {pagination.has_next && (
+
+                {(pagination as SearchPagination).has_next && (
                     <Typography variant="body2" color="text.secondary">
                         {products.length} loaded, more available
                     </Typography>
                 )}
             </Box>
         );
-    }, [showProductCount, paginationText, pagination.has_next, products.length]);
+    }, [showProductCount, paginationText, pagination, products.length]);
 
     // Main render logic
     return (
@@ -327,7 +336,7 @@ const ProductGrid = React.memo(({
             )}
         </Box>
     );
-}, (prevProps, nextProps) => {
+}, (prevProps: ProductGridProps, nextProps: ProductGridProps) => {
     // Custom comparison function for React.memo
     // Only re-render if critical props have changed
     return (

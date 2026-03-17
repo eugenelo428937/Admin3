@@ -3,17 +3,19 @@
  * Centralized to ensure consistency across TutorialDetailCard, TutorialSelectionDialog, and TutorialSelectionSummaryBar
  */
 
+import type { SxProps, Theme } from '@mui/material';
+
 /**
  * Minimum touch target size for mobile accessibility
  * Following WCAG 2.1 Level AAA guidelines (44x44 CSS pixels)
  */
-export const TOUCH_TARGET_SIZE = '3rem';
+export const TOUCH_TARGET_SIZE: string = '3rem';
 
 /**
  * Common button style for touch-optimized buttons
  * Ensures all interactive elements meet minimum touch target requirements
  */
-export const touchButtonStyle = {
+export const touchButtonStyle: SxProps<Theme> = {
   minHeight: TOUCH_TARGET_SIZE,
 };
 
@@ -21,7 +23,7 @@ export const touchButtonStyle = {
  * Common icon button style for touch-optimized icon buttons
  * Ensures square touch targets for icon-only buttons
  */
-export const touchIconButtonStyle = {
+export const touchIconButtonStyle: SxProps<Theme> = {
   minWidth: TOUCH_TARGET_SIZE,
   minHeight: TOUCH_TARGET_SIZE,
 };
@@ -30,7 +32,7 @@ export const touchIconButtonStyle = {
  * Responsive grid spacing for TutorialSelectionDialog
  * Reduces spacing on mobile, standard spacing on larger screens
  */
-export const responsiveGridSpacing = {
+export const responsiveGridSpacing: Record<string, number> = {
   xs: 2,
   md: 3,
 };

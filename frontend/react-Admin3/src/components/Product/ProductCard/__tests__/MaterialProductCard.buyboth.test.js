@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../theme/theme';
-import MaterialProductCard from '../MaterialProductCard.js';
+import MaterialProductCard from '../MaterialProductCard';
 import { useCart } from '../../../../contexts/CartContext.tsx';
 
 // Mock the CartContext
@@ -42,7 +42,7 @@ vi.mock('../OnlineClassroomProductCard.js', () => ({
   default: () => <div data-testid="online-classroom-product-card">Online Classroom Product Card</div>,
 }));
 
-vi.mock('../BundleCard.js', () => ({
+vi.mock('../BundleCard.tsx', () => ({
   __esModule: true,
   default: () => <div data-testid="bundle-card">Bundle Card</div>,
 }));

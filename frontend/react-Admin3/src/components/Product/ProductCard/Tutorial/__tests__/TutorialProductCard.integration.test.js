@@ -15,7 +15,7 @@ vi.mock('../../../../../services/httpService', () => ({
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import TutorialProductCard from '../TutorialProductCard.js';
+import TutorialProductCard from '../TutorialProductCard';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 

@@ -1,28 +1,18 @@
 /**
- * ProductList Component - Refactored
- * 
- * Orchestrates FilterPanel, ActiveFilters, ProductGrid and other components.
- * Uses Redux for state management and dramatically reduces complexity from 1000+ lines to ~150 lines.
- * Maintains all existing functionality while providing cleaner architecture.
+ * ProductList ViewModel
+ *
+ * Encapsulates all Redux state, dispatch actions, context hooks,
+ * service calls, and derived data for the ProductList component.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import {
-    Box,
-    Container,
-    Grid,
-    Typography,
-    Alert,
-    Button,
-    useTheme,
-    useMediaQuery
-} from '@mui/material';
-import { useCart } from '../../contexts/CartContext.tsx';
+import { useTheme, useMediaQuery } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import { useCart } from '../../contexts/CartContext';
 import useProductsSearch from '../../hooks/useProductsSearch.js';
 import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
 import rulesEngineService from '../../services/rulesEngineService';
 
 // Redux imports
@@ -33,66 +23,112 @@ import {
     selectIsLoading,
     selectError,
     setSearchQuery,
-    setMultipleFilters,
     setSubjects,
     setCategories,
     setProductTypes,
     setProducts,
-    setModesOfDelivery,    
+    setModesOfDelivery,
     resetFilters,
     setCurrentPage,
     clearError
 } from '../../store/slices/filtersSlice.js';
 import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware.js';
 
-// Component imports
-import FilterPanel from './FilterPanel.js';
-import ActiveFilters from './ActiveFilters.js';
-import ProductGrid from './ProductGrid.js';
-import SearchBox from '../SearchBox.js';
-import FilterDebugger from './FilterDebugger.js';
-import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
+import type {
+    BrowseProduct,
+    SearchPagination,
+    InlineRulesMessage,
+    MarkingDeadline,
+} from '../../types/browse/browse.types';
 
-const ProductList = React.memo(() => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+// ─── Type for parsed URL filters ────────────────────────────────
+
+interface ParsedUrlFilters {
+    subjects?: string[];
+    categories?: string[];
+    product_types?: string[];
+    products?: string[];
+    modes_of_delivery?: string[];
+    searchQuery?: string;
+    [key: string]: unknown;
+}
+
+// ─── ViewModel Interface ────────────────────────────────────────
+
+export interface ProductListVM {
+    // UI State
+    isMobile: boolean;
+    isSearchMode: boolean;
+
+    // Data
+    products: BrowseProduct[];
+    pagination: SearchPagination;
+    allEsspIds: number[];
+    bulkDeadlines: Record<number | string, MarkingDeadline[]>;
+    vatCalculations: any;
+
+    // Loading / Error
+    isLoading: boolean;
+    searchLoading: boolean;
+    error: string | null;
+    searchError: string | null;
+
+    // Rules Engine
+    rulesMessages: InlineRulesMessage[];
+    rulesLoading: boolean;
+
+    // Filters
+    searchQuery: string;
+
+    // Handlers
+    handleSearch: (query: string) => void;
+    handleAddToCart: (product: BrowseProduct, selectedVariation?: any) => Promise<void>;
+    handleLoadMore: () => void;
+    clearSearch: () => void;
+}
+
+// ─── Hook ───────────────────────────────────────────────────────
+
+const useProductListVM = (): ProductListVM => {
+    const theme: Theme = useTheme();
+    const isMobile: boolean = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     // Context hooks
     const { addToCart, cartData } = useCart();
-    
+
     // Redux state
     const filters = useSelector(selectFilters);
-    const searchQuery = useSelector(selectSearchQuery);
-    const currentPage = useSelector(selectCurrentPage);
-    const isLoading = useSelector(selectIsLoading);
-    const error = useSelector(selectError);
-    
-    // Custom hooks
-    const {
-        products,
-        filterCounts,
-        pagination,
-        isLoading: searchLoading,
-        error: searchError,
-        search,
-        refresh
-    } = useProductsSearch({ autoSearch: true });
-    
-    const { handleAddToCart: helperAddToCart, allEsspIds, bulkDeadlines } = useProductCardHelpers(products);
+    const searchQuery = useSelector(selectSearchQuery) as string;
+    const currentPage = useSelector(selectCurrentPage) as number;
+    const isLoading = useSelector(selectIsLoading) as boolean;
+    const error = useSelector(selectError) as string | null;
+
+    // Custom hooks - these return untyped JS objects, cast as needed
+    const searchResult: any = useProductsSearch({ autoSearch: true });
+    const products: BrowseProduct[] = searchResult.products ?? [];
+    const pagination: SearchPagination = searchResult.pagination ?? {
+        page: 1, page_size: 20, total_count: 0, has_next: false, has_previous: false
+    };
+    const searchLoading: boolean = searchResult.isLoading ?? false;
+    const searchError: string | null = searchResult.error ?? null;
+
+    const cardHelpers: any = useProductCardHelpers(products);
+    const allEsspIds: number[] = cardHelpers.allEsspIds ?? [];
+    const bulkDeadlines: Record<number | string, MarkingDeadline[]> = cardHelpers.bulkDeadlines ?? {};
 
     // Rules engine state for delivery messages
-    const [rulesMessages, setRulesMessages] = useState([]);
-    const [rulesLoading, setRulesLoading] = useState(false);
+    const [rulesMessages, setRulesMessages] = useState<InlineRulesMessage[]>([]);
+    const [rulesLoading, setRulesLoading] = useState<boolean>(false);
 
     /**
      * Restore filters from URL on component mount (Story 1.6)
-     * Uses parseUrlToFilters() to convert URL params → Redux state
+     * Uses parseUrlToFilters() to convert URL params -> Redux state
      */
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
-        const filtersFromUrl = parseUrlToFilters(searchParams);
+        const filtersFromUrl = parseUrlToFilters(searchParams) as ParsedUrlFilters;
 
         // Dispatch each filter type to Redux
         if (filtersFromUrl.subjects && filtersFromUrl.subjects.length > 0) {
@@ -109,7 +145,7 @@ const ProductList = React.memo(() => {
         }
         if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
             dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
-        }       
+        }
         if (filtersFromUrl.searchQuery) {
             dispatch(setSearchQuery(filtersFromUrl.searchQuery));
         }
@@ -123,7 +159,7 @@ const ProductList = React.memo(() => {
         const handlePopState = () => {
             // Parse URL and update Redux state
             const searchParams = new URLSearchParams(window.location.search);
-            const filtersFromUrl = parseUrlToFilters(searchParams);
+            const filtersFromUrl = parseUrlToFilters(searchParams) as ParsedUrlFilters;
 
             // Clear existing filters first to ensure clean state
             dispatch(resetFilters());
@@ -143,7 +179,7 @@ const ProductList = React.memo(() => {
             }
             if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
                 dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
-            }           
+            }
             if (filtersFromUrl.searchQuery) {
                 dispatch(setSearchQuery(filtersFromUrl.searchQuery));
             }
@@ -161,34 +197,33 @@ const ProductList = React.memo(() => {
     /**
      * Determine if we're in search mode
      */
-    const isSearchMode = useMemo(() => {
+    const isSearchMode = useMemo((): boolean => {
         return Boolean(searchQuery);
     }, [searchQuery]);
 
     /**
      * Handle search functionality
      */
-    const handleSearch = React.useCallback((query) => {
+    const handleSearch = useCallback((query: string) => {
         dispatch(setSearchQuery(query));
         dispatch(setCurrentPage(1)); // Reset to first page on search
-        // URL sync middleware will automatically update the URL with search_query parameter
     }, [dispatch]);
 
     /**
      * Handle add to cart
      */
-    const handleAddToCart = React.useCallback(async (product, selectedVariation = null) => {
+    const handleAddToCart = useCallback(async (product: BrowseProduct, selectedVariation: any = null) => {
         try {
             await addToCart(product, selectedVariation);
-        } catch (error) {
-            console.error('Failed to add product to cart:', error);
+        } catch (err) {
+            console.error('Failed to add product to cart:', err);
         }
     }, [addToCart]);
 
     /**
      * Handle load more products (pagination)
      */
-    const handleLoadMore = React.useCallback(() => {
+    const handleLoadMore = useCallback(() => {
         if (pagination?.has_next && !isLoading && !searchLoading) {
             dispatch(setCurrentPage(currentPage + 1));
         }
@@ -197,7 +232,7 @@ const ProductList = React.memo(() => {
     /**
      * Clear search and return to products listing
      */
-    const clearSearch = React.useCallback(() => {
+    const clearSearch = useCallback(() => {
         dispatch(setSearchQuery(''));
         dispatch(resetFilters());
         navigate('/products', { replace: true });
@@ -219,7 +254,6 @@ const ProductList = React.memo(() => {
             setRulesMessages([]); // Clear previous messages
 
             try {
-
                 // Create context for product list
                 const context = {
                     page: {
@@ -239,9 +273,9 @@ const ProductList = React.memo(() => {
 
                 if (result.success && result.messages?.length > 0) {
                     // Process messages for display - filter out modal messages for inline display
-                    const inlineMessages = result.messages
-                        .filter(msg => msg.display_type !== 'modal')
-                        .map(msg => ({
+                    const inlineMessages: InlineRulesMessage[] = result.messages
+                        .filter((msg: any) => msg.display_type !== 'modal')
+                        .map((msg: any) => ({
                             ...msg,
                             // Normalize message structure for consistent display
                             title: msg.title || msg.content?.title || 'Notice',
@@ -255,8 +289,8 @@ const ProductList = React.memo(() => {
 
                 // Handle any processing errors
                 if (!result.success && result.error) {
-                    console.error('🚨 Rules processing error:', result.error);
-                    if (import.meta.env?.DEV) {
+                    console.error('Rules processing error:', result.error);
+                    if ((import.meta as any).env?.DEV) {
                         // Show error in development
                         setRulesMessages([{
                             title: 'Development Error',
@@ -266,15 +300,15 @@ const ProductList = React.memo(() => {
                         }]);
                     }
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error executing product_list_mount rules:', err);
 
                 // Handle schema validation errors specifically
                 if (err.name === 'SchemaValidationError') {
-                    console.error('🚨 Schema validation failed for rules engine:', err.details);
-                    console.error('🔍 Schema errors:', err.schemaErrors);
+                    console.error('Schema validation failed for rules engine:', err.details);
+                    console.error('Schema errors:', err.schemaErrors);
                     // For development, show schema validation errors to help debugging
-                    if (import.meta.env?.DEV) {
+                    if ((import.meta as any).env?.DEV) {
                         setRulesMessages([{
                             title: 'Development Error',
                             message: `Schema validation failed - ${err.details}`,
@@ -292,112 +326,26 @@ const ProductList = React.memo(() => {
         executeRules();
     }, [products]); // Re-run when products change to update context
 
-    return (
-			<Container maxWidth="xl" sx={{ py: 2 }}>
-				{/* Header Section */}
-				<Grid container spacing={1}>
-					<Grid size={{ xs: 12, lg: 2 }}>
-						<Typography variant="h4" component="h1">
-							{isSearchMode ? "Search Results" : "Products"}
-						</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, lg: 10 }}>
-						{/* Active Filters */}
-						<ActiveFilters showCount />
-					</Grid>
+    return {
+        isMobile,
+        isSearchMode,
+        products,
+        pagination,
+        allEsspIds,
+        bulkDeadlines,
+        vatCalculations: cartData?.vat_calculations,
+        isLoading,
+        searchLoading,
+        error,
+        searchError,
+        rulesMessages,
+        rulesLoading,
+        searchQuery,
+        handleSearch,
+        handleAddToCart,
+        handleLoadMore,
+        clearSearch,
+    };
+};
 
-					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-						{isMobile && <FilterPanel showMobile />}
-					</Box>
-				</Grid>
-				<Grid container spacing={2}>
-					{/* Filter Panel - Desktop Sidebar */}
-					{!isMobile && (
-						<Grid size={{ xs: 12, md: 3 }}>
-							<FilterPanel key="desktop-filter-panel" isSearchMode={isSearchMode} />
-						</Grid>
-					)}
-
-					{/* Main Content */}
-					<Grid size={{ xs: 12, md: 9 }}>
-						<Box sx={{ mb: 0 }}>
-							{/* Search Box */}
-							{/* <SearchBox
-								onSearch={handleSearch}
-								initialValue={searchQuery}
-								placeholder="Search products..."
-							/> */}
-
-							{/* Search Mode Alert */}
-							{/* {isSearchMode && (
-								<Alert
-									severity="info"
-									sx={{ mt: 2, mb: 2 }}
-									action={
-										<Button
-											color="inherit"
-											size="small"
-											onClick={clearSearch}>
-											Clear Search
-										</Button>
-									}>
-									<strong>Search Results</strong>
-									{searchQuery && (
-										<span style={{ marginLeft: 8 }}>
-											for "{searchQuery}"
-										</span>
-									)}
-									{pagination?.total_count && (
-										<span style={{ marginLeft: 8 }}>
-											({pagination.total_count} products found)
-										</span>
-									)}
-								</Alert>
-							)} */}
-
-							{/* Rules Engine Messages (Delivery Information, etc.) */}
-							<RulesEngineInlineAlert
-							messages={rulesMessages}
-							loading={rulesLoading}
-							loadingMessage="Loading delivery information..."
-						/>
-
-							{/* Debug Information (Development Only) */}
-							{/* {import.meta.env?.DEV && (
-                            <FilterDebugger 
-                                filters={filters}
-                                searchQuery={searchQuery}
-                                products={products}
-                                isLoading={isLoading}
-                            />
-                        )} */}
-						</Box>
-
-						{/* Product Grid */}
-						<ProductGrid
-							products={products}
-							loading={isLoading || searchLoading}
-							error={error || searchError}
-							pagination={pagination}
-							onLoadMore={handleLoadMore}
-							onAddToCart={handleAddToCart}
-							allEsspIds={allEsspIds}
-							bulkDeadlines={bulkDeadlines}
-							vatCalculations={cartData?.vat_calculations}
-							showProductCount
-							showLoadMoreButton
-							emptyStateMessage={
-								isSearchMode
-									? "No products found for your search criteria."
-									: "No products available based on selected filters."
-							}
-						/>
-					</Grid>
-				</Grid>
-			</Container>
-		);
-});
-
-ProductList.displayName = 'ProductList';
-
-export default ProductList;
+export default useProductListVM;

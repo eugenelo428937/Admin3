@@ -40,7 +40,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../../theme/theme';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
 
 // Import the mocked modules to allow vi.spyOn
 import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';

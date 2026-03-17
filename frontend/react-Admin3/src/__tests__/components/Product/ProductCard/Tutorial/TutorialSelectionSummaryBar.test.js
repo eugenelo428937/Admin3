@@ -11,7 +11,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import TutorialSelectionSummaryBar from '../../../../../components/Product/ProductCard/Tutorial/TutorialSelectionSummaryBar.js';
+import TutorialSelectionSummaryBar from '../../../../../components/Product/ProductCard/Tutorial/TutorialSelectionSummaryBar';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock Material-UI useMediaQuery hook
