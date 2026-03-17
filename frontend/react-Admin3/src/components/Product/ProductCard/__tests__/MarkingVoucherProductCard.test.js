@@ -52,7 +52,7 @@ vi.mock('react-icons/lu', async () => {
   };
 });
 
-import MarkingVoucherProductCard from '../MarkingVoucherProductCard.js';
+import MarkingVoucherProductCard from '../MarkingVoucherProductCard';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

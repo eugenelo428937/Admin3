@@ -12,7 +12,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, mockProductsApi } from '../../../test-utils/testHelpers.js';
-import FilterPanel from '../FilterPanel.js';
+import FilterPanel from '../FilterPanel';
 
 // Mock scrollIntoView (not natively supported in jsdom)
 beforeEach(() => {

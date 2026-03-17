@@ -21,8 +21,8 @@ import '@testing-library/jest-dom';
 
 import filtersReducer from '../../../store/slices/filtersSlice.js';
 import { urlSyncMiddleware } from '../../../store/middleware/urlSyncMiddleware.js';
-import ProductList from '../../Product/ProductList.js';
-import FilterPanel from '../../Product/FilterPanel.js';
+import ProductList from '../../Product/ProductList.tsx';
+import FilterPanel from '../../Product/FilterPanel.tsx';
 import MainNavBar from '../../Navigation/MainNavBar.tsx';
 
 // Mock API calls

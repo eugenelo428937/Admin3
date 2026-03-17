@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import StepTutorials from '../StepTutorials.js';
+import StepTutorials from '../StepTutorials.tsx';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

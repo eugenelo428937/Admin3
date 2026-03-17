@@ -102,7 +102,7 @@ import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
-import ProductList from "./ProductList.js";
+import ProductList from "./ProductList";
 import { CartProvider } from "../../contexts/CartContext.tsx";
 import { createMockStore } from "../../test-utils/reduxMockStore.js";
 

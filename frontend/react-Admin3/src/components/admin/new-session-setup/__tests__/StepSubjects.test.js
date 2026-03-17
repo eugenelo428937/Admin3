@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import StepSubjects from '../StepSubjects.js';
+import StepSubjects from '../StepSubjects.tsx';
 
 // Mock services
 vi.mock('../../../../services/httpService', () => ({

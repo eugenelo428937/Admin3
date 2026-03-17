@@ -26,7 +26,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider, useCart } from '../../../../../contexts/CartContext.tsx';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
 
 // Mock CartContext with controllable state
 let mockCartContext = {

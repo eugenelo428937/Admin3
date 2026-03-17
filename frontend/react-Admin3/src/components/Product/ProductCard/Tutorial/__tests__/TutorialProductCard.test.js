@@ -45,7 +45,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import TutorialProductCard from '../TutorialProductCard.js';
+import TutorialProductCard from '../TutorialProductCard';
 import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext.js';
 
 // Mock props for TutorialProductCard
