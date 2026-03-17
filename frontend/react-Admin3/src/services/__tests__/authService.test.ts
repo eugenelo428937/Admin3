@@ -29,7 +29,7 @@ vi.mock('../loggerService', () => ({
   },
 }));
 
-vi.mock('../../config.js', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     authUrl: '/api/auth',

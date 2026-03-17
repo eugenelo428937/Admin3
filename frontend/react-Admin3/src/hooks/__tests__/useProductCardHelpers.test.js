@@ -11,7 +11,7 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useProductCardHelpers from '../useProductCardHelpers.js';
+import useProductCardHelpers from '../useProductCardHelpers';
 
 // Mock CartContext
 const mockAddToCart = vi.fn();

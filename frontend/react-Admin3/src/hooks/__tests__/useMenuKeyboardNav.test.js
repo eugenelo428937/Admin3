@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 // frontend/react-Admin3/src/hooks/__tests__/useMenuKeyboardNav.test.js
 import { renderHook, act } from '@testing-library/react';
-import useMenuKeyboardNav from '../useMenuKeyboardNav.js';
+import useMenuKeyboardNav from '../useMenuKeyboardNav';
 
 describe('useMenuKeyboardNav', () => {
   const mockOnClose = vi.fn();

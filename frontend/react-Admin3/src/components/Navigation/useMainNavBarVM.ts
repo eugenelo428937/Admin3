@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { useConfig } from '../../contexts/ConfigContext.js';
+import { useConfig } from '../../contexts/ConfigContext';
 import productService from '../../services/productService';
 import {
    navSelectSubject,
    navViewAllProducts,
    navSelectProductGroup,
    navSelectProduct,
-} from '../../store/slices/filtersSlice.js';
+} from '../../store/slices/filtersSlice';
 import type {
    NavigationSubject,
    NavigationProductGroup,
