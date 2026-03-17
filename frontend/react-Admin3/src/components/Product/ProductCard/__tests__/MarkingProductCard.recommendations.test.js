@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MarkingProductCard from '../MarkingProductCard.js';
+import MarkingProductCard from '../MarkingProductCard';
 import productService from '../../../../services/productService';
 import appTheme from '../../../../theme';
 

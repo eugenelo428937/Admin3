@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import SessionBundlesSummary from '../SessionBundlesSummary.js';
+import SessionBundlesSummary from '../SessionBundlesSummary.tsx';
 
 vi.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,

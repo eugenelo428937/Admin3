@@ -17,7 +17,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
-import TutorialProductCard from '../TutorialProductCard.js';
+import TutorialProductCard from '../TutorialProductCard';
 import tutorialService from '../../../../../services/tutorialService';
 import cartService from '../../../../../services/cartService.ts';
 

@@ -17,7 +17,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import filtersReducer from '../../store/slices/filtersSlice.js';
-import FilterPanel from './FilterPanel.js';
+import FilterPanel from './FilterPanel';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 // Mock Material-UI's useMediaQuery
