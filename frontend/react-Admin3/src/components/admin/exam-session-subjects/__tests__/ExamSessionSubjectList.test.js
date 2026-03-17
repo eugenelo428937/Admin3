@@ -4,7 +4,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminExamSessionSubjectList from '../ExamSessionSubjectList.js';
+import AdminExamSessionSubjectList from '../ExamSessionSubjectList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({

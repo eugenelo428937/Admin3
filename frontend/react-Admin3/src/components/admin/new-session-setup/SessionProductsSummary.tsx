@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Typography, CircularProgress, Alert, Box, Button
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  CircularProgress,
+  Alert,
+  Box,
+  Button,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import storeProductService from '../../../services/storeProductService';
+import useSessionProductsSummaryVM from './useSessionProductsSummaryVM';
 
-const SessionProductsSummary = ({ sessionId }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// ─── Interfaces ───────────────────────────────────────────────
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const { results } = await storeProductService.adminList({
-          exam_session_id: sessionId,
-          page_size: 500,
-        });
-        setProducts(results || []);
-      } catch (err) {
-        setError('Failed to load products');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [sessionId]);
+interface SessionProductsSummaryProps {
+  sessionId: number | null;
+}
+
+// ─── Component ────────────────────────────────────────────────
+
+const SessionProductsSummary: React.FC<SessionProductsSummaryProps> = ({ sessionId }) => {
+  const { products, loading, error } = useSessionProductsSummaryVM({ sessionId });
 
   if (loading) return <CircularProgress size={24} />;
   if (error) return <Alert severity="error">{error}</Alert>;

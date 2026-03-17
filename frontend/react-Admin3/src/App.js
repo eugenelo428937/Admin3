@@ -52,8 +52,8 @@ const AdminProductForm = React.lazy(() => import("./components/admin/products/Pr
 const AdminProductImport = React.lazy(() => import("./components/admin/products/ProductImport.tsx"));
 
 // Admin: Catalog (US3)
-const AdminExamSessionSubjectList = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectList.js"));
-const AdminExamSessionSubjectForm = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectForm.js"));
+const AdminExamSessionSubjectList = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectList.tsx"));
+const AdminExamSessionSubjectForm = React.lazy(() => import("./components/admin/exam-session-subjects/ExamSessionSubjectForm.tsx"));
 const AdminProductVariationList = React.lazy(() => import("./components/admin/product-variations/ProductVariationList.tsx"));
 const AdminProductVariationForm = React.lazy(() => import("./components/admin/product-variations/ProductVariationForm.tsx"));
 const AdminProductBundleList = React.lazy(() => import("./components/admin/product-bundles/ProductBundleList.tsx"));
@@ -62,21 +62,21 @@ const AdminProductBundleForm = React.lazy(() => import("./components/admin/produ
 // Admin: Store (US4)
 const AdminStoreProductList = React.lazy(() => import("./components/admin/store-products/StoreProductList.tsx"));
 const AdminStoreProductForm = React.lazy(() => import("./components/admin/store-products/StoreProductForm.tsx"));
-const AdminRecommendationList = React.lazy(() => import("./components/admin/recommendations/RecommendationList.js"));
-const AdminRecommendationForm = React.lazy(() => import("./components/admin/recommendations/RecommendationForm.js"));
+const AdminRecommendationList = React.lazy(() => import("./components/admin/recommendations/RecommendationList.tsx"));
+const AdminRecommendationForm = React.lazy(() => import("./components/admin/recommendations/RecommendationForm.tsx"));
 const AdminPriceList = React.lazy(() => import("./components/admin/prices/PriceList.tsx"));
 const AdminPriceForm = React.lazy(() => import("./components/admin/prices/PriceForm.tsx"));
 const AdminStoreBundleList = React.lazy(() => import("./components/admin/store-bundles/StoreBundleList.tsx"));
 const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-bundles/StoreBundleForm.tsx"));
 
 // Admin: New Session Setup wizard
-const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.js"));
+const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.tsx"));
 
 // Admin: Users & Staff (US5)
-const AdminUserProfileList = React.lazy(() => import("./components/admin/user-profiles/UserProfileList.js"));
-const AdminUserProfileForm = React.lazy(() => import("./components/admin/user-profiles/UserProfileForm.js"));
-const AdminStaffList = React.lazy(() => import("./components/admin/staff/StaffList.js"));
-const AdminStaffForm = React.lazy(() => import("./components/admin/staff/StaffForm.js"));
+const AdminUserProfileList = React.lazy(() => import("./components/admin/user-profiles/UserProfileList.tsx"));
+const AdminUserProfileForm = React.lazy(() => import("./components/admin/user-profiles/UserProfileForm.tsx"));
+const AdminStaffList = React.lazy(() => import("./components/admin/staff/StaffList.tsx"));
+const AdminStaffForm = React.lazy(() => import("./components/admin/staff/StaffForm.tsx"));
 
 // Admin: Email System (US6)
 const EmailSettingsList = React.lazy(() => import("./components/admin/email/settings/EmailSettingsList"));
