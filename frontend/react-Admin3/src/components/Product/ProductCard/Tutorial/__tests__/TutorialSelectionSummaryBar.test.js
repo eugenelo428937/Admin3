@@ -10,7 +10,7 @@ vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn(() => false) }));
 
 // Now import the real context
-import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar.js';
+import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar';
 import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext.js';
 import useMediaQuery from '@mui/material/useMediaQuery';
 

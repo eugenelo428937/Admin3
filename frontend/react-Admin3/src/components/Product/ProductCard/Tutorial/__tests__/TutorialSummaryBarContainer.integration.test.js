@@ -33,7 +33,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
 
 /**
  * Integration Test Suite: TutorialSummaryBarContainer

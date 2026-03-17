@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm.js';
+import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm.tsx';
 
 import appTheme from '../../theme';
 vi.mock('../../hooks/useAuth.tsx', () => ({

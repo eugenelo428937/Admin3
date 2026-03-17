@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import StepMaterials from '../StepMaterials.js';
+import StepMaterials from '../StepMaterials.tsx';
 
 vi.mock('../../../../services/sessionSetupService', () => ({
   __esModule: true,
