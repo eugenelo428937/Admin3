@@ -56,6 +56,7 @@ jobs:
       working-directory: ./backend/django_Admin3
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS acted;"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS adm;"
 
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
@@ -84,7 +85,7 @@ jobs:
     
     - name: Run frontend tests
       working-directory: ./frontend/react-Admin3
-      run: npm test -- --coverage --watchAll=false
+      run: npm run test:coverage
     
     - name: Build frontend
       working-directory: ./frontend/react-Admin3
@@ -160,6 +161,7 @@ jobs:
       working-directory: ./backend/django_Admin3
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS acted;"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS adm;"
 
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3

@@ -68,7 +68,7 @@ jobs:
         run: npm ci
       - name: Run tests
         working-directory: ./frontend/react-Admin3
-        run: npm test -- --coverage --watchAll=false
+        run: npm run test:coverage
       - name: Build
         working-directory: ./frontend/react-Admin3
         run: CI=false npm run build
