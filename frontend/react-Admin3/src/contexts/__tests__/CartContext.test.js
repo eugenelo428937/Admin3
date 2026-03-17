@@ -12,7 +12,7 @@ import { vi } from 'vitest';
 vi.unmock('../CartContext.tsx');
 
 // Mock ConfigContext - CartContext depends on useConfig
-vi.mock('../ConfigContext.js', () => ({
+vi.mock('../ConfigContext', () => ({
   __esModule: true,
   useConfig: () => ({ isInternal: false, configLoaded: true }),
   ConfigProvider: ({ children }) => children,

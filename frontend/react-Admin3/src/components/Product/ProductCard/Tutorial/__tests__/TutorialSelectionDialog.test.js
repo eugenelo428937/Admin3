@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../../theme/theme';
 import TutorialSelectionDialog from '../TutorialSelectionDialog';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
 
 // Mock CartContext - TutorialSelectionDialog uses useCart
 vi.mock('../../../../../contexts/CartContext.tsx', () => ({

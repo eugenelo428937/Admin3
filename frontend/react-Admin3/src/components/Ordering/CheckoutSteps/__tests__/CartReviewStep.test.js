@@ -8,7 +8,7 @@ import theme from '../../../../theme/theme';
 import CartReviewStep from '../CartReviewStep.tsx';
 
 // Mock components that aren't available in test environment
-vi.mock('../../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 

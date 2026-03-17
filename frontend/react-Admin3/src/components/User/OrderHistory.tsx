@@ -1,6 +1,6 @@
 // src/components/User/OrderHistory.tsx
 import React from "react";
-import { generateProductCode } from "../../utils/productCodeGenerator.js";
+import { generateProductCode } from "../../utils/productCodeGenerator";
 import {
   Container,
   Table,

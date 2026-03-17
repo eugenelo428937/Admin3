@@ -24,7 +24,7 @@ vi.mock('../../../../services/sessionSetupService', () => ({
   },
 }));
 
-vi.mock('../../../../config.js', () => ({
+vi.mock('../../../../config', () => ({
   __esModule: true,
   default: { catalogUrl: '/api/catalog' },
 }));

@@ -30,7 +30,7 @@ vi.mock('../../../services/userService.ts', () => ({
 }));
 
 // Mock config
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   default: {
     apiBaseUrl: 'http://localhost:8000'
   }

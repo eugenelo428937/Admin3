@@ -160,7 +160,7 @@ vi.mock('@sentry/react', () => ({
   Severity: { Error: 'error', Warning: 'warning', Info: 'info' },
 }));
 
-vi.mock('./config.js', () => ({
+vi.mock('./config', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',
@@ -255,7 +255,7 @@ vi.mock('./services/authService', () => ({
 // =============================================================================
 
 // Mock TutorialChoiceContext - used by CartPanel, TutorialSelectionDialog, etc.
-vi.mock('./contexts/TutorialChoiceContext.js', () => {
+vi.mock('./contexts/TutorialChoiceContext', () => {
   const React = require('react');
   return {
     __esModule: true,

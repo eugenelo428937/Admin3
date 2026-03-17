@@ -28,7 +28,7 @@ describe('tutorialService', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         tutorialUrl: 'http://test-api/tutorials',
@@ -467,7 +467,7 @@ describe('tutorialService URL fallback', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config without tutorialUrl
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         apiBaseUrl: 'http://fallback-api',
@@ -506,7 +506,7 @@ describe('tutorialService apiUrl fallback', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock config with only apiUrl
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         apiUrl: 'http://apiurl-fallback',
@@ -546,7 +546,7 @@ describe('tutorialService empty config', () => {
 
     // Mock config with no URL values (empty strings are falsy)
     // Note: The fallback logic still produces '/tutorials' as URL
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         tutorialUrl: '',

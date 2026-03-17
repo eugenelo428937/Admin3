@@ -10,8 +10,8 @@
  * - URL parameter aliases
  */
 
-import { renderWithProviders, simulateUrlChange, createMockStore } from '../test-utils/testHelpers.js';
-import { setSubjects, setCategories } from '../store/slices/filtersSlice.js';
+import { renderWithProviders, simulateUrlChange, createMockStore } from '../test-utils/testHelpers';
+import { setSubjects, setCategories } from '../store/slices/filtersSlice';
 import { waitFor } from '@testing-library/react';
 
 // TDD RED Phase: These tests MUST FAIL until backward compatibility features are implemented

@@ -21,8 +21,8 @@ import {
     clearAllFilters,
     clearFilterType,
     clearValidationErrors
-} from '../../store/slices/filtersSlice.js';
-import { FilterRegistry } from '../../store/filters/filterRegistry.js';
+} from '../../store/slices/filtersSlice';
+import { FilterRegistry } from '../../store/filters/filterRegistry';
 import type {
     FilterPanelProps,
     FilterState,

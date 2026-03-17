@@ -21,7 +21,7 @@ vi.mock('../httpService', () => ({
   },
 }));
 
-vi.mock('../../config.js', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     productsUrl: 'http://test-api/products',

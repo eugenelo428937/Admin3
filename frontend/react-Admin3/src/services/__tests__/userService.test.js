@@ -21,7 +21,7 @@ describe('userService', () => {
     vi.resetModules();
 
     // Mock config
-    vi.doMock('../../config.js', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         userUrl: 'http://test-api/users',
