@@ -133,7 +133,7 @@ vi.mock('../../components/Effects/CopperRoseBackground.js', () => ({
   default: () => null,
 }));
 
-import Home from '../Home.js';
+import Home from '../Home.tsx';
 import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
 
 describe('Home Page', () => {

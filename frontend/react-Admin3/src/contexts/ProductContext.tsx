@@ -1,13 +1,26 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import productService from "../services/productService";
-import { useConfig } from "./ConfigContext.js";
+import { useConfig } from "./ConfigContext";
 
-const ProductContext = createContext();
+interface ProductContextValue {
+  products: any[];
+  setProducts: React.Dispatch<React.SetStateAction<any[]>>;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  error: any;
+  setError: React.Dispatch<React.SetStateAction<any>>;
+}
 
-export const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface ProductProviderProps {
+  children: ReactNode;
+}
+
+const ProductContext = createContext<ProductContextValue | undefined>(undefined);
+
+export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) => {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<any>(null);
   const { isInternal, configLoaded } = useConfig();
 
   useEffect(() => {
@@ -19,18 +32,18 @@ export const ProductProvider = ({ children }) => {
     }
 
     productService.getAvailableProducts().then(
-      (response) => {
+      (response: any) => {
         setProducts(response.products || []);
         setLoading(false);
       },
-      (error) => {
+      (error: any) => {
         setError(error);
         setLoading(false);
       }
     );
   }, [configLoaded, isInternal]);
 
-  const value = {
+  const value: ProductContextValue = {
     products,
     setProducts,
     loading,
@@ -46,7 +59,7 @@ export const ProductProvider = ({ children }) => {
   );
 };
 
-export const useProduct = () => {
+export const useProduct = (): ProductContextValue => {
   const context = useContext(ProductContext);
   if (!context) {
     throw new Error("useProduct must be used within a ProductProvider");
@@ -54,7 +67,7 @@ export const useProduct = () => {
   return context;
 };
 
-export const useProducts = () => {
+export const useProducts = (): ProductContextValue => {
   const context = useContext(ProductContext);
   if (!context) {
     throw new Error("useProducts must be used within a ProductProvider");
@@ -62,4 +75,5 @@ export const useProducts = () => {
   return context;
 };
 
+export { ProductContext };
 export default ProductContext;

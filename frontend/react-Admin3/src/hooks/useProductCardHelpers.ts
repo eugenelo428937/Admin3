@@ -2,12 +2,23 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useCart } from '../contexts/CartContext.tsx';
 import productService from '../services/productService';
 
+interface BulkDeadlines {
+    [key: string]: any;
+}
+
+interface UseProductCardHelpersReturn {
+    handleAddToCart: (product: any, priceInfo: any) => void;
+    allEsspIds: (string | number)[];
+    allStoreProductIds: (string | number)[];
+    bulkDeadlines: BulkDeadlines;
+}
+
 /**
  * Custom hook for managing product card functionality
  * Provides reusable cart operations and deadline management
  */
-const useProductCardHelpers = (products = []) => {
-    const [bulkDeadlines, setBulkDeadlines] = useState({});
+const useProductCardHelpers = (products: any[] = []): UseProductCardHelpersReturn => {
+    const [bulkDeadlines, setBulkDeadlines] = useState<BulkDeadlines>({});
     const { addToCart } = useCart();
 
     // Memoize expensive calculations - extract store product IDs for marking products
@@ -19,11 +30,11 @@ const useProductCardHelpers = (products = []) => {
 
     // Create a stable string representation of IDs for comparison
     const idsString = useMemo(() => {
-        return allStoreProductIds.sort().join(',');
+        return [...allStoreProductIds].sort().join(',');
     }, [allStoreProductIds]);
 
     // Handle add to cart functionality
-    const handleAddToCart = useCallback((product, priceInfo) => {
+    const handleAddToCart = useCallback((product: any, priceInfo: any) => {
         addToCart(product, priceInfo);
     }, [addToCart]);
 
@@ -32,10 +43,10 @@ const useProductCardHelpers = (products = []) => {
         if (allStoreProductIds.length > 0) {
             productService
                 .getBulkMarkingDeadlines(allStoreProductIds)
-                .then((deadlines) => {
+                .then((deadlines: BulkDeadlines) => {
                     setBulkDeadlines(deadlines);
                 })
-                .catch((error) => {
+                .catch((error: any) => {
                     console.error('Failed to fetch bulk deadlines:', error);
                     setBulkDeadlines({});
                 });
@@ -53,4 +64,4 @@ const useProductCardHelpers = (products = []) => {
     };
 };
 
-export default useProductCardHelpers; 
+export default useProductCardHelpers;

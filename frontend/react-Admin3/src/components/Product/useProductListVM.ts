@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import { useCart } from '../../contexts/CartContext';
-import useProductsSearch from '../../hooks/useProductsSearch.js';
-import useProductCardHelpers from '../../hooks/useProductCardHelpers.js';
+import useProductsSearch from '../../hooks/useProductsSearch';
+import useProductCardHelpers from '../../hooks/useProductCardHelpers';
 import rulesEngineService from '../../services/rulesEngineService';
 
 // Redux imports

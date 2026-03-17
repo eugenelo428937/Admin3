@@ -10,14 +10,14 @@ import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth.tsx";
-import { ConfigProvider } from "./contexts/ConfigContext.js";
+import { ConfigProvider } from "./contexts/ConfigContext";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
-import Home from "./pages/Home.js";
+import Home from "./pages/Home.tsx";
 import MainNavBar from "./components/Navigation/MainNavBar.tsx";
 import NoMatch from "./components/NoMatch.tsx";
 import { CartProvider } from "./contexts/CartContext.tsx";
-import { ProductProvider } from "./contexts/ProductContext.js";
-import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext.js";
+import { ProductProvider } from "./contexts/ProductContext";
+import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext";
 import { Container } from "@mui/material";
 import Footer from "./components/Footer";
 import "./App.scss";
@@ -25,7 +25,7 @@ import "./App.scss";
 // --- Lazy-loaded routes (code-split into separate chunks) ---
 
 // Public pages
-const ProfilePage = React.lazy(() => import("./pages/ProfilePage.js"));
+const ProfilePage = React.lazy(() => import("./pages/ProfilePage.tsx"));
 const ProductList = React.lazy(() => import("./components/Product/ProductList.tsx"));
 const CheckoutPage = React.lazy(() => import("./components/Ordering/CheckoutPage.tsx"));
 const OrderHistory = React.lazy(() => import("./components/User/OrderHistory.tsx"));
@@ -35,9 +35,9 @@ const ResetPasswordForm = React.lazy(() => import("./components/User/ResetPasswo
 const AccountActivation = React.lazy(() => import("./components/User/AccountActivation.tsx"));
 const ResendActivation = React.lazy(() => import("./components/User/ResendActivation.tsx"));
 const EmailVerification = React.lazy(() => import("./components/User/EmailVerification.tsx"));
-const StyleGuide = React.lazy(() => import("./pages/StyleGuide.js"));
+const StyleGuide = React.lazy(() => import("./pages/StyleGuide.tsx"));
 const MaterialThemeVisualizer = React.lazy(() => import("./components/styleguide/MaterialThemeVisualizer.js"));
-const Registration = React.lazy(() => import('./pages/Registration.js'));
+const Registration = React.lazy(() => import('./pages/Registration.tsx'));
 
 // Admin: Exam Sessions, Subjects, Products (US2)
 const AdminExamSessionList = React.lazy(() => import("./components/admin/exam-sessions/ExamSessionList.tsx"));

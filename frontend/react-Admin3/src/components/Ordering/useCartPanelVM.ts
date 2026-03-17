@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext.tsx';
-import { useTutorialChoice } from '../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../contexts/TutorialChoiceContext';
 import { useAuth } from '../../hooks/useAuth.tsx';
 import type { CartItem, CartData } from '../../types/cart';
 
