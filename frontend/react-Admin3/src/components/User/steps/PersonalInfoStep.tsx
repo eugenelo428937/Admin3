@@ -4,7 +4,7 @@ import {
 } from "@mui/material";
 import { Person } from "@mui/icons-material";
 import ValidatedPhoneInput from "../ValidatedPhoneInput.tsx";
-import config from "../../../config.js";
+import config from "../../../config";
 import { useTheme } from "@mui/material/styles";
 import type { WizardMode, WizardStepData, WizardValidationErrors } from "../../../types/auth";
 import type { Country, PhoneValidationResult } from "../../../types/auth";

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 import type { Theme } from '@mui/material';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
 import type { TutorialChoiceData, ChoiceLevel } from '../../../../types/browse';
 
 // ─── Choice Detail ──────────────────────────────────────────────

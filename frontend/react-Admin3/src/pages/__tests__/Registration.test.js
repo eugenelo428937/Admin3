@@ -64,7 +64,7 @@ vi.mock('../../components/User/UserFormWizard.tsx', () => ({
   },
 }));
 
-import Registration from '../Registration.js';
+import Registration from '../Registration.tsx';
 
 describe('Registration Page', () => {
   beforeEach(() => {

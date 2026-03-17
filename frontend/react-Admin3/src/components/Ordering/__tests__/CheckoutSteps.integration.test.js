@@ -50,7 +50,7 @@ vi.mock('../../../hooks/useCheckoutValidation.ts', () => ({
 }));
 
 // Mock productCodeGenerator
-vi.mock('../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 
@@ -99,7 +99,7 @@ vi.mock('../../../services/userService.ts', () => ({
   }
 }));
 
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: {
     API_BASE_URL: 'http://localhost:8888',

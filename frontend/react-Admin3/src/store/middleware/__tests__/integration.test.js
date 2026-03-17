@@ -19,14 +19,14 @@ import {
   createMockStore,
   waitForStateUpdate,
   simulateUrlChange,
-} from '../../../test-utils/testHelpers.js';
+} from '../../../test-utils/testHelpers';
 import {
   setSubjects,
   setCategories,
   setProductTypes,
   setSearchQuery,
   clearAllFilters,
-} from '../../slices/filtersSlice.js';
+} from '../../slices/filtersSlice';
 
 describe('Redux Middleware Integration', () => {
 

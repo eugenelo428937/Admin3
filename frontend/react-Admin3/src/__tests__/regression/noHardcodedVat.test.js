@@ -245,7 +245,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
 
         throw new Error(
           `Found components missing vatUtils import:\n${message}\n\n` +
-          `Import { formatVatLabel } from '../../utils/vatUtils.js' to format VAT rates.`
+          `Import { formatVatLabel } from '../../utils/vatUtils' to format VAT rates.`
         );
       }
 
@@ -302,12 +302,12 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
     });
   });
 
-  describe('vatUtils.js integrity', () => {
-    test('vatUtils.js does not contain hardcoded VAT rates', () => {
-      const vatUtilsPath = path.join(utilsDir, 'vatUtils.js');
+  describe('vatUtils.ts integrity', () => {
+    test('vatUtils.ts does not contain hardcoded VAT rates', () => {
+      const vatUtilsPath = path.join(utilsDir, 'vatUtils.ts');
 
       if (!fs.existsSync(vatUtilsPath)) {
-        throw new Error('vatUtils.js not found! It should exist in src/utils/');
+        throw new Error('vatUtils.ts not found! It should exist in src/utils/');
       }
 
       const content = fs.readFileSync(vatUtilsPath, 'utf8');
@@ -315,7 +315,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
       // Check that vatUtils doesn't have getVatRate() function
       if (content.match(/export\s+(const|function)\s+getVatRate/)) {
         throw new Error(
-          'vatUtils.js contains getVatRate() function!\n' +
+          'vatUtils.ts contains getVatRate() function!\n' +
           'This function should not exist. VAT rates come from API only.'
         );
       }
@@ -323,7 +323,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
       // Check that vatUtils doesn't have calculateVat() function
       if (content.match(/export\s+(const|function)\s+calculateVat/)) {
         throw new Error(
-          'vatUtils.js contains calculateVat() function!\n' +
+          'vatUtils.ts contains calculateVat() function!\n' +
           'This function should not exist. VAT calculation happens on backend only.'
         );
       }
@@ -331,7 +331,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
       // Check for hardcoded rate objects
       if (content.match(/['"]UK['"]\s*:\s*0\.20/) || content.match(/['"]SA['"]\s*:\s*0\.15/)) {
         throw new Error(
-          'vatUtils.js contains hardcoded VAT rate mappings!\n' +
+          'vatUtils.ts contains hardcoded VAT rate mappings!\n' +
           'VAT rates should come from API only.'
         );
       }
@@ -339,8 +339,8 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
       expect(content).toBeTruthy();
     });
 
-    test('vatUtils.js exports required formatting functions', () => {
-      const vatUtilsPath = path.join(utilsDir, 'vatUtils.js');
+    test('vatUtils.ts exports required formatting functions', () => {
+      const vatUtilsPath = path.join(utilsDir, 'vatUtils.ts');
       const content = fs.readFileSync(vatUtilsPath, 'utf8');
 
       // Check for required exports
@@ -360,7 +360,7 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
 
       if (missingExports.length > 0) {
         throw new Error(
-          `vatUtils.js is missing required exports: ${missingExports.join(', ')}`
+          `vatUtils.ts is missing required exports: ${missingExports.join(', ')}`
         );
       }
 

@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real contexts
-vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 vi.unmock('../../../../../contexts/CartContext.tsx');
 
 // Mock httpService before importing anything else
@@ -16,7 +16,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import TutorialProductCard from '../TutorialProductCard';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext.js';
+import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
 import { CartProvider } from '../../../../../contexts/CartContext.tsx';
 
 // Mock tutorial service

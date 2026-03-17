@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext.tsx';
-import { useTutorialChoice } from '../../contexts/TutorialChoiceContext.js';
+import { useTutorialChoice } from '../../contexts/TutorialChoiceContext';
 import cartService from '../../services/cartService.ts';
 import type { CartItem } from '../../types/cart';
 import type { CheckoutPaymentData } from '../../types/checkout';
