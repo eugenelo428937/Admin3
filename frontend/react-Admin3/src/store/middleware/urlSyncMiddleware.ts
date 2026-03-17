@@ -15,16 +15,17 @@
  */
 
 import { createListenerMiddleware } from '@reduxjs/toolkit';
-import { toUrlParams, fromUrlParams } from '../../utils/filterUrlManager.js';
-import PerformanceTracker from '../../utils/PerformanceTracker.js';
-import { URL_SYNC_BUDGET } from '../../config/performanceBudgets.js';
+import { toUrlParams, fromUrlParams } from '../../utils/filterUrlManager';
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { URL_SYNC_BUDGET } from '../../config/performanceBudgets';
+import { setMultipleFilters as _setMultipleFilters } from '../slices/filtersSlice';
 
 /**
  * URL Parameter Mapping Configuration
  *
  * Defines how Redux state fields map to URL query parameters
  */
-const URL_PARAM_MAPPING = {
+const URL_PARAM_MAPPING: Record<string, { reduxField: string; urlParam: string; format: string; type: string }> = {
   subjects: {
     reduxField: 'subjects',
     urlParam: 'subject_code',
@@ -71,10 +72,10 @@ const URL_PARAM_MAPPING = {
  *
  * Uses centralized FilterUrlManager.fromUrlParams() (Story 1.10)
  *
- * @param {URLSearchParams} params - URL query parameters
- * @returns {Object} Partial FilterState object
+ * @param params - URL query parameters
+ * @returns Partial FilterState object
  */
-export const parseUrlToFilters = (params) => {
+export const parseUrlToFilters = (params: URLSearchParams): any => {
   return fromUrlParams(params);
 };
 
@@ -85,10 +86,10 @@ export const parseUrlToFilters = (params) => {
  *
  * Uses centralized FilterUrlManager.toUrlParams() (Story 1.10)
  *
- * @param {Object} filters - Redux filter state
- * @returns {URLSearchParams} URL query parameters
+ * @param filters - Redux filter state
+ * @returns URL query parameters
  */
-const buildUrlFromFilters = (filters) => {
+const buildUrlFromFilters = (filters: any): URLSearchParams => {
   return toUrlParams(filters);
 };
 
@@ -101,10 +102,10 @@ const buildUrlFromFilters = (filters) => {
 export const urlSyncMiddleware = createListenerMiddleware();
 
 // Track last URL parameters to prevent infinite loops
-let lastUrlParams = null;
+let lastUrlParams: string | null = null;
 
 // Define all filter action types that should trigger URL updates (Story 1.1, 1.16)
-const FILTER_ACTION_TYPES = [
+const FILTER_ACTION_TYPES: string[] = [
   'filters/setSubjects',
   'filters/setCategories',
   'filters/setProductTypes',
@@ -136,14 +137,14 @@ const FILTER_ACTION_TYPES = [
 ];
 
 // Pages where URL sync should be active
-const URL_SYNC_PAGES = ['/products', '/home', '/'];
+const URL_SYNC_PAGES: string[] = ['/products', '/home', '/'];
 
 /**
  * Check if current page should have URL sync enabled
  * Only sync on product-related pages to avoid stripping query params on other pages
  * (e.g., /auth/activate?uid=xxx&token=xxx)
  */
-const shouldSyncUrl = () => {
+const shouldSyncUrl = (): boolean => {
   if (typeof window === 'undefined') return false;
   const pathname = window.location.pathname;
   return URL_SYNC_PAGES.some(page => pathname === page || pathname.startsWith(page + '/'));
@@ -151,11 +152,11 @@ const shouldSyncUrl = () => {
 
 // Start listening to filter actions
 urlSyncMiddleware.startListening({
-  predicate: (action) => {
+  predicate: (action: any): boolean => {
     // Listen to all filter actions
     return FILTER_ACTION_TYPES.includes(action.type);
   },
-  effect: (action, listenerApi) => {
+  effect: (action: any, listenerApi: any) => {
     // Only sync URL on product-related pages
     if (!shouldSyncUrl()) {
       return;
@@ -181,7 +182,7 @@ urlSyncMiddleware.startListening({
       }
       return;
     }
-    
+
 
     // Update last URL params
     lastUrlParams = urlString;
@@ -200,7 +201,7 @@ urlSyncMiddleware.startListening({
         urlLength: urlString.length
       });
 
-      if (metric && !import.meta.env?.PROD) {
+      if (metric && !(import.meta as any).env?.PROD) {
         PerformanceTracker.checkBudget('urlSync', metric.duration, URL_SYNC_BUDGET);
       }
     }
@@ -217,12 +218,12 @@ urlSyncMiddleware.startListening({
  * - Redux → URL: Handled by middleware listener above
  * - URL → Redux: Handled by this popstate listener + initial URL parsing
  *
- * @param {Function} dispatch - Redux store dispatch function
+ * @param dispatch - Redux store dispatch function
  */
-export const setupUrlToReduxSync = (dispatch) => {
+export const setupUrlToReduxSync = (dispatch: (action: any) => any): (() => void) | undefined => {
   if (typeof window === 'undefined') return;
 
-  const handlePopState = () => {
+  const handlePopState = (): void => {
     // Only sync on product-related pages
     if (!shouldSyncUrl()) return;
 
@@ -235,7 +236,7 @@ export const setupUrlToReduxSync = (dispatch) => {
     import('../slices/filtersSlice').then(({ setMultipleFilters }) => {
       // Dispatch action to update Redux state with URL filters
       dispatch(setMultipleFilters(filters));
-    }).catch(error => {
+    }).catch((error: any) => {
       console.error('[urlSyncMiddleware] Failed to import filtersSlice:', error);
     });
   };
@@ -245,14 +246,9 @@ export const setupUrlToReduxSync = (dispatch) => {
   if (shouldSyncUrl()) {
     const initialParams = new URLSearchParams(window.location.search);
     if (initialParams.toString()) {
-      // Use require() for synchronous loading (needed for tests that check state immediately)
-      try {
-        const { setMultipleFilters } = require('../slices/filtersSlice.js');
-        const filters = parseUrlToFilters(initialParams);
-        dispatch(setMultipleFilters(filters));
-      } catch (error) {
-        console.error('[urlSyncMiddleware] Failed to load filtersSlice for initial URL:', error);
-      }
+      // Use top-level import for synchronous initial URL restoration
+      const filters = parseUrlToFilters(initialParams);
+      dispatch(_setMultipleFilters(filters));
     }
   }
 

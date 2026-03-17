@@ -9,6 +9,11 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 
+// Root state type - uses any for filters to avoid circular dependency with store/index.ts
+interface RootStateWithFilters {
+  filters: any;
+}
+
 // ========================================
 // Basic Selectors (11 selectors)
 // ========================================
@@ -19,14 +24,14 @@ import { createSelector } from '@reduxjs/toolkit';
  * Memoized to prevent unnecessary re-renders
  */
 export const selectFilters = createSelector(
-  [(state) => state.filters],
-  (filters) => ({
-    subjects: filters.subjects,
-    categories: filters.categories,
-    product_types: filters.product_types,
-    products: filters.products,
-    modes_of_delivery: filters.modes_of_delivery,
-    searchQuery: filters.searchQuery
+  [(state: RootStateWithFilters) => state.filters],
+  (filters: any) => ({
+    subjects: filters.subjects as string[],
+    categories: filters.categories as string[],
+    product_types: filters.product_types as string[],
+    products: filters.products as string[],
+    modes_of_delivery: filters.modes_of_delivery as string[],
+    searchQuery: filters.searchQuery as string
   })
 );
 
@@ -34,62 +39,62 @@ export const selectFilters = createSelector(
  * selectSearchQuery
  * Returns the current search query string
  */
-export const selectSearchQuery = (state) => state.filters.searchQuery;
+export const selectSearchQuery = (state: RootStateWithFilters): string => state.filters.searchQuery;
 
 /**
  * selectSearchFilterProductIds
  * Returns the ESSP product IDs array from fuzzy search
  * These are ExamSessionSubjectProduct.id values (NOT product.id)
  */
-export const selectSearchFilterProductIds = (state) => state.filters.searchFilterProductIds;
+export const selectSearchFilterProductIds = (state: RootStateWithFilters): number[] => state.filters.searchFilterProductIds;
 
 /**
  * selectCurrentPage
  * Returns the current page number for pagination
  */
-export const selectCurrentPage = (state) => state.filters.currentPage;
+export const selectCurrentPage = (state: RootStateWithFilters): number => state.filters.currentPage;
 
 /**
  * selectPageSize
  * Returns the page size for pagination
  */
-export const selectPageSize = (state) => state.filters.pageSize;
+export const selectPageSize = (state: RootStateWithFilters): number => state.filters.pageSize;
 
 /**
  * selectIsFilterPanelOpen
  * Returns whether the filter panel is open
  */
-export const selectIsFilterPanelOpen = (state) => state.filters.isFilterPanelOpen;
+export const selectIsFilterPanelOpen = (state: RootStateWithFilters): boolean => state.filters.isFilterPanelOpen;
 
 /**
  * selectIsLoading
  * Returns the loading state
  */
-export const selectIsLoading = (state) => state.filters.isLoading;
+export const selectIsLoading = (state: RootStateWithFilters): boolean => state.filters.isLoading;
 
 /**
  * selectError
  * Returns the current error (null if no error)
  */
-export const selectError = (state) => state.filters.error;
+export const selectError = (state: RootStateWithFilters): string | null => state.filters.error;
 
 /**
  * selectFilterCounts
  * Returns the filter counts object from API responses
  */
-export const selectFilterCounts = (state) => state.filters.filterCounts;
+export const selectFilterCounts = (state: RootStateWithFilters): any => state.filters.filterCounts;
 
 /**
  * selectAppliedFilters
  * Returns the cached snapshot of applied filters
  */
-export const selectAppliedFilters = (state) => state.filters.appliedFilters;
+export const selectAppliedFilters = (state: RootStateWithFilters): any => state.filters.appliedFilters;
 
 /**
  * selectLastUpdated
  * Returns the timestamp of last filter update
  */
-export const selectLastUpdated = (state) => state.filters.lastUpdated;
+export const selectLastUpdated = (state: RootStateWithFilters): number | null => state.filters.lastUpdated;
 
 // ========================================
 // Validation Selectors (2 selectors)
@@ -99,16 +104,16 @@ export const selectLastUpdated = (state) => state.filters.lastUpdated;
  * selectValidationErrors
  * Returns the array of validation errors (Story 1.16 - safe default)
  */
-export const selectValidationErrors = (state) => state.filters.validationErrors || [];
+export const selectValidationErrors = (state: RootStateWithFilters): any[] => state.filters.validationErrors || [];
 
 /**
  * selectHasValidationErrors
  * Returns true if there are any validation errors with severity='error'
  * Does NOT count warnings (Story 1.16 - safe default)
  */
-export const selectHasValidationErrors = (state) => {
+export const selectHasValidationErrors = (state: RootStateWithFilters): boolean => {
   const errors = state.filters.validationErrors || [];
-  return errors.some(error => error.severity === 'error');
+  return errors.some((error: any) => error.severity === 'error');
 };
 
 // ========================================

@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import appTheme from '../theme';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../store/slices/filtersSlice.js';
+import filtersReducer from '../store/slices/filtersSlice';
 
 // Import context providers for optional use
 import { CartContext } from '../contexts/CartContext.tsx';

@@ -1,12 +1,12 @@
 /**
  * RTK Query Catalog API Service
- * 
+ *
  * Provides cached API queries for the product catalog including the unified search endpoint.
  * Handles caching, invalidation, and automatic re-fetching.
  */
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import config from '../../config.js';
+import config from '../../config';
 
 // Base query with authentication and error handling
 const baseQuery = fetchBaseQuery({
@@ -17,16 +17,16 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
-    
+
     headers.set('content-type', 'application/json');
     return headers;
   },
 });
 
 // Enhanced base query with error handling
-const baseQueryWithReauth = async (args, api, extraOptions) => {
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
-  
+
   // Handle 401 unauthorized responses
   if (result.error && result.error.status === 401) {
     // Try to refresh token
@@ -42,10 +42,10 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
           api,
           extraOptions
         );
-        
+
         if (refreshResult.data) {
-          localStorage.setItem('access_token', refreshResult.data.access);
-          
+          localStorage.setItem('access_token', (refreshResult.data as any).access);
+
           // Retry the original query with new token
           result = await baseQuery(args, api, extraOptions);
         } else {
@@ -59,18 +59,44 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
       }
     }
   }
-  
+
   return result;
 };
+
+interface UnifiedSearchParams {
+  searchQuery?: string;
+  filters?: Record<string, any>;
+  pagination?: { page: number; page_size: number };
+  options?: Record<string, any>;
+  navbarFilters?: Record<string, string>;
+}
+
+interface UnifiedSearchResponse {
+  products: any[];
+  filterCounts: Record<string, any>;
+  pagination: {
+    page: number;
+    page_size: number;
+    total_count: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+}
+
+interface SearchErrorResponse {
+  status: number;
+  error: string;
+  details: any;
+}
 
 export const catalogApi = createApi({
   reducerPath: 'catalogApi',
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Products', 'Filters', 'Search'],
   endpoints: (builder) => ({
-    
+
     // Unified search endpoint - the main filtering API
-    unifiedSearch: builder.query({
+    unifiedSearch: builder.query<UnifiedSearchResponse, UnifiedSearchParams>({
       query: ({ searchQuery = '', filters = {}, pagination = { page: 1, page_size: 20 }, options = {}, navbarFilters = {} }) => {
         // Build query string for navbar filters
         const queryParams = new URLSearchParams();
@@ -106,7 +132,7 @@ export const catalogApi = createApi({
         const filterHash = Object.keys(arg.filters || {})
           .sort()
           .map(key => {
-            const value = arg.filters[key];
+            const value = (arg.filters || {})[key];
             if (Array.isArray(value)) {
               return `${key}:${value.join('-')}`;
             }
@@ -127,7 +153,7 @@ export const catalogApi = createApi({
       // Keep search results cached for 5 minutes
       keepUnusedDataFor: 300, // 5 minutes
       // Transform response to ensure consistent structure
-      transformResponse: (response) => {
+      transformResponse: (response: any): UnifiedSearchResponse => {
         return {
           products: response.products || [],
           filterCounts: response.filter_counts || {},
@@ -141,7 +167,7 @@ export const catalogApi = createApi({
         };
       },
       // Error transformation for better error messages
-      transformErrorResponse: (response, meta, arg) => {
+      transformErrorResponse: (response: any, meta: any, arg: any): SearchErrorResponse => {
         return {
           status: response.status,
           error: response.data?.error || 'Search request failed',
@@ -149,9 +175,9 @@ export const catalogApi = createApi({
         };
       },
     }),
-    
+
     // List store products (purchasable items)
-    listProducts: builder.query({
+    listProducts: builder.query<any, Record<string, string>>({
       query: (params = {}) => {
         const queryString = new URLSearchParams(params).toString();
         return `store/products/${queryString ? `?${queryString}` : ''}`;
@@ -161,23 +187,23 @@ export const catalogApi = createApi({
     }),
 
     // Get filter configuration (stays in products app)
-    getFilterConfiguration: builder.query({
+    getFilterConfiguration: builder.query<any, string[]>({
       query: (filterTypes = []) => {
-        const params = filterTypes.length > 0 ? { types: filterTypes } : {};
+        const params: Record<string, string> = filterTypes.length > 0 ? { types: filterTypes as any } : {};
         const queryString = new URLSearchParams(params).toString();
         return `products/filter-configuration/${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Filters'],
       keepUnusedDataFor: 600, // 10 minutes - filter config changes less frequently
     }),
-    
+
     // Get default search data (subjects, categories, etc.)
-    getDefaultSearchData: builder.query({
+    getDefaultSearchData: builder.query<any, void>({
       query: () => 'search/default-data/',
       providesTags: ['Filters'],
       keepUnusedDataFor: 600, // 10 minutes
     }),
-    
+
   }),
 });
 

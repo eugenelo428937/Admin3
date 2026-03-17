@@ -6,7 +6,7 @@ import searchService from '../services/searchService';
 import {
     setSearchQuery as setSearchQueryAction,
     selectSearchQuery,
-} from '../store/slices/filtersSlice.js';
+} from '../store/slices/filtersSlice';
 
 interface SearchResults {
     suggested_filters: {

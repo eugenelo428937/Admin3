@@ -5,7 +5,7 @@ import {
   buildTutorialMetadata,
   buildTutorialProductData,
   buildTutorialPriceData,
-} from '../../../../utils/tutorialMetadataBuilder.js';
+} from '../../../../utils/tutorialMetadataBuilder';
 import type {
   FlattenedTutorialEvent,
   ChoiceLevel,

@@ -31,8 +31,8 @@ import {
     resetFilters,
     setCurrentPage,
     clearError
-} from '../../store/slices/filtersSlice.js';
-import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware.js';
+} from '../../store/slices/filtersSlice';
+import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware';
 
 import type {
     BrowseProduct,

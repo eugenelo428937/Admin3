@@ -61,7 +61,7 @@ vi.mock('../../../services/address/addressMetadataService.ts', () => ({
   }
 }));
 
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://test-api.com'

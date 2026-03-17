@@ -5,13 +5,33 @@
  * Eliminates duplicated URL logic across urlSyncMiddleware and ProductList.
  *
  * Performance: < 1ms per conversion (target)
- * Coverage: ≥95% test coverage
+ * Coverage: >=95% test coverage
  *
  * Story 1.10 - Centralized URL Parameter Utility
  * Story 1.11 - Migrated to use FilterRegistry (AC7)
  */
 
-import { FilterRegistry } from '../store/filters/filterRegistry.js';
+import { FilterRegistry } from '../store/filters/filterRegistry';
+
+export interface FilterState {
+  subjects: string[];
+  categories: string[];
+  product_types: string[];
+  products: string[];
+  modes_of_delivery: string[];
+  searchQuery: string;
+  currentPage?: number;
+  pageSize?: number;
+  [key: string]: string | string[] | number | boolean | undefined;
+}
+
+interface FilterConfig {
+  type: string;
+  dataType: 'string' | 'array' | 'boolean' | 'number';
+  urlParam: string;
+  urlFormat?: 'indexed' | 'comma-separated';
+  urlParamAliases?: string[];
+}
 
 /**
  * DEPRECATED: URL_PARAM_KEYS - Use FilterRegistry instead
@@ -29,12 +49,12 @@ export const URL_PARAM_KEYS = {
   SEARCH_QUERY: 'search_query',
   SEARCH_ALIAS: 'q',
   SUBJECT_ALIAS: 'subject',
-};
+} as const;
 
 /**
  * Default empty filter structure
  */
-const DEFAULT_FILTERS = {
+const DEFAULT_FILTERS: FilterState = {
   subjects: [],
   categories: [],
   product_types: [],
@@ -45,10 +65,8 @@ const DEFAULT_FILTERS = {
 
 /**
  * Convert filter object to URL parameters
- * @param {Object} filters - Filter object from Redux state
- * @returns {URLSearchParams} URL search parameters
  */
-export const toUrlParams = (filters) => {
+export const toUrlParams = (filters: Partial<FilterState> | null | undefined): URLSearchParams => {
   const params = new URLSearchParams();
 
   // Handle null/undefined filters
@@ -57,11 +75,11 @@ export const toUrlParams = (filters) => {
   }
 
   // Helper to add indexed parameters (subject_code, subject_1, subject_2)
-  const addIndexedParams = (values, baseParam, indexedBase) => {
+  const addIndexedParams = (values: unknown, baseParam: string, indexedBase: string): void => {
     if (!values || !Array.isArray(values)) return;
 
     // Filter out empty strings and null/undefined values
-    const validValues = values.filter(v => v && v.toString().trim() !== '');
+    const validValues = values.filter((v: unknown) => v && String(v).trim() !== '');
 
     if (validValues.length === 0) return;
 
@@ -75,11 +93,11 @@ export const toUrlParams = (filters) => {
   };
 
   // Helper to add comma-separated parameters
-  const addCommaSeparatedParam = (values, paramName) => {
+  const addCommaSeparatedParam = (values: unknown, paramName: string): void => {
     if (!values || !Array.isArray(values)) return;
 
     // Filter out empty strings and null/undefined values
-    const validValues = values.filter(v => v && v.toString().trim() !== '');
+    const validValues = values.filter((v: unknown) => v && String(v).trim() !== '');
 
     if (validValues.length === 0) return;
 
@@ -87,9 +105,9 @@ export const toUrlParams = (filters) => {
   };
 
   // Dynamically add filters using FilterRegistry (Story 1.11 AC7)
-  const registeredFilters = FilterRegistry.getAll();
+  const registeredFilters: FilterConfig[] = FilterRegistry.getAll();
 
-  registeredFilters.forEach((config) => {
+  registeredFilters.forEach((config: FilterConfig) => {
     const filterType = config.type;
     const values = filters[filterType];
 
@@ -131,12 +149,10 @@ export const toUrlParams = (filters) => {
 
 /**
  * Parse URL parameters to filter object
- * @param {URLSearchParams|string} searchParams - URL search parameters or query string
- * @returns {Object} Filter object matching Redux state shape
  */
-export const fromUrlParams = (searchParams) => {
+export const fromUrlParams = (searchParams: URLSearchParams | string | null | undefined): FilterState => {
   // Initialize with default empty filter structure
-  const filters = { ...DEFAULT_FILTERS };
+  const filters: FilterState = { ...DEFAULT_FILTERS };
 
   // Handle null/undefined input
   if (!searchParams) {
@@ -144,7 +160,7 @@ export const fromUrlParams = (searchParams) => {
   }
 
   // Convert string to URLSearchParams if needed
-  let params;
+  let params: URLSearchParams;
   if (typeof searchParams === 'string') {
     params = new URLSearchParams(searchParams);
   } else if (searchParams instanceof URLSearchParams) {
@@ -154,8 +170,8 @@ export const fromUrlParams = (searchParams) => {
   }
 
   // Helper to parse indexed parameters (subject_code, subject_1, subject_2, etc.)
-  const parseIndexedParams = (baseParam, indexedBase) => {
-    const values = [];
+  const parseIndexedParams = (baseParam: string, indexedBase: string): string[] => {
+    const values: string[] = [];
 
     // Get base parameter (e.g., subject_code)
     const baseValue = params.get(baseParam);
@@ -166,7 +182,7 @@ export const fromUrlParams = (searchParams) => {
     // Get indexed parameters (e.g., subject_1, subject_2)
     // Stop at first gap in sequence
     let index = 1;
-    let indexedValue;
+    let indexedValue: string | null;
     while ((indexedValue = params.get(`${indexedBase}_${index}`)) !== null) {
       if (indexedValue && indexedValue.trim()) {
         values.push(indexedValue);
@@ -178,7 +194,7 @@ export const fromUrlParams = (searchParams) => {
   };
 
   // Helper to parse comma-separated parameters (group=PRINTED,EBOOK)
-  const parseCommaSeparatedParam = (param) => {
+  const parseCommaSeparatedParam = (param: string): string[] => {
     const value = params.get(param);
     if (!value) return [];
 
@@ -189,9 +205,9 @@ export const fromUrlParams = (searchParams) => {
   };
 
   // Dynamically parse filters using FilterRegistry (Story 1.11 AC7)
-  const registeredFilters = FilterRegistry.getAll();
+  const registeredFilters: FilterConfig[] = FilterRegistry.getAll();
 
-  registeredFilters.forEach((config) => {
+  registeredFilters.forEach((config: FilterConfig) => {
     const filterType = config.type;
 
     // Handle string filters (searchQuery)
@@ -205,7 +221,7 @@ export const fromUrlParams = (searchParams) => {
         }
       }
       if (value) {
-        filters[filterType] = value;
+        (filters as any)[filterType] = value;
       }
       return;
     }
@@ -215,10 +231,10 @@ export const fromUrlParams = (searchParams) => {
       if (config.urlFormat === 'indexed') {
         // Indexed format (e.g., subject_code, subject_1, subject_2)
         const indexedBase = config.urlParamAliases?.[0] || config.urlParam;
-        filters[filterType] = parseIndexedParams(config.urlParam, indexedBase);
+        (filters as any)[filterType] = parseIndexedParams(config.urlParam, indexedBase);
       } else if (config.urlFormat === 'comma-separated') {
         // Comma-separated format (e.g., group=PRINTED,EBOOK)
-        filters[filterType] = parseCommaSeparatedParam(config.urlParam);
+        (filters as any)[filterType] = parseCommaSeparatedParam(config.urlParam);
       }
     }
   });
@@ -246,11 +262,8 @@ export const fromUrlParams = (searchParams) => {
 
 /**
  * Build complete URL with query parameters
- * @param {Object} filters - Filter object from Redux state
- * @param {string} basePath - Base path (default: '/products')
- * @returns {string} Complete URL with query parameters
  */
-export const buildUrl = (filters, basePath = '/products') => {
+export const buildUrl = (filters: Partial<FilterState>, basePath: string = '/products'): string => {
   const params = toUrlParams(filters);
   const queryString = params.toString();
 
@@ -263,16 +276,14 @@ export const buildUrl = (filters, basePath = '/products') => {
 
 /**
  * Check if any filters are active
- * @param {Object} filters - Filter object from Redux state
- * @returns {boolean} True if any filters are active
  */
-export const hasActiveFilters = (filters) => {
+export const hasActiveFilters = (filters: Partial<FilterState> | null | undefined): boolean => {
   if (!filters) {
     return false;
   }
 
   // Dynamically check all registered filters (Story 1.11 AC7)
-  const registeredFilters = FilterRegistry.getAll();
+  const registeredFilters: FilterConfig[] = FilterRegistry.getAll();
 
   for (const config of registeredFilters) {
     const filterType = config.type;
@@ -304,11 +315,11 @@ export const hasActiveFilters = (filters) => {
 
 /**
  * Compare two filter objects for equality
- * @param {Object} filters1 - First filter object
- * @param {Object} filters2 - Second filter object
- * @returns {boolean} True if filters are equal
  */
-export const areFiltersEqual = (filters1, filters2) => {
+export const areFiltersEqual = (
+  filters1: Partial<FilterState> | null,
+  filters2: Partial<FilterState> | null
+): boolean => {
   // Handle null cases
   if (filters1 === null && filters2 === null) {
     return true;
@@ -319,7 +330,7 @@ export const areFiltersEqual = (filters1, filters2) => {
   }
 
   // Helper to compare arrays
-  const arraysEqual = (arr1, arr2) => {
+  const arraysEqual = (arr1: unknown, arr2: unknown): boolean => {
     if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
       return false;
     }
@@ -330,7 +341,7 @@ export const areFiltersEqual = (filters1, filters2) => {
   };
 
   // Dynamically compare all registered filters (Story 1.11 AC7)
-  const registeredFilters = FilterRegistry.getAll();
+  const registeredFilters: FilterConfig[] = FilterRegistry.getAll();
 
   for (const config of registeredFilters) {
     const filterType = config.type;

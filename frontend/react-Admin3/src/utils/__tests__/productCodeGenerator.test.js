@@ -11,7 +11,7 @@
  * - Session code extraction
  */
 
-import { generateProductCode } from '../productCodeGenerator.js';
+import { generateProductCode } from '../productCodeGenerator';
 
 describe('productCodeGenerator', () => {
   describe('generateProductCode', () => {

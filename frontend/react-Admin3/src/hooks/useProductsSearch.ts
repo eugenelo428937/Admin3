@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi.js';
+import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi';
 import {
   selectFilters,
   selectSearchQuery,
@@ -18,9 +18,9 @@ import {
   setError,
   clearError,
   setFilterCounts,
-} from '../store/slices/filtersSlice.js';
-import PerformanceTracker from '../utils/PerformanceTracker.js';
-import { API_CALL_BUDGET } from '../config/performanceBudgets.js';
+} from '../store/slices/filtersSlice';
+import PerformanceTracker from '../utils/PerformanceTracker';
+import { API_CALL_BUDGET } from '../config/performanceBudgets';
 
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 250;

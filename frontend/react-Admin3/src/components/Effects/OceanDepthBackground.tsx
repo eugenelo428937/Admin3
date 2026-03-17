@@ -1,12 +1,17 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
+import React from "react";
+import { useStripeWaveAnimation, WaveContainer, PaletteColor } from "./stripeMeshGradient";
+
+interface OceanDepthBackgroundProps {
+  style?: React.CSSProperties;
+}
 
 /**
- * Stripe-style twisted wave — Ocean palette.
+ * Stripe-style twisted wave -- Ocean palette.
  * Deep navy through teal and cerulean flowing ribbons.
  * Slower, more languid motion.
  */
-const OceanDepthBackground = ({ style }) => {
-  const palette = [
+const OceanDepthBackground: React.FC<OceanDepthBackgroundProps> = ({ style }) => {
+  const palette: PaletteColor[] = [
     [0.02, 0.06, 0.18], // Abyss navy
     [0.05, 0.20, 0.40], // Deep ocean
     [0.08, 0.38, 0.58], // Cerulean

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { TextField, Paper, List, ListItem, ListItemText, Box, Typography, Portal } from "@mui/material";
-import config from '../../config.js';
+import config from '../../config';
 import type { Country } from "../../types/auth";
 
 interface CountryWithIso extends Country {

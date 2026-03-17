@@ -17,8 +17,8 @@ import {
   useTheme
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { generateProductCode } from '../../../utils/productCodeGenerator.js';
-import { formatVatLabel, getEffectiveVatRate, getRegionDisplayName } from '../../../utils/vatUtils.js';
+import { generateProductCode } from '../../../utils/productCodeGenerator';
+import { formatVatLabel, getEffectiveVatRate, getRegionDisplayName } from '../../../utils/vatUtils';
 
 import type { CartItem, VATCalculations, VATItemCalculation } from '../../../types/cart';
 import type { PaymentMethod } from '../../../types/checkout';

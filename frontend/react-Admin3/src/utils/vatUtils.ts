@@ -10,28 +10,50 @@
  * Used across product cards, cart components, and checkout flows.
  */
 
+interface VatTotals {
+  effective_vat_rate?: number;
+  total_net?: number;
+  net?: number;
+  total_vat?: number;
+  vat?: number;
+  total_gross?: number;
+  gross?: number;
+}
+
+interface RegionInfo {
+  region?: string;
+}
+
+interface VatCalculations {
+  totals?: VatTotals;
+  region_info?: RegionInfo;
+}
+
+export interface VatBreakdown {
+  netAmount: string;
+  vatAmount: string;
+  grossAmount: string;
+  vatLabel: string;
+  vatRate: number;
+  region: string;
+}
+
 /**
  * Get effective VAT rate from API-provided VAT calculations.
- *
- * @param {object} vatCalculations - VAT calculations object from API
- * @returns {number} Effective VAT rate as decimal (e.g., 0.20 for 20%)
  *
  * @example
  * getEffectiveVatRate(vatCalculations)  // 0.20
  * getEffectiveVatRate(null)             // 0
  */
-export const getEffectiveVatRate = (vatCalculations) => {
+export const getEffectiveVatRate = (vatCalculations: VatCalculations | null | undefined): number => {
   return vatCalculations?.totals?.effective_vat_rate || 0;
 };
 
 /**
  * Get region display name.
- *
- * @param {string} region - VAT region code
- * @returns {string} Human-readable region name
  */
-export const getRegionDisplayName = (region) => {
-  const regionNames = {
+export const getRegionDisplayName = (region: string | null | undefined): string => {
+  const regionNames: Record<string, string> = {
     'UK': 'United Kingdom',
     'IE': 'Ireland',
     'SA': 'South Africa',
@@ -42,21 +64,18 @@ export const getRegionDisplayName = (region) => {
     'EU': 'European Union',
     'UNKNOWN': 'Unknown'
   };
-  return regionNames[region] || region || 'Unknown';
+  return regionNames[region || ''] || region || 'Unknown';
 };
 
 /**
  * Format VAT label with percentage.
- *
- * @param {number|null} effectiveVatRate - VAT rate as decimal from API (e.g., 0.20 for 20%)
- * @returns {string} Formatted VAT label (e.g., "VAT (20%)")
  *
  * @example
  * formatVatLabel(0.20)  // "VAT (20%)"
  * formatVatLabel(0.00)  // "VAT (0%)"
  * formatVatLabel(null)  // "VAT"
  */
-export const formatVatLabel = (effectiveVatRate) => {
+export const formatVatLabel = (effectiveVatRate: number | null | undefined): string => {
   if (effectiveVatRate !== undefined && effectiveVatRate !== null) {
     const percentage = (effectiveVatRate * 100).toFixed(0);
     return `VAT (${percentage}%)`;
@@ -67,16 +86,13 @@ export const formatVatLabel = (effectiveVatRate) => {
 /**
  * Get VAT status display text based on status code from API.
  *
- * @param {string} vatStatus - VAT status code from backend
- * @returns {string} Human-readable VAT status text
- *
  * @example
  * getVatStatusDisplay('included')       // "Price includes VAT"
  * getVatStatusDisplay('exempt')         // "VAT exempt"
  * getVatStatusDisplay('reverse_charge') // "Reverse charge applies"
  */
-export const getVatStatusDisplay = (vatStatus) => {
-  const statusMap = {
+export const getVatStatusDisplay = (vatStatus: string | null | undefined): string => {
+  const statusMap: Record<string, string> = {
     'included': 'Price includes VAT',
     'standard': 'Price includes VAT',
     'exempt': 'VAT exempt',
@@ -85,34 +101,26 @@ export const getVatStatusDisplay = (vatStatus) => {
     'reverse_charge': 'Reverse charge applies',
     'not_applicable': ''
   };
-  return statusMap[vatStatus] || 'Price includes VAT';
+  return statusMap[vatStatus || ''] || 'Price includes VAT';
 };
 
 /**
  * Format price with currency symbol.
  *
- * @param {number} price - Price value
- * @param {string} currency - Currency code (default: 'GBP')
- * @returns {string} Formatted price string
- *
  * @example
  * formatPrice(100.00)           // "£100.00"
- * formatPrice(100.00, 'GBP')    // "£100.00"
  * formatPrice(100.00, 'USD')    // "$100.00"
  * formatPrice(100.00, 'EUR')    // "€100.00"
  */
-export const formatPrice = (price, currency = 'GBP') => {
+export const formatPrice = (price: number | null | undefined, currency: string = 'GBP'): string => {
   if (price === undefined || price === null) {
     return getCurrencySymbol(currency) + '0.00';
   }
-  return getCurrencySymbol(currency) + parseFloat(price).toFixed(2);
+  return getCurrencySymbol(currency) + parseFloat(String(price)).toFixed(2);
 };
 
 /**
  * Get currency symbol for currency code.
- *
- * @param {string} currency - Currency code (GBP, USD, EUR, ZAR)
- * @returns {string} Currency symbol
  *
  * @example
  * getCurrencySymbol('GBP')  // "£"
@@ -120,8 +128,8 @@ export const formatPrice = (price, currency = 'GBP') => {
  * getCurrencySymbol('EUR')  // "€"
  * getCurrencySymbol('ZAR')  // "R"
  */
-export const getCurrencySymbol = (currency) => {
-  const symbols = {
+export const getCurrencySymbol = (currency: string): string => {
+  const symbols: Record<string, string> = {
     'GBP': '£',
     'USD': '$',
     'EUR': '€',
@@ -133,25 +141,17 @@ export const getCurrencySymbol = (currency) => {
 /**
  * Format VAT amount as currency.
  *
- * @param {number} vatAmount - VAT amount from API
- * @param {string} currency - Currency code (default: 'GBP')
- * @returns {string} Formatted currency string
- *
  * @example
  * formatVatAmount(20.00)       // "£20.00"
  * formatVatAmount(0.00)        // "£0.00"
  * formatVatAmount(20.00, 'EUR')  // "€20.00"
  */
-export const formatVatAmount = (vatAmount, currency = 'GBP') => {
+export const formatVatAmount = (vatAmount: number | null | undefined, currency: string = 'GBP'): string => {
   return formatPrice(vatAmount, currency);
 };
 
 /**
  * Get VAT breakdown for display from API vatCalculations.
- *
- * @param {object} vatCalculations - VAT calculations from API
- * @param {string} currency - Currency code (default: 'GBP')
- * @returns {object} VAT breakdown with formatted values
  *
  * @example
  * const breakdown = getVatBreakdown(cart.vatCalculations);
@@ -164,7 +164,7 @@ export const formatVatAmount = (vatAmount, currency = 'GBP') => {
  * //   region: "UK"
  * // }
  */
-export const getVatBreakdown = (vatCalculations, currency = 'GBP') => {
+export const getVatBreakdown = (vatCalculations: VatCalculations | null | undefined, currency: string = 'GBP'): VatBreakdown => {
   if (!vatCalculations || !vatCalculations.totals) {
     return {
       netAmount: formatPrice(0, currency),

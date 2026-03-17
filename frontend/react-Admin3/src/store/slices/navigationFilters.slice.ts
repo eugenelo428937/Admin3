@@ -10,6 +10,9 @@
  * It does NOT have separate state - it uses baseFiltersInitialState.
  */
 
+import { PayloadAction } from '@reduxjs/toolkit';
+import { FilterState } from './baseFilters.slice';
+
 /**
  * Navigation filter reducers
  * Special behaviors for navigation menu interactions (drill-down UX)
@@ -22,7 +25,7 @@ export const navigationFiltersReducers = {
    * Behavior: Clear existing subjects, set new single subject
    * Preserves: All other filters unchanged
    */
-  navSelectSubject: (state, action) => {
+  navSelectSubject: (state: FilterState, action: PayloadAction<string>) => {
     // Clear existing subjects, then set new subject
     state.subjects = [action.payload];
     state.currentPage = 1;
@@ -35,7 +38,7 @@ export const navigationFiltersReducers = {
    * Behavior: Clear all filters EXCEPT subjects
    * Preserves: subjects array
    */
-  navViewAllProducts: (state) => {
+  navViewAllProducts: (state: FilterState) => {
     // Clear all filters except subjects
     state.products = [];
     state.categories = [];
@@ -52,7 +55,7 @@ export const navigationFiltersReducers = {
    * Behavior: Clear all except subjects, then filter by Product Type
    * Preserves: subjects array
    */
-  navSelectProductGroup: (state, action) => {
+  navSelectProductGroup: (state: FilterState, action: PayloadAction<string>) => {
     // Clear all except subjects, then filter by Product Type
     state.products = [];
     state.categories = [];
@@ -69,7 +72,7 @@ export const navigationFiltersReducers = {
    * Behavior: Clear all except subjects, then filter by Product
    * Preserves: subjects array
    */
-  navSelectProduct: (state, action) => {
+  navSelectProduct: (state: FilterState, action: PayloadAction<string>) => {
     // Clear all except subjects, then filter by Product
     state.categories = [];
     state.product_types = [];
@@ -86,7 +89,7 @@ export const navigationFiltersReducers = {
    * Behavior: Clear all except subjects, then filter by Mode of Delivery
    * Preserves: subjects array
    */
-  navSelectModeOfDelivery: (state, action) => {
+  navSelectModeOfDelivery: (state: FilterState, action: PayloadAction<string>) => {
     // Clear all except subjects, then filter by Mode of Delivery
     state.categories = [];
     state.product_types = [];
