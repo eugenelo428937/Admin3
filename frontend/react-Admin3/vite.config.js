@@ -48,11 +48,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: '127.0.0.1',
-    open: true,
+    host: process.env.VITE_HOST || '127.0.0.1',
+    open: !process.env.VITE_HOST, // don't open browser inside Docker
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8888',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:8888',
         changeOrigin: true,
       },
     },
