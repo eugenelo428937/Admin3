@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event';
 // Mock components for E2E testing
 import CartSummaryPanel from '../../components/Ordering/CheckoutSteps/CartSummaryPanel.tsx';
 import CartReviewStep from '../../components/Ordering/CheckoutSteps/CartReviewStep.tsx';
-import MaterialProductCard from '../../components/Product/ProductCard/MaterialProductCard.js';
+import MaterialProductCard from '../../components/Product/ProductCard/MaterialProductCard';
 
 // TDD RED Phase: These E2E tests require complete Phase 8 VAT integration
 // Components need proper context providers and mocking to pass

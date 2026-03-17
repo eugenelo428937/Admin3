@@ -5,7 +5,7 @@
  * Uses standardized orange theme styling with proper class structure for theme integration.
  */
 
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { formatPrice } from "../../../utils/priceFormatter.js";
 import {
 	CardHeader,
@@ -29,141 +29,28 @@ import {
 	ConfirmationNumberOutlined,
 	InfoOutline,
 } from "@mui/icons-material";
-import { ThemeProvider, useTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import { NumberInput, HStack, IconButton as ChakraIconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import BaseProductCard from "../../Common/BaseProductCard.js";
-import { useCart } from "../../../contexts/CartContext.tsx";
+import useMarkingVoucherProductCardVM from "./useMarkingVoucherProductCardVM";
+import type { VoucherCardProps } from "../../../types/browse/browse.types";
 
-const MarkingVoucherProductCard = React.memo(({ voucher }) => {
-	const theme = useTheme();
-	const { addVoucherToCart } = useCart();
-	const [quantity, setQuantity] = useState(1);
-	const [selectedPriceType, setSelectedPriceType] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [isHovered, setIsHovered] = useState(false);
-	const [isAlertExpanded, setIsAlertExpanded] = useState(false);
-
-	/**
-	 * Extract numeric voucher ID from string format
-	 * Backend returns id as "voucher-{numeric_id}" to avoid conflicts with ESSP IDs
-	 * This extracts the numeric part for the add-to-cart API call
-	 */
-	const numericVoucherId = useMemo(() => {
-		// If voucher.voucher_id exists (direct from marking vouchers API), use it
-		if (voucher.voucher_id) {
-			return parseInt(voucher.voucher_id);
-		}
-		// Handle string format "voucher-{id}" from unified search
-		if (typeof voucher.id === "string" && voucher.id.startsWith("voucher-")) {
-			return parseInt(voucher.id.replace("voucher-", ""));
-		}
-		// Fallback to numeric id
-		return parseInt(voucher.id);
-	}, [voucher.id, voucher.voucher_id]);
-
-	/**
-	 * Handle quantity change from NumberInput
-	 */
-	const handleQuantityChange = (details) => {
-		const value = parseInt(details.value);
-		if (!isNaN(value) && value >= 1 && value <= 99) {
-			setQuantity(value);
-		}
-	};
-
-	/**
-	 * Determine if voucher is available for purchase
-	 */
-	const isAvailable = useMemo(() => {
-		if (!voucher.is_active) return false;
-		if (voucher.expiry_date) {
-			const expiryDate = new Date(voucher.expiry_date);
-			const now = new Date();
-			return now <= expiryDate;
-		}
-		return true;
-	}, [voucher.is_active, voucher.expiry_date]);
-
-	/**
-	 * Format expiry date for display
-	 */
-	const formattedExpiryDate = useMemo(() => {
-		if (!voucher.expiry_date) return null;
-		const date = new Date(voucher.expiry_date);
-		return date.toLocaleDateString("en-GB", {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-		});
-	}, [voucher.expiry_date]);
-
-	/**
-	 * Get base price from voucher variations
-	 */
-	const basePrice = useMemo(() => {
-		if (voucher.price) {
-			return parseFloat(voucher.price);
-		}
-		if (!voucher.variations || voucher.variations.length === 0) {
-			return 0;
-		}
-		const firstVariation = voucher.variations[0];
-		if (!firstVariation.prices || firstVariation.prices.length === 0) {
-			return 0;
-		}
-		return parseFloat(firstVariation.prices[0].amount);
-	}, [voucher.variations, voucher.price]);
-
-	/**
-	 * Calculate total price based on quantity
-	 */
-	const totalPrice = basePrice * quantity;
-
-	/**
-	 * Handle mouse enter for hover effect
-	 */
-	const handleMouseEnter = () => {
-		setIsHovered(true);
-	};
-
-	/**
-	 * Handle mouse leave for hover effect
-	 */
-	const handleMouseLeave = () => {
-		setIsHovered(false);
-	};
-
-	/**
-	 * Handle add to cart action
-	 * Uses dedicated voucher cart endpoint with numeric voucher ID
-	 */
-	const handleAddToCart = async () => {
-		if (!isAvailable || isLoading) return;
-
-		setIsLoading(true);
-		try {
-			// Use dedicated voucher cart endpoint with numeric ID
-			await addVoucherToCart(numericVoucherId, quantity);
-		} catch (error) {
-			console.error("Error adding voucher to cart:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+const MarkingVoucherProductCard: React.FC<VoucherCardProps> = React.memo(({ voucher }) => {
+	const vm = useMarkingVoucherProductCardVM(voucher);
 
 	return (
-		<ThemeProvider theme={theme}>
+		<ThemeProvider theme={vm.theme}>
 			<BaseProductCard
 				elevation={2}
 				variant="product"
 				producttype="marking-voucher"
 				className="d-flex flex-column"
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
+				onMouseEnter={vm.handleMouseEnter}
+				onMouseLeave={vm.handleMouseLeave}
 				sx={{
-					opacity: isAvailable ? 1 : 0.6,
-					transform: isHovered ? "scale(1.02)" : "scale(1)",
+					opacity: vm.isAvailable ? 1 : 0.6,
+					transform: vm.isHovered ? "scale(1.02)" : "scale(1)",
 					transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 				}}
 			>
@@ -245,7 +132,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 										sx={{
 											fontSize: "0.7rem",
 											lineHeight: 1.3,
-											...(!isAlertExpanded && {
+											...(!vm.isAlertExpanded && {
 												display: "-webkit-box",
 												WebkitLineClamp: 1,
 												WebkitBoxOrient: "vertical",
@@ -260,7 +147,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 									<Typography
 										component="span"
 										onClick={() =>
-											setIsAlertExpanded(!isAlertExpanded)
+											vm.setIsAlertExpanded(!vm.isAlertExpanded)
 										}
 										sx={{
 											color: "primary.main",
@@ -272,7 +159,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 											"&:hover": { textDecoration: "underline" },
 										}}
 									>
-										{isAlertExpanded
+										{vm.isAlertExpanded
 											? "... Show less"
 											: "...Show more"}
 									</Typography>
@@ -297,8 +184,8 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 							</Typography>
 							<Box className="quantity-input-container">
 								<NumberInput.Root
-									value={quantity.toString()}
-									onValueChange={handleQuantityChange}
+									value={vm.quantity.toString()}
+									onValueChange={vm.handleQuantityChange}
 									min={1}
 									max={99}
 									width="90px"
@@ -341,10 +228,10 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 									className="discount-radio-option"
 									control={
 										<Radio
-											checked={selectedPriceType === "retaker"}
+											checked={vm.selectedPriceType === "retaker"}
 											onClick={() =>
-												setSelectedPriceType(
-													selectedPriceType === "retaker"
+												vm.setSelectedPriceType(
+													vm.selectedPriceType === "retaker"
 														? ""
 														: "retaker"
 												)
@@ -365,10 +252,10 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 									className="discount-radio-option"
 									control={
 										<Radio
-											checked={selectedPriceType === "additional"}
+											checked={vm.selectedPriceType === "additional"}
 											onClick={() =>
-												setSelectedPriceType(
-													selectedPriceType === "additional"
+												vm.setSelectedPriceType(
+													vm.selectedPriceType === "additional"
 														? ""
 														: "additional"
 												)
@@ -393,7 +280,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 							{/* Price Display */}
 							<Box className="price-info-row">
 								<Typography variant="price" className="price-display">
-									{formatPrice(totalPrice)}
+									{formatPrice(vm.totalPrice)}
 								</Typography>
 								<Tooltip title="Show price details">
 									<Button size="small" className="info-button">
@@ -409,7 +296,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 									className="price-level-text"
 									color="text.secondary"
 								>
-									{quantity} voucher{quantity !== 1 ? "s" : ""} • {formatPrice(basePrice)} each
+									{vm.quantity} voucher{vm.quantity !== 1 ? "s" : ""} • {formatPrice(vm.basePrice)} each
 								</Typography>
 								<Typography
 									variant="fineprint"
@@ -423,8 +310,8 @@ const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 							{/* Add to Cart Button - circular style per theme.js */}
 							<IconButton
 								className="add-to-cart-button"
-								onClick={handleAddToCart}
-								disabled={!isAvailable || isLoading}
+								onClick={vm.handleAddToCart}
+								disabled={!vm.isAvailable || vm.isLoading}
 								aria-label="Add to cart"
 							>
 								<ShoppingCartIcon />

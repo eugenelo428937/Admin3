@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import MarkingProductCard from '../MarkingProductCard.js';
+import MarkingProductCard from '../MarkingProductCard';
 import productService from '../../../../services/productService';
 import appTheme from '../../../../theme';
 

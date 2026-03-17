@@ -83,7 +83,7 @@ vi.mock('../pages/Home.js', () => ({
   },
 }));
 
-vi.mock('../components/Product/ProductList.js', () => ({
+vi.mock('../components/Product/ProductList.tsx', () => ({
   __esModule: true,
   default: function MockProductList() {
     return <div data-testid="product-list-page">Product List Page</div>;
@@ -111,7 +111,7 @@ vi.mock('../components/User/OrderHistory.tsx', () => ({
   },
 }));
 
-vi.mock('../components/NoMatch.js', () => ({
+vi.mock('../components/NoMatch.tsx', () => ({
   __esModule: true,
   default: function MockNoMatch() {
     return <div data-testid="no-match-page">404 - Not Found</div>;
@@ -167,14 +167,14 @@ vi.mock('../components/User/EmailVerification.tsx', () => ({
   },
 }));
 
-vi.mock('../components/Navigation/MainNavBar.js', () => ({
+vi.mock('../components/Navigation/MainNavBar.tsx', () => ({
   __esModule: true,
   default: function MockMainNavBar() {
     return <nav data-testid="main-navbar">Navigation</nav>;
   },
 }));
 
-vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js', () => ({
+vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.tsx', () => ({
   __esModule: true,
   default: function MockTutorialSummaryBar() {
     return null;
@@ -195,7 +195,7 @@ import { Navigate } from 'react-router-dom';
 
 // Import mocked components at top level
 import Home from '../pages/Home.js';
-import ProductList from '../components/Product/ProductList.js';
+import ProductList from '../components/Product/ProductList.tsx';
 import CheckoutPage from '../components/Ordering/CheckoutPage.tsx';
 import ProfilePage from '../pages/ProfilePage.js';
 import OrderHistory from '../components/User/OrderHistory.tsx';
