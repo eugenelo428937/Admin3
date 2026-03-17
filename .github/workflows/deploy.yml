@@ -8,6 +8,19 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
+  check-branch-source:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Verify PR targets main
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$BASE_REF" != "main" ]; then
+            echo "::error::PRs must target the main branch. This PR targets '$BASE_REF'."
+            exit 1
+          fi
+
   test-backend:
     runs-on: ubuntu-latest
 
