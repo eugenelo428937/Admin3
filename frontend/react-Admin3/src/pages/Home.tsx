@@ -1,22 +1,11 @@
-import React, { useState, useEffect, useId } from "react";
+import React from "react";
 import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import SearchBox from "../components/SearchBox.js";
-import SearchResults from "../components/SearchResults.js";
+import SearchBox from "../components/SearchBox.tsx";
+import SearchResults from "../components/SearchResults.tsx";
 import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
-import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
-import rulesEngineService from "../services/rulesEngineService";
-import { useDispatch } from "react-redux";
-import { navSelectProductGroup } from "../store/slices/filtersSlice.js";
-import
-{
-   MenuBook,
-   RateReview,
-   School,
-   ArrowForward,
-} from "@mui/icons-material";
+import { ArrowForward } from "@mui/icons-material";
 import StripeWaveBackground from "../components/Effects/StripeWaveBackground.js";
 import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground.js';
 import OceanDepthBackground from '../components/Effects/OceanDepthBackground.js';
@@ -24,156 +13,16 @@ import NeonMeshBackground from '../components/Effects/NeonMeshBackground.js';
 import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground.js";
 import IrisDawnBackground from "../components/Effects/IrisDawnBackground.js";
 import CopperRoseBackground from "../components/Effects/CopperRoseBackground.js";
-// import NeonMeshBackground from './Effects/NeonMeshBackground';
+import useHomeVM from "./useHomeVM";
 
-
-const Home = () =>
-{
-   const navigate = useNavigate();
-   const theme = useTheme();
-   const dispatch = useDispatch();
-   const [searchResults, setSearchResults] = useState(null);
-   const [error, setError] = useState(null);
-   const chevronClipId = useId();
-
-   // Rules engine state for holiday messages and other home page rules
-   const [rulesMessages, setRulesMessages] = useState([]);
-   const [rulesLoading, setRulesLoading] = useState(false);
+const Home: React.FC = () => {
+   const vm = useHomeVM();
+   const theme = useTheme() as any;
 
    // Video path from public folder
    const backgroundVideo = "/video/12595751_2560_1440_30fps.mp4";
    const backgroundVideoPoster = "/videoframe_0.png";
    const graphic1 = "/brand020.1a983628.webp";
-   // const graphic2 = "/brand070.59c82c5e.webp";
-   // const graphic3 = "/halftone_sq.df9804eb.avif";
-   // Debug video paths
-   useEffect(() => { }, [backgroundVideo, backgroundVideoPoster]);
-
-   // Execute home_page_mount rules when component mounts
-   useEffect(() =>
-   {
-      const executeRules = async () =>
-      {
-         setRulesLoading(true);
-         setRulesMessages([]); // Clear previous messages
-
-         try
-         {
-            // Use the new helper function for simplified execution
-            const result = await rulesEngineHelpers.executeHomePage(
-               null,
-               rulesEngineService
-            );
-
-            if (result.success && result.messages?.processed?.length > 0)
-            {
-               // Extract processed display messages for home page (filter out acknowledgments)
-               const displayMessages = result.messages.processed.filter(
-                  (msg) =>
-                     !msg.isAcknowledgment &&
-                     msg.display_type !== "modal" &&
-                     msg.parsed?.displayType !== "modal"
-               );
-               setRulesMessages(displayMessages);
-            }
-
-            // Handle any processing errors
-            if (result.errors && result.errors.length > 0)
-            {
-               console.error("🚨 Rules processing errors:", result.errors);
-               if (import.meta.env?.DEV)
-               {
-                  setError(`Development Error: ${result.errors.join(", ")}`);
-               }
-            }
-         } catch (err)
-         {
-            console.error("Error executing home_page_mount rules:", err);
-
-            // Handle schema validation errors specifically
-            if (err.name === "SchemaValidationError")
-            {
-               console.error(
-                  "🚨 Schema validation failed for rules engine:",
-                  err.details
-               );
-               console.error("🔍 Schema errors:", err.schemaErrors);
-               // For development, show schema validation errors to help debugging
-               if (import.meta.env?.DEV)
-               {
-                  setError(
-                     `Development Error: Schema validation failed - ${err.details}`
-                  );
-               }
-            }
-            // Don't show other rule engine errors to user - shouldn't block home page
-         } finally
-         {
-            setRulesLoading(false);
-         }
-      };
-
-      executeRules();
-   }, []); // Empty dependency array since this should run once on mount
-
-   // Handle search results from SearchBox
-   const handleSearchResults = (results) =>
-   {
-      setSearchResults(results);
-      setError(null);
-   };
-
-   // Handle "Show Matching Products" button click
-   // Redux state and URL sync middleware handle filters automatically
-   const handleShowMatchingProducts = () =>
-   {
-      navigate("/products");
-   };
-
-   // Handle navigation to products page with specific product type filter
-   const handleProductCategoryClick = (productType) =>
-   {
-      dispatch(navSelectProductGroup(productType));
-      navigate("/products");
-   };
-
-   // Product category cards data
-   const productCards = [
-      {
-         id: "study-materials",
-         title: "Study Materials",
-         description:
-            "Comprehensive essential pack and revision materials to help you master actuarial concepts and excel in your exams.",
-         filterValue: "Core Study Materials",
-         icon: "MenuBook",
-         gradient: "linear-gradient(135deg, #4658ac 0%, #2d3f93 100%)",
-      },
-      {
-         id: "marking-service",
-         title: "Marking Service",
-         description:
-            "Feedback on your practice papers with detailed marking and personalized guidance to improve your exam technique.",
-         filterValue: "Marking",
-         icon: "RateReview",
-         gradient: "linear-gradient(135deg, #006874 0%, #004f58 100%)",
-      },
-      {
-         id: "tuition",
-         title: "Tuition",
-         description:
-            "Build and consolidate your knowledge and understanding of the principles. Time spent on an ActEd tutorial will be amongst your most productive study time.",
-         filterValue: "Tutorial",
-         icon: "School",
-         gradient: "linear-gradient(135deg, #76546e 0%, #5c3c55 100%)",
-      },
-   ];
-
-   // Icon mapping for product cards
-   const iconMap = {
-      MenuBook: MenuBook,
-      RateReview: RateReview,
-      School: School,
-   };
 
    return (
       <>
@@ -209,7 +58,7 @@ const Home = () =>
                preserveAspectRatio="xMinYMin slice"
             >
                <defs>
-                  <clipPath id={chevronClipId}>
+                  <clipPath id={vm.chevronClipId}>
                      <rect
                         width="25%"
                         height="136%"
@@ -221,7 +70,7 @@ const Home = () =>
                   href={graphic1}
                   width="100%"
                   height="100%"
-                  clipPath={`url(#${chevronClipId})`}
+                  clipPath={`url(#${vm.chevronClipId})`}
                   preserveAspectRatio="xMidYMid slice"
                />
                <rect
@@ -304,8 +153,8 @@ const Home = () =>
                      }}
                   >
                      <RulesEngineInlineAlert
-                        messages={rulesMessages}
-                        loading={rulesLoading}
+                        messages={vm.rulesMessages}
+                        loading={vm.rulesLoading}
                         loadingMessage="Checking for important notices..."
                      />
                   </Box>
@@ -317,7 +166,7 @@ const Home = () =>
                      }}
                   >
                      <Typography
-                        variant="title_BPP"
+                        variant={"title_BPP" as any}
                      >
                         BPP
                      </Typography>
@@ -326,13 +175,13 @@ const Home = () =>
                         textAlign: 'start',
                      }}>
                         <Typography
-                           variant="title_Acted"
+                           variant={"title_Acted" as any}
                         >
                            Actuarial Education
                         </Typography>
                         <Divider flexItem />
                         <Typography
-                           variant="title_onlineStore"
+                           variant={"title_onlineStore" as any}
                         >
                            Online Store
                         </Typography>
@@ -341,11 +190,11 @@ const Home = () =>
 
                   <Container
                      style={{ maxWidth: "600px", margin: "0 auto" }}
-                     disableGutters="true"
+                     disableGutters={true}
                   >
                      <SearchBox
-                        onSearchResults={handleSearchResults}
-                        onShowMatchingProducts={handleShowMatchingProducts}
+                        onSearchResults={vm.handleSearchResults}
+                        onShowMatchingProducts={vm.handleShowMatchingProducts}
                         autoFocus={false}
                      />
                   </Container>
@@ -364,37 +213,26 @@ const Home = () =>
                }}
             >
                <SearchResults
-                  searchResults={searchResults}
-                  onShowMatchingProducts={handleShowMatchingProducts}
+                  searchResults={vm.searchResults}
+                  onShowMatchingProducts={vm.handleShowMatchingProducts}
                   loading={false}
-                  error={error}
+                  error={vm.error}
                   maxSuggestions={5}
                />
-            </Container>            
+            </Container>
             {/* Product Cards Grid */}
             <Grid
                container
                spacing={5}
                sx={{
                   padding: theme.spacingTokens.md
-                  // justifyContent: "center",
-                  // alignItems: "stretch",
-                  // maxWidth: "1200px",
-                  // mx: "auto",
-                  // zIndex: 99,
-                  // height: "100%",
-                  // minHeight: "inherit",
-                  // alignItems: "center",
-                  // justifyContent: "flex-end",
-                  // position: "relative",                  
                }}
             >
-               {productCards.map((card) => (
+               {vm.productCards.map((card) => (
                   <Grid
                      key={card.id}
                      size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
                      sx={{
-                        // alignSelf: "stretch",
                         gap: 2,
                         zIndex: 99,
                      }}
@@ -439,7 +277,7 @@ const Home = () =>
                         <Box
                            component="button"
                            onClick={() =>
-                              handleProductCategoryClick(card.filterValue)
+                              vm.handleProductCategoryClick(card.filterValue)
                            }
                            sx={{
                               display: "flex",

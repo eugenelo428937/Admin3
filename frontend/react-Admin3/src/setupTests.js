@@ -255,7 +255,7 @@ vi.mock('./services/authService', () => ({
 // =============================================================================
 
 // Mock TutorialChoiceContext - used by CartPanel, TutorialSelectionDialog, etc.
-vi.mock('./contexts/TutorialChoiceContext.js', () => {
+vi.mock('./contexts/TutorialChoiceContext', () => {
   const React = require('react');
   return {
     __esModule: true,

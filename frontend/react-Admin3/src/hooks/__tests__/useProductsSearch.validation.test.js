@@ -12,7 +12,7 @@ import { vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { useProductsSearch } from '../useProductsSearch.js';
+import { useProductsSearch } from '../useProductsSearch';
 import filtersReducer from '../../store/slices/filtersSlice.js';
 
 // Mock the catalogApi module

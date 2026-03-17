@@ -10,7 +10,7 @@ import {
 import { useSelector } from 'react-redux';
 import { selectSearchQuery } from '../store/slices/filtersSlice.js';
 import ProductCard from './Product/ProductCard/MaterialProductCard';
-import useProductCardHelpers from '../hooks/useProductCardHelpers.js';
+import useProductCardHelpers from '../hooks/useProductCardHelpers';
 
 interface SearchResultsProps {
     searchResults?: any;

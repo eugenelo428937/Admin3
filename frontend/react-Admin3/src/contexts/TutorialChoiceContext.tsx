@@ -1,17 +1,88 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 // Constants
-const CHOICE_LEVELS = ["1st", "2nd", "3rd"];
+const CHOICE_LEVELS: string[] = ["1st", "2nd", "3rd"];
 const STORAGE_KEY = "tutorialChoices";
 
-const TutorialChoiceContext = createContext();
+export interface TutorialEventChoice {
+  eventId: string;
+  choiceLevel: string;
+  timestamp: string;
+  isDraft: boolean;
+  variation?: any;
+  productId?: number;
+  productName?: string;
+  subjectName?: string;
+  location?: string;
+  [key: string]: any;
+}
 
-export const TutorialChoiceProvider = ({ children, initialChoices }) => {
+export type TutorialChoices = Record<string, Record<string, TutorialEventChoice>>;
+
+export type EditDialogState = { subjectCode: string; location: string | null } | null;
+
+interface ProductMetadata {
+  productId?: number;
+  productName?: string;
+  subjectName?: string;
+}
+
+export interface TutorialChoiceContextValue {
+  tutorialChoices: TutorialChoices;
+  showChoicePanel: boolean;
+  activeSubject: string | null;
+  editDialogOpen: EditDialogState;
+
+  // Choice management
+  addTutorialChoice: (subjectCode: string, choiceLevel: string, eventData: any, productMetadata?: ProductMetadata) => void;
+  removeTutorialChoice: (subjectCode: string, choiceLevel: string) => void;
+  removeSubjectChoices: (subjectCode: string) => void;
+  removeAllChoices: () => void;
+  updateChoiceLevel: (subjectCode: string, fromLevel: string, toLevel: string) => void;
+
+  // Getters
+  getSubjectChoices: (subjectCode: string) => Record<string, TutorialEventChoice>;
+  getOrderedChoices: (subjectCode: string) => TutorialEventChoice[];
+  isChoiceLevelAvailable: (subjectCode: string, choiceLevel: string) => boolean;
+  getNextAvailableChoiceLevel: (subjectCode: string) => string | null;
+  getTotalSubjectsWithChoices: () => number;
+  getTotalChoices: () => number;
+  isEventSelected: (subjectCode: string, eventId: string) => boolean;
+  getEventChoiceLevel: (subjectCode: string, eventId: string) => string | null;
+
+  // Panel management
+  showChoicePanelForSubject: (subjectCode: string) => void;
+  hideChoicePanel: () => void;
+
+  // Dialog management
+  openEditDialog: (subjectCode: string, location?: string | null) => void;
+  closeEditDialog: () => void;
+
+  // Pricing
+  getSubjectPrice: (subjectCode: string) => number;
+  getTotalPrice: () => number;
+
+  // Draft state management
+  markChoicesAsAdded: (subjectCode: string) => void;
+  restoreChoicesToDraft: (subjectCode: string) => void;
+  getDraftChoices: (subjectCode: string) => TutorialEventChoice[];
+  getCartedChoices: (subjectCode: string) => TutorialEventChoice[];
+  hasCartedChoices: (subjectCode: string) => boolean;
+}
+
+interface TutorialChoiceProviderProps {
+  children: ReactNode;
+  initialChoices?: TutorialChoices;
+}
+
+const TutorialChoiceContext = createContext<TutorialChoiceContextValue | undefined>(undefined);
+
+export const TutorialChoiceProvider: React.FC<TutorialChoiceProviderProps> = ({ children, initialChoices }) => {
   // Structure: { subjectCode: { "1st": eventData, "2nd": eventData, "3rd": eventData } }
-  const [tutorialChoices, setTutorialChoices] = useState(initialChoices || {});
-  const [showChoicePanel, setShowChoicePanel] = useState(false);
-  const [activeSubject, setActiveSubject] = useState(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(null); // T010: Track which subject's edit dialog is open
+  const [tutorialChoices, setTutorialChoices] = useState<TutorialChoices>(initialChoices || {});
+  const [showChoicePanel, setShowChoicePanel] = useState<boolean>(false);
+  const [activeSubject, setActiveSubject] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState<EditDialogState>(null); // T010: Track which subject's edit dialog is open
 
   /**
    * Load tutorial choices from localStorage on mount
@@ -43,20 +114,13 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
    * Add or update a tutorial choice for a subject
    * If the same event is already selected at a different choice level, it removes the old level first
    * This ensures each event can only be selected once (at one choice level)
-   * @param {string} subjectCode - Subject identifier (e.g., "CS2")
-   * @param {string} choiceLevel - Choice level ("1st", "2nd", or "3rd")
-   * @param {Object} eventData - Tutorial event data including eventId, location, variation
-   * @param {Object} productMetadata - T011: Product metadata for cart integration
-   * @param {number} productMetadata.productId - Product ID from backend
-   * @param {string} productMetadata.productName - Display name of product
-   * @param {string} productMetadata.subjectName - Subject name for display
    */
-  const addTutorialChoice = (subjectCode, choiceLevel, eventData, productMetadata = {}) => {
+  const addTutorialChoice = (subjectCode: string, choiceLevel: string, eventData: any, productMetadata: ProductMetadata = {}) => {
     setTutorialChoices(prev => {
       const subjectChoices = prev[subjectCode] || {};
 
       // Remove this event from any other choice level if it exists
-      const cleanedChoices = {};
+      const cleanedChoices: Record<string, TutorialEventChoice> = {};
       Object.entries(subjectChoices).forEach(([level, choice]) => {
         // Keep the choice only if it's a different event OR it's the same level we're updating
         if (choice.eventId !== eventData.eventId || level === choiceLevel) {
@@ -87,18 +151,19 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Remove a specific tutorial choice
    * Removes the entire subject if no choices remain
-   * @param {string} subjectCode - Subject identifier
-   * @param {string} choiceLevel - Choice level to remove
    */
-  const removeTutorialChoice = (subjectCode, choiceLevel) => {
+  const removeTutorialChoice = (subjectCode: string, choiceLevel: string) => {
     setTutorialChoices(prev => {
       const newChoices = { ...prev };
       if (newChoices[subjectCode]) {
-        delete newChoices[subjectCode][choiceLevel];
-        
+        const subjectChoices = { ...newChoices[subjectCode] };
+        delete subjectChoices[choiceLevel];
+
         // If no choices left for this subject, remove the subject entirely
-        if (Object.keys(newChoices[subjectCode]).length === 0) {
+        if (Object.keys(subjectChoices).length === 0) {
           delete newChoices[subjectCode];
+        } else {
+          newChoices[subjectCode] = subjectChoices;
         }
       }
       return newChoices;
@@ -107,9 +172,8 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Remove all tutorial choices for a subject
-   * @param {string} subjectCode - Subject identifier
    */
-  const removeSubjectChoices = (subjectCode) => {
+  const removeSubjectChoices = (subjectCode: string) => {
     setTutorialChoices(prev => {
       const newChoices = { ...prev };
       delete newChoices[subjectCode];
@@ -127,21 +191,17 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Get choices for a specific subject
-   * @param {string} subjectCode - Subject identifier
-   * @returns {Object} Choices object
    */
-  const getSubjectChoices = (subjectCode) => {
+  const getSubjectChoices = (subjectCode: string): Record<string, TutorialEventChoice> => {
     return tutorialChoices[subjectCode] || {};
   };
 
   /**
    * Get all choices for a subject ordered by preference level
-   * @param {string} subjectCode - Subject identifier
-   * @returns {Array} Array of choices ordered by preference (1st, 2nd, 3rd)
    */
-  const getOrderedChoices = (subjectCode) => {
+  const getOrderedChoices = (subjectCode: string): TutorialEventChoice[] => {
     const choices = getSubjectChoices(subjectCode);
-    const ordered = [];
+    const ordered: TutorialEventChoice[] = [];
 
     CHOICE_LEVELS.forEach(level => {
       if (choices[level]) {
@@ -154,21 +214,16 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Check if a specific choice level is available for a subject
-   * @param {string} subjectCode - Subject identifier
-   * @param {string} choiceLevel - Choice level to check
-   * @returns {boolean} True if choice level is available
    */
-  const isChoiceLevelAvailable = (subjectCode, choiceLevel) => {
+  const isChoiceLevelAvailable = (subjectCode: string, choiceLevel: string): boolean => {
     const choices = getSubjectChoices(subjectCode);
     return !choices[choiceLevel];
   };
 
   /**
    * Get the next available choice level for a subject
-   * @param {string} subjectCode - Subject identifier
-   * @returns {string|null} Next available choice level or null if all levels taken
    */
-  const getNextAvailableChoiceLevel = (subjectCode) => {
+  const getNextAvailableChoiceLevel = (subjectCode: string): string | null => {
     const choices = getSubjectChoices(subjectCode);
 
     for (const level of CHOICE_LEVELS) {
@@ -183,47 +238,45 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Update choice level by moving a choice from one level to another
    * Supports swapping if target level is occupied
-   * @param {string} subjectCode - Subject identifier
-   * @param {string} fromLevel - Source choice level
-   * @param {string} toLevel - Target choice level
    */
-  const updateChoiceLevel = (subjectCode, fromLevel, toLevel) => {
+  const updateChoiceLevel = (subjectCode: string, fromLevel: string, toLevel: string) => {
     setTutorialChoices(prev => {
       const newChoices = { ...prev };
-      
+
       if (newChoices[subjectCode] && newChoices[subjectCode][fromLevel]) {
-        const eventData = newChoices[subjectCode][fromLevel];
-        
+        const subjectChoices = { ...newChoices[subjectCode] };
+        const eventData = subjectChoices[fromLevel];
+
         // If target level is occupied, we need to handle the swap
-        if (newChoices[subjectCode][toLevel]) {
+        if (subjectChoices[toLevel]) {
           // Swap the choices
-          const targetEventData = newChoices[subjectCode][toLevel];
-          newChoices[subjectCode][toLevel] = { ...eventData, choiceLevel: toLevel };
-          newChoices[subjectCode][fromLevel] = { ...targetEventData, choiceLevel: fromLevel };
+          const targetEventData = subjectChoices[toLevel];
+          subjectChoices[toLevel] = { ...eventData, choiceLevel: toLevel };
+          subjectChoices[fromLevel] = { ...targetEventData, choiceLevel: fromLevel };
         } else {
           // Move to empty level
-          newChoices[subjectCode][toLevel] = { ...eventData, choiceLevel: toLevel };
-          delete newChoices[subjectCode][fromLevel];
+          subjectChoices[toLevel] = { ...eventData, choiceLevel: toLevel };
+          delete subjectChoices[fromLevel];
         }
+
+        newChoices[subjectCode] = subjectChoices;
       }
-      
+
       return newChoices;
     });
   };
 
   /**
    * Get total number of subjects with tutorial choices
-   * @returns {number} Count of subjects with choices
    */
-  const getTotalSubjectsWithChoices = () => {
+  const getTotalSubjectsWithChoices = (): number => {
     return Object.keys(tutorialChoices).length;
   };
 
   /**
    * Get total number of tutorial choices across all subjects
-   * @returns {number} Total count of all choices
    */
-  const getTotalChoices = () => {
+  const getTotalChoices = (): number => {
     return Object.values(tutorialChoices).reduce((total, subjectChoices) => {
       return total + Object.keys(subjectChoices).length;
     }, 0);
@@ -231,22 +284,16 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Check if a specific tutorial event is already selected
-   * @param {string} subjectCode - Subject identifier
-   * @param {string} eventId - Tutorial event ID
-   * @returns {boolean} True if event is selected at any choice level
    */
-  const isEventSelected = (subjectCode, eventId) => {
+  const isEventSelected = (subjectCode: string, eventId: string): boolean => {
     const choices = getSubjectChoices(subjectCode);
     return Object.values(choices).some(choice => choice.eventId === eventId);
   };
 
   /**
    * Get the choice level for a specific tutorial event
-   * @param {string} subjectCode - Subject identifier
-   * @param {string} eventId - Tutorial event ID
-   * @returns {string|null} Choice level or null if not found
    */
-  const getEventChoiceLevel = (subjectCode, eventId) => {
+  const getEventChoiceLevel = (subjectCode: string, eventId: string): string | null => {
     const choices = getSubjectChoices(subjectCode);
     for (const [level, choice] of Object.entries(choices)) {
       if (choice.eventId === eventId) {
@@ -258,9 +305,8 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Show the tutorial choice panel for a specific subject
-   * @param {string} subjectCode - Subject identifier
    */
-  const showChoicePanelForSubject = (subjectCode) => {
+  const showChoicePanelForSubject = (subjectCode: string) => {
     setActiveSubject(subjectCode);
     setShowChoicePanel(true);
   };
@@ -276,9 +322,8 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Open the edit dialog for a specific subject
    * T010: Used by TutorialSummaryBarContainer to trigger card's edit dialog
-   * @param {string} subjectCode - Subject identifier
    */
-  const openEditDialog = (subjectCode, location = null) => {
+  const openEditDialog = (subjectCode: string, location: string | null = null) => {
     setEditDialogOpen({ subjectCode, location });
   };
 
@@ -293,15 +338,13 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Get the price for a subject's tutorial choices
    * Only the 1st choice is charged; 2nd and 3rd choices are free
-   * @param {string} subjectCode - Subject identifier
-   * @returns {number} Price amount (0 if no 1st choice or price not found)
    */
-  const getSubjectPrice = (subjectCode) => {
+  const getSubjectPrice = (subjectCode: string): number => {
     const choices = getSubjectChoices(subjectCode);
     const firstChoice = choices["1st"];
 
     if (firstChoice && firstChoice.variation && firstChoice.variation.prices) {
-      const priceObj = firstChoice.variation.prices.find(p => p.price_type === "standard");
+      const priceObj = firstChoice.variation.prices.find((p: any) => p.price_type === "standard");
       return priceObj ? priceObj.amount : 0;
     }
 
@@ -310,9 +353,8 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Calculate total price for all subjects' tutorial choices
-   * @returns {number} Total price across all subjects
    */
-  const getTotalPrice = () => {
+  const getTotalPrice = (): number => {
     return Object.keys(tutorialChoices).reduce((total, subjectCode) => {
       return total + getSubjectPrice(subjectCode);
     }, 0);
@@ -320,20 +362,16 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 
   /**
    * Internal helper: Update draft state for all choices in a subject
-   * @param {string} subjectCode - Subject identifier
-   * @param {boolean} isDraft - Target draft state
-   * @private
    */
-  const updateDraftState = (subjectCode, isDraft) => {
+  const updateDraftState = (subjectCode: string, isDraft: boolean) => {
     setTutorialChoices(prev => {
       const subjectChoices = prev[subjectCode];
 
       if (!subjectChoices) {
-
         return prev;
       }
 
-      const updatedChoices = {};
+      const updatedChoices: Record<string, TutorialEventChoice> = {};
       Object.entries(subjectChoices).forEach(([level, choice]) => {
         updatedChoices[level] = {
           ...choice,
@@ -351,25 +389,21 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Mark all tutorial choices for a subject as added to cart
    * Sets isDraft: false for all choices of the specified subject
-   * @param {string} subjectCode - Subject identifier
    */
-  const markChoicesAsAdded = (subjectCode) => updateDraftState(subjectCode, false);
+  const markChoicesAsAdded = (subjectCode: string) => updateDraftState(subjectCode, false);
 
   /**
    * Restore all tutorial choices for a subject to draft state
    * Sets isDraft: true for all choices of the specified subject
    * Used when cart item is removed but choices should be kept in localStorage
-   * @param {string} subjectCode - Subject identifier
    */
-  const restoreChoicesToDraft = (subjectCode) => updateDraftState(subjectCode, true);
+  const restoreChoicesToDraft = (subjectCode: string) => updateDraftState(subjectCode, true);
 
   /**
    * Get only draft tutorial choices for a subject
    * Returns choices that have not been added to cart yet (isDraft: true)
-   * @param {string} subjectCode - Subject identifier
-   * @returns {Array} Array of draft choices
    */
-  const getDraftChoices = (subjectCode) => {
+  const getDraftChoices = (subjectCode: string): TutorialEventChoice[] => {
     const choices = getSubjectChoices(subjectCode);
     return Object.values(choices).filter(choice => choice.isDraft === true);
   };
@@ -377,25 +411,21 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   /**
    * Get only carted tutorial choices for a subject
    * Returns choices that have been added to cart (isDraft: false)
-   * @param {string} subjectCode - Subject identifier
-   * @returns {Array} Array of carted choices
    */
-  const getCartedChoices = (subjectCode) => {
+  const getCartedChoices = (subjectCode: string): TutorialEventChoice[] => {
     const choices = getSubjectChoices(subjectCode);
     return Object.values(choices).filter(choice => choice.isDraft === false);
   };
 
   /**
    * Check if a subject has any choices that have been added to cart
-   * @param {string} subjectCode - Subject identifier
-   * @returns {boolean} True if subject has at least one carted choice
    */
-  const hasCartedChoices = (subjectCode) => {
+  const hasCartedChoices = (subjectCode: string): boolean => {
     const choices = getSubjectChoices(subjectCode);
     return Object.values(choices).some(choice => choice.isDraft === false);
   };
 
-  const value = {
+  const value: TutorialChoiceContextValue = {
     tutorialChoices,
     showChoicePanel,
     activeSubject,
@@ -448,13 +478,14 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
 /**
  * Custom hook to access Tutorial Choice context
  * Must be used within TutorialChoiceProvider
- * @returns {Object} Tutorial choice context with all methods and state
- * @throws {Error} If used outside of TutorialChoiceProvider
  */
-export const useTutorialChoice = () => {
+export const useTutorialChoice = (): TutorialChoiceContextValue => {
   const context = useContext(TutorialChoiceContext);
   if (!context) {
     throw new Error("useTutorialChoice must be used within a TutorialChoiceProvider");
   }
   return context;
 };
+
+export { TutorialChoiceContext };
+export default TutorialChoiceContext;

@@ -141,7 +141,7 @@ const mockSearch = vi.fn();
 const mockRefresh = vi.fn();
 
 // Mock the hooks used in ProductList
-vi.mock("../../hooks/useProductsSearch.js", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: mockProducts,
@@ -159,7 +159,7 @@ const mockHandleAddToCart = vi.fn();
 const mockAllEsspIds = [];
 const mockBulkDeadlines = {};
 
-vi.mock("../../hooks/useProductCardHelpers.js", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: mockHandleAddToCart,

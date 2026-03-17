@@ -14,7 +14,7 @@
 import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { renderWithProviders, createMockStore, mockProductsApi, waitForStateUpdate } from '../../test-utils/testHelpers.js';
-import { useProductsSearch } from '../useProductsSearch.js';
+import { useProductsSearch } from '../useProductsSearch';
 import { setSubjects, setSearchQuery } from '../../store/slices/filtersSlice.js';
 import { Provider } from 'react-redux';
 
