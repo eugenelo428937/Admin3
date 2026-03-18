@@ -24,7 +24,7 @@ exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > rende
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-soi6u5-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -288,7 +288,7 @@ exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > rende
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-soi6u5-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -477,7 +477,7 @@ exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > rende
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-soi6u5-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -741,7 +741,7 @@ exports[`CartSummaryPanel > Snapshot Tests (T032 - Regression Detection) > rende
           </h2>
           <button
             aria-label="expand cart summary"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1xgexzl-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-soi6u5-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
