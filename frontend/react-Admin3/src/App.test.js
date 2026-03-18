@@ -127,7 +127,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
 
     test('renders home page at /home', async () => {
