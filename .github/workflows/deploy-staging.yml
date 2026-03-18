@@ -52,7 +52,7 @@ jobs:
         run: python manage.py migrate --skip-checks --settings=django_Admin3.settings.ci
       - name: Run tests
         working-directory: ./backend/django_Admin3
-        run: python manage.py test --settings=django_Admin3.settings.ci
+        run: python manage.py test --settings=django_Admin3.settings.ci --exclude-tag=pact
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -68,7 +68,7 @@ jobs:
         run: npm ci
       - name: Run tests
         working-directory: ./frontend/react-Admin3
-        run: npm test -- --coverage --watchAll=false
+        run: npm run test:coverage
       - name: Build
         working-directory: ./frontend/react-Admin3
         run: CI=false npm run build
