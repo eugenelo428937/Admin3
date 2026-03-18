@@ -52,15 +52,19 @@ describe('Accessibility Test Coverage Status', () => {
     const path = require('path');
 
     // List of test files that should have accessibility tests
-    const componentTestFiles = [
-      '../components/User/__tests__/LoginFormContent.test.js',
-      '../components/Navigation/__tests__/MainNavBar.test.js',
-      '../components/User/__tests__/ForgotPasswordForm.test.js',
+    // Check for both .js and .tsx extensions (some migrated to TypeScript)
+    const componentTestPatterns = [
+      '../components/User/__tests__/LoginFormContent.test',
+      '../components/Navigation/__tests__/MainNavBar.test',
+      '../components/User/__tests__/ForgotPasswordForm.test',
     ];
 
-    componentTestFiles.forEach(file => {
-      const filePath = path.join(__dirname, file);
-      expect(fs.existsSync(filePath)).toBe(true);
+    componentTestPatterns.forEach(pattern => {
+      const basePath = path.join(__dirname, pattern);
+      const exists = ['.js', '.jsx', '.ts', '.tsx'].some(ext =>
+        fs.existsSync(basePath + ext)
+      );
+      expect(exists).toBe(true);
     });
   });
 });
