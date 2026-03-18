@@ -1241,17 +1241,14 @@
         "path": "/api/store/bundles/"
       },
       "response": {
-        "body": {
-          "count": 1,
-          "results": [
-            {
-              "id": 1,
-              "is_active": true,
-              "name": "CM2 April 2025 Bundle",
-              "product_count": 1
-            }
-          ]
-        },
+        "body": [
+          {
+            "id": 1,
+            "is_active": true,
+            "name": "CM2 April 2025 Bundle",
+            "product_count": 1
+          }
+        ],
         "headers": {
           "Content-Type": "application/json"
         },
@@ -1261,28 +1258,12 @@
               "combine": "AND",
               "matchers": [
                 {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.count": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "integer"
-                }
-              ]
-            },
-            "$.results": {
-              "combine": "AND",
-              "matchers": [
-                {
                   "match": "type",
                   "min": 1
                 }
               ]
             },
-            "$.results[*].id": {
+            "$[*].id": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1290,7 +1271,7 @@
                 }
               ]
             },
-            "$.results[*].is_active": {
+            "$[*].is_active": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1298,7 +1279,7 @@
                 }
               ]
             },
-            "$.results[*].name": {
+            "$[*].name": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1306,7 +1287,7 @@
                 }
               ]
             },
-            "$.results[*].product_count": {
+            "$[*].product_count": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1450,10 +1431,16 @@
         "body": [
           {
             "created_at": "2026-02-16T10:00:00Z",
-            "exam_session": 1,
+            "exam_session": {
+              "id": 1,
+              "session_code": "2025-04"
+            },
             "id": 1,
             "is_active": true,
-            "subject": 1,
+            "subject": {
+              "code": "CM2",
+              "id": 1
+            },
             "updated_at": "2026-02-16T10:00:00Z"
           }
         ],
@@ -1483,7 +1470,23 @@
               "combine": "AND",
               "matchers": [
                 {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].exam_session.id": {
+              "combine": "AND",
+              "matchers": [
+                {
                   "match": "integer"
+                }
+              ]
+            },
+            "$[*].exam_session.session_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
                 }
               ]
             },
@@ -1504,6 +1507,22 @@
               ]
             },
             "$[*].subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject.code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject.id": {
               "combine": "AND",
               "matchers": [
                 {
@@ -3362,117 +3381,6 @@
       }
     },
     {
-      "description": "a request for product group filters",
-      "providerStates": [
-        {
-          "name": "product groups exist"
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "path": "/api/products/product-group-filters/"
-      },
-      "response": {
-        "body": {
-          "results": [
-            {
-              "filter_type": "type",
-              "groups": [
-                {
-                  "id": 1,
-                  "name": "Core Study Materials"
-                }
-              ],
-              "id": 1,
-              "name": "Study Materials"
-            }
-          ]
-        },
-        "headers": {
-          "Content-Type": "application/json"
-        },
-        "matchingRules": {
-          "body": {
-            "$": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.results": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type",
-                  "min": 1
-                }
-              ]
-            },
-            "$.results[*].filter_type": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.results[*].groups": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type",
-                  "min": 1
-                }
-              ]
-            },
-            "$.results[*].groups[*]": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.results[*].groups[*].id": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "integer"
-                }
-              ]
-            },
-            "$.results[*].groups[*].name": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.results[*].id": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "integer"
-                }
-              ]
-            },
-            "$.results[*].name": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "type"
-                }
-              ]
-            }
-          }
-        },
-        "status": 200
-      }
-    },
-    {
       "description": "a request for profile addresses",
       "providerStates": [
         {
@@ -4127,7 +4035,12 @@
             "start_date": "2025-04-01",
             "store_product_code": "CM2/PCSM01P/2025-04",
             "subject_code": "CM2",
-            "venue": "London"
+            "venue": {
+              "description": "London venue",
+              "id": 1,
+              "location": null,
+              "name": "London"
+            }
           }
         ],
         "headers": {
@@ -4201,6 +4114,30 @@
               ]
             },
             "$[*].venue": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].venue.description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].venue.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].venue.name": {
               "combine": "AND",
               "matchers": [
                 {

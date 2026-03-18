@@ -132,11 +132,13 @@ describe('CartVATError Component', () => {
       expect(onRetry).toHaveBeenCalled();
     });
 
-    // Error message should still be displayed
-    expect(screen.getByText(/VAT calculation failed/i)).toBeInTheDocument();
+    // Wait for the retry error message to appear after promise rejection
+    await waitFor(() => {
+      expect(screen.getByText(/failed to recalculate/i)).toBeInTheDocument();
+    });
 
-    // May show additional failure message
-    expect(screen.getByText(/retry failed|failed to recalculate/i)).toBeInTheDocument();
+    // Original error message should still be displayed
+    expect(screen.getByText(/VAT calculation failed/i)).toBeInTheDocument();
   });
 
   it('does not render when error prop is false', () => {
