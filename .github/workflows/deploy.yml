@@ -65,7 +65,7 @@ jobs:
       working-directory: ./backend/django_Admin3
       run: python manage.py test --exclude-tag=pact --settings=django_Admin3.settings.ci
 
-  test-frontend:
+  test-frontend-shard:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -95,6 +95,12 @@ jobs:
     - name: Run frontend tests (shard ${{ matrix.shard }})
       working-directory: ./frontend/react-Admin3
       run: npm test -- --shard=${{ matrix.shard }} --reporter=dot
+
+  test-frontend:
+    needs: [test-frontend-shard]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "All frontend test shards passed"
 
   build-frontend:
     needs: [test-frontend]
