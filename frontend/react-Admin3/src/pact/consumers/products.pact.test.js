@@ -196,14 +196,14 @@ describe('Product Service - Pact Consumer Tests', () => {
         .willRespondWith({
           status: 200,
           headers: JSON_RESPONSE_HEADERS,
-          body: like({
-            count: integer(1),
-            results: eachLike({
-              id: integer(1),
-              name: string('CM2 April 2025 Bundle'),
-              is_active: boolean(true),
-              product_count: integer(1),
-            }),
+          body: eachLike({
+            id: integer(1),
+            bundle_template: integer(1),
+            exam_session_subject: integer(1),
+            name: string('CM2 April 2025 Bundle'),
+            is_active: boolean(true),
+            display_order: integer(0),
+            product_count: integer(1),
           }),
         });
 
@@ -213,10 +213,10 @@ describe('Product Service - Pact Consumer Tests', () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.data).toHaveProperty('results');
-        expect(response.data.results.length).toBeGreaterThan(0);
-        expect(response.data.results[0]).toHaveProperty('name');
-        expect(response.data.results[0]).toHaveProperty('product_count');
+        expect(Array.isArray(response.data)).toBe(true);
+        expect(response.data.length).toBeGreaterThan(0);
+        expect(response.data[0]).toHaveProperty('name');
+        expect(response.data[0]).toHaveProperty('product_count');
       });
     });
   });

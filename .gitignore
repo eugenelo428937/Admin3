@@ -50,6 +50,7 @@ frontend/react-Admin3/Sandbox/
 
 # SSL certificates
 nginx/ssl/
+certs/
 *.pem
 
 # Database

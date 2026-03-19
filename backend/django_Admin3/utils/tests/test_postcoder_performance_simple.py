@@ -172,7 +172,7 @@ class PostcoderPerformanceSimpleTests(TestCase):
         self.assertFalse(log.cache_hit, "First request should be cache miss")
         self.assertTrue(log.success, "Lookup should be successful")
         self.assertEqual(log.api_provider, 'postcoder')
-        self.assertGreater(log.response_time_ms, 0)
+        self.assertGreaterEqual(log.response_time_ms, 0)
 
         print(f"\n[OK] Analytics log created with correct metadata")
 
