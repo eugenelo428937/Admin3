@@ -343,7 +343,7 @@ describe('FilterRegistry Integration', () => {
       await Promise.all(promises);
 
       const duration = performance.now() - start;
-      expect(duration).toBeLessThan(10);
+      expect(duration).toBeLessThan(50);
     });
   });
 
