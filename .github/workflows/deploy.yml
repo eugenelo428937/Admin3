@@ -206,7 +206,7 @@ jobs:
   deploy:
     needs: [test-backend, build-frontend, test-pact-provider]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.DJANGO_SECRET_KEY != ''
     
     steps:
     - uses: actions/checkout@v4
