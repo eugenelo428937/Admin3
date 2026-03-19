@@ -2,157 +2,178 @@
 # Admin3 Docker Compose stack for staging and production-like environments.
 #
 # Usage:
-#   Staging:     docker compose up -d
-#   Development: docker compose up (auto-loads docker-compose.override.yml)
-#   Infra only:  docker compose up db redis (for native Django/React dev)
+#   Staging:     docker compose up -d          (COMPOSE_FILE in .env skips dev override)
+#   Development: docker compose up             (comment out COMPOSE_FILE in .env to auto-load override)
+#   Infra only:  docker compose up db redis    (for native Django/React dev)
 #
 # Secrets: Create a .env file in project root (see .env.example)
 
 x-backend-env: &backend-env
-  DJANGO_SETTINGS_MODULE: django_Admin3.settings.staging
-  DJANGO_ENV: staging
-  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
-  DB_HOST: db
-  DB_PORT: "5432"
-  DB_NAME: ${POSTGRES_DB:-ACTEDDBSTAGE01}
-  DB_USER: ${POSTGRES_USER:-actedadmin}
-  DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-  REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/1
-  ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
-  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://localhost}
-  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://localhost}
-  FRONTEND_URL: ${FRONTEND_URL:-https://localhost}
-  # Site mode
-  INTERNAL: ${INTERNAL:-False}
-  # Email
-  USE_INTERNAL_SMTP: ${USE_INTERNAL_SMTP:-False}
-  EMAIL_HOST: ${EMAIL_HOST:-host.docker.internal}
-  EMAIL_PORT: ${EMAIL_PORT:-25}
-  EMAIL_USE_TLS: ${EMAIL_USE_TLS:-False}
-  EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
-  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
-  DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-no-reply@acted.co.uk}
-  DEV_EMAIL_OVERRIDE: ${DEV_EMAIL_OVERRIDE:-True}
-  DEV_EMAIL_RECIPIENTS: ${DEV_EMAIL_RECIPIENTS:-}
-  # Payment
-  USE_DUMMY_PAYMENT_GATEWAY: "True"
+   DJANGO_SETTINGS_MODULE: django_Admin3.settings.staging
+   DJANGO_ENV: staging
+   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+   DB_HOST: db
+   DB_PORT: "5432"
+   DB_NAME: ${POSTGRES_DB:-ACTEDDBSTAGE01}
+   DB_USER: ${POSTGRES_USER:-actedadmin}
+   DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+   REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/1
+   ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+   CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://localhost}
+   CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://localhost}
+   FRONTEND_URL: ${FRONTEND_URL:-https://localhost}
+   # Site mode
+   INTERNAL: ${INTERNAL:-False}
+   # Email
+   USE_INTERNAL_SMTP: ${USE_INTERNAL_SMTP:-False}
+   EMAIL_HOST: ${EMAIL_HOST:-host.docker.internal}
+   EMAIL_PORT: ${EMAIL_PORT:-25}
+   EMAIL_USE_TLS: ${EMAIL_USE_TLS:-False}
+   EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+   EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+   DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-no-reply@acted.co.uk}
+   DEV_EMAIL_OVERRIDE: ${DEV_EMAIL_OVERRIDE:-True}
+   DEV_EMAIL_RECIPIENTS: ${DEV_EMAIL_RECIPIENTS:-}
+   # Payment
+   USE_DUMMY_PAYMENT_GATEWAY: "True"
 
 services:
-  # ── PostgreSQL Database ──
-  db:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ACTEDDBSTAGE01}
-      POSTGRES_USER: ${POSTGRES_USER:-actedadmin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init-schemas.sql:ro
-      - ./docker/db_backup:/db_backup:ro
-    ports:
-      - "${DB_EXTERNAL_PORT:-5433}:5432"
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-actedadmin} -d ${POSTGRES_DB:-ACTEDDBSTAGE01}"]
-      interval: 10s
-      timeout: 5s
-      start_period: 30s
-      retries: 5
+   # ── PostgreSQL Database ──
+   db:
+      image: postgres:17-alpine
+      restart: unless-stopped
+      environment:
+         POSTGRES_DB: ${POSTGRES_DB:-ACTEDDBSTAGE01}
+         POSTGRES_USER: ${POSTGRES_USER:-actedadmin}
+         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      volumes:
+         - postgres_data:/var/lib/postgresql/data
+         - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init-schemas.sql:ro
+         - ./docker/db_backup:/db_backup:ro
+      ports:
+         - "${DB_EXTERNAL_PORT:-5433}:5432"
+      networks:
+         - backend
+      healthcheck:
+         test:
+            [
+               "CMD-SHELL",
+               "pg_isready -U ${POSTGRES_USER:-actedadmin} -d ${POSTGRES_DB:-ACTEDDBSTAGE01}",
+            ]
+         interval: 10s
+         timeout: 5s
+         start_period: 30s
+         retries: 5
 
-  # ── Redis Cache ──
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
-    volumes:
-      - redis_data:/data
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD-SHELL", "REDISCLI_AUTH=${REDIS_PASSWORD:-changeme} redis-cli ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+   # ── Redis Cache ──
+   redis:
+      image: redis:7-alpine
+      restart: unless-stopped
+      command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
+      volumes:
+         - redis_data:/data
+      networks:
+         - backend
+      healthcheck:
+         test:
+            [
+               "CMD-SHELL",
+               "REDISCLI_AUTH=${REDIS_PASSWORD:-changeme} redis-cli ping",
+            ]
+         interval: 10s
+         timeout: 5s
+         retries: 5
 
-  # ── Django Backend (Gunicorn) ──
-  backend:
-    build:
-      context: ./backend/django_Admin3
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      <<: *backend-env
-      PORT: "8888"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - frontend
-      - backend
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8888/api/health/')"]
-      interval: 30s
-      timeout: 10s
-      start_period: 60s
-      retries: 3
+   # ── Django Backend (Gunicorn) ──
+   backend:
+      build:
+         context: ./backend/django_Admin3
+         dockerfile: Dockerfile
+      restart: unless-stopped
+      environment:
+         <<: *backend-env
+         PORT: "8888"
+      depends_on:
+         db:
+            condition: service_healthy
+         redis:
+            condition: service_healthy
+      networks:
+         - frontend
+         - backend
+      healthcheck:
+         test:
+            [
+               "CMD",
+               "python",
+               "-c",
+               "import urllib.request; urllib.request.urlopen('http://localhost:8888/api/health/')",
+            ]
+         interval: 30s
+         timeout: 10s
+         start_period: 60s
+         retries: 3
 
-  # ── Email Worker ──
-  worker:
-    build:
-      context: ./backend/django_Admin3
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      <<: *backend-env
-      SERVICE_TYPE: worker
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import glob; exit(0 if any('process_email_queue' in open(f).read() for f in glob.glob('/proc/[0-9]*/cmdline')) else 1)\""]
-      interval: 60s
-      timeout: 5s
-      start_period: 60s
-      retries: 3
+   # ── Email Worker ──
+   worker:
+      build:
+         context: ./backend/django_Admin3
+         dockerfile: Dockerfile
+      restart: unless-stopped
+      environment:
+         <<: *backend-env
+         SERVICE_TYPE: worker
+      depends_on:
+         db:
+            condition: service_healthy
+         redis:
+            condition: service_healthy
+      networks:
+         - backend
+      healthcheck:
+         test:
+            [
+               "CMD-SHELL",
+               'python -c "import glob; exit(0 if any(''process_email_queue'' in open(f).read() for f in glob.glob(''/proc/[0-9]*/cmdline'')) else 1)"',
+            ]
+         interval: 60s
+         timeout: 5s
+         start_period: 60s
+         retries: 3
 
-  # ── Nginx (Reverse Proxy + React SPA) ──
-  nginx:
-    build:
-      context: .
-      dockerfile: nginx/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "${HTTP_PORT:-8080}:80"
-      - "${HTTPS_PORT:-8443}:443"
-    environment:
-      SERVER_NAME: ${SERVER_NAME:-staging.acted.local}
-    volumes:
-      - ./localhost+1.pem:/etc/nginx/ssl/server.crt:ro
-      - ./localhost+1-key.pem:/etc/nginx/ssl/server.key:ro
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - frontend
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 15s
-      retries: 3
+   # ── Nginx (Reverse Proxy + React SPA) ──
+   nginx:
+      build:
+         context: .
+         dockerfile: nginx/Dockerfile
+      restart: unless-stopped
+      ports:
+         - "${HTTP_PORT:-8080}:80"
+         - "${HTTPS_PORT:-8443}:443"
+      environment:
+         SERVER_NAME: ${SERVER_NAME:-staging.acted.local}
+      # SSL certs are auto-generated by generate-cert.sh on first boot.
+      # To use your own certs, mount them here:
+      volumes:
+         - ./certs/server.crt:/etc/nginx/ssl/server.crt:ro
+         - ./certs/server.key:/etc/nginx/ssl/server.key:ro
+      depends_on:
+         backend:
+            condition: service_healthy
+      networks:
+         - frontend
+      healthcheck:
+         test:
+            ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+         interval: 30s
+         timeout: 5s
+         start_period: 15s
+         retries: 3
 
 volumes:
-  postgres_data:
-  redis_data:
+   postgres_data:
+   redis_data:
 
 networks:
-  frontend:
-  backend:
+   frontend:
+   backend:
