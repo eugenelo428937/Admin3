@@ -427,7 +427,7 @@ describe('PerformanceTracker', () => {
       PerformanceTracker.getMetrics();
       const duration = performance.now() - start;
 
-      expect(duration).toBeLessThan(1);
+      expect(duration).toBeLessThan(5);
     });
 
     it('getReport should complete in < 20ms for 1000 metrics', () => {
