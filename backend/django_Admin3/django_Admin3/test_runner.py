@@ -26,8 +26,19 @@ class PostgreSQLTestRunner(DiscoverRunner):
         return super().setup_databases(**kwargs)
 
     def teardown_databases(self, old_config, **kwargs):
+        import time
+
         self._force_drop_test_dbs()
-        return super().teardown_databases(old_config, **kwargs)
+        # Brief pause to let LiveServerTestCase threads release connections
+        time.sleep(0.5)
+        self._force_drop_test_dbs()
+        try:
+            return super().teardown_databases(old_config, **kwargs)
+        except Exception:
+            # Retry once after forcefully terminating remaining connections
+            time.sleep(1)
+            self._force_drop_test_dbs()
+            return super().teardown_databases(old_config, **kwargs)
 
     def _force_drop_test_dbs(self):
         """Terminate connections and drop test DB before Django touches it.
