@@ -53,9 +53,9 @@ describe('Accessibility Test Coverage Status', () => {
 
     // List of test files that should have accessibility tests
     const componentTestFiles = [
-      '../components/User/__tests__/LoginFormContent.test.js',
+      '../components/User/__tests__/LoginFormContent.test.tsx',
       '../components/Navigation/__tests__/MainNavBar.test.js',
-      '../components/User/__tests__/ForgotPasswordForm.test.js',
+      '../components/User/__tests__/ForgotPasswordForm.test.tsx',
     ];
 
     componentTestFiles.forEach(file => {
