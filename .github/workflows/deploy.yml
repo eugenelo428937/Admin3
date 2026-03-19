@@ -84,7 +84,7 @@ jobs:
     
     - name: Run frontend tests
       working-directory: ./frontend/react-Admin3
-      run: npm test -- --coverage --watchAll=false
+      run: npm test -- --coverage
     
     - name: Build frontend
       working-directory: ./frontend/react-Admin3
