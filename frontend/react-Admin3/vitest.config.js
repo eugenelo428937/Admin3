@@ -73,6 +73,13 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupPolyfills.js', './src/setupTests.js'],
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        minThreads: 1,
+        maxThreads: process.env.CI ? 4 : undefined, // GitHub runners: 2 vCPUs, extra threads help with I/O waits
+      },
+    },
     css: {
       modules: {
         classNameStrategy: 'non-scoped',
