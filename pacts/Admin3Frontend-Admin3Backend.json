@@ -4127,7 +4127,11 @@
             "start_date": "2025-04-01",
             "store_product_code": "CM2/PCSM01P/2025-04",
             "subject_code": "CM2",
-            "venue": "London"
+            "venue": {
+              "description": "London venue",
+              "id": 1,
+              "name": "London"
+            }
           }
         ],
         "headers": {
@@ -4201,6 +4205,30 @@
               ]
             },
             "$[*].venue": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].venue.description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].venue.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].venue.name": {
               "combine": "AND",
               "matchers": [
                 {
