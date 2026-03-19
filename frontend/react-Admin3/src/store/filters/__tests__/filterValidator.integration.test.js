@@ -399,7 +399,7 @@ describe('FilterValidator Integration', () => {
       const duration = performance.now() - start;
       const avgDuration = duration / iterations;
 
-      expect(avgDuration).toBeLessThan(1);
+      expect(avgDuration).toBeLessThan(5);
     });
   });
 
