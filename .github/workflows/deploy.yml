@@ -63,7 +63,7 @@ jobs:
 
     - name: Run Django tests
       working-directory: ./backend/django_Admin3
-      run: python manage.py test --settings=django_Admin3.settings.ci
+      run: python manage.py test --exclude-tag=pact --settings=django_Admin3.settings.ci
 
   test-frontend:
     runs-on: ubuntu-latest

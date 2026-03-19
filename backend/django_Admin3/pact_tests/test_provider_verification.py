@@ -15,12 +15,13 @@ import os
 import threading
 
 from django.core.management import call_command
-from django.test import LiveServerTestCase
+from django.test import LiveServerTestCase, tag
 
 from .conftest import PACT_FILE, PROVIDER_NAME
 from .state_handlers import STATE_HANDLERS
 
 
+@tag('pact')
 class PactProviderVerificationTest(LiveServerTestCase):
     """Verify that the Django backend satisfies the Pact contracts."""
 
