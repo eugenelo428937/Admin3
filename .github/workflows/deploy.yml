@@ -213,6 +213,7 @@ jobs:
         echo "ADMINISTRATE_API_SECRET=${{ secrets.ADMINISTRATE_API_SECRET }}" >> .env.production
         echo "ADMINISTRATE_REST_API_URL=https://bppacted.administrateapp.com" >> .env.production
         echo "ADMINISTRATE_AUTH_USER=eugenelo@bpp.com" >> .env.production
+        echo "ADMINISTRATE_AUTH_URL=https://auth.getadministrate.com/oauth" >> .env.production
         echo "EMAIL_HOST_USER=eugene.lo1030@gmail.com" >> .env.production
         echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env.production
         echo "DEFAULT_FROM_EMAIL=eugene.lo1030@gmail.com" >> .env.production
