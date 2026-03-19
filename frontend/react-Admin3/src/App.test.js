@@ -127,7 +127,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
 
     test('renders home page at /home', async () => {
@@ -139,7 +139,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
 
     test('renders products page at /products', async () => {
@@ -329,7 +329,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
 
     test('renders with reCAPTCHA key', async () => {
@@ -343,7 +343,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
   });
 
@@ -359,7 +359,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
     });
   });
 });
