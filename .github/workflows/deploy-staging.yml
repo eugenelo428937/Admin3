@@ -120,7 +120,7 @@ jobs:
           $drive = $pwd.Path.Substring(0,1).ToLower()
           $rest = $pwd.Path.Substring(2) -replace '\\','/'
           $wslSrc = "/mnt/$drive$rest"
-          wsl -d $env:WSL_DISTRO -e bash -c "mkdir -p ~/Admin3 && rsync -a --delete $wslSrc/ ~/Admin3/"
+          wsl -d $env:WSL_DISTRO -e bash -c "mkdir -p ~/Admin3 && rsync -a --delete --exclude='.env' $wslSrc/ ~/Admin3/"
 
       - name: Ensure Docker is running
         shell: powershell
