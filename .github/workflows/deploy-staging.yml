@@ -151,7 +151,7 @@ jobs:
           # Health checks via WSL curl (ports forwarded from Docker)
           $nginxOk = $false
           for ($i = 1; $i -le 6; $i++) {
-            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' http://localhost/health 2>/dev/null"
+            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' http://localhost:8080/health 2>/dev/null"
             if ($code -eq "200") {
               Write-Host "Nginx health check passed"
               $nginxOk = $true
@@ -164,7 +164,7 @@ jobs:
 
           $djangoOk = $false
           for ($i = 1; $i -le 6; $i++) {
-            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' https://localhost/api/health/ 2>/dev/null"
+            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' https://localhost:8443/api/health/ 2>/dev/null"
             if ($code -eq "200") {
               Write-Host "Django API health check passed"
               $djangoOk = $true
