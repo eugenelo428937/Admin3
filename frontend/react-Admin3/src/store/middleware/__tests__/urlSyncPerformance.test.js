@@ -18,7 +18,11 @@ Object.defineProperty(window, 'history', {
   writable: true,
 });
 
-describe('URL Sync Middleware - Performance (Story 1.1)', () => {
+// Wall-clock timing tests are non-deterministic on shared CI runners.
+// Skip in CI; run locally for developer feedback.
+const isCI = !!process.env.CI;
+
+describe.skipIf(isCI)('URL Sync Middleware - Performance (Story 1.1)', () => {
   let store;
 
   beforeEach(() => {
