@@ -2,10 +2,10 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import StepExamSession from '../StepExamSession.js';
+import StepExamSession from '../StepExamSession.tsx';
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     create: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('../../../../services/examSessionService.js', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionService from '../../../../services/examSessionService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

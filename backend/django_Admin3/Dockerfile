@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Django Backend Dockerfile for Railway
+# Django Backend Dockerfile — works for both Staging (Docker Compose) and UAT (Railway)
 # Uses multi-stage build and avoids sensitive data in ARG/ENV
 
 FROM python:3.14-slim AS builder
@@ -53,10 +53,11 @@ RUN mkdir -p /app/logs && chown appuser:appuser /app/logs
 RUN find . -name "*.sh" -exec sed -i 's/\r$//' {} +
 
 # Set non-sensitive environment variables only
-# All sensitive variables are provided at RUNTIME by Railway
+# DJANGO_SETTINGS_MODULE is overridden at runtime by docker-compose or Railway env vars
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=django_Admin3.settings.uat
+    DJANGO_SETTINGS_MODULE=django_Admin3.settings.staging \
+    PORT=8888
 
 # Collect static files with a dummy secret key (only needed at build time)
 # Real secret key is provided at runtime
@@ -66,12 +67,12 @@ RUN DJANGO_SECRET_KEY=build-time-dummy-key-for-collectstatic \
 # Switch to non-root user
 USER appuser
 
-# Expose port
-EXPOSE 8080
+# Expose default port (overridden by $PORT at runtime)
+EXPOSE ${PORT}
 
-# Health check
+# Health check uses $PORT so it works for both staging (8888) and Railway (dynamic)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health/')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/api/health/')" || exit 1
 
-# Start command - use railway-start.sh for flexibility
+# Start command - railway-start.sh uses $PORT for gunicorn bind
 CMD ["bash", "railway-start.sh"]

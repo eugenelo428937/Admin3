@@ -3,15 +3,15 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminUserProfileForm from '../UserProfileForm.js';
+import AdminUserProfileForm from '../UserProfileForm.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -27,7 +27,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock userProfileService
-vi.mock('../../../../services/userProfileService.js', () => ({
+vi.mock('../../../../services/userProfileService.ts', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -38,14 +38,14 @@ vi.mock('../../../../services/userProfileService.js', () => ({
 }));
 
 // Mock ValidatedPhoneInput to avoid country API fetch
-vi.mock('../../../User/ValidatedPhoneInput.js', () => ({
+vi.mock('../../../User/ValidatedPhoneInput.tsx', () => ({
   __esModule: true,
   default: function MockValidatedPhoneInput({ label, name, value, onChange }) {
     return <input aria-label={label} name={name} value={value || ''} onChange={onChange} />;
   },
 }));
 
-import userProfileService from '../../../../services/userProfileService.js';
+import userProfileService from '../../../../services/userProfileService.ts';
 
 const theme = appTheme;
 

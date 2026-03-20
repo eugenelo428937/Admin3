@@ -58,7 +58,11 @@ if os.path.exists(env_file):
 else:
     print(f'Warning: {env_file} not found!')
 
-# environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# Also load root .env for shared project-wide settings (e.g. INTERNAL)
+root_env_file = os.path.join(BASE_DIR, '..', '..', '.env')
+if os.path.exists(root_env_file):
+    print(f'Loading root environment from: {root_env_file}')
+    environ.Env.read_env(root_env_file, overwrite=False)
 
 # Use environment variables
 DEBUG = env('DEBUG')

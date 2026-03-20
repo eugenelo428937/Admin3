@@ -13,7 +13,7 @@ import {
   buildTutorialMetadata,
   buildTutorialProductData,
   buildTutorialPriceData,
-} from '../tutorialMetadataBuilder.js';
+} from '../tutorialMetadataBuilder';
 
 describe('tutorialMetadataBuilder', () => {
   describe('buildTutorialMetadata', () => {

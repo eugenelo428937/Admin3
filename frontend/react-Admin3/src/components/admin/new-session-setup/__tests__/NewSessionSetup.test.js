@@ -3,15 +3,15 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import NewSessionSetup from '../NewSessionSetup.js';
+import NewSessionSetup from '../NewSessionSetup.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn(),
 }));
 
 // Mock child components to isolate integration behavior
-vi.mock('../StepExamSession.js', () => ({
+vi.mock('../StepExamSession.tsx', () => ({
   __esModule: true,
   default: function MockStepExamSession({ onSessionCreated }) {
     return (
@@ -37,7 +37,7 @@ vi.mock('../StepExamSession.js', () => ({
   },
 }));
 
-vi.mock('../StepSubjects.js', () => ({
+vi.mock('../StepSubjects.tsx', () => ({
   __esModule: true,
   default: function MockStepSubjects({ onComplete, isExistingSession }) {
     return (
@@ -49,7 +49,7 @@ vi.mock('../StepSubjects.js', () => ({
   },
 }));
 
-vi.mock('../StepMaterials.js', () => ({
+vi.mock('../StepMaterials.tsx', () => ({
   __esModule: true,
   default: function MockStepMaterials({ onComplete }) {
     return (
@@ -60,7 +60,7 @@ vi.mock('../StepMaterials.js', () => ({
   },
 }));
 
-vi.mock('../StepTutorials.js', () => ({
+vi.mock('../StepTutorials.tsx', () => ({
   __esModule: true,
   default: function MockStepTutorials({ onComplete }) {
     return (
@@ -71,7 +71,7 @@ vi.mock('../StepTutorials.js', () => ({
   },
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

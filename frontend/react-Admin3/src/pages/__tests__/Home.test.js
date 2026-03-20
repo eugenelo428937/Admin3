@@ -9,8 +9,8 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../../store/slices/filtersSlice.js';
-import theme from '../../theme/theme.js';
+import filtersReducer from '../../store/slices/filtersSlice';
+import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();
@@ -41,7 +41,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock SearchBox
-vi.mock('../../components/SearchBox.js', () => ({
+vi.mock('../../components/SearchBox', () => ({
   __esModule: true,
   default: function MockSearchBox({ onSearchResults, onShowMatchingProducts }) {
     return (
@@ -67,7 +67,7 @@ vi.mock('../../components/SearchBox.js', () => ({
 }));
 
 // Mock SearchResults
-vi.mock('../../components/SearchResults.js', () => ({
+vi.mock('../../components/SearchResults', () => ({
   __esModule: true,
   default: function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
     return (
@@ -85,7 +85,7 @@ vi.mock('../../components/SearchResults.js', () => ({
 }));
 
 // Mock rulesEngineService
-vi.mock('../../services/rulesEngineService.js', () => ({
+vi.mock('../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
@@ -93,7 +93,7 @@ vi.mock('../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock rulesEngineUtils
-vi.mock('../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
     executeHomePage: vi.fn().mockResolvedValue({
       success: true,
@@ -104,37 +104,37 @@ vi.mock('../../utils/rulesEngineUtils.js', () => ({
 }));
 
 // Mock 3D/WebGL effects that require canvas context
-vi.mock('../../components/Effects/NeonMeshBackground.js', () => ({
+vi.mock('../../components/Effects/NeonMeshBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/StripeWaveBackground.js', () => ({
+vi.mock('../../components/Effects/StripeWaveBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/AuroraBorealisBackground.js', () => ({
+vi.mock('../../components/Effects/AuroraBorealisBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/OceanDepthBackground.js', () => ({
+vi.mock('../../components/Effects/OceanDepthBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/SunsetSilkBackground.js', () => ({
+vi.mock('../../components/Effects/SunsetSilkBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/IrisDawnBackground.js', () => ({
+vi.mock('../../components/Effects/IrisDawnBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
-vi.mock('../../components/Effects/CopperRoseBackground.js', () => ({
+vi.mock('../../components/Effects/CopperRoseBackground', () => ({
   __esModule: true,
   default: () => null,
 }));
 
-import Home from '../Home.js';
-import { rulesEngineHelpers } from '../../utils/rulesEngineUtils.js';
+import Home from '../Home.tsx';
+import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
 
 describe('Home Page', () => {
   beforeEach(() => {

@@ -4,18 +4,18 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStaffList from '../StaffList.js';
+import AdminStaffList from '../StaffList.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock staffService
-vi.mock('../../../../services/staffService.js', () => ({
+vi.mock('../../../../services/staffService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../services/staffService.js', () => ({
   },
 }));
 
-import staffService from '../../../../services/staffService.js';
+import staffService from '../../../../services/staffService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

@@ -3,12 +3,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MarkingProductCard from '../MarkingProductCard.js';
-import productService from '../../../../services/productService.js';
+import MarkingProductCard from '../MarkingProductCard';
+import productService from '../../../../services/productService';
 import appTheme from '../../../../theme';
 
 // Mock productService
-vi.mock('../../../../services/productService.js', () => ({
+vi.mock('../../../../services/productService', () => ({
   __esModule: true,
   default: {
     getMarkingDeadlines: vi.fn()
@@ -24,7 +24,7 @@ const mockCartData = {
   }
 };
 
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: mockCartData
   })

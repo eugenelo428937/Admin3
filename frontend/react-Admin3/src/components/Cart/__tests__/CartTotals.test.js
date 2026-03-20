@@ -14,7 +14,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CartTotals from '../CartTotals.js';
+import CartTotals from '../CartTotals';
 
 describe('CartTotals Component', () => {
   const mockTotals = {

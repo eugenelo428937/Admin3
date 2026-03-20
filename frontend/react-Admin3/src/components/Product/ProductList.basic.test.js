@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 /**
  * Basic test for ProductList component to verify rules engine integration
  */
-vi.mock("../../services/httpService.js", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock("../../services/httpService.js", () => ({
       delete: vi.fn(),
    },
 }));
-vi.mock("../../services/cartService.js", () => ({
+vi.mock("../../services/cartService.ts", () => ({
    __esModule: true,
    default: {
       getCart: vi.fn(() =>
@@ -30,7 +30,7 @@ vi.mock("../../services/cartService.js", () => ({
    },
 }));
 // Mock CartContext to prevent CartProvider from importing services
-vi.mock("../../contexts/CartContext.js", () => {
+vi.mock("../../contexts/CartContext.tsx", () => {
    return {
       __esModule: true,
       useCart: () => ({
@@ -71,13 +71,13 @@ vi.mock("./FilterDebugger.js", () => ({
    default: () => null,
 }));
 
-vi.mock("../Common/RulesEngineInlineAlert.js", () => ({
+vi.mock("../Common/RulesEngineInlineAlert", () => ({
    __esModule: true,
    default: () => null,
 }));
 
 // Mock rulesEngineUtils to prevent actual API calls
-vi.mock("../../utils/rulesEngineUtils.js", () => ({
+vi.mock("../../utils/rulesEngineUtils", () => ({
    __esModule: true,
    rulesEngineHelpers: {
       executeProductListRules: vi.fn(() => Promise.resolve({ messages: [] })),
@@ -85,7 +85,7 @@ vi.mock("../../utils/rulesEngineUtils.js", () => ({
 }));
 
 // Mock URL sync middleware - must return function directly, not jest.fn wrapper
-vi.mock("../../store/middleware/urlSyncMiddleware.js", () => ({
+vi.mock("../../store/middleware/urlSyncMiddleware", () => ({
    __esModule: true,
    parseUrlToFilters: () => ({
       subjects: [],
@@ -102,13 +102,13 @@ import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
-import ProductList from "./ProductList.js";
-import { CartProvider } from "../../contexts/CartContext.js";
-import { createMockStore } from "../../test-utils/reduxMockStore.js";
+import ProductList from "./ProductList";
+import { CartProvider } from "../../contexts/CartContext.tsx";
+import { createMockStore } from "../../test-utils/reduxMockStore";
 
 import appTheme from '../../theme';
 // Mock the rules engine service to prevent actual API calls during tests
-vi.mock("../../services/rulesEngineService.js", () => ({
+vi.mock("../../services/rulesEngineService", () => ({
    __esModule: true,
    default: {
       ENTRY_POINTS: {
@@ -141,7 +141,7 @@ const mockSearch = vi.fn();
 const mockRefresh = vi.fn();
 
 // Mock the hooks used in ProductList
-vi.mock("../../hooks/useProductsSearch.js", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: mockProducts,
@@ -159,7 +159,7 @@ const mockHandleAddToCart = vi.fn();
 const mockAllEsspIds = [];
 const mockBulkDeadlines = {};
 
-vi.mock("../../hooks/useProductCardHelpers.js", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: mockHandleAddToCart,

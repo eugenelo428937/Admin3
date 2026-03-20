@@ -4,14 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import AddressEditModal from '../AddressEditModal.js';
-import theme from '../../../theme/theme.js';
-import userService from '../../../services/userService.js';
-import addressValidationService from '../../../services/addressValidationService.js';
-import addressMetadataService from '../../../services/addressMetadataService.js';
+import AddressEditModal from '../AddressEditModal.tsx';
+import theme from '../../../theme/theme';
+import userService from '../../../services/userService.ts';
+import addressValidationService from '../../../services/address/addressValidationService.ts';
+import addressMetadataService from '../../../services/address/addressMetadataService.ts';
 
 // Mock userService
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     updateUserProfile: vi.fn(() => Promise.resolve({
@@ -22,7 +22,7 @@ vi.mock('../../../services/userService.js', () => ({
 }));
 
 // Mock addressValidationService
-vi.mock('../../../services/addressValidationService.js', () => ({
+vi.mock('../../../services/address/addressValidationService.ts', () => ({
   __esModule: true,
   default: {
     validateAddress: vi.fn(() => Promise.resolve({
@@ -36,7 +36,7 @@ vi.mock('../../../services/addressValidationService.js', () => ({
 }));
 
 // Mock addressMetadataService
-vi.mock('../../../services/addressMetadataService.js', () => ({
+vi.mock('../../../services/address/addressMetadataService.ts', () => ({
   __esModule: true,
   default: {
     supportsAddressLookup: vi.fn(() => true),
@@ -57,7 +57,7 @@ vi.mock('../../../services/addressMetadataService.js', () => ({
 }));
 
 // Mock AddressComparisonModal
-vi.mock('../AddressComparisonModal.js', () => ({
+vi.mock('../AddressComparisonModal.tsx', () => ({
   __esModule: true,
   default: function MockAddressComparisonModal({ open, onAcceptSuggested, onKeepOriginal, onClose }) {
     if (!open) return null;
@@ -72,7 +72,7 @@ vi.mock('../AddressComparisonModal.js', () => ({
 }));
 
 // Mock SmartAddressInput and DynamicAddressForm
-vi.mock('../SmartAddressInput.js', () => ({
+vi.mock('../SmartAddressInput.tsx', () => ({
   __esModule: true,
   default: function MockSmartAddressInput({ values, onChange, fieldPrefix = '' }) {
     const handleCountryChange = (e) => {
@@ -100,7 +100,7 @@ vi.mock('../SmartAddressInput.js', () => ({
   },
 }));
 
-vi.mock('../DynamicAddressForm.js', () => ({
+vi.mock('../DynamicAddressForm.tsx', () => ({
   __esModule: true,
   default: function MockDynamicAddressForm({ country, values, onChange, fieldPrefix = '' }) {
     const handleAddressChange = (e) => {

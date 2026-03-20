@@ -4,7 +4,7 @@ import { vi } from 'vitest';
  */
 
 // Mock services BEFORE any imports
-vi.mock("../../services/httpService.js", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
       get: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("../../services/httpService.js", () => ({
    },
 }));
 
-vi.mock("../../services/cartService.js", () => ({
+vi.mock("../../services/cartService.ts", () => ({
    __esModule: true,
    default: {
       getCart: vi.fn(() => Promise.resolve({
@@ -37,10 +37,10 @@ vi.mock("./ActiveFilters.js", () => ({ __esModule: true, default: () => null }))
 vi.mock("./ProductGrid.js", () => ({ __esModule: true, default: () => null }));
 vi.mock("../SearchBox.js", () => ({ __esModule: true, default: () => null }));
 vi.mock("./FilterDebugger.js", () => ({ __esModule: true, default: () => null }));
-vi.mock("../Common/RulesEngineInlineAlert.js", () => ({ __esModule: true, default: () => null }));
+vi.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
 
 // Mock hooks
-vi.mock("../../hooks/useProductsSearch.js", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: [],
@@ -53,7 +53,7 @@ vi.mock("../../hooks/useProductsSearch.js", () => ({
    }),
 }));
 
-vi.mock("../../hooks/useProductCardHelpers.js", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: vi.fn(),

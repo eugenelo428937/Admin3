@@ -19,11 +19,11 @@ import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { MemoryRouter } from 'react-router-dom';
-import theme from '../../../theme/theme.js';
-import CartReviewStep from '../CheckoutSteps/CartReviewStep.js';
-import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.js';
-import CheckoutSteps from '../CheckoutSteps.js';
-import rulesEngineService from '../../../services/rulesEngineService.js';
+import theme from '../../../theme/theme';
+import CartReviewStep from '../CheckoutSteps/CartReviewStep.tsx';
+import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel.tsx';
+import CheckoutSteps from '../CheckoutSteps.tsx';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 // Mock useMediaQuery so CartSummaryPanel expands in tests
 vi.mock('@mui/material/useMediaQuery', () => ({
@@ -32,15 +32,15 @@ vi.mock('@mui/material/useMediaQuery', () => ({
 }));
 
 // Mock useAuth hook - configure in beforeEach
-vi.mock('../../../hooks/useAuth.js');
+vi.mock('../../../hooks/useAuth.tsx');
 
 // Mock useCart hook - configure in beforeEach (like the passing unit tests)
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
 // Mock useCheckoutValidation hook
-vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
@@ -50,12 +50,12 @@ vi.mock('../../../hooks/useCheckoutValidation.js', () => ({
 }));
 
 // Mock productCodeGenerator
-vi.mock('../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 
 // Mock services for integration tests
-vi.mock('../../../services/rulesEngineService.js', () => {
+vi.mock('../../../services/rulesEngineService', () => {
   const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
@@ -82,7 +82,7 @@ vi.mock('../../../services/rulesEngineService.js', () => {
   };
 });
 
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn(),
@@ -91,7 +91,7 @@ vi.mock('../../../services/httpService.js', () => ({
   }
 }));
 
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getUserProfile: vi.fn().mockResolvedValue({ data: {} }),
@@ -99,7 +99,7 @@ vi.mock('../../../services/userService.js', () => ({
   }
 }));
 
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: {
     API_BASE_URL: 'http://localhost:8888',
@@ -545,14 +545,14 @@ describe('CheckoutSteps Component Integration', () => {
     vi.clearAllMocks();
 
     // Mock useAuth hook
-    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.js'); const { useAuth } = _reqmod__________hooks_useAuth_js;
+    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.tsx'); const { useAuth } = _reqmod__________hooks_useAuth_js;
     useAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, email: 'test@example.com' }
     });
 
     // Mock useCart hook (same pattern as passing unit tests)
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData
@@ -581,7 +581,7 @@ describe('CheckoutSteps Component Integration', () => {
 
     it('should display cart items from mocked hook', async () => {
       const customCartItems = createMockCartItems({ productName: 'CM2 Core Reading' });
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: customCartItems,
         cartData: mockCartData
@@ -595,7 +595,7 @@ describe('CheckoutSteps Component Integration', () => {
     });
 
     it('should render correctly with empty cart', async () => {
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: [],
         cartData: mockCartData
@@ -684,7 +684,7 @@ describe('CheckoutSteps Component Integration', () => {
         }
       });
 
-      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+      const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
       useCart.mockReturnValue({
         cartItems: mockCartItems,
         cartData: cartDataWithVat
@@ -722,14 +722,14 @@ describe('CheckoutSteps Modal Interactions', () => {
     vi.clearAllMocks();
 
     // Mock useAuth hook
-    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.js'); const { useAuth } = _reqmod__________hooks_useAuth_js;
+    const _reqmod__________hooks_useAuth_js = await import('../../../hooks/useAuth.tsx'); const { useAuth } = _reqmod__________hooks_useAuth_js;
     useAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, email: 'test@example.com' }
     });
 
     // Mock useCart hook
-    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.js'); const { useCart } = _reqmod__________contexts_CartContext_js;
+    const _reqmod__________contexts_CartContext_js = await import('../../../contexts/CartContext.tsx'); const { useCart } = _reqmod__________contexts_CartContext_js;
     useCart.mockReturnValue({
       cartItems: mockCartItems,
       cartData: mockCartData

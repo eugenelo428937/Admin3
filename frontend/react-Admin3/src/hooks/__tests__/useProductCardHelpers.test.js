@@ -11,11 +11,11 @@ import { vi } from 'vitest';
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useProductCardHelpers from '../useProductCardHelpers.js';
+import useProductCardHelpers from '../useProductCardHelpers';
 
 // Mock CartContext
 const mockAddToCart = vi.fn();
-vi.mock('../../contexts/CartContext.js', () => ({
+vi.mock('../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
   }),
@@ -23,7 +23,7 @@ vi.mock('../../contexts/CartContext.js', () => ({
 
 // Mock productService
 const mockGetBulkMarkingDeadlines = vi.fn();
-vi.mock('../../services/productService.js', () => ({
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
     getBulkMarkingDeadlines: (...args) => mockGetBulkMarkingDeadlines(...args),

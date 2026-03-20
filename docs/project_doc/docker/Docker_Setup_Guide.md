@@ -491,3 +491,209 @@ This checks:
 - GitHub Actions runner (service status, GitHub API connectivity)
 
 Results are saved to `network-diagnostic-results-<timestamp>.txt`.
+
+---
+
+## 11. LAN Access for Staging (Company Network Only)
+
+The staging machine runs Docker containers inside WSL2. By default, the app is only accessible on the host at `127.0.0.1:8443`. This section covers exposing it to other machines on the company LAN without any public internet exposure.
+
+### Prerequisites
+
+- The staging machine is domain-joined (DomainAuthenticated network profile)
+- Docker containers are running inside WSL2
+- The app is accessible locally at `https://127.0.0.1:8443/home`
+
+### Step 1: Docker — Bind to All Interfaces
+
+Ensure the container port is bound to `0.0.0.0` (all interfaces), not just `127.0.0.1`.
+
+In `docker-compose.yml`:
+
+```yaml
+services:
+  nginx:
+    ports:
+      - "0.0.0.0:8443:443"    # Binds to all interfaces
+```
+
+Verify with:
+
+```powershell
+docker ps --format "table {{.Names}}\t{{.Ports}}"
+# Should show: 0.0.0.0:8443->443/tcp (NOT 127.0.0.1:8443->443/tcp)
+```
+
+### Step 2: WSL2 — Port Forwarding from Host to WSL
+
+WSL2 runs in a lightweight VM with its own network. Windows auto-forwards localhost ports but **not** external LAN traffic. A port proxy bridges this gap.
+
+**Create the port proxy** (run as Administrator in PowerShell):
+
+```powershell
+# Find WSL2's internal IP
+wsl hostname -I
+# Example output: 172.28.144.1
+
+# Create port forwarding rule
+netsh interface portproxy add v4tov4 `
+  listenport=8443 `
+  listenaddress=0.0.0.0 `
+  connectport=8443 `
+  connectaddress=<WSL_IP>
+```
+
+Replace `<WSL_IP>` with the IP from `wsl hostname -I`.
+
+**Verify:**
+
+```powershell
+netsh interface portproxy show all
+```
+
+**Important:** WSL2's IP can change on reboot. To automate, create a startup script:
+
+```powershell
+# Save as C:\Scripts\wsl-portforward.ps1
+$wslIp = (wsl hostname -I).Trim()
+netsh interface portproxy delete v4tov4 listenport=8443 listenaddress=0.0.0.0 2>$null
+netsh interface portproxy add v4tov4 `
+  listenport=8443 `
+  listenaddress=0.0.0.0 `
+  connectport=8443 `
+  connectaddress=$wslIp
+Write-Host "Port 8443 forwarded to WSL at $wslIp"
+```
+
+Add this to **Task Scheduler** to run at logon (with "Run with highest privileges" enabled).
+
+### Step 3: Windows Firewall — Allow LAN Only
+
+This is the key security step. The firewall rule restricts access to the company subnet only.
+
+#### Determine Your Company Subnet
+
+Run on the staging machine:
+
+```powershell
+# Show network adapters with IP and prefix length
+Get-NetIPAddress -AddressFamily IPv4 |
+  Where-Object { $_.IPAddress -ne '127.0.0.1' } |
+  Format-Table InterfaceAlias, IPAddress, PrefixLength
+```
+
+**How to identify the correct adapter:**
+
+| Adapter                          | IP Range        | What It Is                     |
+|----------------------------------|-----------------|--------------------------------|
+| **Ethernet** (or Wi-Fi)         | Corporate IP    | Your LAN adapter — use this    |
+| vEthernet (WSL ...)             | `172.x.x.x`    | WSL2 virtual bridge — ignore   |
+| Local Area Connection / Bluetooth| `169.254.x.x`  | APIPA (no DHCP) — ignore       |
+
+Look for the **Ethernet** or **Wi-Fi** adapter with a non-`169.254.x.x` IP. That is your corporate LAN address.
+
+**Current staging machine values:**
+
+| Adapter    | IP           | PrefixLength | RemoteAddress (CIDR) |
+|------------|--------------|--------------|----------------------|
+| Ethernet   | `7.32.1.138` | 24           | **`7.32.1.0/24`**    |
+
+To calculate CIDR: zero out the host portion of the IP and append `/PrefixLength`.
+For example, `7.32.1.138` with prefix `24` → keep first 3 octets, zero the last → `7.32.1.0/24`.
+
+#### Create the Firewall Rule
+
+```powershell
+# Run as Administrator
+New-NetFirewallRule `
+  -DisplayName "Admin3 Staging (LAN Only)" `
+  -Direction Inbound `
+  -Protocol TCP `
+  -LocalPort 8443 `
+  -RemoteAddress 7.32.1.0/24 `
+  -Action Allow `
+  -Profile Domain
+```
+
+> To use a different subnet, replace `7.32.1.0/24` with your CIDR range.
+
+> **Note:** The `-Profile Domain` is used because the staging machine is domain-joined
+> (DomainAuthenticated). This ensures the rule only applies when connected to the
+> corporate domain network. If the machine were not domain-joined, use `-Profile Private`.
+
+**Verify the rule:**
+
+```powershell
+Get-NetFirewallRule -DisplayName "Admin3 Staging*" | Format-Table DisplayName, Enabled, Profile, Action
+```
+
+**To remove later:**
+
+```powershell
+Remove-NetFirewallRule -DisplayName "Admin3 Staging (LAN Only)"
+```
+
+### Step 4: Verify Network Profile
+
+Confirm the staging machine's network profile:
+
+```powershell
+Get-NetConnectionProfile
+```
+
+Expected output for a domain-joined machine:
+
+```
+Name             : acted.local
+InterfaceAlias   : Ethernet
+NetworkCategory  : DomainAuthenticated
+```
+
+`DomainAuthenticated` means the machine is joined to an Active Directory domain. The firewall rule with `-Profile Domain` will be active on this network.
+
+### Step 5: Access from Other Machines
+
+Find the staging machine's LAN IP:
+
+```powershell
+# On the staging machine
+ipconfig | findstr "IPv4"
+```
+
+**Current staging IP:** `7.32.1.138`
+
+Other machines on the LAN access the app at:
+
+```
+https://7.32.1.138:8443/home
+```
+
+> **SSL certificate warning:** Browsers will show a certificate warning because the
+> self-signed cert was issued for `localhost`/`127.0.0.1`, not the LAN IP. Users can
+> click "Advanced" → "Proceed" to accept. To eliminate this, regenerate the cert to
+> include the LAN IP or hostname (see Section 5: SSL Certificates).
+
+### Step 6: Update ALLOWED_HOSTS and CORS (if needed)
+
+If Django returns `400 Bad Request` when accessed by LAN IP, add the staging machine's IP to `.env`:
+
+```ini
+ALLOWED_HOSTS=staging.acted.local,localhost,127.0.0.1,7.32.1.138
+CORS_ALLOWED_ORIGINS=https://staging.acted.local,https://localhost,https://7.32.1.138:8443
+CSRF_TRUSTED_ORIGINS=https://staging.acted.local,https://localhost,https://7.32.1.138:8443
+```
+
+Then restart the backend:
+
+```bash
+docker compose -f docker-compose.yml restart backend
+```
+
+### Security Summary
+
+| Layer              | What It Does                                        |
+|--------------------|-----------------------------------------------------|
+| Docker ports       | Binds to `0.0.0.0` so traffic can reach the container |
+| WSL2 port proxy    | Forwards external traffic from Windows host to WSL VM |
+| Windows Firewall   | Restricts inbound to company subnet only (Domain profile) |
+| No router exposure | No port forwarding on the office router = no public access |

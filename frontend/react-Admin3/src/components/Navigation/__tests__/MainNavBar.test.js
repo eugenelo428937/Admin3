@@ -19,7 +19,7 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -47,7 +47,7 @@ vi.mock('../../../services/cartService.js', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../services/productService.js', () => ({
+vi.mock('../../../services/productService', () => ({
   __esModule: true,
   default: {
     getNavigationData: vi.fn(() => Promise.resolve({
@@ -60,7 +60,7 @@ vi.mock('../../../services/productService.js', () => ({
 }));
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -72,7 +72,7 @@ vi.mock('../../../hooks/useAuth.js', () => ({
 }));
 
 // Mock the useCart hook
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
@@ -87,7 +87,7 @@ vi.mock('../../../contexts/CartContext.js', () => ({
 }));
 
 // Mock TutorialChoiceContext
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     getTutorialChoice: vi.fn(),
     addTutorialChoice: vi.fn(),
@@ -130,9 +130,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import MainNavBar from '../MainNavBar.js';
-import filtersReducer from '../../../store/slices/filtersSlice.js';
-import theme from '../../../theme/theme.js';
+import MainNavBar from '../MainNavBar.tsx';
+import filtersReducer from '../../../store/slices/filtersSlice';
+import theme from '../../../theme/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers.js';
 

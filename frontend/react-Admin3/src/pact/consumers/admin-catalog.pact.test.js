@@ -44,8 +44,14 @@ describe('Catalog Admin Service - Pact Consumer Tests', () => {
           headers: JSON_RESPONSE_HEADERS,
           body: eachLike({
             id: integer(1),
-            exam_session: integer(1),
-            subject: integer(1),
+            exam_session: like({
+              id: integer(1),
+              session_code: string('2025-04'),
+            }),
+            subject: like({
+              id: integer(1),
+              code: string('CM2'),
+            }),
             is_active: boolean(true),
             created_at: string('2026-02-16T10:00:00Z'),
             updated_at: string('2026-02-16T10:00:00Z'),

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Grid, Paper, Tooltip } from '@mui/material';
-import { scales, md3 } from '../../theme/tokens/colors.js';
+import { scales, md3 } from '../../theme/tokens/colors';
 
 export default {
   title: 'Design System/Colors/BPP Brand Scales',

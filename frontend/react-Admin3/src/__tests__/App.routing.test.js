@@ -12,11 +12,11 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../theme/theme.js';
-import filtersReducer from '../store/slices/filtersSlice.js';
+import theme from '../theme/theme';
+import filtersReducer from '../store/slices/filtersSlice';
 
 // Mock all services before component imports
-vi.mock('../services/httpService.js', () => ({
+vi.mock('../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -26,7 +26,7 @@ vi.mock('../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../services/cartService.js', () => ({
+vi.mock('../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({ data: { items: [] } })),
@@ -37,7 +37,7 @@ vi.mock('../services/cartService.js', () => ({
   },
 }));
 
-vi.mock('../services/productService.js', () => ({
+vi.mock('../services/productService', () => ({
   __esModule: true,
   default: {
     getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
@@ -48,11 +48,11 @@ vi.mock('../services/productService.js', () => ({
   },
 }));
 
-vi.mock('../services/subjectService.js', () => ({
+vi.mock('../services/subjectService', () => ({
   getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock('../services/rulesEngineService.js', () => ({
+vi.mock('../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
@@ -64,7 +64,7 @@ vi.mock('../services/rulesEngineService.js', () => ({
   }
 }));
 
-vi.mock('../hooks/useAuth.js', () => ({
+vi.mock('../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -76,105 +76,105 @@ vi.mock('../hooks/useAuth.js', () => ({
 }));
 
 // Mock page components to make routing tests fast and focused
-vi.mock('../pages/Home.js', () => ({
+vi.mock('../pages/Home.tsx', () => ({
   __esModule: true,
   default: function MockHome() {
     return <div data-testid="home-page">Home Page</div>;
   },
 }));
 
-vi.mock('../components/Product/ProductList.js', () => ({
+vi.mock('../components/Product/ProductList.tsx', () => ({
   __esModule: true,
   default: function MockProductList() {
     return <div data-testid="product-list-page">Product List Page</div>;
   },
 }));
 
-vi.mock('../components/Ordering/CheckoutPage.js', () => ({
+vi.mock('../components/Ordering/CheckoutPage.tsx', () => ({
   __esModule: true,
   default: function MockCheckoutPage() {
     return <div data-testid="checkout-page">Checkout Page</div>;
   },
 }));
 
-vi.mock('../pages/ProfilePage.js', () => ({
+vi.mock('../pages/ProfilePage.tsx', () => ({
   __esModule: true,
   default: function MockProfilePage() {
     return <div data-testid="profile-page">Profile Page</div>;
   },
 }));
 
-vi.mock('../components/User/OrderHistory.js', () => ({
+vi.mock('../components/User/OrderHistory.tsx', () => ({
   __esModule: true,
   default: function MockOrderHistory() {
     return <div data-testid="orders-page">Order History Page</div>;
   },
 }));
 
-vi.mock('../components/NoMatch.js', () => ({
+vi.mock('../components/NoMatch.tsx', () => ({
   __esModule: true,
   default: function MockNoMatch() {
     return <div data-testid="no-match-page">404 - Not Found</div>;
   },
 }));
 
-vi.mock('../pages/Registration.js', () => ({
+vi.mock('../pages/Registration.tsx', () => ({
   __esModule: true,
   default: function MockRegistration() {
     return <div data-testid="registration-page">Registration Page</div>;
   },
 }));
 
-vi.mock('../pages/StyleGuide.js', () => ({
+vi.mock('../pages/StyleGuide.tsx', () => ({
   __esModule: true,
   default: function MockStyleGuide() {
     return <div data-testid="style-guide-page">Style Guide</div>;
   },
 }));
 
-vi.mock('../components/User/ForgotPasswordForm.js', () => ({
+vi.mock('../components/User/ForgotPasswordForm.tsx', () => ({
   __esModule: true,
   default: function MockForgotPassword() {
     return <div data-testid="forgot-password-page">Forgot Password</div>;
   },
 }));
 
-vi.mock('../components/User/ResetPasswordForm.js', () => ({
+vi.mock('../components/User/ResetPasswordForm.tsx', () => ({
   __esModule: true,
   default: function MockResetPassword() {
     return <div data-testid="reset-password-page">Reset Password</div>;
   },
 }));
 
-vi.mock('../components/User/AccountActivation.js', () => ({
+vi.mock('../components/User/AccountActivation.tsx', () => ({
   __esModule: true,
   default: function MockAccountActivation() {
     return <div data-testid="account-activation-page">Account Activation</div>;
   },
 }));
 
-vi.mock('../components/User/ResendActivation.js', () => ({
+vi.mock('../components/User/ResendActivation.tsx', () => ({
   __esModule: true,
   default: function MockResendActivation() {
     return <div data-testid="resend-activation-page">Resend Activation</div>;
   },
 }));
 
-vi.mock('../components/User/EmailVerification.js', () => ({
+vi.mock('../components/User/EmailVerification.tsx', () => ({
   __esModule: true,
   default: function MockEmailVerification() {
     return <div data-testid="email-verification-page">Email Verification</div>;
   },
 }));
 
-vi.mock('../components/Navigation/MainNavBar.js', () => ({
+vi.mock('../components/Navigation/MainNavBar.tsx', () => ({
   __esModule: true,
   default: function MockMainNavBar() {
     return <nav data-testid="main-navbar">Navigation</nav>;
   },
 }));
 
-vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.js', () => ({
+vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer.tsx', () => ({
   __esModule: true,
   default: function MockTutorialSummaryBar() {
     return null;
@@ -194,19 +194,19 @@ const createTestStore = () => {
 import { Navigate } from 'react-router-dom';
 
 // Import mocked components at top level
-import Home from '../pages/Home.js';
-import ProductList from '../components/Product/ProductList.js';
-import CheckoutPage from '../components/Ordering/CheckoutPage.js';
-import ProfilePage from '../pages/ProfilePage.js';
-import OrderHistory from '../components/User/OrderHistory.js';
+import Home from '../pages/Home.tsx';
+import ProductList from '../components/Product/ProductList.tsx';
+import CheckoutPage from '../components/Ordering/CheckoutPage.tsx';
+import ProfilePage from '../pages/ProfilePage.tsx';
+import OrderHistory from '../components/User/OrderHistory.tsx';
 import NoMatch from '../components/NoMatch.js';
-import Registration from '../pages/Registration.js';
-import StyleGuide from '../pages/StyleGuide.js';
-import ForgotPasswordForm from '../components/User/ForgotPasswordForm.js';
-import ResetPasswordForm from '../components/User/ResetPasswordForm.js';
-import AccountActivation from '../components/User/AccountActivation.js';
-import ResendActivation from '../components/User/ResendActivation.js';
-import EmailVerification from '../components/User/EmailVerification.js';
+import Registration from '../pages/Registration.tsx';
+import StyleGuide from '../pages/StyleGuide.tsx';
+import ForgotPasswordForm from '../components/User/ForgotPasswordForm.tsx';
+import ResetPasswordForm from '../components/User/ResetPasswordForm.tsx';
+import AccountActivation from '../components/User/AccountActivation.tsx';
+import ResendActivation from '../components/User/ResendActivation.tsx';
+import EmailVerification from '../components/User/EmailVerification.tsx';
 import MainNavBar from '../components/Navigation/MainNavBar.js';
 
 // Simple test router setup matching App.js routes

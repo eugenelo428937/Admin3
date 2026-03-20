@@ -8,7 +8,7 @@ import { ThemeProvider } from '@mui/material/styles';
 const mockAddVoucherToCart = vi.fn().mockResolvedValue({});
 
 // Mock CartContext
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   __esModule: true,
   useCart: () => ({
     addVoucherToCart: mockAddVoucherToCart,
@@ -52,7 +52,7 @@ vi.mock('react-icons/lu', async () => {
   };
 });
 
-import MarkingVoucherProductCard from '../MarkingVoucherProductCard.js';
+import MarkingVoucherProductCard from '../MarkingVoucherProductCard';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

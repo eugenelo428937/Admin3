@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import NavbarBrand from '../NavbarBrand.js';
+import NavbarBrand from '../NavbarBrand.tsx';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

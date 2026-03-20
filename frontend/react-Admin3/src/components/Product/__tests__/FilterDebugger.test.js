@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import FilterDebugger from '../FilterDebugger.js';
+import FilterDebugger from '../FilterDebugger';
 
 import appTheme from '../../../theme';
 const theme = appTheme;

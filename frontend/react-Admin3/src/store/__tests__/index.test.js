@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 
 // Mock the dependencies before importing the store
-vi.mock('../api/catalogApi.js', () => ({
+vi.mock('../api/catalogApi', () => ({
   catalogApi: {
     reducerPath: 'catalogApi',
     reducer: (state = {}) => state,
@@ -16,14 +16,14 @@ vi.mock('../api/catalogApi.js', () => ({
   useUnifiedSearchQuery: vi.fn(),
 }));
 
-vi.mock('../middleware/urlSyncMiddleware.js', () => ({
+vi.mock('../middleware/urlSyncMiddleware', () => ({
   urlSyncMiddleware: {
     middleware: () => (next) => (action) => next(action),
   },
   setupUrlToReduxSync: vi.fn(),
 }));
 
-vi.mock('../middleware/performanceMonitoring.js', () => ({
+vi.mock('../middleware/performanceMonitoring', () => ({
   __esModule: true,
   default: () => (next) => (action) => next(action),
 }));
@@ -50,7 +50,7 @@ describe('Redux Store Configuration', () => {
   describe('store creation', () => {
     test('creates store with required reducers', async () => {
       // Import store after mocks are set up
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
       store = testStore;
 
       const state = store.getState();
@@ -61,7 +61,7 @@ describe('Redux Store Configuration', () => {
     });
 
     test('filters reducer has correct initial state structure', async () => {
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
       store = testStore;
 
       const filtersState = store.getState().filters;
@@ -78,7 +78,7 @@ describe('Redux Store Configuration', () => {
     });
 
     test('filters state has correct initial values', async () => {
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
       store = testStore;
 
       const filtersState = store.getState().filters;
@@ -97,7 +97,7 @@ describe('Redux Store Configuration', () => {
 
   describe('store exports', () => {
     test('exports store as default', async () => {
-      const storeModule = require('../index.js');
+      const storeModule = await import('../index');
 
       expect(storeModule.default).toBeDefined();
       expect(typeof storeModule.default.getState).toBe('function');
@@ -105,14 +105,14 @@ describe('Redux Store Configuration', () => {
     });
 
     test('exports dispatch function', async () => {
-      const _reqmod____index_js = await import('../index.js'); const { dispatch } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { dispatch } = _reqmod____index_js;
 
       expect(dispatch).toBeDefined();
       expect(typeof dispatch).toBe('function');
     });
 
     test('exports getState function', async () => {
-      const _reqmod____index_js = await import('../index.js'); const { getState } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { getState } = _reqmod____index_js;
 
       expect(getState).toBeDefined();
       expect(typeof getState).toBe('function');
@@ -120,7 +120,7 @@ describe('Redux Store Configuration', () => {
 
     test('exports useUnifiedSearchQuery hook', async () => {
       // useUnifiedSearchQuery is re-exported from catalogApi
-      const storeModule = require('../index.js');
+      const storeModule = await import('../index');
 
       // It may be undefined due to mocking, but it should be defined in actual usage
       // This test verifies the export structure exists
@@ -132,7 +132,7 @@ describe('Redux Store Configuration', () => {
     test('URL sync middleware is set up for dispatch', async () => {
       // The store sets up URL sync middleware during configuration
       // We can verify the store has the middleware chain working
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
       store = testStore;
 
       // Verify middleware can process actions without errors
@@ -141,7 +141,7 @@ describe('Redux Store Configuration', () => {
     });
 
     test('store can dispatch actions', async () => {
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
       store = testStore;
 
       // Test dispatching an action
@@ -164,7 +164,7 @@ describe('Redux Store Configuration', () => {
 
       // The devTools option is set based on import.meta.env
       // We can verify the store works correctly in development mode
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
 
       expect(testStore).toBeDefined();
       expect(typeof testStore.getState).toBe('function');
@@ -177,7 +177,7 @@ describe('Redux Store Configuration', () => {
       vi.resetModules();
 
       // Store should still work in production mode
-      const _reqmod____index_js = await import('../index.js'); const { store: testStore } = _reqmod____index_js;
+      const _reqmod____index_js = await import('../index'); const { store: testStore } = _reqmod____index_js;
 
       expect(testStore).toBeDefined();
       expect(typeof testStore.getState).toBe('function');

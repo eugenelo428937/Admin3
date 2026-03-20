@@ -3,16 +3,16 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import SessionBundlesSummary from '../SessionBundlesSummary.js';
+import SessionBundlesSummary from '../SessionBundlesSummary.tsx';
 
-vi.mock('../../../../services/storeBundleService.js', () => ({
+vi.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-import storeBundleService from '../../../../services/storeBundleService.js';
+import storeBundleService from '../../../../services/storeBundleService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

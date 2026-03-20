@@ -3,12 +3,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import MaterialProductCard from '../MaterialProductCard.js';
-import { useCart } from '../../../../contexts/CartContext.js';
+import MaterialProductCard from '../MaterialProductCard';
+import { useCart } from '../../../../contexts/CartContext.tsx';
 import appTheme from '../../../../theme';
 
 // Mock the CartContext
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn(),
 }));
 
@@ -33,7 +33,7 @@ vi.mock('../OnlineClassroomProductCard.js', () => ({
   default: () => <div data-testid="online-classroom-product-card">Online Classroom Product Card</div>,
 }));
 
-vi.mock('../BundleCard.js', () => ({
+vi.mock('../BundleCard.tsx', () => ({
   __esModule: true,
   default: () => <div data-testid="bundle-card">Bundle Card</div>,
 }));

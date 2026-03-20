@@ -1,128 +1,77 @@
-.venv/
-./myenv/
-.env
-.vscode/
-# Spec Kit agent folder security (may contain credentials)
-.claude/
-.specify/memory/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-*.pyi
+*.egg
 *.egg-info/
 dist/
 build/
-*.egg
-.idea/
-.vscode/
-__pycache__/
-*.py[cod]
 *.so
-*.egg
-*.egg-info
-dist
-build
-.env
-.venv
-.vscode
-.idea
-.git
-.gitattributes
-.gitmodules
-.gitlab-ci.yml
-.gitlab-ci.yml.lock
-.gitlab-ci.yml.lock.json
-.gitlab-ci.yml.lock.json.lock
-.gitlab-ci.
-myenv/
-myenv/Lib
-myenv/Scripts
-myenv/Include
-myenv/tcl
-myenv/share
-myenv/pyvenv.cfg
-myenv/bin
-myenv/lib
-myenv/include
-myenv/tcl
-myenv/share
-myenv/pyvenv.cfg
-myenv/bin
-myenv/lib
-myenv/include
-myenv/tcl
-myenv/share
-myenv/pyvenv.cfg
-myenv/bin
-myenv/Lib/site-packages/
-myenv/Lib/site-packages/pip/
-myenv/Lib/site-packages/pip-*.dist-info/
-myenv/Lib/site-packages/setuptools/
-myenv/Lib/site-packages/setuptools-*.dist-info/
-myenv/Lib/site-packages/wheel/
-myenv/Lib/site-packages/wheel-*.dist-info/
-*.pyc
-.exe
-myenv/Scripts/*.exe
-myenv/Scripts/pip3.11.exe
-myenv/Scripts/pip.exe
-myenv/Lib/site-packages/urllib3/util/__pycache__/*.pyc
-myenv/Lib/site-packages/pygments/__pycache__/*
-/myenv
-/myenv/Lib/site-packages/certifi/__pycache__
-venv2/Lib/site-packages/pip/_vendor/certifi/cacert.pem
-venv2/Lib/site-packages/pip/_vendor/distlib/t32.exe
 *.exe
-venv2/Lib/*
-frontend/react_Admin3/o/
-venv/*
-frontend/react_Admin3/node_modules/*
-frontend/react_Admin3/node_modules.OLD/*
-frontend/react_Admin3/.env.*
-backend/django_Admin3/*.env
-backend/django_Admin3/.env*
-backend/django_Admin3/tokens/
-backend/django_Admin3/tokens/*.*
-backend/django_Admin3/tokens/*
-backend/django_Admin3/administrate/src/*
-backend/django_Admin3/administrate/src/*.xlsx
-frontend/react-Admin3/.env.*
-frontend/react-Admin3/Sandbox/*
-backend/django_Admin3/django_debug.log
-Project settings/server setup/secrets/
-Project settings/server setup/misc/*
-claude-mcp-trello/*
-claude-mcp-trello/
+
+# Virtual environments
+.venv/
+venv/
+venv2/
+myenv/
+
+# Node
 node_modules/
-node_modules/*.mcp.json
+
+# Environment files
+.env
 .env.*
-env.*
 !.env.example
 !.env.staging
 !**/.env.staging
-*tmpclaude*
-*tmpclaude*
-# null - Removed due to Windows compatibility issues (nul is a reserved device name)
-backend/django_Admin3/misc/***
-.playwrite-mcp/*
-# Pact contract JSON artifacts (generated, not committed)
-pacts/*.json
-.DS_Store
-*/.DS_Store
-*/*.DS_Store
-backend/.DS_Store
 
-# SSL certificates (generated at runtime, or mkcert local certs)
-nginx/ssl/
-*.pem
+# IDE / Editor
+.vscode/
+.idea/
 
-# Database dumps
-*.dump
-acteddb_dev.dump
+# OS files
+**/.DS_Store
+Thumbs.db
 
-# Runtime logs
-backend/django_Admin3/logs/
+# Logs
 *.log
 
-backend/django_Admin3/.env.example
+# Django
+backend/django_Admin3/tokens/
+backend/django_Admin3/administrate/src/
+backend/django_Admin3/misc/
+backend/django_Admin3/logs/
+
+# Frontend
+frontend/react-Admin3/coverage/
+frontend/react-Admin3/build/
+frontend/react-Admin3/Sandbox/
+
+# SSL certificates
+nginx/ssl/
+certs/
+*.pem
+
+# Database
+*.dump
+backup.sql
+
+# Test artifacts
+pacts/*.json
+
+# Binaries not for version control
+*.mp4
+get-pip.py
+
+# Claude / AI temp files
+.claude/
+.specify/memory/
+*tmpclaude*
+
+# Legacy (safe to keep ignoring)
+claude-mcp-trello/
+.playwrite-mcp/
+.playwright-mcp/
+Project settings/server setup/secrets/
+Project settings/server setup/misc/*

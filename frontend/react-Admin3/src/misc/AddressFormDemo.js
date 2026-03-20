@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Alert } from 'react-bootstrap';
-import DynamicAddressForm from '../components/Address/DynamicAddressForm.js';
-import CountryAutocomplete from '../components/User/CountryAutocomplete.js';
+import DynamicAddressForm from '../components/Address/DynamicAddressForm.tsx';
+import CountryAutocomplete from '../components/User/CountryAutocomplete.tsx';
 
 const AddressFormDemo = () => {
   const [selectedCountry, setSelectedCountry] = useState('');

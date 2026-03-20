@@ -4,11 +4,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme.js';
-import CartReviewStep from '../CartReviewStep.js';
+import theme from '../../../../theme/theme';
+import CartReviewStep from '../CartReviewStep.tsx';
 
 // Mock components that aren't available in test environment
-vi.mock('../../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 

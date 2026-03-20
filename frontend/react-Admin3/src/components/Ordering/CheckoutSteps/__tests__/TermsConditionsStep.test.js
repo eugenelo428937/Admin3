@@ -5,14 +5,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 
 // Mock useAuth hook
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
   }),
 }));
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('../../../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock rulesEngineUtils
-vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
+vi.mock('../../../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
     executeCheckoutTerms: vi.fn(),
   },
@@ -35,11 +35,11 @@ vi.mock('../../../../utils/rulesEngineUtils.js', () => ({
   })),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService.js';
-import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils.js';
+import rulesEngineService from '../../../../services/rulesEngineService';
+import { rulesEngineHelpers } from '../../../../utils/rulesEngineUtils';
 
 // Mock RulesEngineAcknowledgmentModal
-vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
+vi.mock('../../../Common/RulesEngineAcknowledgmentModal', () => ({
   __esModule: true,
   default: function MockRulesEngineAcknowledgmentModal({ open }) {
     if (!open) return null;
@@ -47,7 +47,7 @@ vi.mock('../../../Common/RulesEngineAcknowledgmentModal.js', () => ({
   },
 }));
 
-import TermsConditionsStep from '../TermsConditionsStep.js';
+import TermsConditionsStep from '../TermsConditionsStep.tsx';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

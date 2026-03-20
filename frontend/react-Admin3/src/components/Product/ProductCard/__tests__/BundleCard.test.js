@@ -3,10 +3,10 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import BundleCard from '../BundleCard.js';
+import BundleCard from '../BundleCard';
 
 // Mock bundleService
-vi.mock('../../../../services/bundleService.js', () => ({
+vi.mock('../../../../services/bundleService', () => ({
   __esModule: true,
   default: {
     getBundleContents: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock('../../../../services/bundleService.js', () => ({
 
 // Mock CartContext
 const mockAddToCart = vi.fn().mockResolvedValue({});
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
     cartItems: [],
@@ -24,7 +24,7 @@ vi.mock('../../../../contexts/CartContext.js', () => ({
   }),
 }));
 
-import bundleService from '../../../../services/bundleService.js';
+import bundleService from '../../../../services/bundleService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

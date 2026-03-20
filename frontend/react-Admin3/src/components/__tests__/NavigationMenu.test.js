@@ -3,15 +3,15 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import NavigationMenu from '../Navigation/NavigationMenu.js';
+import NavigationMenu from '../Navigation/NavigationMenu.tsx';
 import theme from '../../theme';
 
 // Mock useAuth
-vi.mock('../../hooks/useAuth.js', () => ({
+vi.mock('../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../hooks/useAuth.tsx';
 
 const defaultProps = {
   subjects: [{ id: 1, code: 'CM2', description: 'Financial Mathematics' }],

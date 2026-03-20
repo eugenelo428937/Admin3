@@ -10,7 +10,7 @@ import {
   parseGoogleRequiredFields,
   transformGoogleMetadata,
   clearMetadataCache
-} from '../googleAddressMetadata.js';
+} from '../address/googleAddressMetadata.ts';
 
 // Mock fetch globally
 global.fetch = vi.fn();

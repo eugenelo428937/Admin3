@@ -4,14 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Remove global mocks from setupTests.js so we can test with real context
-vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 // Mock useMediaQuery to return desktop mode (false = not mobile) by default
 vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn(() => false) }));
 
 // Now import the real context
-import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar.js';
-import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext.js';
+import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar';
+import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 describe('TutorialSelectionSummaryBar', () => {

@@ -3,15 +3,15 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminStaffForm from '../StaffForm.js';
+import AdminStaffForm from '../StaffForm.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock staffService
-vi.mock('../../../../services/staffService.js', () => ({
+vi.mock('../../../../services/staffService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/staffService.js', () => ({
   },
 }));
 
-import staffService from '../../../../services/staffService.js';
+import staffService from '../../../../services/staffService';
 
 const theme = appTheme;
 

@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import UserActions from '../UserActions.js';
+import UserActions from '../UserActions.tsx';
 import appTheme from '../../../theme';
 
 // Mock react-router-dom
@@ -24,12 +24,12 @@ let mockAuthState = {
   logout: vi.fn(),
 };
 
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock useCart context
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartCount: 5,
   }),

@@ -21,6 +21,10 @@
 # Claude / AI tooling
 .claude
 .specify
+.bmad-core
+.codex
+.cursor
+.superdesign
 *tmpclaude*
 
 # Virtual environments
@@ -48,6 +52,16 @@ docs
 # Test artifacts
 pacts
 .playwrite-mcp
+.playwright-mcp
+
+# Specs and chatmodes
+specs
+.github/chatmodes
+
+# Unnecessary binaries
+backup.sql
+get-pip.py
+*.mp4
 
 # Generated SSL certificates
 nginx/ssl

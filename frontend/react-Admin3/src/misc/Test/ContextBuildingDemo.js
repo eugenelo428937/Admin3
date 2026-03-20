@@ -3,7 +3,7 @@ import { Container, Card, Button, Alert, Row, Col, Form, Badge } from 'react-boo
 import {
   buildRulesContext,
   validateContext
-} from '../../utils/rulesEngineUtils.js';
+} from '../../utils/rulesEngineUtils';
 
 /**
  * Demo component to showcase context building utilities
