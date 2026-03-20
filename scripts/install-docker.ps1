@@ -1,6 +1,6 @@
 #Requires -RunAsAdministrator
 param(
-    [ValidateRange(1,8)]
+    [ValidateRange(1,9)]
     [int]$StartPhase = 1
 )
 <#
@@ -19,6 +19,7 @@ param(
       Phase 6: Restore database from seed dump (if tables are missing)
       Phase 7: Check port conflicts on the host
       Phase 8: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
+      Phase 9: Set up GitHub Actions runner service account (svc-runner)
 
     Run this script multiple times safely -- it detects completed phases.
     Use -StartPhase to skip to a specific phase (e.g., -StartPhase 6 to re-seed DB).
@@ -49,6 +50,10 @@ $ErrorActionPreference = 'Stop'
 # ============================================================
 
 $WSLDistro = "Ubuntu"
+
+# GitHub Actions runner service account (Phase 9)
+$SvcRunnerUser = "svc-runner"
+$SvcRunnerDesc = "Service account for GitHub Actions and WSL"
 
 # User profile where .wslconfig will be installed
 # This is the Windows user who will run WSL (not necessarily the admin running this script)
@@ -990,6 +995,192 @@ if ($cleanupItems.Count -gt 0) {
 
 
 # ============================================================
+# PHASE 9: GitHub Actions Runner Service Account
+# ============================================================
+
+if ($StartPhase -gt 9) {
+    Write-Step "PHASE 9" "Skipped (--StartPhase $StartPhase)"
+} else {
+
+Write-Step "PHASE 9" "Setting up GitHub Actions runner service account ($SvcRunnerUser)"
+
+# ── 9a: Create local user ──
+$userExists = Get-LocalUser -Name $SvcRunnerUser -ErrorAction SilentlyContinue
+if ($userExists) {
+    Write-OK "User '$SvcRunnerUser' already exists"
+} else {
+    Write-Step "9a" "Creating local user '$SvcRunnerUser'..."
+    $svcPassword = Read-Host -AsSecureString "Enter password for $SvcRunnerUser"
+    try {
+        net user $SvcRunnerUser ([Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($svcPassword))) /add /fullname:"GitHub Actions Runner" /comment:"$SvcRunnerDesc" /passwordchg:no /expires:never 2>&1 | Out-Null
+        Write-OK "User '$SvcRunnerUser' created"
+    } catch {
+        Write-Fail "Failed to create user: $_"
+        Write-Host "  Try manually: net user $SvcRunnerUser <password> /add" -ForegroundColor Gray
+    }
+}
+
+# ── 9b: Add to Administrators group ──
+$inAdmins = net localgroup Administrators 2>&1 | Select-String $SvcRunnerUser
+if ($inAdmins) {
+    Write-OK "'$SvcRunnerUser' is already in Administrators group"
+} else {
+    Write-Step "9b" "Adding '$SvcRunnerUser' to Administrators group..."
+    net localgroup Administrators $SvcRunnerUser /add 2>&1 | Out-Null
+    Write-OK "Added to Administrators group"
+}
+
+# ── 9c: Grant 'Log on as a service' right ──
+Write-Step "9c" "Granting 'Log on as a service' right..."
+$tempCfg = Join-Path $env:TEMP "secpol_export.cfg"
+$tempDb  = Join-Path $env:TEMP "secpol_import.sdb"
+secedit /export /cfg $tempCfg /quiet 2>&1 | Out-Null
+$cfg = Get-Content $tempCfg -Raw
+if ($cfg -match 'SeServiceLogonRight\s*=\s*(.*)') {
+    $currentValue = $Matches[1].Trim()
+    if ($currentValue -match $SvcRunnerUser) {
+        Write-OK "'$SvcRunnerUser' already has 'Log on as a service' right"
+    } else {
+        $newValue = "$currentValue,$SvcRunnerUser"
+        $cfg = $cfg -replace "SeServiceLogonRight\s*=\s*.*", "SeServiceLogonRight = $newValue"
+        $cfg | Set-Content $tempCfg
+        secedit /configure /db $tempDb /cfg $tempCfg /quiet 2>&1 | Out-Null
+        Write-OK "Granted 'Log on as a service' right"
+    }
+} else {
+    Write-Warn "Could not find SeServiceLogonRight in security policy -- grant manually via secpol.msc"
+}
+Remove-Item $tempCfg -ErrorAction SilentlyContinue
+Remove-Item $tempDb -ErrorAction SilentlyContinue
+
+# ── 9d: Export current WSL distro ──
+$exportPath = Join-Path $env:TEMP "wsl-$WSLDistro-export.tar"
+$svcRunnerDistroDir = "C:\Users\$SvcRunnerUser\WSL\$WSLDistro"
+
+# Check if svc-runner already has the distro by trying to list it under that user
+Write-Step "9d" "Exporting '$WSLDistro' distro for '$SvcRunnerUser'..."
+if (Test-Path $exportPath) {
+    Write-Warn "Export file already exists at $exportPath -- reusing it"
+    Write-Host "  Delete it to force a fresh export." -ForegroundColor Gray
+} else {
+    Write-Host "  This may take a few minutes..." -ForegroundColor Gray
+    wsl --export $WSLDistro $exportPath 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "Failed to export WSL distro"
+        Write-Host "  Ensure '$WSLDistro' is running: wsl -l -v" -ForegroundColor Gray
+        exit 1
+    }
+    $exportSize = [math]::Round((Get-Item $exportPath).Length / 1MB, 1)
+    Write-OK "Exported $WSLDistro ($exportSize MB) to $exportPath"
+}
+
+# ── 9e: Import distro as svc-runner ──
+Write-Step "9e" "Importing '$WSLDistro' distro for '$SvcRunnerUser'..."
+Write-Host "  This will open a new PowerShell window as '$SvcRunnerUser'." -ForegroundColor Yellow
+Write-Host "  In that window, the import will run automatically." -ForegroundColor Yellow
+Write-Host ""
+
+# Build the command to run as svc-runner
+$importCmd = @"
+Write-Host 'Importing WSL distro as $SvcRunnerUser...' -ForegroundColor Cyan
+`$distroDir = '$svcRunnerDistroDir'
+if (-not (Test-Path `$distroDir)) { New-Item -ItemType Directory -Path `$distroDir -Force | Out-Null }
+
+# Check if distro already imported
+`$distroList = (wsl -l -q 2>&1 | Out-String) -replace '`0', ''
+if (`$distroList -match '$WSLDistro') {
+    Write-Host '  [OK] $WSLDistro distro already imported for $SvcRunnerUser' -ForegroundColor Green
+} else {
+    wsl --import $WSLDistro `$distroDir '$exportPath' 2>&1 | Out-Null
+    if (`$LASTEXITCODE -eq 0) {
+        Write-Host '  [OK] $WSLDistro distro imported successfully' -ForegroundColor Green
+    } else {
+        Write-Host '  [FAIL] Import failed. Try manually:' -ForegroundColor Red
+        Write-Host "    wsl --import $WSLDistro `$distroDir $exportPath" -ForegroundColor Gray
+    }
+}
+
+# Verify Docker works
+Write-Host 'Verifying Docker access...' -ForegroundColor Cyan
+`$dockerCheck = wsl -d $WSLDistro -e bash -c 'docker info > /dev/null 2>&1 && echo OK || echo FAIL' 2>&1
+if (`$dockerCheck -match 'OK') {
+    Write-Host '  [OK] Docker is accessible inside WSL' -ForegroundColor Green
+} else {
+    Write-Host '  [WARN] Docker not accessible -- may need to start dockerd' -ForegroundColor Yellow
+    Write-Host '  Run: wsl -d $WSLDistro -e bash -c "sudo service docker start"' -ForegroundColor Gray
+}
+
+# Verify project directory
+`$projectCheck = wsl -d $WSLDistro -e bash -c 'test -f ~/Admin3/docker-compose.yml && echo OK || echo MISSING' 2>&1
+if (`$projectCheck -match 'OK') {
+    Write-Host '  [OK] ~/Admin3/docker-compose.yml found' -ForegroundColor Green
+} else {
+    Write-Host '  [WARN] ~/Admin3 not found -- clone it:' -ForegroundColor Yellow
+    Write-Host '  wsl -d $WSLDistro -e bash -c "git clone -b staging https://github.com/eugenelo428937/Admin3.git ~/Admin3"' -ForegroundColor Gray
+}
+
+Write-Host ''
+Write-Host 'Done. You can close this window.' -ForegroundColor Green
+Read-Host 'Press Enter to close'
+"@
+
+$importScriptPath = Join-Path $env:TEMP "svc-runner-wsl-import.ps1"
+$importCmd | Set-Content $importScriptPath -Encoding UTF8
+
+Write-Host "  Launching import script as '$SvcRunnerUser'..." -ForegroundColor Cyan
+Write-Host "  You will be prompted for the '$SvcRunnerUser' password." -ForegroundColor Gray
+Write-Host ""
+Start-Process runas -ArgumentList "/user:$SvcRunnerUser", "powershell.exe -ExecutionPolicy Bypass -File `"$importScriptPath`"" -Wait -ErrorAction SilentlyContinue
+
+Write-OK "WSL import step completed (check the output above for errors)"
+
+# ── 9f: Reconfigure GitHub Actions runner service ──
+Write-Step "9f" "Reconfiguring GitHub Actions runner service..."
+$runnerService = Get-Service -Name "actions.runner.*" -ErrorAction SilentlyContinue
+if (-not $runnerService) {
+    Write-Warn "No GitHub Actions runner service found"
+    Write-Host "  Install the runner first: https://github.com/eugenelo428937/Admin3/settings/actions/runners" -ForegroundColor Gray
+    Write-Host "  Then re-run: .\install-docker.ps1 -StartPhase 9" -ForegroundColor Gray
+} else {
+    $svcName = $runnerService.Name
+    $currentUser = (sc.exe qc $svcName 2>&1 | Select-String "SERVICE_START_NAME").ToString()
+
+    if ($currentUser -match $SvcRunnerUser) {
+        Write-OK "Runner service '$svcName' already runs as '$SvcRunnerUser'"
+    } else {
+        Write-Host "  Current service account: $($currentUser.Trim())" -ForegroundColor Gray
+        Write-Host "  Changing to: .\$SvcRunnerUser" -ForegroundColor Gray
+        Write-Host ""
+        $svcPass = Read-Host -AsSecureString "Enter password for $SvcRunnerUser (to configure service)"
+        $svcPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($svcPass))
+
+        Stop-Service $svcName -ErrorAction SilentlyContinue
+        sc.exe config $svcName obj= ".\$SvcRunnerUser" password= $svcPassPlain 2>&1 | Out-Null
+        Start-Service $svcName
+
+        $newStatus = (Get-Service $svcName).Status
+        if ($newStatus -eq 'Running') {
+            Write-OK "Runner service '$svcName' now runs as '.\$SvcRunnerUser' (Status: $newStatus)"
+        } else {
+            Write-Fail "Service failed to start (Status: $newStatus)"
+            Write-Host "  Check: Get-EventLog -LogName Application -Source 'actions.runner*' -Newest 5" -ForegroundColor Gray
+        }
+    }
+}
+
+# ── 9g: Cleanup export file ──
+if (Test-Path $exportPath) {
+    Write-Step "9g" "Cleaning up export file..."
+    Remove-Item $exportPath -Force
+    Write-OK "Removed $exportPath"
+}
+
+Write-OK "Phase 9 complete -- GitHub Actions runner configured with WSL access"
+
+} # end Phase 9 skip guard
+
+
+# ============================================================
 # SUMMARY: Post-Setup Instructions
 # ============================================================
 
@@ -1094,4 +1285,9 @@ Write-Host "  Files:" -ForegroundColor White
 Write-Host "    WSL config:    $WSLUserProfile\.wslconfig" -ForegroundColor Gray
 Write-Host "    WSL distro:    \\wsl$\Ubuntu\home\" -ForegroundColor Gray
 Write-Host "    Admin3 repo:   \\wsl$\Ubuntu\home\USER\Admin3\" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  GitHub Actions Runner:" -ForegroundColor White
+Write-Host "    Service account:  .\$SvcRunnerUser" -ForegroundColor Gray
+Write-Host "    Runner service:   Get-Service actions.runner.*" -ForegroundColor Gray
+Write-Host "    Re-run Phase 9:   .\install-docker.ps1 -StartPhase 9" -ForegroundColor Gray
 Write-Host ""
