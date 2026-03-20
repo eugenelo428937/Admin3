@@ -102,30 +102,43 @@ jobs:
         working-directory: ./frontend/react-Admin3
         run: CI=false npm run build
 
-  # ── Job 2: Deploy on self-hosted runner (Windows Server) ──
+  # ── Job 2: Deploy on self-hosted runner (Windows 11 host, Docker in WSL) ──
   deploy:
     needs: [test-backend, build-frontend]
     runs-on: [self-hosted, windows, staging]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 30
+    env:
+      WSL_DISTRO: Ubuntu
+      WSL_PROJECT_DIR: ~/Admin3
     steps:
       - uses: actions/checkout@v4
 
+      - name: Sync repo into WSL
+        shell: powershell
+        run: |
+          $drive = $pwd.Path.Substring(0,1).ToLower()
+          $rest = $pwd.Path.Substring(2) -replace '\\','/'
+          $wslSrc = "/mnt/$drive$rest"
+          wsl -d $env:WSL_DISTRO -e bash -c "mkdir -p ~/Admin3 && rsync -a --delete $wslSrc/ ~/Admin3/"
+
       - name: Verify Docker is running
-        shell: bash
-        run: docker info > /dev/null 2>&1 || (echo "Docker is not running!" && exit 1)
+        shell: powershell
+        run: |
+          $result = wsl -d $env:WSL_DISTRO -e bash -c "docker info > /dev/null 2>&1 && echo OK || echo FAIL"
+          if ($result -ne "OK") { Write-Error "Docker is not running inside WSL!"; exit 1 }
 
       - name: Build Docker images
-        shell: bash
-        run: docker compose -f $DOCKER_COMPOSE_FILE build
+        shell: powershell
+        run: wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose build"
 
       - name: Stop existing containers
-        shell: bash
-        run: docker compose -f $DOCKER_COMPOSE_FILE down --timeout 30
+        shell: powershell
+        run: wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose down --timeout 30"
 
       - name: Start new containers
-        shell: bash
-        run: docker compose -f $DOCKER_COMPOSE_FILE up -d
+        shell: powershell
+        run: wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose up -d"
 
       - name: Wait for services to be healthy
         shell: bash
@@ -133,7 +146,7 @@ jobs:
           echo "Waiting for services to start..."
           sleep 30
 
-          # Verify Nginx health endpoint
+          # Health checks run from Windows — ports are forwarded from WSL
           NGINX_OK=false
           for i in 1 2 3 4 5 6; do
             if curl -k -s -o /dev/null -w "%{http_code}" http://localhost/health | grep -q "200"; then
@@ -150,7 +163,6 @@ jobs:
             exit 1
           fi
 
-          # Verify Django API health
           DJANGO_OK=false
           for i in 1 2 3 4 5 6; do
             if curl -k -s -o /dev/null -w "%{http_code}" https://localhost/api/health/ | grep -q "200"; then
@@ -171,30 +183,30 @@ jobs:
 
       - name: Show deployment status
         if: always()
-        shell: bash
+        shell: powershell
         run: |
-          echo "=== Container Status ==="
-          docker compose -f $DOCKER_COMPOSE_FILE ps
-          echo ""
-          echo "=== Recent Backend Logs ==="
-          docker compose -f $DOCKER_COMPOSE_FILE logs backend --tail 15
-          echo ""
-          echo "=== Recent Nginx Logs ==="
-          docker compose -f $DOCKER_COMPOSE_FILE logs nginx --tail 10
+          Write-Host "=== Container Status ==="
+          wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose ps"
+          Write-Host ""
+          Write-Host "=== Recent Backend Logs ==="
+          wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose logs backend --tail 15"
+          Write-Host ""
+          Write-Host "=== Recent Nginx Logs ==="
+          wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose logs nginx --tail 10"
 
       - name: Rollback on failure
         if: failure()
-        shell: bash
+        shell: powershell
         run: |
-          echo "Deployment failed! Checking for previous images..."
-          docker compose -f $DOCKER_COMPOSE_FILE logs --tail 50
-          echo ""
-          echo "To manually rollback, run:"
-          echo "  docker compose -f $DOCKER_COMPOSE_FILE down"
-          echo "  git checkout HEAD~1"
-          echo "  docker compose -f $DOCKER_COMPOSE_FILE build"
-          echo "  docker compose -f $DOCKER_COMPOSE_FILE up -d"
+          Write-Host "Deployment failed! Checking for previous images..."
+          wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose logs --tail 50"
+          Write-Host ""
+          Write-Host "To manually rollback, run:"
+          Write-Host "  wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && docker compose down'"
+          Write-Host "  wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && git checkout HEAD~1'"
+          Write-Host "  wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && docker compose build'"
+          Write-Host "  wsl -d Ubuntu -e bash -c 'cd ~/Admin3 && docker compose up -d'"
 
       - name: Clean up old Docker images
-        shell: bash
-        run: docker image prune -f --filter "until=168h"
+        shell: powershell
+        run: wsl -d $env:WSL_DISTRO -e bash -c "docker image prune -f --filter 'until=168h'"
