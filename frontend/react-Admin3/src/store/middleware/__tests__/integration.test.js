@@ -389,7 +389,8 @@ describe('Redux Middleware Integration', () => {
     });
   });
 
-  describe('Performance Requirements', () => {
+  // Wall-clock timing is non-deterministic on shared CI runners; skip in CI.
+  describe.skipIf(!!process.env.CI)('Performance Requirements', () => {
     it('should complete URL sync in < 5ms', async () => {
       const store = createMockStore();
       const start = performance.now();

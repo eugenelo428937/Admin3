@@ -160,7 +160,8 @@ describe('urlSyncMiddleware - Redux → URL Sync (Story 1.1)', () => {
     });
   });
 
-  describe('Performance', () => {
+  // Wall-clock timing is non-deterministic on shared CI runners; skip in CI.
+  describe.skipIf(!!process.env.CI)('Performance', () => {
     it('should complete URL update within 5ms', () => {
       const start = performance.now();
 
@@ -168,7 +169,7 @@ describe('urlSyncMiddleware - Redux → URL Sync (Story 1.1)', () => {
 
       const elapsed = performance.now() - start;
 
-      expect(elapsed).toBeLessThan(10);
+      expect(elapsed).toBeLessThan(5);
     });
   });
 });
