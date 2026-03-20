@@ -64,6 +64,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN DJANGO_SECRET_KEY=build-time-dummy-key-for-collectstatic \
     python manage.py collectstatic --noinput --clear
 
+# Re-own logs dir after collectstatic (which may create django.log as root)
+RUN chown -R appuser:appuser /app/logs
+
 # Switch to non-root user
 USER appuser
 

@@ -143,45 +143,39 @@ jobs:
         run: wsl -d $env:WSL_DISTRO -e bash -c "cd ~/Admin3 && docker compose up -d"
 
       - name: Wait for services to be healthy
-        shell: bash
+        shell: powershell
         run: |
-          echo "Waiting for services to start..."
-          sleep 30
+          Write-Host "Waiting for services to start..."
+          Start-Sleep -Seconds 30
 
-          # Health checks run from Windows — ports are forwarded from WSL
-          NGINX_OK=false
-          for i in 1 2 3 4 5 6; do
-            if curl -k -s -o /dev/null -w "%{http_code}" http://localhost/health | grep -q "200"; then
-              echo "Nginx health check passed"
-              NGINX_OK=true
+          # Health checks via WSL curl (ports forwarded from Docker)
+          $nginxOk = $false
+          for ($i = 1; $i -le 6; $i++) {
+            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' http://localhost/health 2>/dev/null"
+            if ($code -eq "200") {
+              Write-Host "Nginx health check passed"
+              $nginxOk = $true
               break
-            fi
-            echo "Attempt $i/6: Nginx not ready, waiting 10s..."
-            sleep 10
-          done
+            }
+            Write-Host "Attempt $i/6: Nginx not ready (got $code), waiting 10s..."
+            Start-Sleep -Seconds 10
+          }
+          if (-not $nginxOk) { Write-Error "Nginx health check failed after 6 attempts"; exit 1 }
 
-          if [ "$NGINX_OK" != "true" ]; then
-            echo "::error::Nginx health check failed after 6 attempts"
-            exit 1
-          fi
-
-          DJANGO_OK=false
-          for i in 1 2 3 4 5 6; do
-            if curl -k -s -o /dev/null -w "%{http_code}" https://localhost/api/health/ | grep -q "200"; then
-              echo "Django API health check passed"
-              DJANGO_OK=true
+          $djangoOk = $false
+          for ($i = 1; $i -le 6; $i++) {
+            $code = wsl -d $env:WSL_DISTRO -e bash -c "curl -k -s -o /dev/null -w '%{http_code}' https://localhost/api/health/ 2>/dev/null"
+            if ($code -eq "200") {
+              Write-Host "Django API health check passed"
+              $djangoOk = $true
               break
-            fi
-            echo "Attempt $i/6: Django not ready, waiting 10s..."
-            sleep 10
-          done
+            }
+            Write-Host "Attempt $i/6: Django not ready (got $code), waiting 10s..."
+            Start-Sleep -Seconds 10
+          }
+          if (-not $djangoOk) { Write-Error "Django API health check failed after 6 attempts"; exit 1 }
 
-          if [ "$DJANGO_OK" != "true" ]; then
-            echo "::error::Django API health check failed after 6 attempts"
-            exit 1
-          fi
-
-          echo "All health checks passed successfully"
+          Write-Host "All health checks passed successfully"
 
       - name: Show deployment status
         if: always()
