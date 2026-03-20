@@ -6,17 +6,17 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../ProductContext.js');
+vi.unmock('../ProductContext');
 
 // Mock ConfigContext - ProductContext depends on useConfig
-vi.mock('../ConfigContext.js', () => ({
+vi.mock('../ConfigContext', () => ({
   __esModule: true,
   useConfig: () => ({ isInternal: false, configLoaded: true }),
   ConfigProvider: ({ children }) => children,
 }));
 
 // Mock productService
-vi.mock('../../services/productService.js', () => ({
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
     getAvailableProducts: vi.fn(),
@@ -25,8 +25,8 @@ vi.mock('../../services/productService.js', () => ({
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { ProductProvider, useProduct, useProducts } from '../ProductContext.js';
-import productService from '../../services/productService.js';
+import { ProductProvider, useProduct, useProducts } from '../ProductContext';
+import productService from '../../services/productService';
 
 describe('ProductContext', () => {
   beforeEach(() => {

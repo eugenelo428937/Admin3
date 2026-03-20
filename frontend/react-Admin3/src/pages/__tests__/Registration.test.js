@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme.js';
+import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();
@@ -31,12 +31,12 @@ vi.mock('react-router-dom', () => ({
 
 // Mock useAuth hook
 const mockUseAuth = vi.fn();
-vi.mock('../../hooks/useAuth.js', () => ({
+vi.mock('../../hooks/useAuth.tsx', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-vi.mock('../../components/User/UserFormWizard.js', () => ({
+vi.mock('../../components/User/UserFormWizard.tsx', () => ({
   __esModule: true,
   default: function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
     return (
@@ -64,7 +64,7 @@ vi.mock('../../components/User/UserFormWizard.js', () => ({
   },
 }));
 
-import Registration from '../Registration.js';
+import Registration from '../Registration.tsx';
 
 describe('Registration Page', () => {
   beforeEach(() => {

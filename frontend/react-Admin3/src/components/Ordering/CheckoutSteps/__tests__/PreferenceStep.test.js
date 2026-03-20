@@ -3,10 +3,10 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import PreferenceStep from '../PreferenceStep.js';
+import PreferenceStep from '../PreferenceStep.tsx';
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('../../../../services/rulesEngineService.js', () => ({
 }));
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',
@@ -32,14 +32,14 @@ vi.mock('../../../../contexts/CartContext.js', () => ({
 }));
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
     isAuthenticated: true,
   }),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService.js';
+import rulesEngineService from '../../../../services/rulesEngineService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

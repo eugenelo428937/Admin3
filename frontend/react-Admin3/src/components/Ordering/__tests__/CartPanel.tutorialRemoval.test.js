@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // Mock httpService before importing anything else
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -21,12 +21,12 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth before importing
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn()
 }));
 
 // Mock cartService before importing
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(),
@@ -42,7 +42,7 @@ const mockClearCart = vi.fn();
 let mockCartItems = [];
 let mockCartData = { fees: [], items: [] };
 
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: mockCartItems,
     cartData: mockCartData,
@@ -55,7 +55,7 @@ vi.mock('../../../contexts/CartContext.js', () => ({
 const mockRestoreChoicesToDraft = vi.fn();
 const mockRemoveAllChoices = vi.fn();
 
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices,
     restoreChoicesToDraft: mockRestoreChoicesToDraft,
@@ -66,14 +66,14 @@ vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CartPanel from '../CartPanel.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('../../../utils/productCodeGenerator.js', () => ({
+vi.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: vi.fn(() => 'MOCK-CODE')
 }));
-vi.mock('../../../utils/vatUtils.js', () => ({
+vi.mock('../../../utils/vatUtils', () => ({
   formatVatLabel: vi.fn(() => 'VAT')
 }));
 

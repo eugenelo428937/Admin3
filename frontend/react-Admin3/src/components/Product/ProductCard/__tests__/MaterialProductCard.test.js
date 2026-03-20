@@ -4,14 +4,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import MaterialProductCard from '../MaterialProductCard.js';
+import MaterialProductCard from '../MaterialProductCard';
 import appTheme from '../../../../theme';
 
 // Create theme with required palette
 const theme = appTheme;
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartData: {
       vat_calculations: {
@@ -53,7 +53,7 @@ vi.mock('../OnlineClassroomProductCard.js', () => {
   }};
 });
 
-vi.mock('../BundleCard.js', () => {
+vi.mock('../BundleCard.tsx', () => {
   return { __esModule: true, default: function MockBundleCard({ bundle }) {
     return React.createElement('div', { 'data-testid': 'bundle-card' }, bundle.product_name);
   }};

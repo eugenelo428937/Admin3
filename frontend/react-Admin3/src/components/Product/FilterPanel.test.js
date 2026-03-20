@@ -16,8 +16,8 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import filtersReducer from '../../store/slices/filtersSlice.js';
-import FilterPanel from './FilterPanel.js';
+import filtersReducer from '../../store/slices/filtersSlice';
+import FilterPanel from './FilterPanel';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers.js';
 
 // Mock Material-UI's useMediaQuery
@@ -554,7 +554,7 @@ describe('FilterPanel Component', () => {
         // Import FilterRegistry for testing
         let FilterRegistry;
         beforeAll(async () => {
-            const mod = await import('../../store/filters/filterRegistry.js');
+            const mod = await import('../../store/filters/filterRegistry');
             FilterRegistry = mod.FilterRegistry;
         });
 

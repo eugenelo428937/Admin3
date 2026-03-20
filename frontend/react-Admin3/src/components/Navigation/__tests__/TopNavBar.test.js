@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 // src/components/Navigation/__tests__/TopNavBar.test.js
 
 // Mock services BEFORE any imports to prevent axios import errors
-vi.mock('../../../services/httpService.js', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../services/cartService.js', () => ({
+vi.mock('../../../services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -33,14 +33,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import TopNavBar from '../TopNavBar.js';
+import TopNavBar from '../TopNavBar.tsx';
 import appTheme from '../../../theme';
 
 // Create a theme with liftkit spacing and semantic navigation colors for tests
 const theme = appTheme;
 
 // Mock the useAuth hook
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
@@ -49,7 +49,7 @@ vi.mock('../../../hooks/useAuth.js', () => ({
 }));
 
 // Mock the useCart hook
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
@@ -99,7 +99,7 @@ vi.mock('../SearchModal.js', () => ({
 }));
 
 // Mock AuthModal
-vi.mock('../AuthModal.js', () => ({
+vi.mock('../AuthModal.tsx', () => ({
   __esModule: true,
   default: function MockAuthModal({ open, onClose }) {
     return open ? (
@@ -111,7 +111,7 @@ vi.mock('../AuthModal.js', () => ({
 }));
 
 // Mock CartPanel
-vi.mock('../../Ordering/CartPanel.js', () => ({
+vi.mock('../../Ordering/CartPanel.tsx', () => ({
   __esModule: true,
   default: function MockCartPanel({ show, handleClose }) {
     return show ? (

@@ -14,12 +14,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchBox from '../SearchBox.js';
-import filtersReducer from '../../store/slices/filtersSlice.js';
-import searchService from '../../services/searchService.js';
+import SearchBox from '../SearchBox';
+import filtersReducer from '../../store/slices/filtersSlice';
+import searchService from '../../services/searchService';
 
 // Mock searchService to avoid API calls during tests
-vi.mock('../../services/searchService.js', () => ({
+vi.mock('../../services/searchService', () => ({
   __esModule: true,
   default: {
     getDefaultSearchData: vi.fn(() => Promise.resolve({

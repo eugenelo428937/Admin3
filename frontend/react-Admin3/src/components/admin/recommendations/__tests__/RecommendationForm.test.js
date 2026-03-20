@@ -3,15 +3,15 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import AdminRecommendationForm from '../RecommendationForm.js';
+import AdminRecommendationForm from '../RecommendationForm.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock recommendationService
-vi.mock('../../../../services/recommendationService.js', () => ({
+vi.mock('../../../../services/recommendationService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -36,15 +36,15 @@ vi.mock('../../../../services/recommendationService.js', () => ({
 }));
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService.js', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import recommendationService from '../../../../services/recommendationService.js';
-import productProductVariationService from '../../../../services/productProductVariationService.js';
+import recommendationService from '../../../../services/recommendationService';
+import productProductVariationService from '../../../../services/productProductVariationService';
 
 const theme = appTheme;
 

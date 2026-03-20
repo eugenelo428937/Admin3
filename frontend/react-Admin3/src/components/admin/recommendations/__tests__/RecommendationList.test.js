@@ -4,18 +4,18 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminRecommendationList from '../RecommendationList.js';
+import AdminRecommendationList from '../RecommendationList.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock recommendationService
-vi.mock('../../../../services/recommendationService.js', () => ({
+vi.mock('../../../../services/recommendationService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../../../services/recommendationService.js', () => ({
   },
 }));
 
-import recommendationService from '../../../../services/recommendationService.js';
+import recommendationService from '../../../../services/recommendationService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

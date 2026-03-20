@@ -3,8 +3,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../theme/theme.js';
-import CheckoutSteps from '../../CheckoutSteps.js';
+import theme from '../../../../theme/theme';
+import CheckoutSteps from '../../CheckoutSteps.tsx';
 
 // Custom render function with ThemeProvider
 const renderWithTheme = (ui, options = {}) => {
@@ -38,12 +38,12 @@ const mockCartContext = {
   }
 };
 
-vi.mock('../../../../contexts/CartContext.js', () => ({
+vi.mock('../../../../contexts/CartContext.tsx', () => ({
   useCart: () => mockCartContext
 }));
 
 // Mock the auth hook
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   useAuth: () => ({
     user: null,
     isAuthenticated: false,
@@ -54,7 +54,7 @@ vi.mock('../../../../hooks/useAuth.js', () => ({
 }));
 
 // Mock the services
-vi.mock('../../../../services/httpService.js', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     post: vi.fn().mockResolvedValue({ data: {} }),
@@ -62,14 +62,14 @@ vi.mock('../../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../../config.js', () => ({
+vi.mock('../../../../config', () => ({
   __esModule: true,
   default: {
     API_BASE_URL: 'http://localhost:8888'
   },
 }));
 
-vi.mock('../../../../services/userService.js', () => ({
+vi.mock('../../../../services/userService.ts', () => ({
   __esModule: true,
   default: {
     getProfile: vi.fn().mockResolvedValue({ data: {} }),
@@ -77,7 +77,7 @@ vi.mock('../../../../services/userService.js', () => ({
   }
 }));
 
-vi.mock('../../../../hooks/useCheckoutValidation.js', () => ({
+vi.mock('../../../../hooks/useCheckoutValidation.ts', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
@@ -86,7 +86,7 @@ vi.mock('../../../../hooks/useCheckoutValidation.js', () => ({
   })
 }));
 
-vi.mock('../../../../services/rulesEngineService.js', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn().mockResolvedValue({

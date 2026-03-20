@@ -6,12 +6,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import AdminProductBundleForm from '../ProductBundleForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock catalogBundleService
-vi.mock('../../../../services/catalogBundleService.js', () => ({
+vi.mock('../../../../services/catalogBundleService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,17 +35,17 @@ vi.mock('../../../../services/catalogBundleService.js', () => ({
   },
 }));
 
-import catalogBundleService from '../../../../services/catalogBundleService.js';
+import catalogBundleService from '../../../../services/catalogBundleService';
 
 // Mock subjectService
-vi.mock('../../../../services/subjectService.js', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import subjectService from '../../../../services/subjectService.js';
+import subjectService from '../../../../services/subjectService';
 
 const theme = appTheme;
 

@@ -3,16 +3,16 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import SessionProductsSummary from '../SessionProductsSummary.js';
+import SessionProductsSummary from '../SessionProductsSummary.tsx';
 
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService.js';
+import storeProductService from '../../../../services/storeProductService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

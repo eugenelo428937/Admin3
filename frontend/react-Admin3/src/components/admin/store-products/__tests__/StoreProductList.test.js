@@ -7,15 +7,15 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminStoreProductList from '../StoreProductList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock storeProductService
-vi.mock('../../../../services/storeProductService.js', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../../../../services/storeProductService.js', () => ({
   },
 }));
 
-import storeProductService from '../../../../services/storeProductService.js';
+import storeProductService from '../../../../services/storeProductService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

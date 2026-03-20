@@ -16,8 +16,8 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import filtersReducer from "../../store/slices/filtersSlice.js";
-import ActiveFilters from "./ActiveFilters.js";
+import filtersReducer from "../../store/slices/filtersSlice";
+import ActiveFilters from "./ActiveFilters";
 
 // Mock Material-UI's useMediaQuery
 vi.mock("@mui/material/useMediaQuery");
@@ -590,7 +590,7 @@ describe("ActiveFilters Component", () => {
       // Tests should work with the globally registered filters
 
       test("uses FilterRegistry for filter colors instead of hardcoded FILTER_CONFIG", async () => {
-         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
             FilterRegistry,
          } = _reqmod_______store_filters_filterRegistry_js;
 
@@ -635,7 +635,7 @@ describe("ActiveFilters Component", () => {
       });
       test.skip("automatically renders chips for new filter types added to registry", () => {
          test("automatically renders chips for new filter types added to registry", async () => {
-            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
                FilterRegistry,
             } = _reqmod_______store_filters_filterRegistry_js;
 
@@ -670,7 +670,7 @@ describe("ActiveFilters Component", () => {
       });
       test.skip("uses FilterRegistry.getDisplayValue for custom value formatting", () => {
          test("uses FilterRegistry.getDisplayValue for custom value formatting", async () => {
-            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
                FilterRegistry,
             } = _reqmod_______store_filters_filterRegistry_js;
 
@@ -700,7 +700,7 @@ describe("ActiveFilters Component", () => {
       });
       test.skip("renders filter chips in order specified by FilterRegistry.order", () => {
          test("renders filter chips in order specified by FilterRegistry.order", async () => {
-            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
                FilterRegistry,
             } = _reqmod_______store_filters_filterRegistry_js;
 
@@ -725,7 +725,7 @@ describe("ActiveFilters Component", () => {
       });
       test("no hardcoded FILTER_CONFIG remains in component (AC6 - Story 1.11)", async () => {
          // This test verifies the core goal: eliminating hardcoded filter configs
-         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+         const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
             FilterRegistry,
          } = _reqmod_______store_filters_filterRegistry_js;
 
@@ -765,7 +765,7 @@ describe("ActiveFilters Component", () => {
       test.skip("handles registry-based filter removal actions", async () => {
          test("handles registry-based filter removal actions", async () => {
             const user = userEvent.setup();
-            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry.js"); const {
+            const _reqmod_______store_filters_filterRegistry_js = await import("../../store/filters/filterRegistry"); const {
                FilterRegistry,
             } = _reqmod_______store_filters_filterRegistry_js;
 

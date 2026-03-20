@@ -6,7 +6,7 @@ import CommunicationDetailsPanel from '../CommunicationDetailsPanel.js';
 
 import appTheme from '../../../theme';
 // Mock the ValidatedPhoneInput component
-vi.mock('../../User/ValidatedPhoneInput.js', () => ({
+vi.mock('../../User/ValidatedPhoneInput.tsx', () => ({
   __esModule: true,
   default: function MockValidatedPhoneInput({ value, onChange, onValidationChange, error, ...props }) {
     return (
@@ -25,12 +25,12 @@ vi.mock('../../User/ValidatedPhoneInput.js', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService.js', () => ({
+vi.mock('../../../services/userService.ts', () => ({
   updateUserProfile: vi.fn()
 }));
 
 // Mock config
-vi.mock('../../../config.js', () => ({
+vi.mock('../../../config', () => ({
   default: {
     apiBaseUrl: 'http://localhost:8000'
   }
@@ -308,7 +308,7 @@ describe('CommunicationDetailsPanel', () => {
 
     test('calls onProfileUpdate callback when profile is successfully updated', async () => {
       const mockOnProfileUpdate = vi.fn();
-      const userService = require('../../../services/userService.js');
+      const userService = require('../../../services/userService.ts');
       userService.updateUserProfile.mockResolvedValue({ status: 'success' });
 
       renderWithTheme(
@@ -334,7 +334,7 @@ describe('CommunicationDetailsPanel', () => {
     });
 
     test('handles profile update errors gracefully', async () => {
-      const userService = require('../../../services/userService.js');
+      const userService = require('../../../services/userService.ts');
       userService.updateUserProfile.mockRejectedValue(new Error('Update failed'));
 
       renderWithTheme(
@@ -430,7 +430,7 @@ describe('CommunicationDetailsPanel', () => {
 
   describe.skip('Loading States (complex mocking)', () => {
     test('shows loading state during profile update', async () => {
-      const userService = require('../../../services/userService.js');
+      const userService = require('../../../services/userService.ts');
       userService.updateUserProfile.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
       renderWithTheme(

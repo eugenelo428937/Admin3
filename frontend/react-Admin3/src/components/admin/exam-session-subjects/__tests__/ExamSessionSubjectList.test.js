@@ -4,18 +4,18 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminExamSessionSubjectList from '../ExamSessionSubjectList.js';
+import AdminExamSessionSubjectList from '../ExamSessionSubjectList.tsx';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock examSessionSubjectService
-vi.mock('../../../../services/examSessionSubjectService.js', () => ({
+vi.mock('../../../../services/examSessionSubjectService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,15 +24,15 @@ vi.mock('../../../../services/examSessionSubjectService.js', () => ({
 }));
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService.js', () => ({
+vi.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import examSessionSubjectService from '../../../../services/examSessionSubjectService.js';
-import examSessionService from '../../../../services/examSessionService.js';
+import examSessionSubjectService from '../../../../services/examSessionSubjectService';
+import examSessionService from '../../../../services/examSessionService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

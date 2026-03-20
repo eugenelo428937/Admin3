@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 // Mock httpService before importing anything else
-vi.mock('../../../../../services/httpService.js', () => ({
+vi.mock('../../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -15,7 +15,7 @@ const mockCartState = {
   removeFromCart: vi.fn(),
 };
 
-vi.mock('../../../../../contexts/CartContext.js', async () => {
+vi.mock('../../../../../contexts/CartContext.tsx', async () => {
   const React = await import('react');
   return {
     __esModule: true,
@@ -39,12 +39,12 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme.js';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
+import theme from '../../../../../theme/theme';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
 
 // Import the mocked modules to allow vi.spyOn
-import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';
-import * as CartContextModule from '../../../../../contexts/CartContext.js';
+import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext';
+import * as CartContextModule from '../../../../../contexts/CartContext.tsx';
 
 // Helper to render with theme provider only (contexts are mocked globally)
 const renderWithProviders = (ui) => {

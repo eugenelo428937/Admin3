@@ -6,12 +6,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import AdminProductVariationForm from '../ProductVariationForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth.js', () => ({
+vi.mock('../../../../hooks/useAuth.tsx', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth.js';
+import { useAuth } from '../../../../hooks/useAuth.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => {
 });
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService.js', () => ({
+vi.mock('../../../../services/productVariationService', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('../../../../services/productVariationService.js', () => ({
   },
 }));
 
-import productVariationService from '../../../../services/productVariationService.js';
+import productVariationService from '../../../../services/productVariationService';
 
 const theme = appTheme;
 

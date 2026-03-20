@@ -12,17 +12,17 @@ vi.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth
-vi.mock('../../../hooks/useAuth.js', () => ({
+vi.mock('../../../hooks/useAuth.tsx', () => ({
   useAuth: vi.fn()
 }));
 
 // Mock useCart
-vi.mock('../../../contexts/CartContext.js', () => ({
+vi.mock('../../../contexts/CartContext.tsx', () => ({
   useCart: vi.fn()
 }));
 
 // Mock useTutorialChoice
-vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: vi.fn()
 }));
 
@@ -30,9 +30,9 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import CartPanel from '../CartPanel.js';
-import { useCart } from '../../../contexts/CartContext.js';
-import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext.js';
-import { useAuth } from '../../../hooks/useAuth.js';
+import { useCart } from '../../../contexts/CartContext.tsx';
+import { useTutorialChoice } from '../../../contexts/TutorialChoiceContext';
+import { useAuth } from '../../../hooks/useAuth.tsx';
 
 describe('CartPanel Clear Cart Navigation', () => {
   const mockClearCart = vi.fn();

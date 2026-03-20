@@ -3,10 +3,10 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import StepSubjects from '../StepSubjects.js';
+import StepSubjects from '../StepSubjects.tsx';
 
 // Mock services
-vi.mock('../../../../services/httpService.js', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('../../../../services/httpService.js', () => ({
   },
 }));
 
-vi.mock('../../../../services/sessionSetupService.js', () => ({
+vi.mock('../../../../services/sessionSetupService', () => ({
   __esModule: true,
   default: {
     getPreviousSession: vi.fn(),
@@ -24,13 +24,13 @@ vi.mock('../../../../services/sessionSetupService.js', () => ({
   },
 }));
 
-vi.mock('../../../../config.js', () => ({
+vi.mock('../../../../config', () => ({
   __esModule: true,
   default: { catalogUrl: '/api/catalog' },
 }));
 
-import httpService from '../../../../services/httpService.js';
-import sessionSetupService from '../../../../services/sessionSetupService.js';
+import httpService from '../../../../services/httpService';
+import sessionSetupService from '../../../../services/sessionSetupService';
 
 import appTheme from '../../../../theme';
 const theme = appTheme;

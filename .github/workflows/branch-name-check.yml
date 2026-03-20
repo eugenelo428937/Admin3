@@ -1,0 +1,34 @@
+name: Branch Name Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name convention
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          PATTERN="^(feat|fix|refactor|chore)/[0-9]{8}-[a-z0-9-]+$"
+          if [[ ! "$BRANCH" =~ $PATTERN ]]; then
+            echo "::error::Branch name '$BRANCH' does not match required pattern: {type}/{YYYYMMDD}-{description}"
+            echo ""
+            echo "Convention: {type}/{YYYYMMDD}-{short-description}"
+            echo ""
+            echo "Valid types:"
+            echo "  feat/     - New feature or enhancement"
+            echo "  fix/      - Bug fix"
+            echo "  refactor/ - Code restructuring"
+            echo "  chore/    - Build, CI, deps, docs, tooling"
+            echo ""
+            echo "Examples:"
+            echo "  feat/20260317-tutorial-admin"
+            echo "  fix/20260317-cart-validation"
+            echo "  refactor/20260317-store-typescript"
+            echo "  chore/20260317-vite-migration"
+            exit 1
+          fi
+          echo "Branch name '$BRANCH' follows the naming convention."

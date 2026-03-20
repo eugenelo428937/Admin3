@@ -14,7 +14,7 @@ import { vi } from 'vitest';
  * - validateCheckoutReadiness: Combined validation check
  */
 
-vi.mock('../httpService.js', () => ({
+vi.mock('../httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -24,8 +24,8 @@ vi.mock('../httpService.js', () => ({
   },
 }));
 
-import acknowledgmentService from '../acknowledgmentService.js';
-import httpService from '../httpService.js';
+import acknowledgmentService from '../acknowledgmentService';
+import httpService from '../httpService';
 
 describe('acknowledgmentService', () => {
   beforeEach(() => {

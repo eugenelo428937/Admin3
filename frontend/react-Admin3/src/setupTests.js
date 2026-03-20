@@ -160,7 +160,7 @@ vi.mock('@sentry/react', () => ({
   Severity: { Error: 'error', Warning: 'warning', Info: 'info' },
 }));
 
-vi.mock('./config.js', () => ({
+vi.mock('./config', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',
@@ -182,7 +182,7 @@ vi.mock('./config.js', () => ({
   },
 }));
 
-vi.mock('./services/httpService.js', () => ({
+vi.mock('./services/httpService', () => ({
   __esModule: true,
   default: {
     get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -208,7 +208,7 @@ vi.mock('./services/httpService.js', () => ({
   },
 }));
 
-vi.mock('./services/cartService.js', () => ({
+vi.mock('./services/cartService.ts', () => ({
   __esModule: true,
   default: {
     getCart: vi.fn(() => Promise.resolve({
@@ -238,7 +238,7 @@ vi.mock('./services/cartService.js', () => ({
   },
 }));
 
-vi.mock('./services/authService.js', () => ({
+vi.mock('./services/authService', () => ({
   __esModule: true,
   default: {
     login: vi.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
@@ -255,7 +255,7 @@ vi.mock('./services/authService.js', () => ({
 // =============================================================================
 
 // Mock TutorialChoiceContext - used by CartPanel, TutorialSelectionDialog, etc.
-vi.mock('./contexts/TutorialChoiceContext.js', () => {
+vi.mock('./contexts/TutorialChoiceContext', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -309,7 +309,7 @@ vi.mock('./contexts/TutorialChoiceContext.js', () => {
 });
 
 // Mock CartContext - used by navigation, checkout, product cards, etc.
-vi.mock('./contexts/CartContext.js', () => {
+vi.mock('./contexts/CartContext.tsx', () => {
   const React = require('react');
   return {
     __esModule: true,

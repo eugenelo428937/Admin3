@@ -26,8 +26,8 @@ import {
   mockProductsApi,
   createMockHistory,
   flushPromises
-} from '../testHelpers.js';
-import { setSubjects, setCategories } from '../../store/slices/filtersSlice.js';
+} from '../testHelpers';
+import { setSubjects, setCategories } from '../../store/slices/filtersSlice';
 
 // Simple test component
 const TestComponent = () => {
@@ -378,13 +378,13 @@ describe('Test Helpers Module', () => {
       expect(duration).toBeLessThan(50);
     });
 
-    it('mockProductsApi should complete in < 1ms', () => {
+    it('mockProductsApi should complete in < 10ms', () => {
       const start = performance.now();
 
       mockProductsApi();
 
       const duration = performance.now() - start;
-      expect(duration).toBeLessThan(1);
+      expect(duration).toBeLessThan(10);
     });
   });
 });

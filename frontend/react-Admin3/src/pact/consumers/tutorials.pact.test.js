@@ -36,7 +36,11 @@ describe('Tutorials Service - Pact Consumer Tests', () => {
           body: eachLike({
             id: integer(1),
             code: string('TUT-CM2-LON-2025'),
-            venue: string('London'),
+            venue: like({
+              id: integer(1),
+              name: string('London'),
+              description: string('London venue'),
+            }),
             is_soldout: boolean(false),
             start_date: string('2025-04-01'),
             end_date: string('2025-04-05'),
