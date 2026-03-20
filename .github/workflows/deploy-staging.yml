@@ -120,13 +120,15 @@ jobs:
           $drive = $pwd.Path.Substring(0,1).ToLower()
           $rest = $pwd.Path.Substring(2) -replace '\\','/'
           $wslSrc = "/mnt/$drive$rest"
-          wsl -d $env:WSL_DISTRO -e bash -c "mkdir -p ~/Admin3 && rsync -a --delete $wslSrc/ ~/Admin3/"
+          wsl -d $env:WSL_DISTRO -e bash -c "mkdir -p ~/Admin3 && rsync -a --delete --exclude='.env' $wslSrc/ ~/Admin3/"
 
-      - name: Verify Docker is running
+      - name: Ensure Docker is running
         shell: powershell
         run: |
+          wsl -d $env:WSL_DISTRO -e bash -c "sudo service docker start" 2>&1 | Out-Null
           $result = wsl -d $env:WSL_DISTRO -e bash -c "docker info > /dev/null 2>&1 && echo OK || echo FAIL"
           if ($result -ne "OK") { Write-Error "Docker is not running inside WSL!"; exit 1 }
+          Write-Host "Docker is running"
 
       - name: Build Docker images
         shell: powershell
