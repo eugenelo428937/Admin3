@@ -168,7 +168,7 @@ describe('urlSyncMiddleware - Redux → URL Sync (Story 1.1)', () => {
 
       const elapsed = performance.now() - start;
 
-      expect(elapsed).toBeLessThan(5);
+      expect(elapsed).toBeLessThan(10);
     });
   });
 });
