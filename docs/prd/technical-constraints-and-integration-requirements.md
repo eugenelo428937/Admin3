@@ -60,4 +60,3 @@
 - Use progressive enhancement approach for mobile layouts
 - Create comprehensive test suite for VAT calculations
 - Implement feature flags for gradual rollout of new functionality
-
