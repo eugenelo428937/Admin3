@@ -72,7 +72,7 @@ class ClosingSalutationStaff(models.Model):
         related_name='staff_members',
     )
     staff = models.ForeignKey(
-        'tutorials.Staff',
+        'staff.Staff',
         on_delete=models.CASCADE,
         related_name='closing_salutations',
     )
