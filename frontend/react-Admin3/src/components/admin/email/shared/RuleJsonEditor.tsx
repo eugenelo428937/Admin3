@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useMemo, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
-import { Check as CheckIcon, Error as ErrorIcon } from '@mui/icons-material';
+import React, { useRef, useEffect, useMemo } from 'react';
+import { Check, AlertCircle } from 'lucide-react';
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
@@ -67,39 +66,40 @@ const RuleJsonEditor: React.FC<RuleJsonEditorProps> = ({ value, onChange, error 
         }
     }, [value]);
 
+    const borderClass = error
+        ? 'tw:border-admin-destructive'
+        : isValid === false
+            ? 'tw:border-amber-400'
+            : 'tw:border-admin-border';
+
     return (
-        <Box>
-            <Box
-                sx={{
-                    border: '1px solid',
-                    borderColor: error ? 'error.main' : isValid === false ? 'warning.main' : 'grey.300',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    '& .cm-editor': { height: 300, minHeight: 300 },
-                    '& .cm-scroller': { overflow: 'auto' },
-                }}
-            >
+        <div>
+            <div className={`tw:overflow-hidden tw:rounded-md tw:border ${borderClass}`}>
+                <style>{`
+                    .cm-editor { height: 300px; min-height: 300px; }
+                    .cm-scroller { overflow: auto; }
+                `}</style>
                 <div ref={editorRef} style={{ height: 300, minHeight: 300 }} />
-            </Box>
-            <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            </div>
+            <div className="tw:mt-1 tw:flex tw:items-center tw:gap-1">
                 {error ? (
                     <>
-                        <ErrorIcon fontSize="small" color="error" />
-                        <Typography variant="caption" color="error">{error}</Typography>
+                        <AlertCircle className="tw:size-3.5 tw:text-admin-destructive" />
+                        <span className="tw:text-xs tw:text-admin-destructive">{error}</span>
                     </>
                 ) : isValid === true ? (
                     <>
-                        <CheckIcon fontSize="small" color="success" />
-                        <Typography variant="caption" color="success.main">Valid JSON</Typography>
+                        <Check className="tw:size-3.5 tw:text-admin-success" />
+                        <span className="tw:text-xs tw:text-admin-success">Valid JSON</span>
                     </>
                 ) : isValid === false ? (
                     <>
-                        <ErrorIcon fontSize="small" color="warning" />
-                        <Typography variant="caption" color="warning.main">Invalid JSON syntax</Typography>
+                        <AlertCircle className="tw:size-3.5 tw:text-amber-500" />
+                        <span className="tw:text-xs tw:text-amber-500">Invalid JSON syntax</span>
                     </>
                 ) : null}
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 };
 

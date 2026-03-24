@@ -1,118 +1,139 @@
 import React from 'react';
-import {
-    TextField, Button, Container, Alert, Box, Typography,
-    FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress,
-    Select, MenuItem
-} from '@mui/material';
 import { Navigate } from 'react-router-dom';
+import {
+    AdminPage,
+    AdminFormLayout,
+    AdminFormField,
+    AdminSelect,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Textarea } from '@/components/admin/ui/textarea';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
 import useProductBundleFormVM from './useProductBundleFormVM';
 
 const AdminProductBundleForm: React.FC = () => {
     const vm = useProductBundleFormVM();
 
     if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+
+    if (vm.loading) {
+        return (
+            <AdminPage>
+                <AdminLoadingState rows={6} columns={1} />
+            </AdminPage>
+        );
+    }
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                {vm.isEditMode ? 'Edit Product Bundle' : 'Create Product Bundle'}
-            </Typography>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            <Box component="form" onSubmit={vm.handleSubmit}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Bundle Name</FormLabel>
-                    <TextField
+        <AdminPage>
+            <AdminFormLayout
+                title={
+                    vm.isEditMode
+                        ? 'Edit Product Bundle'
+                        : 'Create Product Bundle'
+                }
+                onSubmit={vm.handleSubmit}
+                onCancel={vm.handleCancel}
+                error={vm.error}
+                submitLabel={
+                    vm.isEditMode
+                        ? 'Update Product Bundle'
+                        : 'Create Product Bundle'
+                }
+            >
+                <AdminFormField label="Bundle Name" required>
+                    <Input
                         name="bundle_name"
                         value={vm.formData.bundle_name}
                         onChange={vm.handleChange}
-                        required
-                        fullWidth
                         placeholder="Enter bundle name"
+                        required
                     />
-                </FormControl>
+                </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Subject</FormLabel>
-                    <Select
-                        name="subject"
-                        value={vm.formData.subject}
-                        onChange={(e) => vm.handleChange(e as React.ChangeEvent<HTMLInputElement>)}
-                        displayEmpty
-                    >
-                        <MenuItem value="" disabled>Select a subject</MenuItem>
-                        {vm.subjects.map(subject => (
-                            <MenuItem key={subject.id} value={subject.id}>
-                                {subject.code}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                <AdminFormField label="Subject">
+                    <AdminSelect
+                        value={String(vm.formData.subject || '')}
+                        onChange={(value) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'subject',
+                                    value,
+                                    type: 'select',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
+                        placeholder="Select a subject"
+                        options={vm.subjects.map((subject) => ({
+                            value: String(subject.id),
+                            label: subject.code,
+                        }))}
+                    />
+                </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Description</FormLabel>
-                    <TextField
+                <AdminFormField label="Description">
+                    <Textarea
                         name="description"
                         value={vm.formData.description}
                         onChange={vm.handleChange}
-                        multiline
                         rows={3}
-                        fullWidth
                         placeholder="Enter bundle description"
                     />
-                </FormControl>
+                </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="is_featured"
-                                checked={vm.formData.is_featured}
-                                onChange={vm.handleChange}
-                            />
-                        }
-                        label="Featured"
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_featured"
+                        checked={vm.formData.is_featured}
+                        onCheckedChange={(checked) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'is_featured',
+                                    type: 'checkbox',
+                                    checked: Boolean(checked),
+                                    value: '',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
                     />
-                </FormControl>
+                    <Label htmlFor="is_featured">Featured</Label>
+                </div>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="is_active"
-                                checked={vm.formData.is_active}
-                                onChange={vm.handleChange}
-                            />
-                        }
-                        label="Active"
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_active"
+                        checked={vm.formData.is_active}
+                        onCheckedChange={(checked) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'is_active',
+                                    type: 'checkbox',
+                                    checked: Boolean(checked),
+                                    value: '',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
                     />
-                </FormControl>
+                    <Label htmlFor="is_active">Active</Label>
+                </div>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Display Order</FormLabel>
-                    <TextField
+                <AdminFormField label="Display Order">
+                    <Input
                         name="display_order"
                         type="number"
                         value={vm.formData.display_order}
                         onChange={vm.handleChange}
-                        fullWidth
                         placeholder="Enter display order"
-                        inputProps={{ min: 0 }}
+                        min={0}
                     />
-                </FormControl>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" type="submit">
-                        {vm.isEditMode ? 'Update' : 'Create'} Product Bundle
-                    </Button>
-                    <Button variant="outlined" onClick={vm.handleCancel}>
-                        Cancel
-                    </Button>
-                </Box>
-            </Box>
-        </Container>
+                </AdminFormField>
+            </AdminFormLayout>
+        </AdminPage>
     );
 };
 

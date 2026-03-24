@@ -1,11 +1,17 @@
 import React from 'react';
-import {
-    Table, TableBody, TableCell, TableHead, TableRow,
-    IconButton, Box, Typography, CircularProgress, Alert, Button,
-} from '@mui/material';
 import { Link } from 'react-router-dom';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Pencil, Trash2, Plus } from 'lucide-react';
+import { AdminErrorAlert } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/admin/ui/table';
+import { Skeleton } from '@/components/admin/ui/skeleton';
 import useStoreProductVariationsPanelVM from './useStoreProductVariationsPanelVM';
 import type { StoreProduct } from '../../../types/storeProduct';
 
@@ -28,39 +34,37 @@ const StoreProductVariationsPanel: React.FC<StoreProductVariationsPanelProps> = 
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-                <CircularProgress />
-            </Box>
+            <div className="tw:p-4 tw:space-y-2">
+                <Skeleton className="tw:h-6 tw:w-40" />
+                <Skeleton className="tw:h-8 tw:w-full" />
+                <Skeleton className="tw:h-8 tw:w-full" />
+            </div>
         );
     }
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+        <div className="tw:p-4">
+            <h3 className="tw:mb-2 tw:text-sm tw:font-semibold tw:text-admin-fg">
                 Store Products (Variations)
-            </Typography>
+            </h3>
 
-            {vm.error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                    {vm.error}
-                </Alert>
-            )}
+            <AdminErrorAlert message={vm.error} />
 
             {vm.products.length === 0 && !vm.error ? (
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                <p className="tw:mb-2 tw:text-sm tw:text-admin-fg-muted">
                     No store products for this catalog product
-                </Typography>
+                </p>
             ) : (
-                <Table size="small" sx={{ mb: 2 }}>
-                    <TableHead>
+                <Table className="tw:mb-4">
+                    <TableHeader>
                         <TableRow>
-                            <TableCell>Product Code</TableCell>
-                            <TableCell>Variation</TableCell>
-                            <TableCell>Variation Type</TableCell>
-                            <TableCell>Active</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableHead>Product Code</TableHead>
+                            <TableHead>Variation</TableHead>
+                            <TableHead>Variation Type</TableHead>
+                            <TableHead>Active</TableHead>
+                            <TableHead className="tw:w-[100px]">Actions</TableHead>
                         </TableRow>
-                    </TableHead>
+                    </TableHeader>
                     <TableBody>
                         {vm.products.map((product) => (
                             <TableRow key={product.id}>
@@ -69,25 +73,26 @@ const StoreProductVariationsPanel: React.FC<StoreProductVariationsPanelProps> = 
                                 <TableCell>{product.variation_type || '-'}</TableCell>
                                 <TableCell>{product.is_active ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>
-                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                        <IconButton
-                                            size="small"
-                                            color="primary"
-                                            component={Link}
-                                            to={`/admin/store-products/${product.id}/edit`}
+                                    <div className="tw:flex tw:items-center tw:gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-xs"
+                                            asChild
                                             aria-label="edit store product"
                                         >
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            color="error"
+                                            <Link to={`/admin/store-products/${product.id}/edit`}>
+                                                <Pencil className="tw:h-4 tw:w-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-xs"
                                             onClick={() => vm.handleDelete(product.id)}
                                             aria-label="delete store product"
                                         >
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </Box>
+                                            <Trash2 className="tw:h-4 tw:w-4 tw:text-admin-destructive" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -95,15 +100,13 @@ const StoreProductVariationsPanel: React.FC<StoreProductVariationsPanelProps> = 
                 </Table>
             )}
 
-            <Button
-                component={Link}
-                to="/admin/store-products/new"
-                variant="outlined"
-                size="small"
-            >
-                Add Store Product
+            <Button variant="outline" size="sm" asChild>
+                <Link to="/admin/store-products/new">
+                    <Plus className="tw:mr-2 tw:h-4 tw:w-4" />
+                    Add Store Product
+                </Link>
             </Button>
-        </Box>
+        </div>
     );
 };
 

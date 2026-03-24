@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { BrowserRouter } from 'react-router-dom';
 import AdminSubjectForm from '../SubjectForm.tsx';
 
 // Mock useAuth
@@ -21,6 +21,7 @@ vi.mock('react-router-dom', () => {
     useNavigate: vi.fn(() => mockNavigate),
     useParams: vi.fn(() => ({})),
     Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
+    BrowserRouter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
 });
 
@@ -36,11 +37,9 @@ vi.mock('../../../../services/subjectService', () => ({
 
 import subjectService from '../../../../services/subjectService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
+
 const setMockParams = (params: Record<string, string>) => {
   (useParams as any).mockReturnValue(params);
 };
@@ -52,11 +51,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminSubjectForm />
-    </ThemeProvider>
-  );
+  return render(<AdminSubjectForm />);
 };
 
 describe('AdminSubjectForm', () => {
@@ -164,9 +159,11 @@ describe('AdminSubjectForm', () => {
 
       renderComponent();
 
-      const inputs = screen.getAllByRole('textbox');
-      fireEvent.change(inputs[0], { target: { value: 'SA1' } }); // code
-      fireEvent.change(inputs[1], { target: { value: 'Subject description' } }); // description
+      const codeInput = screen.getByPlaceholderText(/enter subject code/i);
+      fireEvent.change(codeInput, { target: { name: 'code', value: 'SA1' } });
+
+      const descInput = screen.getByPlaceholderText(/enter subject description/i);
+      fireEvent.change(descInput, { target: { name: 'description', value: 'Subject description' } });
 
       fireEvent.click(screen.getByRole('button', { name: /create subject/i }));
 
@@ -183,9 +180,9 @@ describe('AdminSubjectForm', () => {
     test('shows validation error when code is empty', async () => {
       renderComponent();
 
-      // Clear any default value and submit
-      const codeInput = screen.getAllByRole('textbox')[0];
-      fireEvent.change(codeInput, { target: { value: '' } });
+      // Clear the code input and submit
+      const codeInput = screen.getByPlaceholderText(/enter subject code/i);
+      fireEvent.change(codeInput, { target: { name: 'code', value: '' } });
 
       const submitButton = screen.getByRole('button', { name: /create subject/i });
       fireEvent.submit(submitButton.closest('form')!);
@@ -223,8 +220,8 @@ describe('AdminSubjectForm', () => {
 
       renderComponent();
 
-      const inputs = screen.getAllByRole('textbox');
-      fireEvent.change(inputs[0], { target: { value: 'SA1' } });
+      const codeInput = screen.getByPlaceholderText(/enter subject code/i);
+      fireEvent.change(codeInput, { target: { name: 'code', value: 'SA1' } });
 
       fireEvent.click(screen.getByRole('button', { name: /create subject/i }));
 

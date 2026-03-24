@@ -1,18 +1,19 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { Upload, FileText } from 'lucide-react';
 import {
-    Container, Typography, Box, TextField, Button, Paper,
-    CircularProgress, Alert, MenuItem, FormControlLabel, Checkbox,
-} from '@mui/material';
-import {
-    Save as SaveIcon,
-    Cancel as CancelIcon,
-    CloudUpload as UploadIcon,
-    InsertDriveFile as FileIcon,
-} from '@mui/icons-material';
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+  AdminSelect,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Textarea } from '@/components/admin/ui/textarea';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
 import useEmailAttachmentFormVM from './useEmailAttachmentFormVM';
 import type { AttachmentType } from '../../../../types/email';
 
-const ATTACHMENT_TYPES: { value: AttachmentType; label: string }[] = [
+const ATTACHMENT_TYPES: { value: string; label: string }[] = [
     { value: 'static', label: 'Static' },
     { value: 'dynamic', label: 'Dynamic' },
     { value: 'template', label: 'Template' },
@@ -54,173 +55,133 @@ const EmailAttachmentForm: React.FC = () => {
         vm.handleFileSelect(file);
     }, [vm]);
 
-    if (vm.loading) {
-        return (
-            <Container maxWidth="md" sx={{ mt: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
-            </Container>
-        );
-    }
+    if (vm.loading) return null;
 
     return (
-        <Container maxWidth="md" sx={{ mt: 2 }}>
-            <Typography variant="h5" gutterBottom>
-                {vm.isEditMode ? 'Edit Attachment' : 'New Attachment'}
-            </Typography>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
-
-            <Paper sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        label="Name"
+        <AdminPage className="tw:max-w-3xl">
+            <AdminFormLayout
+                title={vm.isEditMode ? 'Edit Attachment' : 'New Attachment'}
+                onSubmit={(e) => { e.preventDefault(); vm.handleSubmit(); }}
+                onCancel={vm.handleCancel}
+                loading={vm.isSubmitting}
+                error={vm.error}
+            >
+                <AdminFormField label="Name" required>
+                    <Input
                         value={vm.formData.name}
                         onChange={(e) => vm.handleChange('name', e.target.value)}
-                        fullWidth
-                        required
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    <TextField
-                        label="Display Name"
+                <AdminFormField label="Display Name" required>
+                    <Input
                         value={vm.formData.display_name}
                         onChange={(e) => vm.handleChange('display_name', e.target.value)}
-                        fullWidth
-                        required
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    <TextField
-                        label="Attachment Type"
+                <AdminFormField label="Attachment Type" required>
+                    <AdminSelect
+                        options={ATTACHMENT_TYPES}
                         value={vm.formData.attachment_type}
-                        onChange={(e) => vm.handleChange('attachment_type', e.target.value)}
-                        select
-                        fullWidth
-                        required
-                    >
-                        {ATTACHMENT_TYPES.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                        ))}
-                    </TextField>
+                        onChange={(val) => vm.handleChange('attachment_type', val)}
+                        disabled={vm.isSubmitting}
+                    />
+                </AdminFormField>
 
-                    <TextField
-                        label="Description"
+                <AdminFormField label="Description">
+                    <Textarea
                         value={vm.formData.description}
                         onChange={(e) => vm.handleChange('description', e.target.value)}
-                        fullWidth
-                        multiline
                         rows={3}
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    {/* File Upload Dropzone */}
-                    <Box>
-                        <Typography variant="subtitle2" gutterBottom>File</Typography>
-                        {vm.currentFileInfo && !vm.selectedFile && (
-                            <Box sx={{ mb: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <FileIcon color="action" />
-                                <Box>
-                                    <Typography variant="body2">{vm.currentFileInfo.name}</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {formatFileSize(vm.currentFileInfo.size)}
-                                    </Typography>
-                                </Box>
-                            </Box>
+                {/* File Upload Dropzone */}
+                <AdminFormField label="File">
+                    {vm.currentFileInfo && !vm.selectedFile && (
+                        <div className="tw:mb-2 tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg-muted tw:p-3">
+                            <FileText className="tw:size-5 tw:text-admin-fg-muted" />
+                            <div>
+                                <p className="tw:text-sm">{vm.currentFileInfo.name}</p>
+                                <p className="tw:text-xs tw:text-admin-fg-muted">
+                                    {formatFileSize(vm.currentFileInfo.size)}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`tw:cursor-pointer tw:rounded-md tw:border-2 tw:border-dashed tw:p-6 tw:text-center tw:transition-colors ${
+                            isDragOver
+                                ? 'tw:border-primary tw:bg-primary/5'
+                                : 'tw:border-admin-border tw:hover:border-primary/50 tw:hover:bg-admin-bg-muted'
+                        }`}
+                    >
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            hidden
+                            onChange={handleFileInputChange}
+                        />
+                        <Upload className="tw:mx-auto tw:mb-2 tw:size-8 tw:text-admin-fg-muted" />
+                        {vm.selectedFile ? (
+                            <div>
+                                <p className="tw:text-sm">{vm.selectedFile.name}</p>
+                                <p className="tw:text-xs tw:text-admin-fg-muted">
+                                    {formatFileSize(vm.selectedFile.size)}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="tw:text-sm tw:text-admin-fg-muted">
+                                Drag and drop a file here, or click to select
+                            </p>
                         )}
-                        <Box
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={() => fileInputRef.current?.click()}
-                            sx={{
-                                border: '2px dashed',
-                                borderColor: isDragOver ? 'primary.main' : 'grey.300',
-                                borderRadius: 1,
-                                p: 3,
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                bgcolor: isDragOver ? 'action.hover' : 'transparent',
-                                transition: 'all 0.2s ease',
-                                '&:hover': { borderColor: 'primary.light', bgcolor: 'action.hover' },
-                            }}
-                        >
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                hidden
-                                onChange={handleFileInputChange}
-                            />
-                            <UploadIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-                            {vm.selectedFile ? (
-                                <Box>
-                                    <Typography variant="body2">{vm.selectedFile.name}</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {formatFileSize(vm.selectedFile.size)}
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <Box>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Drag and drop a file here, or click to select
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Box>
-                    </Box>
+                    </div>
+                </AdminFormField>
 
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={vm.formData.is_conditional}
-                                onChange={(e) => vm.handleChange('is_conditional', e.target.checked)}
-                            />
-                        }
-                        label="Conditional attachment"
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_conditional"
+                        checked={vm.formData.is_conditional}
+                        onCheckedChange={(checked) => vm.handleChange('is_conditional', !!checked)}
+                        disabled={vm.isSubmitting}
                     />
+                    <Label htmlFor="is_conditional">Conditional attachment</Label>
+                </div>
 
-                    {vm.formData.is_conditional && (
-                        <TextField
-                            label="Condition Rules (JSON)"
+                {vm.formData.is_conditional && (
+                    <AdminFormField
+                        label="Condition Rules (JSON)"
+                        description="Enter condition rules as valid JSON"
+                    >
+                        <Textarea
                             value={vm.formData.condition_rules}
                             onChange={(e) => vm.handleChange('condition_rules', e.target.value)}
-                            fullWidth
-                            multiline
                             rows={4}
-                            InputProps={{ sx: { fontFamily: 'monospace', fontSize: '0.875rem' } }}
-                            helperText="Enter condition rules as valid JSON"
+                            className="tw:font-mono tw:text-sm"
+                            disabled={vm.isSubmitting}
                         />
-                    )}
+                    </AdminFormField>
+                )}
 
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={vm.formData.is_active}
-                                onChange={(e) => vm.handleChange('is_active', e.target.checked)}
-                            />
-                        }
-                        label="Active"
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_active"
+                        checked={vm.formData.is_active}
+                        onCheckedChange={(checked) => vm.handleChange('is_active', !!checked)}
+                        disabled={vm.isSubmitting}
                     />
-
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<CancelIcon />}
-                            onClick={vm.handleCancel}
-                            disabled={vm.isSubmitting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={vm.isSubmitting ? <CircularProgress size={20} /> : <SaveIcon />}
-                            onClick={vm.handleSubmit}
-                            disabled={vm.isSubmitting}
-                        >
-                            {vm.isSubmitting ? 'Saving...' : 'Save'}
-                        </Button>
-                    </Box>
-                </Box>
-            </Paper>
-        </Container>
+                    <Label htmlFor="is_active">Active</Label>
+                </div>
+            </AdminFormLayout>
+        </AdminPage>
     );
 };
 

@@ -2,9 +2,8 @@ import { vi } from 'vitest';
 // src/components/admin/store-bundles/__tests__/StoreBundleList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStoreBundleList from '../StoreBundleList.js';
+import AdminStoreBundleList from '../StoreBundleList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -25,8 +24,13 @@ vi.mock('../../../../services/storeBundleService', () => ({
 
 import storeBundleService from '../../../../services/storeBundleService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
+// Mock StoreBundleProductsPanel to avoid testing its internals here
+vi.mock('../StoreBundleProductsPanel.tsx', () => ({
+  __esModule: true,
+  default: function MockStoreBundleProductsPanel({ bundleId }) {
+    return <div data-testid="bundle-products-panel">Products for bundle {bundleId}</div>;
+  },
+}));
 
 const mockStoreBundles = [
   {
@@ -52,9 +56,7 @@ const mockStoreBundles = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminStoreBundleList />
-      </ThemeProvider>
+      <AdminStoreBundleList />
     </BrowserRouter>
   );
 };
@@ -83,14 +85,15 @@ describe('AdminStoreBundleList', () => {
       storeBundleService.adminList.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminLoadingState renders skeleton rows; heading is still visible
+      expect(screen.getByRole('heading', { name: /store bundles/i })).toBeInTheDocument();
     });
 
     test('renders add new store bundle button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new store bundle/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new store bundle/i })).toBeInTheDocument();
       });
     });
   });
@@ -203,13 +206,14 @@ describe('AdminStoreBundleList', () => {
     });
   });
 
-  describe('links', () => {
-    test('add new store bundle links to correct path', async () => {
+  describe('navigation', () => {
+    test('edit links point to correct paths', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new store bundle/i });
-        expect(link).toHaveAttribute('href', '/admin/store-bundles/new');
+        const editLinks = screen.getAllByRole('link', { name: /edit/i });
+        expect(editLinks[0]).toHaveAttribute('href', '/admin/store-bundles/1/edit');
+        expect(editLinks[1]).toHaveAttribute('href', '/admin/store-bundles/2/edit');
       });
     });
   });

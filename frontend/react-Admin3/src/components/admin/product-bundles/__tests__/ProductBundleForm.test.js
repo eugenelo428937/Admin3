@@ -2,8 +2,7 @@ import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/ProductBundleForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import AdminProductBundleForm from '../ProductBundleForm.js';
+import AdminProductBundleForm from '../ProductBundleForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -47,11 +46,8 @@ vi.mock('../../../../services/subjectService', () => ({
 
 import subjectService from '../../../../services/subjectService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -79,9 +75,7 @@ const renderComponent = (isEditMode = false) => {
   }
 
   return render(
-    <ThemeProvider theme={theme}>
-      <AdminProductBundleForm />
-    </ThemeProvider>
+    <AdminProductBundleForm />
   );
 };
 
@@ -149,7 +143,8 @@ describe('AdminProductBundleForm', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('checkbox', { name: /active/i })).toBeChecked();
+        const checkbox = screen.getByRole('checkbox', { name: /active/i });
+        expect(checkbox).toHaveAttribute('data-state', 'checked');
       });
     });
 
@@ -157,7 +152,8 @@ describe('AdminProductBundleForm', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('checkbox', { name: /featured/i })).not.toBeChecked();
+        const checkbox = screen.getByRole('checkbox', { name: /featured/i });
+        expect(checkbox).toHaveAttribute('data-state', 'unchecked');
       });
     });
 

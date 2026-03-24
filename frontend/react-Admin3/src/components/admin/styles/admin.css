@@ -1,0 +1,111 @@
+/* Tailwind v4 — CSS-first configuration */
+@import "tailwindcss" prefix(tw);
+
+/* Scope scanning to admin components only */
+@source "../../admin/**/*.tsx";
+@source "../../admin/**/*.ts";
+
+/* Custom theme tokens mapped to CSS variables */
+@theme {
+  --color-admin-bg: var(--admin-bg);
+  --color-admin-bg-muted: var(--admin-bg-muted);
+  --color-admin-bg-subtle: var(--admin-bg-subtle);
+  --color-admin-fg: var(--admin-fg);
+  --color-admin-fg-muted: var(--admin-fg-muted);
+  --color-admin-fg-subtle: var(--admin-fg-subtle);
+  --color-admin-primary: var(--admin-primary);
+  --color-admin-primary-fg: var(--admin-primary-fg);
+  --color-admin-destructive: var(--admin-destructive);
+  --color-admin-destructive-fg: var(--admin-destructive-fg);
+  --color-admin-success: var(--admin-success);
+  --color-admin-success-fg: var(--admin-success-fg);
+  --color-admin-warning: var(--admin-warning);
+  --color-admin-warning-fg: var(--admin-warning-fg);
+  --color-admin-border: var(--admin-border);
+  --color-admin-border-strong: var(--admin-border-strong);
+  --color-admin-ring: var(--admin-ring);
+  --color-admin-sidebar-bg: var(--admin-sidebar-bg);
+  --color-admin-sidebar-fg: var(--admin-sidebar-fg);
+  --color-admin-sidebar-active: var(--admin-sidebar-active);
+  --color-admin-sidebar-active-fg: var(--admin-sidebar-active-fg);
+
+  --font-sans: var(--admin-font-sans);
+  --font-mono: var(--admin-font-mono);
+
+  --radius-admin: var(--admin-radius);
+}
+
+/* ── Admin root variables ── */
+.admin-root {
+  /* ── Surface & Background ── */
+  --admin-bg:              hsl(0 0% 100%);
+  --admin-bg-muted:        hsl(240 5% 96%);
+  --admin-bg-subtle:       hsl(240 5% 92%);
+
+  /* ── Foreground & Text ── */
+  --admin-fg:              hsl(240 10% 4%);
+  --admin-fg-muted:        hsl(240 4% 46%);
+  --admin-fg-subtle:       hsl(240 4% 65%);
+
+  /* ── Border ── */
+  --admin-border:          hsl(240 6% 90%);
+  --admin-border-strong:   hsl(240 6% 80%);
+
+  /* ── Primary (actions, links) ── */
+  --admin-primary:         hsl(240 5% 15%);
+  --admin-primary-fg:      hsl(0 0% 100%);
+
+  /* ── Destructive (delete, errors) ── */
+  --admin-destructive:     hsl(0 72% 51%);
+  --admin-destructive-fg:  hsl(0 0% 100%);
+
+  /* ── Success (save confirmations) ── */
+  --admin-success:         hsl(142 71% 45%);
+  --admin-success-fg:      hsl(0 0% 100%);
+
+  /* ── Warning ── */
+  --admin-warning:         hsl(38 92% 50%);
+  --admin-warning-fg:      hsl(0 0% 100%);
+
+  /* ── Focus Ring ── */
+  --admin-ring:            hsl(240 5% 65%);
+
+  /* ── Radius ── */
+  --admin-radius:          0.375rem;
+
+  /* ── Sidebar ── */
+  --admin-sidebar-bg:      hsl(240 5% 98%);
+  --admin-sidebar-fg:      hsl(240 4% 46%);
+  --admin-sidebar-active:  hsl(240 5% 15%);
+  --admin-sidebar-active-fg: hsl(0 0% 100%);
+  --admin-sidebar-width:   240px;
+
+  /* ── Typography ── */
+  --admin-font-sans:       'Inter', system-ui, sans-serif;
+  --admin-font-mono:       'JetBrains Mono', monospace;
+}
+
+/* ── Dark mode (future-ready) ── */
+.admin-root.dark {
+  --admin-bg:              hsl(240 10% 4%);
+  --admin-bg-muted:        hsl(240 6% 10%);
+  --admin-bg-subtle:       hsl(240 6% 15%);
+  --admin-fg:              hsl(0 0% 98%);
+  --admin-fg-muted:        hsl(240 5% 65%);
+  --admin-fg-subtle:       hsl(240 5% 50%);
+  --admin-border:          hsl(240 4% 20%);
+  --admin-border-strong:   hsl(240 4% 30%);
+  --admin-primary:         hsl(0 0% 98%);
+  --admin-primary-fg:      hsl(240 10% 4%);
+  --admin-destructive:     hsl(0 62% 55%);
+  --admin-destructive-fg:  hsl(0 0% 100%);
+  --admin-success:         hsl(142 60% 50%);
+  --admin-success-fg:      hsl(0 0% 100%);
+  --admin-warning:         hsl(38 80% 55%);
+  --admin-warning-fg:      hsl(0 0% 100%);
+  --admin-ring:            hsl(240 5% 50%);
+  --admin-sidebar-bg:      hsl(240 6% 7%);
+  --admin-sidebar-fg:      hsl(240 5% 65%);
+  --admin-sidebar-active:  hsl(0 0% 98%);
+  --admin-sidebar-active-fg: hsl(240 10% 4%);
+}
