@@ -1,8 +1,8 @@
 import { vi } from 'vitest';
 // src/components/admin/staff/__tests__/StaffList.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import AdminStaffList from '../StaffList.tsx';
 
@@ -26,9 +26,6 @@ vi.mock('../../../../services/staffService', () => ({
 
 import staffService from '../../../../services/staffService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockStaff = [
   {
     id: '1',
@@ -43,9 +40,7 @@ const mockStaff = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminStaffList />
-      </ThemeProvider>
+      <AdminStaffList />
     </BrowserRouter>
   );
 };
@@ -74,14 +69,15 @@ describe('AdminStaffList', () => {
       staffService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows Skeleton loading state instead of data
+      expect(screen.queryByText('admin@example.com')).not.toBeInTheDocument();
     });
 
     test('renders add new staff button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new staff/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new staff/i })).toBeInTheDocument();
       });
     });
   });
@@ -107,27 +103,36 @@ describe('AdminStaffList', () => {
       });
     });
 
-    test('displays edit buttons for each staff member', async () => {
+    test('displays action menus for each staff member', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 
-    test('displays delete buttons for each staff member', async () => {
+    test('displays action items in dropdown menu', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-        expect(deleteButtons).toHaveLength(2);
+        expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /edit/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
     });
   });
 
   describe('delete functionality', () => {
-    test('calls delete when delete button clicked and confirmed', async () => {
+    test('calls delete when delete menu item clicked and confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       staffService.delete.mockResolvedValue({});
 
@@ -137,8 +142,14 @@ describe('AdminStaffList', () => {
         expect(screen.getByText('admin@example.com')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this staff member?');
@@ -147,6 +158,7 @@ describe('AdminStaffList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -155,8 +167,14 @@ describe('AdminStaffList', () => {
         expect(screen.getByText('admin@example.com')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       expect(staffService.delete).not.toHaveBeenCalled();
     });
@@ -174,6 +192,7 @@ describe('AdminStaffList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       staffService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
@@ -183,8 +202,14 @@ describe('AdminStaffList', () => {
         expect(screen.getByText('admin@example.com')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete staff member/i)).toBeInTheDocument();
@@ -200,17 +225,6 @@ describe('AdminStaffList', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/no staff members found/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('links', () => {
-    test('add new staff links to correct path', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new staff/i });
-        expect(link).toHaveAttribute('href', '/admin/staff/new');
       });
     });
   });
