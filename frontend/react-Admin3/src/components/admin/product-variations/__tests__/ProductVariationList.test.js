@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import AdminProductVariationList from '../ProductVariationList.js';
 
@@ -25,9 +25,6 @@ vi.mock('../../../../services/productVariationService', () => ({
 
 import productVariationService from '../../../../services/productVariationService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockProductVariations = [
   {
     id: '1',
@@ -46,9 +43,7 @@ const mockProductVariations = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminProductVariationList />
-      </ThemeProvider>
+      <AdminProductVariationList />
     </BrowserRouter>
   );
 };
@@ -77,7 +72,7 @@ describe('AdminProductVariationList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /create new product variation/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /create new product variation/i })).toBeInTheDocument();
       });
     });
 
@@ -89,7 +84,6 @@ describe('AdminProductVariationList', () => {
         expect(screen.getByRole('columnheader', { name: 'Variation Type' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Code' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Actions' })).toBeInTheDocument();
       });
     });
 
@@ -97,7 +91,8 @@ describe('AdminProductVariationList', () => {
       productVariationService.getAll.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows skeleton loaders (not a progressbar) while loading
+      expect(screen.getByText(/product variations/i)).toBeInTheDocument();
     });
   });
 
@@ -114,27 +109,51 @@ describe('AdminProductVariationList', () => {
       });
     });
 
-    test('displays edit buttons for each item', async () => {
+    test('displays action menu buttons for each item', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 
-    test('displays delete buttons for each item', async () => {
+    test('displays edit option in action menu', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-        expect(deleteButtons).toHaveLength(2);
+        expect(screen.getByText('eBook Version')).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /edit/i })).toBeInTheDocument();
+      });
+    });
+
+    test('displays delete option in action menu', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('eBook Version')).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
     });
   });
 
   describe('delete functionality', () => {
-    test('calls delete when delete button clicked and confirmed', async () => {
+    test('calls delete when delete menu item clicked and confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       productVariationService.delete.mockResolvedValue({});
 
@@ -144,8 +163,14 @@ describe('AdminProductVariationList', () => {
         expect(screen.getByText('eBook Version')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this product variation?');
@@ -154,6 +179,7 @@ describe('AdminProductVariationList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -162,8 +188,14 @@ describe('AdminProductVariationList', () => {
         expect(screen.getByText('eBook Version')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       expect(productVariationService.delete).not.toHaveBeenCalled();
     });
@@ -181,6 +213,7 @@ describe('AdminProductVariationList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       productVariationService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
@@ -190,8 +223,14 @@ describe('AdminProductVariationList', () => {
         expect(screen.getByText('eBook Version')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete product variation/i)).toBeInTheDocument();

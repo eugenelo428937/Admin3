@@ -1,84 +1,46 @@
 import React from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Container, Alert, Paper, Typography, Box, CircularProgress
-} from '@mui/material';
-import { Link, Navigate } from 'react-router-dom';
+  AdminPage,
+  AdminPageHeader,
+  AdminDataTable,
+  AdminErrorAlert,
+} from '@/components/admin/composed';
 import useProductVariationListVM from './useProductVariationListVM';
 
 const AdminProductVariationList: React.FC = () => {
-    const vm = useProductVariationListVM();
+  const vm = useProductVariationListVM();
+  const navigate = useNavigate();
 
-    if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                Product Variations
-            </Typography>
-
-            <Button
-                component={Link}
-                to="/admin/product-variations/new"
-                variant="contained"
-                sx={{ mb: 3 }}
-            >
-                Create New Product Variation
-            </Button>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            {vm.productVariations.length === 0 && !vm.error ? (
-                <Alert severity="info">No product variations found.</Alert>
-            ) : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>ID</TableCell>
-                                <TableCell>Variation Type</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Code</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {Array.isArray(vm.productVariations) && vm.productVariations.map(pv => (
-                                <TableRow key={pv.id} hover>
-                                    <TableCell>{pv.id}</TableCell>
-                                    <TableCell>{pv.variation_type || '-'}</TableCell>
-                                    <TableCell>{pv.name || '-'}</TableCell>
-                                    <TableCell>{pv.code || '-'}</TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Button
-                                                component={Link}
-                                                to={`/admin/product-variations/${pv.id}/edit`}
-                                                variant="contained"
-                                                color="info"
-                                                size="small"
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="small"
-                                                onClick={() => vm.handleDelete(pv.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Container>
-    );
+  return (
+    <AdminPage>
+      <AdminPageHeader
+        title="Product Variations"
+        actions={[
+          { label: 'Create New Product Variation', icon: Plus, onClick: () => navigate('/admin/product-variations/new') },
+        ]}
+      />
+      <AdminErrorAlert message={vm.error} />
+      <AdminDataTable
+        columns={[
+          { key: 'id', header: 'ID' },
+          { key: 'variation_type', header: 'Variation Type', render: (val) => val || '-' },
+          { key: 'name', header: 'Name', render: (val) => val || '-' },
+          { key: 'code', header: 'Code', render: (val) => val || '-' },
+        ]}
+        data={vm.productVariations}
+        loading={vm.loading}
+        emptyMessage="No product variations found"
+        actions={(row) => [
+          { label: 'Edit', icon: Pencil, onClick: () => navigate(`/admin/product-variations/${row.id}/edit`) },
+          { label: 'Delete', icon: Trash2, variant: 'destructive' as const, onClick: () => vm.handleDelete(row.id) },
+        ]}
+      />
+    </AdminPage>
+  );
 };
 
 export default AdminProductVariationList;
