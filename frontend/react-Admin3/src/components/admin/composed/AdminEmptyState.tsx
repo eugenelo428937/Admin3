@@ -21,21 +21,21 @@ function AdminEmptyState({
   return (
     <div
       className={cn(
-        'tw-:flex tw-:flex-col tw-:items-center tw-:justify-center tw-:py-12 tw-:text-center',
+        'tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-12 tw:text-center',
         className,
       )}
     >
-      <Icon className="tw-:mb-4 tw-:size-12 tw-:text-admin-fg-subtle" />
-      <h3 className="tw-:text-lg tw-:font-semibold tw-:text-admin-fg">
+      <Icon className="tw:mb-4 tw:size-12 tw:text-admin-fg-subtle" />
+      <h3 className="tw:text-lg tw:font-semibold tw:text-admin-fg">
         {title}
       </h3>
       {description && (
-        <p className="tw-:mt-1 tw-:max-w-sm tw-:text-sm tw-:text-admin-fg-muted">
+        <p className="tw:mt-1 tw:max-w-sm tw:text-sm tw:text-admin-fg-muted">
           {description}
         </p>
       )}
       {action && (
-        <Button onClick={action.onClick} className="tw-:mt-4">
+        <Button onClick={action.onClick} className="tw:mt-4">
           {action.label}
         </Button>
       )}
