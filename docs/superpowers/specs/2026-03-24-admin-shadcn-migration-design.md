@@ -273,7 +273,7 @@ Renders: max-width container, consistent padding, `admin-root` class scope.
 
 ### 5.3 AdminDataTable
 
-Wraps shadcn `<Table>` with TanStack Table for sorting/pagination.
+Wraps shadcn `<Table>` with TanStack Table for sorting/pagination. The simplified `{ key, header, render }` column API is an adapter over TanStack's `ColumnDef` — the compound component handles the mapping internally.
 
 ```tsx
 <AdminDataTable
@@ -615,7 +615,7 @@ const AdminSubjectList: React.FC = () => {
 
 ## 10. Success Criteria
 
-- [ ] All 15 admin modules render correctly with shadcn/ui components
+- [ ] All 14 admin modules render correctly with shadcn/ui components
 - [ ] No MUI imports in any `admin/` file after full migration
 - [ ] Storefront pages visually unchanged (no style leakage)
 - [ ] All existing admin tests pass (updated for new DOM structure)
