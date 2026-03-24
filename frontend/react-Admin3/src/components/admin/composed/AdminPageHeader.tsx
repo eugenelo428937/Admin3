@@ -28,23 +28,23 @@ function AdminPageHeader({
   className,
 }: AdminPageHeaderProps) {
   return (
-    <div className={cn('tw-:mb-8', className)}>
+    <div className={cn('tw:mb-8', className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <AdminBreadcrumbs items={breadcrumbs} className="tw-:mb-4" />
+        <AdminBreadcrumbs items={breadcrumbs} className="tw:mb-4" />
       )}
-      <div className="tw-:flex tw-:items-center tw-:justify-between tw-:gap-4">
+      <div className="tw:flex tw:items-center tw:justify-between tw:gap-4">
         <div>
-          <h1 className="tw-:text-2xl tw-:font-semibold tw-:tracking-tight tw-:text-admin-fg">
+          <h1 className="tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
             {title}
           </h1>
           {description && (
-            <p className="tw-:mt-1 tw-:text-sm tw-:text-admin-fg-muted">
+            <p className="tw:mt-1 tw:text-sm tw:text-admin-fg-muted">
               {description}
             </p>
           )}
         </div>
         {actions && actions.length > 0 && (
-          <div className="tw-:flex tw-:items-center tw-:gap-2">
+          <div className="tw:flex tw:items-center tw:gap-2">
             {actions.map((action) => {
               const Icon = action.icon;
               return (

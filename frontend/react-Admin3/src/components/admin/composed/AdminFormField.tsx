@@ -20,19 +20,19 @@ function AdminFormField({
   className,
 }: AdminFormFieldProps) {
   return (
-    <div className={cn('tw-:space-y-2', className)}>
+    <div className={cn('tw:space-y-2', className)}>
       <Label>
         {label}
         {required && (
-          <span className="tw-:ml-0.5 tw-:text-admin-destructive">*</span>
+          <span className="tw:ml-0.5 tw:text-admin-destructive">*</span>
         )}
       </Label>
       {description && (
-        <p className="tw-:text-xs tw-:text-admin-fg-muted">{description}</p>
+        <p className="tw:text-xs tw:text-admin-fg-muted">{description}</p>
       )}
       {children}
       {error && (
-        <p className="tw-:text-xs tw-:text-admin-destructive">{error}</p>
+        <p className="tw:text-xs tw:text-admin-destructive">{error}</p>
       )}
     </div>
   );

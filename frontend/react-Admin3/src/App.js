@@ -72,6 +72,9 @@ const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-b
 // Admin: New Session Setup wizard
 const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.tsx"));
 
+// Admin: Layout shell (shadcn/ui)
+const AdminLayout = React.lazy(() => import("./components/admin/layout/AdminLayout"));
+
 // Admin: Users & Staff (US5)
 const AdminUserProfileList = React.lazy(() => import("./components/admin/user-profiles/UserProfileList.tsx"));
 const AdminUserProfileForm = React.lazy(() => import("./components/admin/user-profiles/UserProfileForm.tsx"));
@@ -212,6 +215,8 @@ function App() {
 										<Route path="/profile" element={<ProfilePage />} />
 										<Route path="/products" element={<ProductList />} />
 
+										{/* Admin routes — wrapped by AdminLayout shell */}
+										<Route element={<AdminLayout />}>
 										{/* Admin: Exam Sessions (US2) */}
 										<Route path="/admin/exam-sessions" element={<AdminExamSessionList />} />
 										<Route path="/admin/exam-sessions/new" element={<AdminExamSessionForm />} />
@@ -311,6 +316,7 @@ function App() {
 									<Route path="/admin/email/closing-salutations" element={<ClosingSalutationList />} />
 									<Route path="/admin/email/closing-salutations/new" element={<ClosingSalutationForm />} />
 									<Route path="/admin/email/closing-salutations/:id/edit" element={<ClosingSalutationForm />} />
+										</Route>{/* end AdminLayout wrapper */}
 
 									{/* Public routes */}
 										<Route path="/checkout" element={<CheckoutPage />} />

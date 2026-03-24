@@ -20,8 +20,8 @@ function AdminBadge({
       variant="outline"
       className={cn(
         active
-          ? 'tw-:border-admin-success/30 tw-:bg-admin-success/10 tw-:text-admin-success'
-          : 'tw-:border-admin-border tw-:bg-admin-bg-muted tw-:text-admin-fg-muted',
+          ? 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success'
+          : 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
         className,
       )}
     >

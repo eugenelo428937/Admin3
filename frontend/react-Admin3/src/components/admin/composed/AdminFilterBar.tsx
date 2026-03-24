@@ -33,17 +33,17 @@ function AdminFilterBar({
   const hasActiveFilters = Object.values(values).some((v) => v !== '' && v !== ALL_SENTINEL);
 
   return (
-    <div className={cn('tw-:flex tw-:flex-wrap tw-:items-center tw-:gap-3', className)}>
+    <div className={cn('tw:flex tw:flex-wrap tw:items-center tw:gap-3', className)}>
       {filters.map((filter) => {
         if (filter.type === 'search') {
           return (
-            <div key={filter.key} className="tw-:relative">
-              <Search className="tw-:pointer-events-none tw-:absolute tw-:top-1/2 tw-:left-2.5 tw-:size-4 tw-:-translate-y-1/2 tw-:text-admin-fg-muted" />
+            <div key={filter.key} className="tw:relative">
+              <Search className="tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-2.5 tw:size-4 tw:-translate-y-1/2 tw:text-admin-fg-muted" />
               <Input
                 placeholder={filter.placeholder ?? `Search ${filter.label.toLowerCase()}\u2026`}
                 value={values[filter.key] ?? ''}
                 onChange={(e) => onChange(filter.key, e.target.value)}
-                className="tw-:w-56 tw-:pl-9"
+                className="tw:w-56 tw:pl-9"
               />
             </div>
           );
@@ -73,9 +73,9 @@ function AdminFilterBar({
           variant="ghost"
           size="sm"
           onClick={onClear}
-          className="tw-:text-admin-fg-muted"
+          className="tw:text-admin-fg-muted"
         >
-          <X className="tw-:size-4" />
+          <X className="tw:size-4" />
           Clear filters
         </Button>
       )}
