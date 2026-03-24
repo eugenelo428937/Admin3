@@ -39,7 +39,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "tw-:fixed tw-:inset-0 tw-:z-50 tw-:bg-black/50 tw-:data-[state=closed]:animate-out tw-:data-[state=closed]:fade-out-0 tw-:data-[state=open]:animate-in tw-:data-[state=open]:fade-in-0",
+        "tw:fixed tw:inset-0 tw:z-50 tw:bg-black/50 tw:data-[state=closed]:animate-out tw:data-[state=closed]:fade-out-0 tw:data-[state=open]:animate-in tw:data-[state=open]:fade-in-0",
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "tw-:fixed tw-:top-[50%] tw-:left-[50%] tw-:z-50 tw-:grid tw-:w-full tw-:max-w-[calc(100%-2rem)] tw-:translate-x-[-50%] tw-:translate-y-[-50%] tw-:gap-4 tw-:rounded-lg tw-:border tw-:bg-background tw-:p-6 tw-:shadow-lg tw-:duration-200 tw-:outline-none tw-:data-[state=closed]:animate-out tw-:data-[state=closed]:fade-out-0 tw-:data-[state=closed]:zoom-out-95 tw-:data-[state=open]:animate-in tw-:data-[state=open]:fade-in-0 tw-:data-[state=open]:zoom-in-95 tw-:sm:max-w-lg",
+          "tw:fixed tw:top-[50%] tw:left-[50%] tw:z-50 tw:grid tw:w-full tw:max-w-[calc(100%-2rem)] tw:translate-x-[-50%] tw:translate-y-[-50%] tw:gap-4 tw:rounded-lg tw:border tw:bg-background tw:p-6 tw:shadow-lg tw:duration-200 tw:outline-none tw:data-[state=closed]:animate-out tw:data-[state=closed]:fade-out-0 tw:data-[state=closed]:zoom-out-95 tw:data-[state=open]:animate-in tw:data-[state=open]:fade-in-0 tw:data-[state=open]:zoom-in-95 tw:sm:max-w-lg",
           className
         )}
         {...props}
@@ -70,10 +70,10 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="tw-:absolute tw-:top-4 tw-:right-4 tw-:rounded-xs tw-:opacity-70 tw-:ring-offset-background tw-:transition-opacity tw-:hover:opacity-100 tw-:focus:ring-2 tw-:focus:ring-ring tw-:focus:ring-offset-2 tw-:focus:outline-hidden tw-:disabled:pointer-events-none tw-:data-[state=open]:bg-accent tw-:data-[state=open]:text-muted-foreground tw-:[&_svg]:pointer-events-none tw-:[&_svg]:shrink-0 tw-:[&_svg:not([class*=size-])]:size-4"
+            className="tw:absolute tw:top-4 tw:right-4 tw:rounded-xs tw:opacity-70 tw:ring-offset-background tw:transition-opacity tw:hover:opacity-100 tw:focus:ring-2 tw:focus:ring-ring tw:focus:ring-offset-2 tw:focus:outline-hidden tw:disabled:pointer-events-none tw:data-[state=open]:bg-accent tw:data-[state=open]:text-muted-foreground tw:[&_svg]:pointer-events-none tw:[&_svg]:shrink-0 tw:[&_svg:not([class*=size-])]:size-4"
           >
             <XIcon />
-            <span className="tw-:sr-only">Close</span>
+            <span className="tw:sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -85,7 +85,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("tw-:flex tw-:flex-col tw-:gap-2 tw-:text-center tw-:sm:text-left", className)}
+      className={cn("tw:flex tw:flex-col tw:gap-2 tw:text-center tw:sm:text-left", className)}
       {...props}
     />
   )
@@ -103,7 +103,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "tw-:flex tw-:flex-col-reverse tw-:gap-2 tw-:sm:flex-row tw-:sm:justify-end",
+        "tw:flex tw:flex-col-reverse tw:gap-2 tw:sm:flex-row tw:sm:justify-end",
         className
       )}
       {...props}
@@ -125,7 +125,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("tw-:text-lg tw-:leading-none tw-:font-semibold", className)}
+      className={cn("tw:text-lg tw:leading-none tw:font-semibold", className)}
       {...props}
     />
   )
@@ -138,7 +138,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("tw-:text-sm tw-:text-muted-foreground", className)}
+      className={cn("tw:text-sm tw:text-muted-foreground", className)}
       {...props}
     />
   )

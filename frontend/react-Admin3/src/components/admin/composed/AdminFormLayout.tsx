@@ -29,13 +29,13 @@ function AdminFormLayout({
   className,
 }: AdminFormLayoutProps) {
   return (
-    <form onSubmit={onSubmit} className={cn('tw-:space-y-6', className)}>
+    <form onSubmit={onSubmit} className={cn('tw:space-y-6', className)}>
       <div>
-        <h2 className="tw-:text-lg tw-:font-semibold tw-:text-admin-fg">
+        <h2 className="tw:text-lg tw:font-semibold tw:text-admin-fg">
           {title}
         </h2>
         {description && (
-          <p className="tw-:mt-1 tw-:text-sm tw-:text-admin-fg-muted">
+          <p className="tw:mt-1 tw:text-sm tw:text-admin-fg-muted">
             {description}
           </p>
         )}
@@ -43,9 +43,9 @@ function AdminFormLayout({
 
       <AdminErrorAlert message={error} />
 
-      <div className="tw-:space-y-4">{children}</div>
+      <div className="tw:space-y-4">{children}</div>
 
-      <div className="tw-:flex tw-:items-center tw-:justify-end tw-:gap-2 tw-:border-t tw-:border-admin-border tw-:pt-4">
+      <div className="tw:flex tw:items-center tw:justify-end tw:gap-2 tw:border-t tw:border-admin-border tw:pt-4">
         <Button
           type="button"
           variant="outline"

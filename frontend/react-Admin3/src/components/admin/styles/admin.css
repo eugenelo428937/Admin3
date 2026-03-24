@@ -1,5 +1,5 @@
 /* Tailwind v4 — CSS-first configuration */
-@import "tailwindcss" prefix(tw-);
+@import "tailwindcss" prefix(tw);
 
 /* Scope scanning to admin components only */
 @source "../../admin/**/*.tsx";

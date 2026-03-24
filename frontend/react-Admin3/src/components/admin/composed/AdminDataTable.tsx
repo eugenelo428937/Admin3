@@ -88,11 +88,11 @@ function AdminDataTable<T extends Record<string, any>>({
           <Button
             variant="ghost"
             size="sm"
-            className="tw-:-ml-3 tw-:h-8"
+            className="tw:-ml-3 tw:h-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {col.header}
-            <ArrowUpDown className="tw-:ml-1 tw-:size-3.5" />
+            <ArrowUpDown className="tw:ml-1 tw:size-3.5" />
           </Button>
         );
       },
@@ -108,7 +108,7 @@ function AdminDataTable<T extends Record<string, any>>({
     if (actions) {
       cols.push({
         id: '_actions',
-        header: () => <span className="tw-:sr-only">Actions</span>,
+        header: () => <span className="tw:sr-only">Actions</span>,
         cell: ({ row }) => {
           const rowActions = actions(row.original);
           if (rowActions.length === 0) return null;
@@ -116,8 +116,8 @@ function AdminDataTable<T extends Record<string, any>>({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon-xs">
-                  <MoreHorizontal className="tw-:size-4" />
-                  <span className="tw-:sr-only">Open menu</span>
+                  <MoreHorizontal className="tw:size-4" />
+                  <span className="tw:sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -132,7 +132,7 @@ function AdminDataTable<T extends Record<string, any>>({
                         action.onClick();
                       }}
                     >
-                      {Icon && <Icon className="tw-:size-4" />}
+                      {Icon && <Icon className="tw:size-4" />}
                       {action.label}
                     </DropdownMenuItem>
                   );
@@ -178,8 +178,8 @@ function AdminDataTable<T extends Record<string, any>>({
     : data.length;
 
   return (
-    <div className={cn('tw-:space-y-4', className)}>
-      <div className="tw-:rounded-md tw-:border tw-:border-admin-border">
+    <div className={cn('tw:space-y-4', className)}>
+      <div className="tw:rounded-md tw:border tw:border-admin-border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -199,7 +199,7 @@ function AdminDataTable<T extends Record<string, any>>({
               <TableRow
                 key={row.id}
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                className={onRowClick ? 'tw-:cursor-pointer' : undefined}
+                className={onRowClick ? 'tw:cursor-pointer' : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -213,15 +213,15 @@ function AdminDataTable<T extends Record<string, any>>({
       </div>
 
       {pagination && (
-        <div className="tw-:flex tw-:items-center tw-:justify-between tw-:px-2 tw-:text-sm tw-:text-admin-fg-muted">
+        <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:text-sm tw:text-admin-fg-muted">
           <span>
             Showing {startIdx}&ndash;{endIdx} of {pagination.total}
           </span>
-          <div className="tw-:flex tw-:items-center tw-:gap-4">
-            <div className="tw-:flex tw-:items-center tw-:gap-2">
+          <div className="tw:flex tw:items-center tw:gap-4">
+            <div className="tw:flex tw:items-center tw:gap-2">
               <span>Rows per page</span>
               <select
-                className="tw-:h-8 tw-:rounded-md tw-:border tw-:border-admin-border tw-:bg-transparent tw-:px-2 tw-:text-sm"
+                className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
                 value={pagination.pageSize}
                 onChange={(e) => pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)}
               >
@@ -232,7 +232,7 @@ function AdminDataTable<T extends Record<string, any>>({
                 ))}
               </select>
             </div>
-            <div className="tw-:flex tw-:items-center tw-:gap-1">
+            <div className="tw:flex tw:items-center tw:gap-1">
               <Button
                 variant="outline"
                 size="sm"
