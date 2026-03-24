@@ -964,7 +964,7 @@ def state_staff_member_exists_and_requester_is_superuser(params=None):
 
     Pact detail endpoint uses /api/users/staff/1/, so ensure id=1 exists.
     """
-    from tutorials.models import Staff
+    from staff.models import Staff
 
     user = _setup_superuser()
     existing = Staff.objects.filter(user=user).first()

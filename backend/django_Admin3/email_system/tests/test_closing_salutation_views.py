@@ -3,6 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status as http_status
 from email_system.models import ClosingSalutation, EmailTemplate
+from staff.models import Team
 
 
 class ClosingSalutationViewSetTest(TestCase):
@@ -11,12 +12,17 @@ class ClosingSalutationViewSetTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.admin)
 
+        self.team = Team.objects.create(
+            name='test_team',
+            display_name='Test Team',
+        )
+
         self.salutation = ClosingSalutation.objects.create(
             name='test_sal',
             display_name='Test',
             sign_off_text='Best',
             signature_type='team',
-            team_signature='Test Team',
+            team=self.team,
         )
 
     def test_list_salutations(self):
@@ -24,12 +30,13 @@ class ClosingSalutationViewSetTest(TestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_create_salutation(self):
+        team2 = Team.objects.create(name='new_team', display_name='New Team')
         data = {
             'name': 'new_sal',
             'display_name': 'New',
             'sign_off_text': 'Cheers',
             'signature_type': 'team',
-            'team_signature': 'New Team',
+            'team': team2.id,
         }
         response = self.client.post('/api/email/closing-salutations/', data, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)

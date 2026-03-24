@@ -18,7 +18,7 @@ from userprofile.models import (
     UserProfileContactNumber,
     UserProfileEmail,
 )
-from tutorials.models import Staff
+from staff.models import Staff
 
 User = get_user_model()
 
