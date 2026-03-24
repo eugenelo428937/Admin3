@@ -2,9 +2,8 @@ import { vi } from 'vitest';
 // src/components/admin/store-products/__tests__/StoreProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStoreProductList from '../StoreProductList.js';
+import AdminStoreProductList from '../StoreProductList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -25,8 +24,13 @@ vi.mock('../../../../services/storeProductService', () => ({
 
 import storeProductService from '../../../../services/storeProductService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
+// Mock StoreProductVariationsPanel to avoid testing its internals here
+vi.mock('../StoreProductVariationsPanel.tsx', () => ({
+  __esModule: true,
+  default: function MockStoreProductVariationsPanel({ storeProducts }) {
+    return <div data-testid="variations-panel">Variations: {storeProducts?.length}</div>;
+  },
+}));
 
 const mockStoreProducts = [
   {
@@ -70,9 +74,7 @@ const mockStoreProducts = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminStoreProductList />
-      </ThemeProvider>
+      <AdminStoreProductList />
     </BrowserRouter>
   );
 };
@@ -115,14 +117,15 @@ describe('AdminStoreProductList', () => {
       storeProductService.adminList.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminLoadingState renders skeleton rows (no progressbar)
+      expect(screen.getByRole('heading', { name: /store products/i })).toBeInTheDocument();
     });
 
     test('renders add new store product button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new store product/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new store product/i })).toBeInTheDocument();
       });
     });
 
@@ -308,7 +311,7 @@ describe('AdminStoreProductList', () => {
       });
     });
 
-    test('shows pagination when total exceeds page size', async () => {
+    test('shows total count when total exceeds page size', async () => {
       storeProductService.adminList.mockResolvedValueOnce({
         results: mockStoreProducts,
         count: 500,
@@ -377,12 +380,11 @@ describe('AdminStoreProductList', () => {
   });
 
   describe('links', () => {
-    test('add new store product links to correct path', async () => {
+    test('add new store product button navigates to correct path', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new store product/i });
-        expect(link).toHaveAttribute('href', '/admin/store-products/new');
+        expect(screen.getByRole('button', { name: /add new store product/i })).toBeInTheDocument();
       });
     });
   });

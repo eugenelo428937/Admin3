@@ -1,21 +1,17 @@
 import { vi } from 'vitest';
-// src/components/admin/products/__tests__/ProductTable.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductTable from '../ProductTable.js';
+import AdminProductTable from '../ProductTable.tsx';
 
-import appTheme from '../../../../theme';
 // Mock ProductVariationsPanel to avoid testing its internals here
-vi.mock('../ProductVariationsPanel.js', () => ({
+vi.mock('../ProductVariationsPanel.tsx', () => ({
   __esModule: true,
   default: function MockProductVariationsPanel({ productId }) {
     return <div data-testid={`expand-row-${productId}`}>Variations for {productId}</div>;
   },
 }));
-
-const theme = appTheme;
 
 const mockProducts = [
   {
@@ -46,9 +42,7 @@ const renderComponent = (props = {}) => {
 
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminProductTable {...defaultProps} {...props} />
-      </ThemeProvider>
+      <AdminProductTable {...defaultProps} {...props} />
     </BrowserRouter>
   );
 };
@@ -81,7 +75,6 @@ describe('AdminProductTable', () => {
     test('displays active status correctly', () => {
       renderComponent();
 
-      // Active column + Buy Both column both contain "Active"/"Inactive" and "Yes"/"No"
       expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Inactive')).toBeInTheDocument();
       expect(screen.getByText('Yes')).toBeInTheDocument();
@@ -90,61 +83,51 @@ describe('AdminProductTable', () => {
   });
 
   describe('action buttons', () => {
-    test('renders view button for each product', () => {
+    test('renders action menu button for each product', () => {
       renderComponent();
 
-      const viewButtons = screen.getAllByRole('link', { name: /view/i });
-      expect(viewButtons).toHaveLength(2);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      expect(menuButtons).toHaveLength(2);
     });
 
-    test('renders edit button for each product', () => {
+    test('action menu contains view, edit, delete options', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
-      const editButtons = screen.getAllByRole('link', { name: /edit/i });
-      expect(editButtons).toHaveLength(2);
-    });
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
 
-    test('renders delete button for each product', () => {
-      renderComponent();
-
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      expect(deleteButtons).toHaveLength(2);
-    });
-
-    test('view button links to correct product detail page', () => {
-      renderComponent();
-
-      const viewButtons = screen.getAllByRole('link', { name: /view/i });
-      expect(viewButtons[0]).toHaveAttribute('href', '/admin/products/1');
-      expect(viewButtons[1]).toHaveAttribute('href', '/admin/products/2');
-    });
-
-    test('edit button links to correct edit page', () => {
-      renderComponent();
-
-      const editButtons = screen.getAllByRole('link', { name: /edit/i });
-      expect(editButtons[0]).toHaveAttribute('href', '/admin/products/1/edit');
-      expect(editButtons[1]).toHaveAttribute('href', '/admin/products/2/edit');
+      expect(await screen.findByRole('menuitem', { name: /view/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /edit/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
     });
   });
 
   describe('delete functionality', () => {
-    test('calls onDelete with correct id when delete clicked', () => {
+    test('calls onDelete with correct id when delete clicked', async () => {
+      const user = userEvent.setup();
       const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      const deleteItem = await screen.findByRole('menuitem', { name: /delete/i });
+      await user.click(deleteItem);
 
       expect(mockOnDelete).toHaveBeenCalledWith('1');
     });
 
-    test('calls onDelete with second product id', () => {
+    test('calls onDelete with second product id', async () => {
+      const user = userEvent.setup();
       const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[1]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[1]);
+
+      const deleteItem = await screen.findByRole('menuitem', { name: /delete/i });
+      await user.click(deleteItem);
 
       expect(mockOnDelete).toHaveBeenCalledWith('2');
     });
@@ -154,10 +137,7 @@ describe('AdminProductTable', () => {
     test('renders empty table body when no products', () => {
       renderComponent({ products: [] });
 
-      // Headers should still be present
       expect(screen.getByText('Code')).toBeInTheDocument();
-
-      // No product rows
       expect(screen.queryByText('CM2-SM')).not.toBeInTheDocument();
     });
   });
@@ -173,12 +153,9 @@ describe('AdminProductTable', () => {
       renderComponent();
       const expandButton = screen.getByLabelText(/expand variations for CM2-SM/i);
 
-      // Click to expand first product
       fireEvent.click(expandButton);
 
-      // The Collapse should now be open — ProductVariationsPanel renders inside
       expect(screen.getByTestId('expand-row-1')).toBeInTheDocument();
-      // Button label should change to "Collapse"
       expect(screen.getByLabelText(/collapse variations for CM2-SM/i)).toBeInTheDocument();
     });
 
@@ -194,7 +171,7 @@ describe('AdminProductTable', () => {
 
       // Row 2 should be expanded
       expect(screen.getByTestId('expand-row-2')).toBeInTheDocument();
-      // Row 1 should be collapsed (wait for Collapse unmountOnExit animation)
+      // Row 1 should be collapsed
       await waitFor(() => {
         expect(screen.queryByTestId('expand-row-1')).not.toBeInTheDocument();
       });

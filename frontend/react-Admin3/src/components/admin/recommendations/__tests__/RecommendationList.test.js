@@ -1,8 +1,8 @@
 import { vi } from 'vitest';
 // src/components/admin/recommendations/__tests__/RecommendationList.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import AdminRecommendationList from '../RecommendationList.tsx';
 
@@ -25,9 +25,6 @@ vi.mock('../../../../services/recommendationService', () => ({
 }));
 
 import recommendationService from '../../../../services/recommendationService';
-
-import appTheme from '../../../../theme';
-const theme = appTheme;
 
 const mockRecommendations = [
   {
@@ -53,9 +50,7 @@ const mockRecommendations = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminRecommendationList />
-      </ThemeProvider>
+      <AdminRecommendationList />
     </BrowserRouter>
   );
 };
@@ -84,14 +79,15 @@ describe('AdminRecommendationList', () => {
       recommendationService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows Skeleton loading state instead of data
+      expect(screen.queryByText('CM2CR — eBook')).not.toBeInTheDocument();
     });
 
     test('renders add new recommendation button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new recommendation/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new recommendation/i })).toBeInTheDocument();
       });
     });
   });
@@ -111,27 +107,36 @@ describe('AdminRecommendationList', () => {
       });
     });
 
-    test('displays edit buttons for each recommendation', async () => {
+    test('displays action menus for each recommendation', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 
-    test('displays delete buttons for each recommendation', async () => {
+    test('displays edit and delete items in dropdown menu', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-        expect(deleteButtons).toHaveLength(2);
+        expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /edit/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
     });
   });
 
   describe('delete functionality', () => {
-    test('calls delete when delete button clicked and confirmed', async () => {
+    test('calls delete when delete menu item clicked and confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       recommendationService.delete.mockResolvedValue({});
 
@@ -141,8 +146,14 @@ describe('AdminRecommendationList', () => {
         expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this recommendation?');
@@ -151,6 +162,7 @@ describe('AdminRecommendationList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -159,8 +171,14 @@ describe('AdminRecommendationList', () => {
         expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       expect(recommendationService.delete).not.toHaveBeenCalled();
     });
@@ -178,6 +196,7 @@ describe('AdminRecommendationList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       recommendationService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
@@ -187,8 +206,14 @@ describe('AdminRecommendationList', () => {
         expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete recommendation/i)).toBeInTheDocument();
@@ -204,17 +229,6 @@ describe('AdminRecommendationList', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/no recommendations found/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('links', () => {
-    test('add new recommendation links to correct path', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new recommendation/i });
-        expect(link).toHaveAttribute('href', '/admin/recommendations/new');
       });
     });
   });

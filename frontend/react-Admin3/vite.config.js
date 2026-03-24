@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // Custom plugin to handle JSX in .js files (CRA convention)
@@ -32,11 +33,13 @@ export default defineConfig({
   plugins: [
     jsxInJsPlugin(),
     react(),
+    tailwindcss(),
   ],
   resolve: {
     alias: {
       // Match CRA's baseUrl: "src" from tsconfig.json
       src: path.resolve(__dirname, 'src'),
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   optimizeDeps: {

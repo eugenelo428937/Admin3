@@ -1,9 +1,7 @@
 import { vi } from 'vitest';
-// src/components/admin/products/__tests__/ProductForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import AdminProductForm from '../ProductForm.js';
+import AdminProductForm from '../ProductForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -37,11 +35,8 @@ vi.mock('../../../../services/catalogProductService', () => ({
 
 import catalogProductService from '../../../../services/catalogProductService';
 
-const theme = appTheme;
-
-// Helper to set mock useParams - import gets the mocked version since vi.mock is hoisted
+// Helper to set mock useParams
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -53,11 +48,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminProductForm />
-    </ThemeProvider>
-  );
+  return render(<AdminProductForm />);
 };
 
 describe('AdminProductForm', () => {

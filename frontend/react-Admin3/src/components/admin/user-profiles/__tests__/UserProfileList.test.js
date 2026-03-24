@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileList.test.js
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import AdminUserProfileList from '../UserProfileList.tsx';
 
@@ -25,9 +24,6 @@ vi.mock('../../../../services/userProfileService.ts', () => ({
 
 import userProfileService from '../../../../services/userProfileService.ts';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockProfiles = [
   {
     id: '1',
@@ -44,9 +40,7 @@ const mockProfiles = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminUserProfileList />
-      </ThemeProvider>
+      <AdminUserProfileList />
     </BrowserRouter>
   );
 };
@@ -75,7 +69,8 @@ describe('AdminUserProfileList', () => {
       userProfileService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows Skeleton loading state instead of data
+      expect(screen.queryByText('john@example.com')).not.toBeInTheDocument();
     });
 
     test('does not render a create button (read-only list)', async () => {
@@ -116,8 +111,9 @@ describe('AdminUserProfileList', () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
+        // AdminDataTable renders action menus — one per row
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 

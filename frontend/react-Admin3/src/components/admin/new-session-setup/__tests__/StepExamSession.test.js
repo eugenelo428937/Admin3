@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import StepExamSession from '../StepExamSession.tsx';
 
 // Mock examSessionService
@@ -14,12 +13,6 @@ vi.mock('../../../../services/examSessionService', () => ({
 }));
 
 import examSessionService from '../../../../services/examSessionService';
-
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
-const renderWithTheme = (ui) =>
-  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 const mockSessions = [
   { id: 42, session_code: '2026-09', start_date: '2026-09-01T00:00:00Z', end_date: '2026-12-31T23:59:00Z' },
@@ -34,8 +27,8 @@ describe('StepExamSession', () => {
     examSessionService.getAll.mockResolvedValue(mockSessions);
   });
 
-  it('renders the form with both Autocomplete and create sections', async () => {
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+  it('renders the form with both search and create sections', async () => {
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     expect(screen.getByText('Step 1: Exam Session')).toBeInTheDocument();
     expect(screen.getByText('Select Existing Session')).toBeInTheDocument();
@@ -50,8 +43,8 @@ describe('StepExamSession', () => {
     });
   });
 
-  it('renders Autocomplete that fetches existing sessions', async () => {
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+  it('renders search input that fetches existing sessions', async () => {
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
@@ -61,7 +54,7 @@ describe('StepExamSession', () => {
   });
 
   it('validates end date must be after start date', async () => {
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
@@ -87,7 +80,7 @@ describe('StepExamSession', () => {
     const mockSession = { id: 43, session_code: '2026-09' };
     examSessionService.create.mockResolvedValue(mockSession);
 
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
@@ -113,7 +106,7 @@ describe('StepExamSession', () => {
       response: { data: { session_code: ['This session code already exists.'] } },
     });
 
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
@@ -134,14 +127,14 @@ describe('StepExamSession', () => {
     });
   });
 
-  it('shows session details when Autocomplete selection is made', async () => {
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+  it('shows session details when a session is selected from dropdown', async () => {
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
     });
 
-    // Open the Autocomplete and type
+    // Type in search to open dropdown
     const input = screen.getByLabelText(/search by session code/i);
     fireEvent.change(input, { target: { value: '2026-04' } });
 
@@ -158,13 +151,13 @@ describe('StepExamSession', () => {
   });
 
   it('calls onSessionCreated with isExisting:true when selecting existing session', async () => {
-    renderWithTheme(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
+    render(<StepExamSession onSessionCreated={mockOnSessionCreated} />);
 
     await waitFor(() => {
       expect(examSessionService.getAll).toHaveBeenCalled();
     });
 
-    // Open the Autocomplete and type
+    // Type in search to open dropdown
     const input = screen.getByLabelText(/search by session code/i);
     fireEvent.change(input, { target: { value: '2026-04' } });
 

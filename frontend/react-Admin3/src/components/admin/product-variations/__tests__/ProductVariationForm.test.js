@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminProductVariationForm from '../ProductVariationForm.js';
 
 // Mock useAuth
@@ -37,11 +36,8 @@ vi.mock('../../../../services/productVariationService', () => ({
 
 import productVariationService from '../../../../services/productVariationService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -61,11 +57,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminProductVariationForm />
-    </ThemeProvider>
-  );
+  return render(<AdminProductVariationForm />);
 };
 
 describe('AdminProductVariationForm', () => {
@@ -205,6 +197,20 @@ describe('AdminProductVariationForm', () => {
       await waitFor(() => {
         expect(screen.getByText(/failed to fetch product variation/i)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('authorization', () => {
+    test('redirects non-superuser to home', () => {
+      useAuth.mockReturnValue({
+        isSuperuser: false,
+        isApprentice: false,
+        isStudyPlus: false,
+      });
+
+      renderComponent();
+
+      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/');
     });
   });
 });

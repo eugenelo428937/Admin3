@@ -1,98 +1,60 @@
 import React from 'react';
-import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Button, Container, Alert, Paper, Typography, Box, CircularProgress,
-    FormControl, InputLabel, Select, MenuItem,
-} from '@mui/material';
-import { Link, Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth.tsx';
+import {
+  AdminPage, AdminPageHeader, AdminDataTable, AdminBadge, AdminErrorAlert, AdminFilterBar,
+} from '@/components/admin/composed';
 import useExamSessionSubjectListVM from './useExamSessionSubjectListVM';
 
 const AdminExamSessionSubjectList: React.FC = () => {
-    const { isSuperuser } = useAuth();
-    const vm = useExamSessionSubjectListVM();
+  const { isSuperuser } = useAuth();
+  const vm = useExamSessionSubjectListVM();
+  const navigate = useNavigate();
 
-    if (!isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (!isSuperuser) return <Navigate to="/" replace />;
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                Exam Session Subjects
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-                <Button component={Link} to="/admin/exam-session-subjects/new" variant="contained">
-                    Create New Exam Session Subject
-                </Button>
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                    <InputLabel id="exam-session-filter-label">Exam Session</InputLabel>
-                    <Select
-                        labelId="exam-session-filter-label"
-                        value={vm.selectedExamSession}
-                        label="Exam Session"
-                        onChange={vm.handleExamSessionFilterChange}
-                    >
-                        <MenuItem value="">All Exam Sessions</MenuItem>
-                        {vm.examSessions.map(es => (
-                            <MenuItem key={es.id} value={es.id}>{es.session_code}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Box>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            {vm.examSessionSubjects.length === 0 && !vm.error ? (
-                <Alert severity="info">No exam session subjects found.</Alert>
-            ) : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>ID</TableCell>
-                                <TableCell>Exam Session</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Active</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {Array.isArray(vm.examSessionSubjects) && vm.examSessionSubjects.map(ess => (
-                                <TableRow key={ess.id} hover>
-                                    <TableCell>{ess.id}</TableCell>
-                                    <TableCell>{ess.exam_session?.session_code || '-'}</TableCell>
-                                    <TableCell>{ess.subject?.code || '-'}</TableCell>
-                                    <TableCell>{ess.is_active ? 'Active' : 'Inactive'}</TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Button
-                                                component={Link}
-                                                to={`/admin/exam-session-subjects/${ess.id}/edit`}
-                                                variant="contained"
-                                                color="info"
-                                                size="small"
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="small"
-                                                onClick={() => vm.handleDelete(ess.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Container>
-    );
+  return (
+    <AdminPage>
+      <AdminPageHeader
+        title="Exam Session Subjects"
+        actions={[
+          { label: 'Create New ESS Link', icon: Plus, onClick: () => navigate('/admin/exam-session-subjects/new') },
+        ]}
+      />
+      <AdminFilterBar
+        filters={[{
+          key: 'exam_session',
+          label: 'Exam Session',
+          type: 'select',
+          options: vm.examSessions.map(es => ({ value: String(es.id), label: es.session_code })),
+        }]}
+        values={{ exam_session: vm.selectedExamSession }}
+        onChange={(key, value) => {
+          vm.handleExamSessionFilterChange({ target: { name: key, value } } as any);
+        }}
+        onClear={() => {
+          vm.handleExamSessionFilterChange({ target: { name: 'exam_session', value: '' } } as any);
+        }}
+      />
+      <AdminErrorAlert message={vm.error} />
+      <AdminDataTable
+        columns={[
+          { key: 'id', header: 'ID' },
+          { key: 'exam_session', header: 'Exam Session', render: (val) => val?.session_code || '-' },
+          { key: 'subject', header: 'Subject', render: (val) => val?.code || '-' },
+          { key: 'is_active', header: 'Active', render: (val) => <AdminBadge active={val} /> },
+        ]}
+        data={vm.examSessionSubjects}
+        loading={vm.loading}
+        emptyMessage="No exam session subjects found"
+        actions={(row) => [
+          { label: 'Edit', icon: Pencil, onClick: () => navigate(`/admin/exam-session-subjects/${row.id}/edit`) },
+          { label: 'Delete', icon: Trash2, variant: 'destructive' as const, onClick: () => vm.handleDelete(row.id) },
+        ]}
+      />
+    </AdminPage>
+  );
 };
 
 export default AdminExamSessionSubjectList;

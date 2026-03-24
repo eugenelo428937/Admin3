@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminUserProfileForm from '../UserProfileForm.tsx';
 
 // Mock useAuth
@@ -47,11 +46,8 @@ vi.mock('../../../User/ValidatedPhoneInput.tsx', () => ({
 
 import userProfileService from '../../../../services/userProfileService.ts';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -59,11 +55,7 @@ const setMockParams = (params) => {
 const renderComponent = () => {
   setMockParams({ id: '1' });
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminUserProfileForm />
-    </ThemeProvider>
-  );
+  return render(<AdminUserProfileForm />);
 };
 
 describe('AdminUserProfileForm', () => {
