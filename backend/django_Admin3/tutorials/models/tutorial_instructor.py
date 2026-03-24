@@ -9,7 +9,7 @@ from django.db import models
 
 class TutorialInstructor(models.Model):
     staff = models.OneToOneField(
-        'tutorials.Staff',
+        'staff.Staff',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
