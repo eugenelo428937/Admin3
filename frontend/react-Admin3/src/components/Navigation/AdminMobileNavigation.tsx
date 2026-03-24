@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NavigateBefore, ExpandMore, Search, MenuBook as KnowledgeBaseIcon } from '@mui/icons-material';
 import { IconButton, Tooltip, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from '@mui/material';
-import useAdminMobileNavigationVM from './useAdminMobileNavigationVM.ts';
+import useAdminMobileNavigationVM from './useAdminMobileNavigationVM';
 import type { AdminMobileNavigationProps, AdminNavLink } from '../../types/navigation';
 
 const AdminMobileNavigation: React.FC<AdminMobileNavigationProps> = ({
@@ -32,7 +32,7 @@ const AdminMobileNavigation: React.FC<AdminMobileNavigationProps> = ({
 					<Tooltip title="Knowledge Base">
 						<IconButton
 							size="medium"
-							variant={'mobileNavIcon' as any}
+							
 							aria-label="knowledge base">
 							<KnowledgeBaseIcon fontSize="medium" />
 						</IconButton>
@@ -46,7 +46,7 @@ const AdminMobileNavigation: React.FC<AdminMobileNavigationProps> = ({
 								}
 							}}
 							size="medium"
-							variant={'mobileNavIcon' as any}
+							
 							aria-label="search">
 							<Search fontSize="medium" />
 						</IconButton>
