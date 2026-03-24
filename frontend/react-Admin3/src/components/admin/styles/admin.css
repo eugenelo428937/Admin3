@@ -1,5 +1,8 @@
 /* Tailwind v4 — CSS-first configuration */
-@import "tailwindcss" prefix(tw);
+/* Import ONLY theme + utilities. Preflight (CSS reset) is deliberately excluded
+   to prevent Tailwind from resetting MUI styles on the storefront. */
+@import "tailwindcss/theme" prefix(tw);
+@import "tailwindcss/utilities" prefix(tw);
 
 /* Scope scanning to admin components only */
 @source "../../admin/**/*.tsx";
