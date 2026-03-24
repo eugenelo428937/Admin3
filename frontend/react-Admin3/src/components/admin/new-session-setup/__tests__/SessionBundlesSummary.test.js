@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
 import SessionBundlesSummary from '../SessionBundlesSummary.tsx';
 
@@ -14,14 +13,9 @@ vi.mock('../../../../services/storeBundleService', () => ({
 
 import storeBundleService from '../../../../services/storeBundleService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const renderWithProviders = (ui) =>
   render(
-    <ThemeProvider theme={theme}>
-      <MemoryRouter>{ui}</MemoryRouter>
-    </ThemeProvider>
+    <MemoryRouter>{ui}</MemoryRouter>
   );
 
 const mockBundles = [

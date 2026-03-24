@@ -1,49 +1,50 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AdminErrorAlert } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Paper,
-  Typography,
-  CircularProgress,
-  Alert,
-  Box,
-  Button,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+} from '@/components/admin/ui/table';
 import useSessionProductsSummaryVM from './useSessionProductsSummaryVM';
-
-// ─── Interfaces ───────────────────────────────────────────────
 
 interface SessionProductsSummaryProps {
   sessionId: number | null;
 }
 
-// ─── Component ────────────────────────────────────────────────
-
 const SessionProductsSummary: React.FC<SessionProductsSummaryProps> = ({ sessionId }) => {
   const { products, loading, error } = useSessionProductsSummaryVM({ sessionId });
 
-  if (loading) return <CircularProgress size={24} />;
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (products.length === 0) return <Typography variant="body2">No products found.</Typography>;
+  if (loading) {
+    return (
+      <div className="tw:flex tw:items-center tw:justify-center tw:py-4">
+        <Loader2 className="tw:size-5 tw:animate-spin tw:text-admin-primary" />
+      </div>
+    );
+  }
+  if (error) return <AdminErrorAlert message={error} />;
+  if (products.length === 0) {
+    return <p className="tw:text-sm tw:text-admin-fg-muted">No products found.</p>;
+  }
 
   return (
-    <Box>
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
+    <div>
+      <div className="tw:rounded-admin tw:border tw:border-admin-border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell>Product Code</TableCell>
-              <TableCell>Subject</TableCell>
-              <TableCell>Product</TableCell>
-              <TableCell>Variation</TableCell>
-              <TableCell>Active</TableCell>
+              <TableHead>Product Code</TableHead>
+              <TableHead>Subject</TableHead>
+              <TableHead>Product</TableHead>
+              <TableHead>Variation</TableHead>
+              <TableHead>Active</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {products.map((p) => (
               <TableRow key={p.id}>
@@ -56,13 +57,13 @@ const SessionProductsSummary: React.FC<SessionProductsSummaryProps> = ({ session
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
-      <Box sx={{ mt: 1, textAlign: 'right' }}>
-        <Button component={Link} to="/admin/store-products" size="small">
-          View All Store Products
+      </div>
+      <div className="tw:mt-2 tw:text-right">
+        <Button variant="link" size="sm" asChild>
+          <Link to="/admin/store-products">View All Store Products</Link>
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

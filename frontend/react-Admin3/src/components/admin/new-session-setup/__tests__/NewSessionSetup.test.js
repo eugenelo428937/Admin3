@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import NewSessionSetup from '../NewSessionSetup.tsx';
 
@@ -73,21 +72,16 @@ vi.mock('../StepTutorials.tsx', () => ({
 
 import { useAuth } from '../../../../hooks/useAuth.tsx';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const renderWithProviders = (initialPath = '/admin/new-session-setup') =>
   render(
-    <ThemeProvider theme={theme}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route path="/admin/new-session-setup" element={<NewSessionSetup />} />
-          <Route path="/admin/new-session-setup/:sessionId" element={<NewSessionSetup />} />
-          <Route path="/admin/exam-sessions" element={<div data-testid="exam-sessions-page" />} />
-          <Route path="/" element={<div data-testid="home-page" />} />
-        </Routes>
-      </MemoryRouter>
-    </ThemeProvider>
+    <MemoryRouter initialEntries={[initialPath]}>
+      <Routes>
+        <Route path="/admin/new-session-setup" element={<NewSessionSetup />} />
+        <Route path="/admin/new-session-setup/:sessionId" element={<NewSessionSetup />} />
+        <Route path="/admin/exam-sessions" element={<div data-testid="exam-sessions-page" />} />
+        <Route path="/" element={<div data-testid="home-page" />} />
+      </Routes>
+    </MemoryRouter>
   );
 
 describe('NewSessionSetup - Integration', () => {
