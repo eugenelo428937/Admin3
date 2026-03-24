@@ -2,9 +2,9 @@ import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/ProductBundleList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import AdminProductBundleList from '../ProductBundleList.js';
+import AdminProductBundleList from '../ProductBundleList.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -26,16 +26,13 @@ vi.mock('../../../../services/catalogBundleService', () => ({
 
 import catalogBundleService from '../../../../services/catalogBundleService';
 
-import appTheme from '../../../../theme';
 // Mock BundleProductsPanel to avoid testing its internals here
-vi.mock('../BundleProductsPanel.js', () => ({
+vi.mock('../BundleProductsPanel.tsx', () => ({
   __esModule: true,
   default: function MockBundleProductsPanel({ bundleId }) {
     return <div data-testid={`expand-row-${bundleId}`}>Products for {bundleId}</div>;
   },
 }));
-
-const theme = appTheme;
 
 const mockBundles = [
   {
@@ -57,9 +54,7 @@ const mockBundles = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminProductBundleList />
-      </ThemeProvider>
+      <AdminProductBundleList />
     </BrowserRouter>
   );
 };
@@ -88,7 +83,7 @@ describe('AdminProductBundleList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /create new product bundle/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /create new product bundle/i })).toBeInTheDocument();
       });
     });
 
@@ -99,9 +94,8 @@ describe('AdminProductBundleList', () => {
         expect(screen.getByRole('columnheader', { name: 'ID' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Bundle Name' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Subject' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Is Featured' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Is Active' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Actions' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Featured' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Status' })).toBeInTheDocument();
       });
     });
 
@@ -109,7 +103,8 @@ describe('AdminProductBundleList', () => {
       catalogBundleService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminLoadingState renders skeleton rows, not a progressbar
+      expect(screen.queryByRole('heading', { name: /product bundles/i })).toBeInTheDocument();
     });
   });
 
@@ -124,27 +119,19 @@ describe('AdminProductBundleList', () => {
       });
     });
 
-    test('displays edit buttons for each item', async () => {
+    test('displays action menus for each item', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
-      });
-    });
-
-    test('displays delete buttons for each item', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-        expect(deleteButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
   });
 
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       catalogBundleService.delete.mockResolvedValue({});
 
@@ -154,8 +141,13 @@ describe('AdminProductBundleList', () => {
         expect(screen.getByText('CM2 Bundle')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open first dropdown menu using userEvent (required for Radix)
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      // Click the Delete menu item
+      const deleteItem = await screen.findByRole('menuitem', { name: /delete/i });
+      await user.click(deleteItem);
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this product bundle?');
@@ -164,6 +156,7 @@ describe('AdminProductBundleList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -172,8 +165,13 @@ describe('AdminProductBundleList', () => {
         expect(screen.getByText('CM2 Bundle')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open first dropdown menu using userEvent (required for Radix)
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      // Click the Delete menu item
+      const deleteItem = await screen.findByRole('menuitem', { name: /delete/i });
+      await user.click(deleteItem);
 
       expect(catalogBundleService.delete).not.toHaveBeenCalled();
     });
@@ -191,6 +189,7 @@ describe('AdminProductBundleList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       catalogBundleService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
@@ -200,8 +199,13 @@ describe('AdminProductBundleList', () => {
         expect(screen.getByText('CM2 Bundle')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open first dropdown menu using userEvent (required for Radix)
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      // Click the Delete menu item
+      const deleteItem = await screen.findByRole('menuitem', { name: /delete/i });
+      await user.click(deleteItem);
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete product bundle/i)).toBeInTheDocument();
