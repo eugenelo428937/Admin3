@@ -1,49 +1,50 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AdminErrorAlert } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Paper,
-  Typography,
-  CircularProgress,
-  Alert,
-  Box,
-  Button,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+} from '@/components/admin/ui/table';
 import useSessionBundlesSummaryVM from './useSessionBundlesSummaryVM';
-
-// ─── Interfaces ───────────────────────────────────────────────
 
 interface SessionBundlesSummaryProps {
   sessionId: number | null;
 }
 
-// ─── Component ────────────────────────────────────────────────
-
 const SessionBundlesSummary: React.FC<SessionBundlesSummaryProps> = ({ sessionId }) => {
   const { bundles, loading, error } = useSessionBundlesSummaryVM({ sessionId });
 
-  if (loading) return <CircularProgress size={24} />;
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (bundles.length === 0) return <Typography variant="body2">No bundles found.</Typography>;
+  if (loading) {
+    return (
+      <div className="tw:flex tw:items-center tw:justify-center tw:py-4">
+        <Loader2 className="tw:size-5 tw:animate-spin tw:text-admin-primary" />
+      </div>
+    );
+  }
+  if (error) return <AdminErrorAlert message={error} />;
+  if (bundles.length === 0) {
+    return <p className="tw:text-sm tw:text-admin-fg-muted">No bundles found.</p>;
+  }
 
   return (
-    <Box>
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
+    <div>
+      <div className="tw:rounded-admin tw:border tw:border-admin-border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Template</TableCell>
-              <TableCell>Subject</TableCell>
-              <TableCell>Active</TableCell>
-              <TableCell>Components</TableCell>
+              <TableHead>Name</TableHead>
+              <TableHead>Template</TableHead>
+              <TableHead>Subject</TableHead>
+              <TableHead>Active</TableHead>
+              <TableHead>Components</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {bundles.map((b) => (
               <TableRow key={b.id}>
@@ -56,13 +57,13 @@ const SessionBundlesSummary: React.FC<SessionBundlesSummaryProps> = ({ sessionId
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
-      <Box sx={{ mt: 1, textAlign: 'right' }}>
-        <Button component={Link} to="/admin/store-bundles" size="small">
-          View All Store Bundles
+      </div>
+      <div className="tw:mt-2 tw:text-right">
+        <Button variant="link" size="sm" asChild>
+          <Link to="/admin/store-bundles">View All Store Bundles</Link>
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 
