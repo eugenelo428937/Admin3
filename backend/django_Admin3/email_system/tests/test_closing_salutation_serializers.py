@@ -1,16 +1,21 @@
 from django.test import TestCase
 from email_system.models import ClosingSalutation
 from email_system.serializers import ClosingSalutationSerializer, ClosingSalutationListSerializer
+from staff.models import Team
 
 
 class ClosingSalutationSerializerTest(TestCase):
     def setUp(self):
+        self.team = Team.objects.create(
+            name='test_team',
+            display_name='The Test Team',
+        )
         self.salutation = ClosingSalutation.objects.create(
             name='test_salutation',
             display_name='Test',
             sign_off_text='Best regards',
             signature_type='team',
-            team_signature='The Test Team',
+            team=self.team,
         )
 
     def test_list_serializer_fields(self):
@@ -28,12 +33,13 @@ class ClosingSalutationSerializerTest(TestCase):
         self.assertEqual(data['staff_members'], [])
 
     def test_detail_serializer_create(self):
+        team2 = Team.objects.create(name='new_team', display_name='New Team')
         data = {
             'name': 'new_salutation',
             'display_name': 'New',
             'sign_off_text': 'Cheers',
             'signature_type': 'team',
-            'team_signature': 'New Team',
+            'team': team2.id,
         }
         serializer = ClosingSalutationSerializer(data=data)
         self.assertTrue(serializer.is_valid(), serializer.errors)

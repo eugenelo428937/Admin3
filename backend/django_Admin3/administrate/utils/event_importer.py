@@ -990,7 +990,8 @@ def validate_instructor(api_service, instructor_name):
 
             try:
                 from django.contrib.auth.models import User
-                from tutorials.models import Staff, TutorialInstructor
+                from staff.models import Staff
+                from tutorials.models import TutorialInstructor
                 from django.db import transaction
 
                 api_first = node.get('firstName', first_name)
