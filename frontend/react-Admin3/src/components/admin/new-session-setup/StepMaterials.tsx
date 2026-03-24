@@ -1,16 +1,15 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
+import { AdminErrorAlert } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
 import {
-  Box,
-  Button,
-  CircularProgress,
-  Paper,
-  Typography,
-  Alert,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-} from '@mui/material';
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/admin/ui/dialog';
 import useStepMaterialsVM from './useStepMaterialsVM';
 import SessionProductsSummary from './SessionProductsSummary';
 import SessionBundlesSummary from './SessionBundlesSummary';
@@ -28,98 +27,102 @@ const StepMaterials: React.FC<StepMaterialsProps> = ({
 }) => {
   const vm = useStepMaterialsVM({ sessionId, sessionCode: _sessionCode, onComplete });
 
-  if (vm.loading) return <CircularProgress />;
+  if (vm.loading) {
+    return (
+      <div className="tw:flex tw:items-center tw:justify-center tw:py-12">
+        <Loader2 className="tw:size-6 tw:animate-spin tw:text-admin-primary" />
+      </div>
+    );
+  }
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 3 }}>
+    <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
+      <h2 className="tw:mb-4 tw:text-xl tw:font-semibold tw:text-admin-fg">
         Step 3: Materials &amp; Marking
-      </Typography>
+      </h2>
 
       {/* Copy Dialog */}
-      <Dialog open={vm.dialogOpen} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {vm.previousSession
-            ? `Copy from ${vm.previousSession.session_code}`
-            : 'No Previous Session'}
-        </DialogTitle>
-        <DialogContent>
-          {vm.previousSession ? (
-            <Typography>
-              Copy products, prices, and create bundles from session{' '}
-              <strong>{vm.previousSession.session_code}</strong> to the new session?
-            </Typography>
-          ) : (
-            <Typography>
-              No previous session found. You can set up materials manually later.
-            </Typography>
-          )}
-          {vm.error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {vm.error}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={vm.handleSetupLater} disabled={vm.copying}>
-            Set up later
-          </Button>
-          {vm.previousSession && (
-            <Button
-              variant="contained"
-              onClick={vm.handleProceed}
-              disabled={vm.copying}
-            >
-              {vm.copying ? 'Copying...' : 'Proceed'}
+      <Dialog open={vm.dialogOpen} onOpenChange={() => {}}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>
+              {vm.previousSession
+                ? `Copy from ${vm.previousSession.session_code}`
+                : 'No Previous Session'}
+            </DialogTitle>
+            <DialogDescription>
+              {vm.previousSession ? (
+                <>
+                  Copy products, prices, and create bundles from session{' '}
+                  <strong>{vm.previousSession.session_code}</strong> to the new session?
+                </>
+              ) : (
+                'No previous session found. You can set up materials manually later.'
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {vm.error && <AdminErrorAlert message={vm.error} />}
+          <DialogFooter>
+            <Button variant="outline" onClick={vm.handleSetupLater} disabled={vm.copying}>
+              Set up later
             </Button>
-          )}
-        </DialogActions>
+            {vm.previousSession && (
+              <Button onClick={vm.handleProceed} disabled={vm.copying}>
+                {vm.copying ? 'Copying...' : 'Proceed'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       {/* Success Summary */}
       {vm.result && (
-        <Box>
-          <Alert severity="success" sx={{ mb: 2 }}>
+        <div>
+          <div
+            className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-success/30 tw:bg-admin-success/10 tw:p-3 tw:text-sm tw:text-admin-success"
+            role="alert"
+          >
             {vm.result.message}
-          </Alert>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Products created: <strong>{vm.result.products_created}</strong>
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Prices created: <strong>{vm.result.prices_created}</strong>
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Bundles created: <strong>{vm.result.bundles_created}</strong>
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Bundle products created:{' '}
-            <strong>{vm.result.bundle_products_created}</strong>
-          </Typography>
-          {vm.result.skipped_subjects && vm.result.skipped_subjects.length > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Skipped subjects: {vm.result.skipped_subjects.join(', ')}
-            </Typography>
-          )}
+          </div>
+
+          <div className="tw:space-y-1 tw:text-sm">
+            <p>
+              Products created: <strong>{vm.result.products_created}</strong>
+            </p>
+            <p>
+              Prices created: <strong>{vm.result.prices_created}</strong>
+            </p>
+            <p>
+              Bundles created: <strong>{vm.result.bundles_created}</strong>
+            </p>
+            <p>
+              Bundle products created:{' '}
+              <strong>{vm.result.bundle_products_created}</strong>
+            </p>
+            {vm.result.skipped_subjects && vm.result.skipped_subjects.length > 0 && (
+              <p className="tw:text-admin-fg-muted">
+                Skipped subjects: {vm.result.skipped_subjects.join(', ')}
+              </p>
+            )}
+          </div>
 
           {/* Products and Bundles created for this session */}
-          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+          <h3 className="tw:mt-6 tw:mb-3 tw:text-lg tw:font-medium tw:text-admin-fg">
             Products Created
-          </Typography>
+          </h3>
           <SessionProductsSummary sessionId={sessionId} />
 
-          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+          <h3 className="tw:mt-6 tw:mb-3 tw:text-lg tw:font-medium tw:text-admin-fg">
             Bundles Created
-          </Typography>
+          </h3>
           <SessionBundlesSummary sessionId={sessionId} />
 
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" onClick={vm.handleContinue}>
-              Continue
-            </Button>
-          </Box>
-        </Box>
+          <div className="tw:mt-6 tw:flex tw:justify-end">
+            <Button onClick={vm.handleContinue}>Continue</Button>
+          </div>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 };
 
