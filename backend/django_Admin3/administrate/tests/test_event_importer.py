@@ -14,7 +14,7 @@ from tutorials.models import (
     TutorialCourseTemplate, TutorialLocation, TutorialVenue,
     TutorialInstructor, TutorialEvents, TutorialSessions,
 )
-from tutorials.models.staff import Staff
+from staff.models import Staff
 from administrate.models import (
     CourseTemplate as AdmCourseTemplate,
     Location as AdmLocation,

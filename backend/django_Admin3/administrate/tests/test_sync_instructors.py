@@ -8,7 +8,7 @@ from django.core.management import call_command
 from django.contrib.auth.models import User
 from administrate.models import Instructor
 from tutorials.models import TutorialInstructor
-from tutorials.models.staff import Staff
+from staff.models import Staff
 
 
 class SyncInstructorsTest(TestCase):
