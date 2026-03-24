@@ -1,70 +1,68 @@
 import React from 'react';
-import {
-  TextField, Button, Container, Alert, Box, Typography,
-  FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
-} from '@mui/material';
 import { Navigate } from 'react-router-dom';
+import {
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Textarea } from '@/components/admin/ui/textarea';
+import { Checkbox } from '@/components/admin/ui/checkbox';
 import useSubjectFormVM from './useSubjectFormVM';
 
 const AdminSubjectForm: React.FC = () => {
   const vm = useSubjectFormVM();
 
   if (!vm.isSuperuser) return <Navigate to="/" replace />;
-  if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-        {vm.isEditMode ? 'Edit Subject' : 'Add New Subject'}
-      </Typography>
-
-      {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-      <Box component="form" onSubmit={vm.handleSubmit}>
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Subject Code</FormLabel>
-          <TextField
-            required
+    <AdminPage>
+      <AdminFormLayout
+        title={vm.isEditMode ? 'Edit Subject' : 'Add New Subject'}
+        onSubmit={vm.handleSubmit}
+        onCancel={vm.handleCancel}
+        loading={vm.loading}
+        error={vm.error}
+        submitLabel={vm.isEditMode ? 'Update Subject' : 'Create Subject'}
+      >
+        <AdminFormField label="Subject Code" required>
+          <Input
             name="code"
             value={vm.formData.code}
             onChange={vm.handleChange}
             placeholder="Enter subject code (e.g. MATH101)"
-            fullWidth
-            error={!vm.formData.code && vm.error !== null}
-            helperText={!vm.formData.code && vm.error !== null ? 'Please provide a subject code.' : ''}
           />
-        </FormControl>
+        </AdminFormField>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Description</FormLabel>
-          <TextField
-            multiline
-            rows={3}
+        <AdminFormField label="Description">
+          <Textarea
             name="description"
             value={vm.formData.description || ''}
-            onChange={vm.handleChange}
+            onChange={vm.handleChange as any}
             placeholder="Enter subject description"
-            fullWidth
+            rows={3}
           />
-        </FormControl>
+        </AdminFormField>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormControlLabel
-            control={<Checkbox name="active" checked={vm.formData.active} onChange={vm.handleChange} />}
-            label="Active"
-          />
-        </FormControl>
-
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="contained" type="submit">
-            {vm.isEditMode ? 'Update Subject' : 'Create Subject'}
-          </Button>
-          <Button variant="outlined" onClick={vm.handleCancel}>
-            Cancel
-          </Button>
-        </Box>
-      </Box>
-    </Container>
+        <AdminFormField label="Active">
+          <div className="tw:flex tw:items-center tw:gap-2">
+            <Checkbox
+              aria-label="Active"
+              name="active"
+              checked={vm.formData.active}
+              onCheckedChange={(checked) => {
+                // Create a synthetic event to match VM's handleChange interface
+                const syntheticEvent = {
+                  target: { name: 'active', value: '', type: 'checkbox', checked: !!checked }
+                } as React.ChangeEvent<HTMLInputElement>;
+                vm.handleChange(syntheticEvent);
+              }}
+            />
+            <span className="tw:text-sm tw:text-admin-fg">Active</span>
+          </div>
+        </AdminFormField>
+      </AdminFormLayout>
+    </AdminPage>
   );
 };
 
