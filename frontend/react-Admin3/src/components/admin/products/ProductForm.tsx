@@ -1,73 +1,90 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-    TextField, Button, Container, Alert, Box, Typography,
-    FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress,
-} from '@mui/material';
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Textarea } from '@/components/admin/ui/textarea';
+import { Checkbox } from '@/components/admin/ui/checkbox';
 import useProductFormVM from './useProductFormVM';
 
 const AdminProductForm: React.FC = () => {
-    const vm = useProductFormVM();
+  const vm = useProductFormVM();
 
-    if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                {vm.isEditMode ? 'Edit Product' : 'Add New Product'}
-            </Typography>
+  return (
+    <AdminPage>
+      <AdminFormLayout
+        title={vm.isEditMode ? 'Edit Product' : 'Add New Product'}
+        onSubmit={vm.handleSubmit}
+        onCancel={vm.handleCancel}
+        loading={vm.loading}
+        error={vm.error}
+        submitLabel={vm.isEditMode ? 'Update Product' : 'Create Product'}
+      >
+        <AdminFormField label="Code" required>
+          <Input
+            name="code"
+            value={vm.formData.code}
+            onChange={vm.handleChange}
+            maxLength={10}
+            disabled={vm.isEditMode}
+          />
+          {vm.isEditMode && (
+            <p className="tw:mt-1 tw:text-xs tw:text-admin-fg-muted">
+              Codes cannot be changed after creation
+            </p>
+          )}
+        </AdminFormField>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+        <AdminFormField label="Full Name" required>
+          <Input
+            name="fullname"
+            value={vm.formData.fullname}
+            onChange={vm.handleChange}
+          />
+        </AdminFormField>
 
-            <Box component="form" onSubmit={vm.handleSubmit}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Code</FormLabel>
-                    <TextField
-                        name="code"
-                        value={vm.formData.code}
-                        onChange={vm.handleChange}
-                        required
-                        inputProps={{ maxLength: 10 }}
-                        disabled={vm.isEditMode}
-                        fullWidth
-                        helperText={vm.isEditMode ? 'Codes cannot be changed after creation' : ''}
-                    />
-                </FormControl>
+        <AdminFormField label="Short Name" required>
+          <Input
+            name="shortname"
+            value={vm.formData.shortname}
+            onChange={vm.handleChange}
+            maxLength={20}
+          />
+        </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Full Name</FormLabel>
-                    <TextField name="fullname" value={vm.formData.fullname} onChange={vm.handleChange} required fullWidth />
-                </FormControl>
+        <AdminFormField label="Description">
+          <Textarea
+            name="description"
+            value={vm.formData.description}
+            onChange={vm.handleChange as any}
+            rows={3}
+          />
+        </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Short Name</FormLabel>
-                    <TextField name="shortname" value={vm.formData.shortname} onChange={vm.handleChange} required inputProps={{ maxLength: 20 }} fullWidth />
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Description</FormLabel>
-                    <TextField multiline rows={3} name="description" value={vm.formData.description} onChange={vm.handleChange} fullWidth />
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={<Checkbox name="active" checked={vm.formData.active} onChange={vm.handleChange} />}
-                        label="Active"
-                    />
-                </FormControl>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" type="submit">
-                        {vm.isEditMode ? 'Update Product' : 'Create Product'}
-                    </Button>
-                    <Button variant="outlined" onClick={vm.handleCancel}>
-                        Cancel
-                    </Button>
-                </Box>
-            </Box>
-        </Container>
-    );
+        <AdminFormField label="Active">
+          <div className="tw:flex tw:items-center tw:gap-2">
+            <Checkbox
+              aria-label="Active"
+              name="active"
+              checked={vm.formData.active}
+              onCheckedChange={(checked) => {
+                const syntheticEvent = {
+                  target: { name: 'active', value: '', type: 'checkbox', checked: !!checked },
+                } as React.ChangeEvent<HTMLInputElement>;
+                vm.handleChange(syntheticEvent);
+              }}
+            />
+            <span className="tw:text-sm tw:text-admin-fg">Active</span>
+          </div>
+        </AdminFormField>
+      </AdminFormLayout>
+    </AdminPage>
+  );
 };
 
 export default AdminProductForm;

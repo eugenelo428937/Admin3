@@ -1,16 +1,17 @@
 import { vi } from 'vitest';
-// src/components/admin/products/__tests__/ProductImport.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import AdminProductImport from '../ProductImport.js';
+import { BrowserRouter } from 'react-router-dom';
+import AdminProductImport from '../ProductImport.tsx';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
 
-// Create mock for react-router-dom
-vi.mock('react-router-dom', () => {
+// Mock react-router-dom partially - keep Link/BrowserRouter working
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal();
   return {
+    ...actual,
     useNavigate: vi.fn(() => mockNavigate),
   };
 });
@@ -26,7 +27,6 @@ vi.mock('../../../../services/catalogProductService', () => ({
 // Mock papaparse
 vi.mock('papaparse', () => ({
   parse: vi.fn((file, options) => {
-    // Simulate async parsing
     const mockData = [
       { code: 'PRD001', fullname: 'Product One', shortname: 'Prod1', description: 'Test', active: 'true' },
       { code: 'PRD002', fullname: 'Product Two', shortname: 'Prod2', description: 'Test2', active: 'false' },
@@ -42,14 +42,11 @@ vi.mock('papaparse', () => ({
 
 import catalogProductService from '../../../../services/catalogProductService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const renderComponent = () => {
   return render(
-    <ThemeProvider theme={theme}>
+    <BrowserRouter>
       <AdminProductImport />
-    </ThemeProvider>
+    </BrowserRouter>
   );
 };
 
@@ -86,9 +83,7 @@ describe('AdminProductImport', () => {
 
     test('renders format instructions', () => {
       renderComponent();
-      // Check for the format guide heading and unique identifiers
       expect(screen.getByText(/csv format guide/i)).toBeInTheDocument();
-      // Check that instructions list items exist
       expect(screen.getByText(/unique product identifier/i)).toBeInTheDocument();
     });
   });
@@ -115,7 +110,6 @@ describe('AdminProductImport', () => {
     test('shows error when submitting without file', async () => {
       renderComponent();
 
-      // Try to submit without file - button should be disabled
       const importButton = screen.getByRole('button', { name: /import products/i });
       expect(importButton).toBeDisabled();
     });
