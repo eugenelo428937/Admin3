@@ -1,11 +1,9 @@
 import React, { useCallback } from 'react';
-import {
-    Box, TextField, MenuItem, IconButton, Button, ButtonGroup, Typography,
-} from '@mui/material';
-import {
-    Add as AddIcon,
-    Remove as RemoveIcon,
-} from '@mui/icons-material';
+import { Plus, Minus } from 'lucide-react';
+import { AdminSelect } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import { Input } from '@/components/admin/ui/input';
+import { Label } from '@/components/admin/ui/label';
 import type { ConditionOperator, AdditionalCondition } from '../../../../types/email';
 
 const CONDITION_FIELDS = [
@@ -99,116 +97,109 @@ const RuleConditionBuilder: React.FC<RuleConditionBuilderProps> = ({
     );
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="tw:space-y-4">
             {/* Primary Condition Row */}
-            <Typography variant="subtitle2">Primary Condition</Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-                <TextField
-                    label="Field"
-                    value={conditionField}
-                    onChange={(e) => handlePrimaryChange('field', e.target.value)}
-                    select
-                    size="small"
-                    sx={{ minWidth: 180 }}
-                >
-                    {CONDITION_FIELDS.map(f => (
-                        <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    label="Operator"
-                    value={conditionOperator}
-                    onChange={(e) => handlePrimaryChange('operator', e.target.value)}
-                    select
-                    size="small"
-                    sx={{ minWidth: 160 }}
-                >
-                    {CONDITION_OPERATORS.map(op => (
-                        <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    label="Value"
+            <Label className="tw:text-xs tw:font-medium">Primary Condition</Label>
+            <div className="tw:flex tw:items-start tw:gap-2">
+                <div className="tw:min-w-[180px]">
+                    <AdminSelect
+                        options={CONDITION_FIELDS.map(f => ({ value: f.value, label: f.label }))}
+                        value={conditionField}
+                        onChange={(v) => handlePrimaryChange('field', v)}
+                        placeholder="Field"
+                    />
+                </div>
+                <div className="tw:min-w-[160px]">
+                    <AdminSelect
+                        options={CONDITION_OPERATORS.map(op => ({ value: op.value, label: op.label }))}
+                        value={conditionOperator}
+                        onChange={(v) => handlePrimaryChange('operator', v)}
+                        placeholder="Operator"
+                    />
+                </div>
+                <Input
+                    placeholder="Value"
                     value={conditionValue ?? ''}
                     onChange={(e) => handlePrimaryChange('value', e.target.value)}
-                    size="small"
-                    sx={{ flex: 1 }}
+                    className="tw:flex-1"
                 />
-            </Box>
+            </div>
 
             {/* Additional Conditions */}
             {additionalConditions.length > 0 && (
-                <Box>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Additional Conditions</Typography>
-                    {additionalConditions.map((condition, index) => (
-                        <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 1 }}>
-                            <ButtonGroup size="small" sx={{ minWidth: 100 }}>
+                <div>
+                    <Label className="tw:mb-2 tw:text-xs tw:font-medium">Additional Conditions</Label>
+                    <div className="tw:space-y-2">
+                        {additionalConditions.map((condition, index) => (
+                            <div key={index} className="tw:flex tw:items-start tw:gap-2">
+                                <div className="tw:flex tw:min-w-[100px]">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={condition.logic === 'AND' ? 'default' : 'outline'}
+                                        onClick={() => handleAdditionalChange(index, 'logic', 'AND')}
+                                        className="tw:rounded-r-none"
+                                    >
+                                        AND
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={condition.logic === 'OR' ? 'default' : 'outline'}
+                                        onClick={() => handleAdditionalChange(index, 'logic', 'OR')}
+                                        className="tw:rounded-l-none"
+                                    >
+                                        OR
+                                    </Button>
+                                </div>
+                                <div className="tw:min-w-[160px]">
+                                    <AdminSelect
+                                        options={CONDITION_FIELDS.map(f => ({ value: f.value, label: f.label }))}
+                                        value={condition.field}
+                                        onChange={(v) => handleAdditionalChange(index, 'field', v)}
+                                        placeholder="Field"
+                                    />
+                                </div>
+                                <div className="tw:min-w-[140px]">
+                                    <AdminSelect
+                                        options={CONDITION_OPERATORS.map(op => ({ value: op.value, label: op.label }))}
+                                        value={condition.operator}
+                                        onChange={(v) => handleAdditionalChange(index, 'operator', v)}
+                                        placeholder="Operator"
+                                    />
+                                </div>
+                                <Input
+                                    placeholder="Value"
+                                    value={condition.value ?? ''}
+                                    onChange={(e) => handleAdditionalChange(index, 'value', e.target.value)}
+                                    className="tw:flex-1"
+                                />
                                 <Button
-                                    variant={condition.logic === 'AND' ? 'contained' : 'outlined'}
-                                    onClick={() => handleAdditionalChange(index, 'logic', 'AND')}
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={() => handleRemoveCondition(index)}
+                                    className="tw:text-admin-destructive"
                                 >
-                                    AND
+                                    <Minus className="tw:size-4" />
                                 </Button>
-                                <Button
-                                    variant={condition.logic === 'OR' ? 'contained' : 'outlined'}
-                                    onClick={() => handleAdditionalChange(index, 'logic', 'OR')}
-                                >
-                                    OR
-                                </Button>
-                            </ButtonGroup>
-                            <TextField
-                                label="Field"
-                                value={condition.field}
-                                onChange={(e) => handleAdditionalChange(index, 'field', e.target.value)}
-                                select
-                                size="small"
-                                sx={{ minWidth: 160 }}
-                            >
-                                {CONDITION_FIELDS.map(f => (
-                                    <MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField
-                                label="Operator"
-                                value={condition.operator}
-                                onChange={(e) => handleAdditionalChange(index, 'operator', e.target.value)}
-                                select
-                                size="small"
-                                sx={{ minWidth: 140 }}
-                            >
-                                {CONDITION_OPERATORS.map(op => (
-                                    <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField
-                                label="Value"
-                                value={condition.value ?? ''}
-                                onChange={(e) => handleAdditionalChange(index, 'value', e.target.value)}
-                                size="small"
-                                sx={{ flex: 1 }}
-                            />
-                            <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => handleRemoveCondition(index)}
-                            >
-                                <RemoveIcon fontSize="small" />
-                            </IconButton>
-                        </Box>
-                    ))}
-                </Box>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             )}
 
-            <Box>
+            <div>
                 <Button
-                    size="small"
-                    startIcon={<AddIcon />}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={handleAddCondition}
                 >
+                    <Plus className="tw:size-4" />
                     Add Condition
                 </Button>
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 };
 

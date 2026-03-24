@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Box, Alert } from '@mui/material';
+import { AlertCircle } from 'lucide-react';
 
 interface MjmlPreviewPaneProps {
     html: string;
@@ -17,22 +17,19 @@ const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
     }, [html]);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="tw:flex tw:h-full tw:flex-col">
             {error && (
-                <Alert severity="error" sx={{ mb: 1 }}>
+                <div
+                    role="alert"
+                    className="tw:mb-2 tw:flex tw:items-start tw:gap-2 tw:rounded-md tw:border tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:p-3 tw:text-sm tw:text-admin-destructive"
+                >
+                    <AlertCircle className="tw:mt-0.5 tw:size-4 tw:shrink-0" />
                     {error}
-                </Alert>
+                </div>
             )}
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    minHeight: 500,
-                    backgroundColor: '#fff',
-                }}
+            <div
+                className="tw:flex-1 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border tw:bg-white"
+                style={{ minHeight: 500 }}
             >
                 <iframe
                     ref={iframeRef}
@@ -45,8 +42,8 @@ const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
                         border: 'none',
                     }}
                 />
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 };
 

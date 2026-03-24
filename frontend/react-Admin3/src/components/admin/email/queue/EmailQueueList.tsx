@@ -1,43 +1,32 @@
 import React, { useEffect } from 'react';
+import { Eye, Copy, RotateCcw } from 'lucide-react';
 import {
-    Container,
+    AdminPage,
+    AdminPageHeader,
+    AdminErrorAlert,
+    AdminLoadingState,
+    AdminConfirmDialog,
+} from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
+import { Button } from '@/components/admin/ui/button';
+import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
+    TableHeader,
     TableRow,
-    Paper,
-    Typography,
-    Box,
-    CircularProgress,
-    Alert,
-    Chip,
-    IconButton,
-    Tooltip,
-    TablePagination,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Button,
-} from '@mui/material';
-import {
-    Visibility as ViewIcon,
-    ContentCopy as DuplicateIcon,
-    Replay as ResendIcon,
-} from '@mui/icons-material';
+} from '@/components/admin/ui/table';
 import { useEmailQueueListVM } from './useEmailQueueListVM';
 import type { QueueStatus } from '../../../../types/email';
 
-const STATUS_CHIP_COLOR: Record<QueueStatus, 'default' | 'info' | 'success' | 'error' | 'warning' | 'secondary'> = {
-    pending: 'default',
-    processing: 'info',
-    sent: 'success',
-    failed: 'error',
-    cancelled: 'warning',
-    retry: 'secondary',
+const STATUS_BADGE_CLASS: Record<QueueStatus, string> = {
+    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
+    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
+    sent: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
+    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
+    cancelled: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
+    retry: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
 };
 
 const STATUS_OPTIONS: Array<QueueStatus | 'all'> = [
@@ -79,158 +68,183 @@ const EmailQueueList: React.FC = () => {
     }, [vm.fetchQueue]);
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" component="h2">
-                    Email Queue
-                </Typography>
-            </Box>
+        <AdminPage>
+            <AdminPageHeader title="Email Queue" />
 
             {/* Status Filter Chips */}
-            <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+            <div className="tw:mb-4 tw:flex tw:flex-wrap tw:gap-2">
                 {STATUS_OPTIONS.map((status) => (
-                    <Chip
+                    <button
                         key={status}
-                        label={status.charAt(0).toUpperCase() + status.slice(1)}
-                        color={status === 'all' ? 'primary' : STATUS_CHIP_COLOR[status as QueueStatus]}
-                        variant={vm.statusFilter === status ? 'filled' : 'outlined'}
+                        type="button"
                         onClick={() => vm.handleStatusFilter(status)}
-                        clickable
-                    />
+                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
+                            vm.statusFilter === status
+                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
+                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
+                        }`}
+                    >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </button>
                 ))}
-            </Box>
+            </div>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
             {vm.loading ? (
-                <Box sx={{ textAlign: 'center', mt: 5 }}>
-                    <CircularProgress />
-                </Box>
+                <AdminLoadingState rows={5} columns={7} />
             ) : vm.queueItems.length === 0 && !vm.error ? (
-                <Alert severity="info">No queue items found.</Alert>
+                <div role="alert" className="tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-800">
+                    No queue items found.
+                </div>
             ) : (
                 <>
-                    <TableContainer component={Paper}>
-                        <Table size="small">
-                            <TableHead>
+                    <div className="tw:rounded-md tw:border tw:border-admin-border">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell>Queue ID</TableCell>
-                                    <TableCell>Template</TableCell>
-                                    <TableCell>To</TableCell>
-                                    <TableCell>Subject</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>Sent</TableCell>
-                                    <TableCell align="right">Actions</TableCell>
+                                    <TableHead>Queue ID</TableHead>
+                                    <TableHead>Template</TableHead>
+                                    <TableHead>To</TableHead>
+                                    <TableHead>Subject</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Sent</TableHead>
+                                    <TableHead className="tw:text-right">Actions</TableHead>
                                 </TableRow>
-                            </TableHead>
+                            </TableHeader>
                             <TableBody>
                                 {vm.queueItems.map((item) => (
-                                    <TableRow key={item.id} hover>
+                                    <TableRow key={item.id}>
                                         <TableCell>
-                                            <Tooltip title={item.queue_id}>
-                                                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8125rem' }}>
-                                                    {item.queue_id.substring(0, 8)}
-                                                </Typography>
-                                            </Tooltip>
+                                            <span
+                                                className="tw:font-mono tw:text-xs"
+                                                title={item.queue_id}
+                                            >
+                                                {item.queue_id.substring(0, 8)}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             {item.template_name || '-'}
                                         </TableCell>
                                         <TableCell>
-                                            <Tooltip title={item.to_emails.join(', ')}>
-                                                <Typography variant="body2" noWrap sx={{ maxWidth: 180 }}>
-                                                    {item.to_emails.length > 0
-                                                        ? `${item.to_emails[0]}${item.to_emails.length > 1 ? ` +${item.to_emails.length - 1}` : ''}`
-                                                        : '-'}
-                                                </Typography>
-                                            </Tooltip>
+                                            <span
+                                                className="tw:block tw:max-w-[180px] tw:truncate tw:text-sm"
+                                                title={item.to_emails.join(', ')}
+                                            >
+                                                {item.to_emails.length > 0
+                                                    ? `${item.to_emails[0]}${item.to_emails.length > 1 ? ` +${item.to_emails.length - 1}` : ''}`
+                                                    : '-'}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
-                                            <Tooltip title={item.subject}>
-                                                <Typography variant="body2" noWrap sx={{ maxWidth: 240 }}>
-                                                    {truncate(item.subject, 40)}
-                                                </Typography>
-                                            </Tooltip>
+                                            <span
+                                                className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
+                                                title={item.subject}
+                                            >
+                                                {truncate(item.subject, 40)}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label={item.status}
-                                                color={STATUS_CHIP_COLOR[item.status]}
-                                                size="small"
-                                            />
+                                            <Badge
+                                                variant="outline"
+                                                className={STATUS_BADGE_CLASS[item.status]}
+                                            >
+                                                {item.status}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Tooltip title={item.sent_at ? new Date(item.sent_at).toLocaleString() : ''}>
-                                                <Typography variant="body2">
-                                                    {formatRelativeTime(item.sent_at)}
-                                                </Typography>
-                                            </Tooltip>
+                                            <span
+                                                className="tw:text-sm"
+                                                title={item.sent_at ? new Date(item.sent_at).toLocaleString() : ''}
+                                            >
+                                                {formatRelativeTime(item.sent_at)}
+                                            </span>
                                         </TableCell>
-                                        <TableCell align="right">
-                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                                                <Tooltip title="View details">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="info"
-                                                        onClick={() => vm.handleViewDetail(item.id)}
-                                                    >
-                                                        <ViewIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Duplicate">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => vm.handleDuplicate(item.id)}
-                                                    >
-                                                        <DuplicateIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Resend">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="warning"
-                                                        onClick={() => vm.openResendDialog(item.id)}
-                                                    >
-                                                        <ResendIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Box>
+                                        <TableCell>
+                                            <div className="tw:flex tw:justify-end tw:gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-xs"
+                                                    title="View details"
+                                                    onClick={() => vm.handleViewDetail(item.id)}
+                                                >
+                                                    <Eye className="tw:size-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-xs"
+                                                    title="Duplicate"
+                                                    onClick={() => vm.handleDuplicate(item.id)}
+                                                >
+                                                    <Copy className="tw:size-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-xs"
+                                                    title="Resend"
+                                                    onClick={() => vm.openResendDialog(item.id)}
+                                                >
+                                                    <RotateCcw className="tw:size-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
-                    </TableContainer>
-                    <TablePagination
-                        component="div"
-                        count={vm.totalCount}
-                        page={vm.page}
-                        onPageChange={vm.handleChangePage}
-                        rowsPerPage={vm.rowsPerPage}
-                        onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                        rowsPerPageOptions={[10, 25, 50, 100]}
-                    />
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:py-4 tw:text-sm tw:text-admin-fg-muted">
+                        <span>
+                            Showing {vm.page * vm.rowsPerPage + 1}&ndash;{Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
+                        </span>
+                        <div className="tw:flex tw:items-center tw:gap-4">
+                            <div className="tw:flex tw:items-center tw:gap-2">
+                                <span>Rows per page</span>
+                                <select
+                                    className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
+                                    value={vm.rowsPerPage}
+                                    onChange={(e) => vm.handleChangeRowsPerPage(e as any)}
+                                >
+                                    {[10, 25, 50, 100].map((size) => (
+                                        <option key={size} value={size}>{size}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="tw:flex tw:items-center tw:gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={vm.page === 0}
+                                    onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
+                                    onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </>
             )}
 
             {/* Resend Confirmation Dialog */}
-            <Dialog open={vm.resendDialogOpen} onClose={vm.closeResendDialog}>
-                <DialogTitle>Confirm Resend</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to resend this email? This will reset the queue item
-                        status and attempt to send it again.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={vm.closeResendDialog}>Cancel</Button>
-                    <Button onClick={vm.confirmResend} variant="contained" color="warning">
-                        Resend
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
+            <AdminConfirmDialog
+                open={vm.resendDialogOpen}
+                title="Confirm Resend"
+                description="Are you sure you want to resend this email? This will reset the queue item status and attempt to send it again."
+                confirmLabel="Resend"
+                onConfirm={vm.confirmResend}
+                onCancel={vm.closeResendDialog}
+            />
+        </AdminPage>
     );
 };
 
