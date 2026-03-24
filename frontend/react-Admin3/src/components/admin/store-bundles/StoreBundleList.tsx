@@ -1,66 +1,89 @@
 import React from 'react';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Container, Alert, Paper, Typography, Box, CircularProgress,
-  TablePagination, IconButton, Collapse
-} from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Link, Navigate } from 'react-router-dom';
+    AdminPage,
+    AdminPageHeader,
+    AdminErrorAlert,
+    AdminEmptyState,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/admin/ui/table';
 import useStoreBundleListVM from './useStoreBundleListVM';
 import StoreBundleProductsPanel from './StoreBundleProductsPanel.tsx';
 
+const COL_COUNT = 9;
+
 const AdminStoreBundleList: React.FC = () => {
     const vm = useStoreBundleListVM();
+    const navigate = useNavigate();
 
     if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography variant="h4" component="h2">Store Bundles</Typography>
-                <Button component={Link} to="/admin/store-bundles/new" variant="contained">
-                    Add New Store Bundle
-                </Button>
-            </Box>
+        <AdminPage>
+            <AdminPageHeader
+                title="Store Bundles"
+                description={`${vm.totalCount} store bundle${vm.totalCount !== 1 ? 's' : ''} total`}
+                actions={[
+                    {
+                        label: 'Add New Store Bundle',
+                        icon: Plus,
+                        onClick: () => navigate('/admin/store-bundles/new'),
+                    },
+                ]}
+            />
+            <AdminErrorAlert message={vm.error} />
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            {vm.storeBundles.length === 0 && !vm.error ? (
-                <Alert severity="info">No store bundles found.</Alert>
+            {vm.loading ? (
+                <AdminLoadingState rows={5} columns={COL_COUNT} />
+            ) : vm.storeBundles.length === 0 && !vm.error ? (
+                <AdminEmptyState title="No store bundles found" />
             ) : (
-                <TableContainer component={Paper}>
+                <div className="tw:rounded-admin tw:border tw:border-admin-border">
                     <Table>
-                        <TableHead>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell sx={{ width: 50 }} />
-                                <TableCell>ID</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Template</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Exam Session</TableCell>
-                                <TableCell>Active</TableCell>
-                                <TableCell>Components</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableHead className="tw:w-[50px]" />
+                                <TableHead>ID</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Template</TableHead>
+                                <TableHead>Subject</TableHead>
+                                <TableHead>Exam Session</TableHead>
+                                <TableHead>Active</TableHead>
+                                <TableHead>Components</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
-                        </TableHead>
+                        </TableHeader>
                         <TableBody>
                             {vm.storeBundles.map((bundle) => (
                                 <React.Fragment key={bundle.id}>
-                                    <TableRow hover>
+                                    <TableRow className="tw:hover:bg-gray-50">
                                         <TableCell>
-                                            <IconButton
-                                                size="small"
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
                                                 onClick={() => vm.handleToggleExpand(bundle.id)}
-                                                aria-label={vm.expandedId === bundle.id
-                                                    ? `Collapse products for ${bundle.name}`
-                                                    : `Expand products for ${bundle.name}`}
+                                                aria-label={
+                                                    vm.expandedId === bundle.id
+                                                        ? `Collapse products for ${bundle.name}`
+                                                        : `Expand products for ${bundle.name}`
+                                                }
                                             >
-                                                {vm.expandedId === bundle.id
-                                                    ? <KeyboardArrowUpIcon />
-                                                    : <KeyboardArrowDownIcon />}
-                                            </IconButton>
+                                                {vm.expandedId === bundle.id ? (
+                                                    <ChevronUp className="tw:h-4 tw:w-4" />
+                                                ) : (
+                                                    <ChevronDown className="tw:h-4 tw:w-4" />
+                                                )}
+                                            </Button>
                                         </TableCell>
                                         <TableCell>{bundle.id}</TableCell>
                                         <TableCell>{bundle.name || '-'}</TableCell>
@@ -68,55 +91,73 @@ const AdminStoreBundleList: React.FC = () => {
                                         <TableCell>{bundle.subject_code || '-'}</TableCell>
                                         <TableCell>{bundle.exam_session_code || '-'}</TableCell>
                                         <TableCell>{bundle.is_active ? 'Active' : 'Inactive'}</TableCell>
-                                        <TableCell>{bundle.components_count !== undefined ? bundle.components_count : '-'}</TableCell>
                                         <TableCell>
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                            {bundle.components_count !== undefined
+                                                ? bundle.components_count
+                                                : '-'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="tw:flex tw:items-center tw:gap-1">
                                                 <Button
-                                                    component={Link}
-                                                    to={`/admin/store-bundles/${bundle.id}/edit`}
-                                                    variant="contained"
-                                                    color="info"
-                                                    size="small"
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
                                                 >
-                                                    Edit
+                                                    <Link to={`/admin/store-bundles/${bundle.id}/edit`}>
+                                                        Edit
+                                                    </Link>
                                                 </Button>
                                                 <Button
-                                                    variant="contained"
-                                                    color="error"
-                                                    size="small"
+                                                    variant="destructive"
+                                                    size="sm"
                                                     onClick={() => vm.handleDelete(bundle.id)}
                                                 >
                                                     Delete
                                                 </Button>
-                                            </Box>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
-                                    <TableRow aria-hidden={vm.expandedId !== bundle.id}>
-                                        <TableCell sx={{ py: 0 }} colSpan={9}>
-                                            <Collapse in={vm.expandedId === bundle.id} timeout="auto" unmountOnExit>
+                                    {vm.expandedId === bundle.id && (
+                                        <TableRow aria-hidden="false">
+                                            <TableCell colSpan={COL_COUNT} className="tw:p-0">
                                                 <StoreBundleProductsPanel bundleId={bundle.id} />
-                                            </Collapse>
-                                        </TableCell>
-                                    </TableRow>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </React.Fragment>
                             ))}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </div>
             )}
 
             {vm.totalCount > vm.rowsPerPage && (
-                <TablePagination
-                    component="div"
-                    count={vm.totalCount}
-                    page={vm.page}
-                    onPageChange={vm.handleChangePage}
-                    rowsPerPage={vm.rowsPerPage}
-                    onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                    rowsPerPageOptions={[25, 50, 100]}
-                />
+                <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:text-sm tw:text-admin-fg-muted">
+                    <span>
+                        Showing {vm.page * vm.rowsPerPage + 1}&ndash;
+                        {Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
+                    </span>
+                    <div className="tw:flex tw:items-center tw:gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
+                            disabled={vm.page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
+                            disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
             )}
-        </Container>
+        </AdminPage>
     );
 };
 
