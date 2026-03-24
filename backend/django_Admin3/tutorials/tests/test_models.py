@@ -726,7 +726,7 @@ class StaffModelTest(TestCase):
 
     def test_create_staff(self):
         """Verify Staff creation linked to auth_user."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         user = User.objects.create_user(
             username='staff_test_1', password='testpass123',
             first_name='John', last_name='Smith',
@@ -738,7 +738,7 @@ class StaffModelTest(TestCase):
 
     def test_one_to_one_constraint(self):
         """Verify only one Staff per auth_user."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         from django.db import IntegrityError
         user = User.objects.create_user(username='staff_unique', password='testpass123')
         Staff.objects.create(user=user)
@@ -747,7 +747,7 @@ class StaffModelTest(TestCase):
 
     def test_protect_on_user_delete(self):
         """Verify PROTECT prevents auth_user deletion when Staff exists."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         from django.db.models import ProtectedError
         user = User.objects.create_user(username='staff_protect', password='testpass123')
         Staff.objects.create(user=user)
@@ -756,7 +756,7 @@ class StaffModelTest(TestCase):
 
     def test_str_with_full_name(self):
         """Verify __str__ returns full name when available."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         user = User.objects.create_user(
             username='staff_str_1', password='testpass123',
             first_name='Jane', last_name='Doe',
@@ -766,7 +766,7 @@ class StaffModelTest(TestCase):
 
     def test_str_with_username_fallback(self):
         """Verify __str__ falls back to username when no full name."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         user = User.objects.create_user(username='jdoe_fallback', password='testpass123')
         staff = Staff.objects.create(user=user)
         self.assertEqual(str(staff), 'jdoe_fallback')
@@ -783,7 +783,7 @@ class StaffModelTest(TestCase):
 
     def test_db_table_name(self):
         """Verify db_table uses double-quoted schema format."""
-        from tutorials.models import Staff
+        from staff.models import Staff
         self.assertEqual(Staff._meta.db_table, '"acted"."staff"')
 
 
@@ -792,7 +792,8 @@ class TutorialInstructorModelTest(TestCase):
 
     def test_create_with_staff(self):
         """Verify creation with staff OneToOneField."""
-        from tutorials.models import Staff, TutorialInstructor
+        from staff.models import Staff
+        from tutorials.models import TutorialInstructor
         user = User.objects.create_user(username='instr_test_1', password='testpass123',
                                         first_name='Alice', last_name='Brown')
         staff = Staff.objects.create(user=user)
@@ -809,7 +810,8 @@ class TutorialInstructorModelTest(TestCase):
 
     def test_set_null_on_staff_delete(self):
         """Verify SET_NULL when staff is deleted."""
-        from tutorials.models import Staff, TutorialInstructor
+        from staff.models import Staff
+        from tutorials.models import TutorialInstructor
         user = User.objects.create_user(username='instr_setnull', password='testpass123')
         staff = Staff.objects.create(user=user)
         instructor = TutorialInstructor.objects.create(staff=staff)
@@ -826,7 +828,8 @@ class TutorialInstructorModelTest(TestCase):
 
     def test_str_with_staff(self):
         """Verify __str__ returns staff name when staff exists."""
-        from tutorials.models import Staff, TutorialInstructor
+        from staff.models import Staff
+        from tutorials.models import TutorialInstructor
         user = User.objects.create_user(username='instr_str_1', password='testpass123',
                                         first_name='Bob', last_name='Jones')
         staff = Staff.objects.create(user=user)

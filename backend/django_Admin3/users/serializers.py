@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
-from tutorials.models import Staff
+from staff.models import Staff
 
 
 # =============================================================================
@@ -85,7 +85,11 @@ class StaffAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ['id', 'user', 'user_detail', 'created_at', 'updated_at']
+        fields = [
+            'id', 'user', 'user_detail',
+            'job_title', 'name_format', 'show_job_title',
+            'created_at', 'updated_at',
+        ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 

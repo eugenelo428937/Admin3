@@ -51,4 +51,3 @@ The project has **extensive documentation** already available:
 
 **Background Context**: 
 The current Admin3 system has a basic rules engine framework but needs significant enhancement to handle complex business scenarios like international VAT calculations and employer-specific workflows. The mobile experience is currently suboptimal, and the registration process lacks the sophistication needed for B2B customers with employer relationships. These enhancements will transform the system into a truly international, mobile-optimized platform with intelligent business rule processing.
-

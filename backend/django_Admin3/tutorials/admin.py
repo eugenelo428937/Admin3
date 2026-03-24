@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     TutorialEvents, TutorialSessions,
-    TutorialCourseTemplate, Staff, TutorialInstructor,
+    TutorialCourseTemplate, TutorialInstructor,
     TutorialLocation, TutorialVenue,
 )
 
@@ -29,13 +29,6 @@ class TutorialCourseTemplateAdmin(admin.ModelAdmin):
     list_display = ('code', 'title', 'is_active', 'created_at')
     list_filter = ('is_active',)
     search_fields = ('code', 'title')
-    readonly_fields = ('created_at', 'updated_at')
-
-
-@admin.register(Staff)
-class StaffAdmin(admin.ModelAdmin):
-    list_display = ('user', 'created_at')
-    search_fields = ('user__username', 'user__first_name', 'user__last_name')
     readonly_fields = ('created_at', 'updated_at')
 
 

@@ -146,7 +146,7 @@ class ClosingSalutationListSerializer(serializers.ModelSerializer):
         model = ClosingSalutation
         fields = [
             'id', 'name', 'display_name', 'sign_off_text',
-            'signature_type', 'team_signature', 'staff_name_format',
+            'signature_type', 'team',
             'is_active', 'created_at', 'updated_at',
         ]
 
@@ -159,7 +159,7 @@ class ClosingSalutationSerializer(serializers.ModelSerializer):
         model = ClosingSalutation
         fields = [
             'id', 'name', 'display_name', 'sign_off_text',
-            'signature_type', 'team_signature', 'staff_name_format',
+            'signature_type', 'team',
             'staff_members',
             'is_active', 'created_at', 'updated_at',
         ]

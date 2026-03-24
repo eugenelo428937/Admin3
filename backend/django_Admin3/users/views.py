@@ -20,7 +20,7 @@ from .serializers import (
 )
 from catalog.permissions import IsSuperUser
 from students.models import Student
-from tutorials.models import Staff
+from staff.models import Staff
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
 from email_system.services.email_service import email_service
 import logging

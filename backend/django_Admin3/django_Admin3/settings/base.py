@@ -123,6 +123,7 @@ INSTALLED_APPS = [
     'cart',
     'orders.apps.OrdersConfig',
     'students',
+    'staff.apps.StaffConfig',  # Staff, Team, TeamStaff (acted schema)
     'tutorials',
     'marking',
     'marking_vouchers',

@@ -8,8 +8,9 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from administrate.models import CourseTemplate, Instructor, Location, Venue
+from staff.models import Staff
 from tutorials.models import (
-    TutorialCourseTemplate, Staff, TutorialInstructor,
+    TutorialCourseTemplate, TutorialInstructor,
     TutorialLocation, TutorialVenue,
 )
 
