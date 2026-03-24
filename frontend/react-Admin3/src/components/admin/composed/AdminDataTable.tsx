@@ -29,6 +29,7 @@ import { AdminEmptyState } from './AdminEmptyState';
 
 interface SimpleColumn<T> {
   key: keyof T & string;
+  id?: string;
   header: string;
   sortable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
@@ -79,6 +80,7 @@ function AdminDataTable<T extends Record<string, any>>({
   // Adapt SimpleColumn to TanStack ColumnDef
   const tanstackColumns = React.useMemo<ColumnDef<T>[]>(() => {
     const cols: ColumnDef<T>[] = columns.map((col) => ({
+      id: col.id ?? col.key,
       accessorKey: col.key,
       header: ({ column }) => {
         if (!col.sortable) {
@@ -97,7 +99,7 @@ function AdminDataTable<T extends Record<string, any>>({
         );
       },
       cell: ({ row }) => {
-        const value = row.getValue(col.key);
+        const value = row.getValue(col.id ?? col.key);
         if (col.render) {
           return col.render(value, row.original);
         }
