@@ -15,7 +15,8 @@ param(
       Phase 2: Install/update WSL2 and Ubuntu distro
       Phase 3: Configure WSL2 (systemd, memory limits, mirrored networking)
       Phase 4: Install Docker Engine inside WSL2 Ubuntu
-      Phase 5: Set up port forwarding for external access (if needed)
+      Phase 5: Set up port forwarding + firewall (LAN only: 8080, 8443, 5433)
+               and SSL certificate setup (mkcert trusted certs or self-signed fallback)
       Phase 6: Restore database from seed dump (if tables are missing)
       Phase 7: Check port conflicts on the host
       Phase 8: Detect and offer cleanup for previous Hyper-V/Docker Desktop artifacts
@@ -62,8 +63,14 @@ $WSLUserProfile = "C:\Users\elo"
 # Ports to forward from host to WSL2 (for external network access)
 $DockerPorts = @(
     @{ HostPort = 8080;  Description = "HTTP (nginx)" },
-    @{ HostPort = 8443;  Description = "HTTPS (nginx)" }
+    @{ HostPort = 8443;  Description = "HTTPS (nginx)" },
+    @{ HostPort = 5433;  Description = "PostgreSQL (LAN access for pgAdmin4)" }
 )
+
+# mkcert SSL certificate source directory (Windows path)
+# Place mkcert-generated server.crt and server.key here before running.
+# Generate with: mkcert -cert-file C:\Temp\server.crt -key-file C:\Temp\server.key localhost 127.0.0.1 <machine-ip> staging.acted.local
+$MkcertCertsDir = "C:\Temp"
 
 # WSL2 resource limits (applied via .wslconfig)
 $WSLMemory     = "4GB"
@@ -742,8 +749,8 @@ if ($mirroredActive) {
         if (-not $existing) {
             New-NetFirewallRule -DisplayName $ruleName `
                 -Direction Inbound -Protocol TCP -LocalPort $pf.HostPort `
-                -Action Allow -Profile Any | Out-Null
-            Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort))"
+                -Action Allow -Profile Domain,Private | Out-Null
+            Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort), LAN only)"
         } else {
             Write-OK "Firewall rule exists: $ruleName"
         }
@@ -772,15 +779,15 @@ if ($mirroredActive) {
             Write-OK "Forward: *:$($pf.HostPort) -> ${wslIP}:$($pf.HostPort) ($($pf.Description))"
         }
 
-        Write-Step "5b" "Ensuring Windows Firewall allows forwarded ports..."
+        Write-Step "5b" "Ensuring Windows Firewall allows forwarded ports (LAN only)..."
         foreach ($pf in $DockerPorts) {
             $ruleName = "Admin3-$($pf.Description -replace '\s','-')-$($pf.HostPort)"
             $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
             if (-not $existing) {
                 New-NetFirewallRule -DisplayName $ruleName `
                     -Direction Inbound -Protocol TCP -LocalPort $pf.HostPort `
-                    -Action Allow -Profile Any | Out-Null
-                Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort))"
+                    -Action Allow -Profile Domain,Private | Out-Null
+                Write-OK "Firewall rule created: $ruleName (TCP $($pf.HostPort), LAN only)"
             } else {
                 Write-OK "Firewall rule exists: $ruleName"
             }
@@ -797,6 +804,74 @@ if ($mirroredActive) {
         Write-Warn "Could not determine WSL2 IP -- port forwarding skipped"
         Write-Host "  WSL2 may not be running. Try: wsl -d Ubuntu -e hostname -I" -ForegroundColor Gray
     }
+}
+
+# ── 5c: SSL Certificate Setup (mkcert) ──
+# mkcert certs are trusted by the browser without a warning (unlike generate-cert.sh self-signed).
+# The nginx container mounts ~/Admin3/certs/ as /etc/nginx/ssl/ (read-write).
+# generate-cert.sh runs on first boot and skips if server.crt already exists.
+# Placing mkcert certs here before starting docker compose means nginx uses them instead.
+Write-Step "5c" "Setting up SSL certificates for nginx..."
+
+$mkcertCrt = Join-Path $MkcertCertsDir "server.crt"
+$mkcertKey = Join-Path $MkcertCertsDir "server.key"
+$certsDestWsl = "~/Admin3/certs"
+
+if ((Test-Path $mkcertCrt) -and (Test-Path $mkcertKey)) {
+    Write-OK "mkcert certs found in $MkcertCertsDir"
+    Write-Host "  Copying to WSL ~/Admin3/certs/ ..." -ForegroundColor Gray
+
+    # Create certs dir in WSL and copy via /mnt/c/ path
+    $mkcertCrtWin = $mkcertCrt -replace '\\', '/' -replace '^([A-Za-z]):', { '/mnt/' + $_.Groups[1].Value.ToLower() }
+    $mkcertKeyWin = $mkcertKey -replace '\\', '/' -replace '^([A-Za-z]):', { '/mnt/' + $_.Groups[1].Value.ToLower() }
+
+    wsl -d $WSLDistro -e bash -c "mkdir -p $certsDestWsl && cp '$mkcertCrtWin' $certsDestWsl/server.crt && cp '$mkcertKeyWin' $certsDestWsl/server.key" 2>&1 | Out-Null
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-OK "mkcert certs copied to WSL $certsDestWsl"
+        Write-Host "  Nginx will use these trusted certs -- no browser warning." -ForegroundColor Gray
+    } else {
+        Write-Warn "Failed to copy mkcert certs to WSL. nginx will fall back to self-signed cert."
+        Write-Host "  Copy manually: cp /mnt/c/Temp/server.crt ~/Admin3/certs/server.crt" -ForegroundColor Gray
+    }
+
+    # Install mkcert CA into Windows trust store so browser trusts the cert
+    Write-Step "5c-i" "Installing mkcert CA into Windows trust store..."
+    $mkcertExe = Get-Command mkcert -ErrorAction SilentlyContinue
+    if ($mkcertExe) {
+        $caRoot = (mkcert -CAROOT 2>&1).Trim()
+        $caPem = Join-Path $caRoot "rootCA.pem"
+        if (Test-Path $caPem) {
+            certutil -addstore -f "ROOT" $caPem 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                Write-OK "mkcert CA installed -- browser will trust the cert without warning"
+                Write-Host "  Restart Chrome/Edge fully to apply." -ForegroundColor Gray
+            } else {
+                Write-Warn "certutil failed -- install CA manually: certutil -addstore -f ROOT `"$caPem`""
+            }
+        } else {
+            Write-Warn "rootCA.pem not found at $caRoot -- run: mkcert -install"
+        }
+    } else {
+        Write-Warn "mkcert not found in PATH -- CA not installed automatically."
+        Write-Host "  Install mkcert: https://mkcert.dev" -ForegroundColor Gray
+        Write-Host "  Then run: mkcert -install" -ForegroundColor Gray
+        Write-Host "  Then re-generate: mkcert -cert-file C:\Temp\server.crt -key-file C:\Temp\server.key localhost 127.0.0.1 <machine-ip>" -ForegroundColor Gray
+    }
+} else {
+    Write-Warn "mkcert certs not found in $MkcertCertsDir (server.crt / server.key)"
+    Write-Host "  nginx will auto-generate a self-signed cert on first boot (browser will warn)." -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  To use trusted mkcert certs instead:" -ForegroundColor White
+    # Detect Windows LAN IP for the mkcert command suggestion
+    $lanIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
+        $_.PrefixOrigin -in @('Dhcp','Manual') -and $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '172.*'
+    } | Select-Object -First 1).IPAddress
+    $lanIPHint = if ($lanIP) { $lanIP } else { "<machine-ip>" }
+    Write-Host "    1. Install mkcert:   winget install FiloSottile.mkcert" -ForegroundColor Cyan
+    Write-Host "    2. Install CA:       mkcert -install" -ForegroundColor Cyan
+    Write-Host "    3. Generate cert:    mkcert -cert-file C:\Temp\server.crt -key-file C:\Temp\server.key localhost 127.0.0.1 $lanIPHint staging.acted.local" -ForegroundColor Cyan
+    Write-Host "    4. Re-run phase 5:   .\install-docker.ps1 -StartPhase 5" -ForegroundColor Cyan
 }
 
 } # end Phase 5 skip guard
@@ -1240,10 +1315,15 @@ Write-Host "   Required edits in .env:" -ForegroundColor White
 Write-Host "     POSTGRES_PASSWORD=<strong-password>" -ForegroundColor Gray
 Write-Host "     REDIS_PASSWORD=<strong-password>" -ForegroundColor Gray
 Write-Host "     DJANGO_SECRET_KEY=<random-50-char-string>" -ForegroundColor Gray
-Write-Host "     SERVER_NAME=localhost" -ForegroundColor Gray
-Write-Host "     ALLOWED_HOSTS=localhost,127.0.0.1" -ForegroundColor Gray
-Write-Host "     CORS_ALLOWED_ORIGINS=https://localhost:8443" -ForegroundColor Gray
-Write-Host "     CSRF_TRUSTED_ORIGINS=https://localhost:8443" -ForegroundColor Gray
+Write-Host "     SERVER_NAME=staging.acted.local" -ForegroundColor Gray
+# Detect Windows LAN IP for .env hint
+$summaryLanIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {
+    $_.PrefixOrigin -in @('Dhcp','Manual') -and $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '172.*'
+} | Select-Object -First 1).IPAddress
+$summaryLanIPHint = if ($summaryLanIP) { $summaryLanIP } else { "<machine-ip>" }
+Write-Host "     ALLOWED_HOSTS=localhost,127.0.0.1,$summaryLanIPHint,staging.acted.local" -ForegroundColor Gray
+Write-Host "     CORS_ALLOWED_ORIGINS=https://localhost:8443,https://127.0.0.1:8443,https://${summaryLanIPHint}:8443" -ForegroundColor Gray
+Write-Host "     CSRF_TRUSTED_ORIGINS=https://localhost:8443,https://127.0.0.1:8443,https://${summaryLanIPHint}:8443" -ForegroundColor Gray
 Write-Host "     FRONTEND_URL=https://localhost:8443" -ForegroundColor Gray
 Write-Host "     HTTP_PORT=8080" -ForegroundColor Gray
 Write-Host "     HTTPS_PORT=8443" -ForegroundColor Gray
@@ -1258,6 +1338,19 @@ Write-Host "   curl -k https://localhost:8443            # Test from WSL2" -Fore
 Write-Host ""
 Write-Host "6. Access from browser (on the same machine):" -ForegroundColor White
 Write-Host "   https://localhost:8443" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "7. Access from other machines on the LAN:" -ForegroundColor White
+Write-Host "   https://$summaryLanIPHint`:8443           # Browser (HTTPS)" -ForegroundColor Cyan
+Write-Host "   pgAdmin4 host: $summaryLanIPHint  port: 5433   # PostgreSQL" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "   Firewall rules (Domain+Private profiles, not Public):" -ForegroundColor White
+Write-Host "     8080  HTTP  (nginx)"  -ForegroundColor Gray
+Write-Host "     8443  HTTPS (nginx)"  -ForegroundColor Gray
+Write-Host "     5433  PostgreSQL"     -ForegroundColor Gray
+Write-Host ""
+Write-Host "   SSL trust (run once on each client machine):" -ForegroundColor White
+Write-Host "     certutil -addstore -f ROOT `"`$(mkcert -CAROOT)\rootCA.pem`"" -ForegroundColor Cyan
+Write-Host "     (Then restart Chrome/Edge fully)" -ForegroundColor Gray
 Write-Host ""
 
 Write-Host "----------------------------------------" -ForegroundColor White
