@@ -1,13 +1,16 @@
 import React from 'react';
-import { Box, IconButton, Tooltip, Divider } from '@mui/material';
 import {
-    FormatBold,
-    FormatItalic,
-    InsertLink,
-    HorizontalRule,
-    TableChart,
-    Title,
-} from '@mui/icons-material';
+    Bold,
+    Italic,
+    Link,
+    Minus,
+    Table,
+    Heading1,
+    Heading2,
+    Heading3,
+} from 'lucide-react';
+import { Button } from '@/components/admin/ui/button';
+import { Separator } from '@/components/admin/ui/separator';
 import { EditorView } from 'codemirror';
 
 interface BasicModeToolbarProps {
@@ -70,37 +73,37 @@ function insertAtCursor(view: EditorView, text: string): void {
 const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAction; group: string }[] = [
     {
         label: 'Heading 1',
-        icon: <Title fontSize="small" />,
+        icon: <Heading1 className="tw:size-4" />,
         group: 'headings',
         action: (view) => prefixLine(view, '# '),
     },
     {
         label: 'Heading 2',
-        icon: <Title sx={{ fontSize: 18 }} />,
+        icon: <Heading2 className="tw:size-3.5" />,
         group: 'headings',
         action: (view) => prefixLine(view, '## '),
     },
     {
         label: 'Heading 3',
-        icon: <Title sx={{ fontSize: 14 }} />,
+        icon: <Heading3 className="tw:size-3" />,
         group: 'headings',
         action: (view) => prefixLine(view, '### '),
     },
     {
         label: 'Bold',
-        icon: <FormatBold fontSize="small" />,
+        icon: <Bold className="tw:size-4" />,
         group: 'format',
         action: (view) => wrapSelection(view, '**', '**', 'bold'),
     },
     {
         label: 'Italic',
-        icon: <FormatItalic fontSize="small" />,
+        icon: <Italic className="tw:size-4" />,
         group: 'format',
         action: (view) => wrapSelection(view, '*', '*', 'italic'),
     },
     {
         label: 'Link',
-        icon: <InsertLink fontSize="small" />,
+        icon: <Link className="tw:size-4" />,
         group: 'link',
         action: (view) => {
             const { from, to } = view.state.selection.main;
@@ -123,13 +126,13 @@ const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAct
     },
     {
         label: 'Divider',
-        icon: <HorizontalRule fontSize="small" />,
+        icon: <Minus className="tw:size-4" />,
         group: 'divider',
         action: (view) => insertAtCursor(view, '\n---\n'),
     },
     {
         label: 'Table',
-        icon: <TableChart fontSize="small" />,
+        icon: <Table className="tw:size-4" />,
         group: 'table',
         action: (view) =>
             insertAtCursor(
@@ -143,18 +146,7 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
     let lastGroup = '';
 
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                p: 0.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                backgroundColor: 'background.paper',
-            }}
-        >
+        <div className="tw:flex tw:items-center tw:gap-1 tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:p-1">
             {TOOLBAR_ACTIONS.map((item) => {
                 const showDivider = lastGroup !== '' && item.group !== lastGroup;
                 lastGroup = item.group;
@@ -162,30 +154,24 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                 return (
                     <React.Fragment key={item.label}>
                         {showDivider && (
-                            <Divider
-                                orientation="vertical"
-                                flexItem
-                                sx={{ mx: 0.5 }}
-                            />
+                            <Separator orientation="vertical" className="tw:mx-1 tw:h-5" />
                         )}
-                        <Tooltip title={item.label}>
-                            <span>
-                                <IconButton
-                                    size="small"
-                                    disabled={disabled}
-                                    onClick={() => {
-                                        const view = editorViewRef.current;
-                                        if (view) item.action(view);
-                                    }}
-                                >
-                                    {item.icon}
-                                </IconButton>
-                            </span>
-                        </Tooltip>
+                        <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            disabled={disabled}
+                            title={item.label}
+                            onClick={() => {
+                                const view = editorViewRef.current;
+                                if (view) item.action(view);
+                            }}
+                        >
+                            {item.icon}
+                        </Button>
                     </React.Fragment>
                 );
             })}
-        </Box>
+        </div>
     );
 };
 

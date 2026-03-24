@@ -1,36 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Container,
-    Paper,
-    Typography,
-    Box,
-    CircularProgress,
-    Alert,
-    Chip,
-    Button,
-    Collapse,
-    List,
-    ListItem,
-    ListItemText,
-    Divider,
-    IconButton,
-} from '@mui/material';
-import {
-    ExpandMore as ExpandMoreIcon,
-    ExpandLess as ExpandLessIcon,
-    ArrowBack as ArrowBackIcon,
-} from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+    AdminPage,
+    AdminErrorAlert,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
+import { Button } from '@/components/admin/ui/button';
+import { Separator } from '@/components/admin/ui/separator';
 import { useEmailQueueDetailVM } from './useEmailQueueDetailVM';
 import type { QueueStatus } from '../../../../types/email';
 
-const STATUS_CHIP_COLOR: Record<QueueStatus, 'default' | 'info' | 'success' | 'error' | 'warning' | 'secondary'> = {
-    pending: 'default',
-    processing: 'info',
-    sent: 'success',
-    failed: 'error',
-    cancelled: 'warning',
-    retry: 'secondary',
+const STATUS_BADGE_CLASS: Record<QueueStatus, string> = {
+    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
+    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
+    sent: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
+    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
+    cancelled: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
+    retry: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
 };
 
 const formatDateTime = (dateString: string | null): string => {
@@ -52,367 +40,288 @@ const EmailQueueDetail: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', mt: 5 }}>
-                <CircularProgress />
-            </Box>
+            <AdminPage>
+                <AdminLoadingState rows={8} columns={3} />
+            </AdminPage>
         );
     }
 
     if (vm.error) {
         return (
-            <Container sx={{ mt: 4 }}>
-                <Alert severity="error">{vm.error}</Alert>
+            <AdminPage>
+                <AdminErrorAlert message={vm.error} />
                 <Button
-                    startIcon={<ArrowBackIcon />}
+                    variant="ghost"
                     onClick={() => navigate('/admin/email/queue')}
-                    sx={{ mt: 2 }}
+                    className="tw:mt-4"
                 >
+                    <ArrowLeft className="tw:size-4" />
                     Back to Queue
                 </Button>
-            </Container>
+            </AdminPage>
         );
     }
 
     if (!vm.queueItem) {
         return (
-            <Container sx={{ mt: 4 }}>
-                <Alert severity="warning">Queue item not found.</Alert>
+            <AdminPage>
+                <div role="alert" className="tw:rounded-md tw:border tw:border-amber-200 tw:bg-amber-50 tw:p-4 tw:text-sm tw:text-amber-800">
+                    Queue item not found.
+                </div>
                 <Button
-                    startIcon={<ArrowBackIcon />}
+                    variant="ghost"
                     onClick={() => navigate('/admin/email/queue')}
-                    sx={{ mt: 2 }}
+                    className="tw:mt-4"
                 >
+                    <ArrowLeft className="tw:size-4" />
                     Back to Queue
                 </Button>
-            </Container>
+            </AdminPage>
         );
     }
 
     const item = vm.queueItem;
 
     return (
-        <Container sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
-                <IconButton onClick={() => navigate('/admin/email/queue')}>
-                    <ArrowBackIcon />
-                </IconButton>
-                <Typography variant="h4" component="h2">
+        <AdminPage>
+            <div className="tw:mb-6 tw:flex tw:items-center tw:gap-3">
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => navigate('/admin/email/queue')}
+                >
+                    <ArrowLeft className="tw:size-4" />
+                </Button>
+                <h1 className="tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
                     Queue Item Detail
-                </Typography>
-                <Chip
-                    label={item.status}
-                    color={STATUS_CHIP_COLOR[item.status]}
-                    sx={{ ml: 1 }}
-                />
-            </Box>
+                </h1>
+                <Badge variant="outline" className={STATUS_BADGE_CLASS[item.status]}>
+                    {item.status}
+                </Badge>
+            </div>
 
             {/* Section 1: Recipients */}
-            <Paper sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                    Recipients
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            To
-                        </Typography>
-                        <List dense disablePadding>
-                            {item.to_emails.length > 0 ? (
-                                item.to_emails.map((email, index) => (
-                                    <ListItem key={index} disablePadding sx={{ py: 0.25 }}>
-                                        <ListItemText primary={email} primaryTypographyProps={{ variant: 'body2' }} />
-                                    </ListItem>
-                                ))
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">-</Typography>
-                            )}
-                        </List>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            CC
-                        </Typography>
-                        <List dense disablePadding>
-                            {item.cc_emails.length > 0 ? (
-                                item.cc_emails.map((email, index) => (
-                                    <ListItem key={index} disablePadding sx={{ py: 0.25 }}>
-                                        <ListItemText primary={email} primaryTypographyProps={{ variant: 'body2' }} />
-                                    </ListItem>
-                                ))
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">-</Typography>
-                            )}
-                        </List>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            BCC
-                        </Typography>
-                        <List dense disablePadding>
-                            {item.bcc_emails.length > 0 ? (
-                                item.bcc_emails.map((email, index) => (
-                                    <ListItem key={index} disablePadding sx={{ py: 0.25 }}>
-                                        <ListItemText primary={email} primaryTypographyProps={{ variant: 'body2' }} />
-                                    </ListItem>
-                                ))
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">-</Typography>
-                            )}
-                        </List>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            From
-                        </Typography>
-                        <Typography variant="body2">{item.from_email || '-'}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Reply-To
-                        </Typography>
-                        <Typography variant="body2">{item.reply_to_email || '-'}</Typography>
-                    </Box>
-                </Box>
-            </Paper>
+            <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-fg">Recipients</h2>
+                <Separator className="tw:mb-4" />
+                <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-2">
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">To</p>
+                        {item.to_emails.length > 0 ? (
+                            <ul className="tw:mt-1 tw:space-y-0.5">
+                                {item.to_emails.map((email: string, index: number) => (
+                                    <li key={index} className="tw:text-sm">{email}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="tw:mt-1 tw:text-sm tw:text-admin-fg-muted">-</p>
+                        )}
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">CC</p>
+                        {item.cc_emails.length > 0 ? (
+                            <ul className="tw:mt-1 tw:space-y-0.5">
+                                {item.cc_emails.map((email: string, index: number) => (
+                                    <li key={index} className="tw:text-sm">{email}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="tw:mt-1 tw:text-sm tw:text-admin-fg-muted">-</p>
+                        )}
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">BCC</p>
+                        {item.bcc_emails.length > 0 ? (
+                            <ul className="tw:mt-1 tw:space-y-0.5">
+                                {item.bcc_emails.map((email: string, index: number) => (
+                                    <li key={index} className="tw:text-sm">{email}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="tw:mt-1 tw:text-sm tw:text-admin-fg-muted">-</p>
+                        )}
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">From</p>
+                        <p className="tw:mt-1 tw:text-sm">{item.from_email || '-'}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Reply-To</p>
+                        <p className="tw:mt-1 tw:text-sm">{item.reply_to_email || '-'}</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Section 2: Content */}
-            <Paper sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                    Content
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Subject
-                        </Typography>
-                        <Typography variant="body2">{item.subject || '-'}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Template
-                        </Typography>
-                        <Typography variant="body2">{item.template_name || '-'}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Priority
-                        </Typography>
-                        <Chip label={item.priority} size="small" variant="outlined" />
-                    </Box>
-                </Box>
-            </Paper>
+            <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-fg">Content</h2>
+                <Separator className="tw:mb-4" />
+                <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Subject</p>
+                        <p className="tw:mt-1 tw:text-sm">{item.subject || '-'}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Template</p>
+                        <p className="tw:mt-1 tw:text-sm">{item.template_name || '-'}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Priority</p>
+                        <Badge variant="outline" className="tw:mt-1">{item.priority}</Badge>
+                    </div>
+                </div>
+            </div>
 
             {/* Section 3: Status */}
-            <Paper sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                    Status
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Status
-                        </Typography>
-                        <Chip
-                            label={item.status}
-                            color={STATUS_CHIP_COLOR[item.status]}
-                            size="small"
-                        />
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Attempts
-                        </Typography>
-                        <Typography variant="body2">
-                            {item.attempts} / {item.max_attempts}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Scheduled At
-                        </Typography>
-                        <Typography variant="body2">{formatDateTime(item.scheduled_at)}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Sent At
-                        </Typography>
-                        <Typography variant="body2">{formatDateTime(item.sent_at)}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Last Attempt At
-                        </Typography>
-                        <Typography variant="body2">{formatDateTime(item.last_attempt_at)}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Next Retry At
-                        </Typography>
-                        <Typography variant="body2">{formatDateTime(item.next_retry_at)}</Typography>
-                    </Box>
-                </Box>
-            </Paper>
+            <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-fg">Status</h2>
+                <Separator className="tw:mb-4" />
+                <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Status</p>
+                        <Badge variant="outline" className={`tw:mt-1 ${STATUS_BADGE_CLASS[item.status]}`}>
+                            {item.status}
+                        </Badge>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Attempts</p>
+                        <p className="tw:mt-1 tw:text-sm">{item.attempts} / {item.max_attempts}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Scheduled At</p>
+                        <p className="tw:mt-1 tw:text-sm">{formatDateTime(item.scheduled_at)}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Sent At</p>
+                        <p className="tw:mt-1 tw:text-sm">{formatDateTime(item.sent_at)}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Last Attempt At</p>
+                        <p className="tw:mt-1 tw:text-sm">{formatDateTime(item.last_attempt_at)}</p>
+                    </div>
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Next Retry At</p>
+                        <p className="tw:mt-1 tw:text-sm">{formatDateTime(item.next_retry_at)}</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Section 4: Errors (conditional) */}
             {item.error_message && (
-                <Paper sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h6" gutterBottom color="error">
-                        Errors
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Error Message
-                        </Typography>
-                        <Typography variant="body2" sx={{ mb: 2, color: 'error.main' }}>
-                            {item.error_message}
-                        </Typography>
-                    </Box>
+                <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                    <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-destructive">Errors</h2>
+                    <Separator className="tw:mb-4" />
+                    <div>
+                        <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Error Message</p>
+                        <p className="tw:mt-1 tw:mb-3 tw:text-sm tw:text-admin-destructive">{item.error_message}</p>
+                    </div>
                     {item.error_details && Object.keys(item.error_details).length > 0 && (
-                        <Box>
+                        <div>
                             <Button
-                                size="small"
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setShowErrorDetails(!showErrorDetails)}
-                                endIcon={showErrorDetails ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                             >
                                 Error Details
+                                {showErrorDetails ? <ChevronUp className="tw:size-4" /> : <ChevronDown className="tw:size-4" />}
                             </Button>
-                            <Collapse in={showErrorDetails}>
-                                <Box
-                                    component="pre"
-                                    sx={{
-                                        mt: 1,
-                                        p: 2,
-                                        bgcolor: 'grey.100',
-                                        borderRadius: 1,
-                                        overflow: 'auto',
-                                        maxHeight: 300,
-                                        fontSize: '0.75rem',
-                                        fontFamily: 'monospace',
-                                    }}
-                                >
+                            {showErrorDetails && (
+                                <pre className="tw:mt-2 tw:max-h-[300px] tw:overflow-auto tw:rounded-md tw:bg-admin-bg-muted tw:p-3 tw:font-mono tw:text-xs">
                                     {JSON.stringify(item.error_details, null, 2)}
-                                </Box>
-                            </Collapse>
-                        </Box>
+                                </pre>
+                            )}
+                        </div>
                     )}
-                </Paper>
+                </div>
             )}
 
             {/* Section 5: HTML Preview */}
-            <Paper sx={{ p: 3, mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography variant="h6">
-                        HTML Preview
-                    </Typography>
+            <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <div className="tw:flex tw:items-center tw:justify-between">
+                    <h2 className="tw:text-lg tw:font-semibold tw:text-admin-fg">HTML Preview</h2>
                     <Button
-                        size="small"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowHtmlPreview(!showHtmlPreview)}
-                        endIcon={showHtmlPreview ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     >
                         {showHtmlPreview ? 'Hide' : 'Show'}
+                        {showHtmlPreview ? <ChevronUp className="tw:size-4" /> : <ChevronDown className="tw:size-4" />}
                     </Button>
-                </Box>
-                <Collapse in={showHtmlPreview}>
-                    <Divider sx={{ my: 2 }} />
-                    {item.html_content ? (
-                        <Box
-                            sx={{
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                borderRadius: 1,
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <iframe
-                                srcDoc={item.html_content}
-                                title="Email HTML Preview"
-                                style={{
-                                    width: '100%',
-                                    minHeight: 400,
-                                    border: 'none',
-                                }}
-                                sandbox="allow-same-origin allow-scripts"
-                            />
-                        </Box>
-                    ) : (
-                        <Typography variant="body2" color="text.secondary">
-                            No HTML content available.
-                        </Typography>
-                    )}
-                </Collapse>
-            </Paper>
+                </div>
+                {showHtmlPreview && (
+                    <>
+                        <Separator className="tw:my-3" />
+                        {item.html_content ? (
+                            <div className="tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border">
+                                <iframe
+                                    srcDoc={item.html_content}
+                                    title="Email HTML Preview"
+                                    style={{
+                                        width: '100%',
+                                        minHeight: 400,
+                                        border: 'none',
+                                    }}
+                                    sandbox="allow-same-origin allow-scripts"
+                                />
+                            </div>
+                        ) : (
+                            <p className="tw:text-sm tw:text-admin-fg-muted">
+                                No HTML content available.
+                            </p>
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* Section 6: Context */}
-            <Paper sx={{ p: 3, mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography variant="h6">
-                        Email Context
-                    </Typography>
+            <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <div className="tw:flex tw:items-center tw:justify-between">
+                    <h2 className="tw:text-lg tw:font-semibold tw:text-admin-fg">Email Context</h2>
                     <Button
-                        size="small"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowContext(!showContext)}
-                        endIcon={showContext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     >
                         {showContext ? 'Hide' : 'Show'}
+                        {showContext ? <ChevronUp className="tw:size-4" /> : <ChevronDown className="tw:size-4" />}
                     </Button>
-                </Box>
-                <Collapse in={showContext}>
-                    <Divider sx={{ my: 2 }} />
-                    {item.email_context && Object.keys(item.email_context).length > 0 ? (
-                        <Box
-                            component="pre"
-                            sx={{
-                                p: 2,
-                                bgcolor: 'grey.100',
-                                borderRadius: 1,
-                                overflow: 'auto',
-                                maxHeight: 400,
-                                fontSize: '0.75rem',
-                                fontFamily: 'monospace',
-                            }}
-                        >
-                            {JSON.stringify(item.email_context, null, 2)}
-                        </Box>
-                    ) : (
-                        <Typography variant="body2" color="text.secondary">
-                            No context data available.
-                        </Typography>
-                    )}
-                </Collapse>
-            </Paper>
+                </div>
+                {showContext && (
+                    <>
+                        <Separator className="tw:my-3" />
+                        {item.email_context && Object.keys(item.email_context).length > 0 ? (
+                            <pre className="tw:max-h-[400px] tw:overflow-auto tw:rounded-md tw:bg-admin-bg-muted tw:p-3 tw:font-mono tw:text-xs">
+                                {JSON.stringify(item.email_context, null, 2)}
+                            </pre>
+                        ) : (
+                            <p className="tw:text-sm tw:text-admin-fg-muted">
+                                No context data available.
+                            </p>
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* Duplicated From Link */}
             {item.duplicated_from && (
-                <Paper sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                        Duplicated From
-                    </Typography>
-                    <Button
-                        component={Link}
-                        to={`/admin/email/queue/${item.duplicated_from}`}
-                        variant="text"
-                        size="small"
-                    >
-                        View Original (ID: {item.duplicated_from})
+                <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                    <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Duplicated From</p>
+                    <Button variant="link" size="sm" asChild className="tw:mt-1 tw:px-0">
+                        <Link to={`/admin/email/queue/${item.duplicated_from}`}>
+                            View Original (ID: {item.duplicated_from})
+                        </Link>
                     </Button>
-                </Paper>
+                </div>
             )}
 
             {/* Back Button */}
-            <Box sx={{ mt: 3 }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate('/admin/email/queue')}
-                >
+            <div className="tw:mt-6">
+                <Button variant="outline" onClick={() => navigate('/admin/email/queue')}>
+                    <ArrowLeft className="tw:size-4" />
                     Back to Queue
                 </Button>
-            </Box>
-        </Container>
+            </div>
+        </AdminPage>
     );
 };
 

@@ -1,29 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AdminPage, AdminErrorAlert, AdminLoadingState, AdminFormField, AdminSelect } from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import { Input } from '@/components/admin/ui/input';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/admin/ui/tabs';
 import {
-    Container,
-    Typography,
-    Box,
-    TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    FormControlLabel,
-    Checkbox,
-    Button,
-    Alert,
-    CircularProgress,
-    Tabs,
-    Tab,
-    Paper,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
+    TableHeader,
     TableRow,
-} from '@mui/material';
+} from '@/components/admin/ui/table';
 import type { TemplateType, Priority } from '../../../../types/email';
 import useEmailTemplateFormVM from './useEmailTemplateFormVM';
 import EmailTemplateMjmlEditor from './EmailTemplateMjmlEditor';
@@ -49,324 +39,260 @@ const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
     { value: 'urgent', label: 'Urgent' },
 ];
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
-    <div role="tabpanel" hidden={value !== index}>
-        {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-);
-
 const EmailTemplateForm: React.FC = () => {
     const navigate = useNavigate();
     const vm = useEmailTemplateFormVM();
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', mt: 5 }}>
-                <CircularProgress />
-            </Box>
+            <AdminPage>
+                <AdminLoadingState rows={8} columns={2} />
+            </AdminPage>
         );
     }
 
     return (
-        <Container sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" component="h2">
+        <AdminPage>
+            <div className="tw:mb-6 tw:flex tw:items-center tw:justify-between">
+                <h1 className="tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
                     {vm.isEditMode ? 'Edit Email Template' : 'New Email Template'}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={vm.handleSubmit}
-                        disabled={vm.isSubmitting}
-                    >
+                </h1>
+                <div className="tw:flex tw:gap-2">
+                    <Button onClick={vm.handleSubmit} disabled={vm.isSubmitting}>
                         {vm.isSubmitting ? 'Saving...' : 'Save'}
                     </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={() => navigate('/admin/email/templates')}
-                    >
+                    <Button variant="outline" onClick={() => navigate('/admin/email/templates')}>
                         Cancel
                     </Button>
-                </Box>
-            </Box>
+                </div>
+            </div>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
-            <Paper sx={{ px: 2 }}>
-                <Tabs
-                    value={vm.activeTab}
-                    onChange={(_e, newValue) => vm.setActiveTab(newValue)}
-                    sx={{ borderBottom: 1, borderColor: 'divider' }}
-                >
-                    <Tab label="General" />
-                    <Tab label="MJML Editor" />
-                    <Tab label="Attachments" />
-                    <Tab label="Content Rules" />
-                </Tabs>
+            <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:px-4">
+                <Tabs value={vm.activeTab} onValueChange={(v) => vm.setActiveTab(v)}>
+                    <TabsList>
+                        <TabsTrigger>General</TabsTrigger>
+                        <TabsTrigger>MJML Editor</TabsTrigger>
+                        <TabsTrigger>Attachments</TabsTrigger>
+                        <TabsTrigger>Content Rules</TabsTrigger>
+                    </TabsList>
 
-                {/* General Tab */}
-                <TabPanel value={vm.activeTab} index={0}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                        <TextField
-                            label="Name"
-                            value={vm.formData.name || ''}
-                            onChange={(e) => vm.handleChange('name', e.target.value)}
-                            fullWidth
-                            required
-                        />
-                        <TextField
-                            label="Display Name"
-                            value={vm.formData.display_name || ''}
-                            onChange={(e) => vm.handleChange('display_name', e.target.value)}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Subject Template"
-                            value={vm.formData.subject_template || ''}
-                            onChange={(e) => vm.handleChange('subject_template', e.target.value)}
-                            fullWidth
-                            helperText="Supports {{placeholders}} for dynamic content"
-                        />
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <FormControl fullWidth>
-                                <InputLabel>Template Type</InputLabel>
-                                <Select
-                                    value={vm.formData.template_type || 'custom'}
-                                    label="Template Type"
-                                    onChange={(e) => vm.handleChange('template_type', e.target.value)}
-                                >
-                                    {TEMPLATE_TYPE_CHOICES.map((choice) => (
-                                        <MenuItem key={choice.value} value={choice.value}>
-                                            {choice.label}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            <FormControl fullWidth>
-                                <InputLabel>Default Priority</InputLabel>
-                                <Select
-                                    value={vm.formData.default_priority || 'normal'}
-                                    label="Default Priority"
-                                    onChange={(e) => vm.handleChange('default_priority', e.target.value)}
-                                >
-                                    {PRIORITY_CHOICES.map((choice) => (
-                                        <MenuItem key={choice.value} value={choice.value}>
-                                            {choice.label}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Box>
-                        <TextField
-                            label="From Email"
-                            value={vm.formData.from_email || ''}
-                            onChange={(e) => vm.handleChange('from_email', e.target.value)}
-                            fullWidth
-                            type="email"
-                        />
-                        <TextField
-                            label="Reply-To Email"
-                            value={vm.formData.reply_to_email || ''}
-                            onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
-                            fullWidth
-                            type="email"
-                        />
+                    {/* General Tab */}
+                    <TabsContent value={vm.activeTab} index={0}>
+                        <div className="tw:space-y-5">
+                            <AdminFormField label="Name" required>
+                                <Input
+                                    value={vm.formData.name || ''}
+                                    onChange={(e) => vm.handleChange('name', e.target.value)}
+                                />
+                            </AdminFormField>
 
-                        {!vm.formData.is_master && (
-                            <FormControl fullWidth>
-                                <InputLabel>Closing Salutation</InputLabel>
-                                <Select
-                                    value={vm.formData.closing_salutation ?? ''}
-                                    label="Closing Salutation"
-                                    onChange={(e) => vm.handleChange('closing_salutation', String(e.target.value) === '' ? null : Number(e.target.value))}
-                                >
-                                    <MenuItem value="">
-                                        <em>None</em>
-                                    </MenuItem>
-                                    {vm.salutations.map((sal) => (
-                                        <MenuItem key={sal.id} value={sal.id}>
-                                            {sal.display_name} — "{sal.sign_off_text}, {sal.signature_type === 'team' ? sal.team_signature : 'Staff'}"
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <AdminFormField label="Display Name">
+                                <Input
+                                    value={vm.formData.display_name || ''}
+                                    onChange={(e) => vm.handleChange('display_name', e.target.value)}
+                                />
+                            </AdminFormField>
+
+                            <AdminFormField label="Subject Template" description="Supports {{placeholders}} for dynamic content">
+                                <Input
+                                    value={vm.formData.subject_template || ''}
+                                    onChange={(e) => vm.handleChange('subject_template', e.target.value)}
+                                />
+                            </AdminFormField>
+
+                            <div className="tw:flex tw:gap-4">
+                                <div className="tw:flex-1">
+                                    <AdminFormField label="Template Type">
+                                        <AdminSelect
+                                            options={TEMPLATE_TYPE_CHOICES.map(c => ({ value: c.value, label: c.label }))}
+                                            value={vm.formData.template_type || 'custom'}
+                                            onChange={(v) => vm.handleChange('template_type', v)}
+                                        />
+                                    </AdminFormField>
+                                </div>
+                                <div className="tw:flex-1">
+                                    <AdminFormField label="Default Priority">
+                                        <AdminSelect
+                                            options={PRIORITY_CHOICES.map(c => ({ value: c.value, label: c.label }))}
+                                            value={vm.formData.default_priority || 'normal'}
+                                            onChange={(v) => vm.handleChange('default_priority', v)}
+                                        />
+                                    </AdminFormField>
+                                </div>
+                            </div>
+
+                            <AdminFormField label="From Email">
+                                <Input
+                                    type="email"
+                                    value={vm.formData.from_email || ''}
+                                    onChange={(e) => vm.handleChange('from_email', e.target.value)}
+                                />
+                            </AdminFormField>
+
+                            <AdminFormField label="Reply-To Email">
+                                <Input
+                                    type="email"
+                                    value={vm.formData.reply_to_email || ''}
+                                    onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
+                                />
+                            </AdminFormField>
+
+                            {!vm.formData.is_master && (
+                                <AdminFormField label="Closing Salutation">
+                                    <AdminSelect
+                                        options={[
+                                            { value: '', label: 'None' },
+                                            ...vm.salutations.map((sal) => ({
+                                                value: String(sal.id),
+                                                label: `${sal.display_name} — "${sal.sign_off_text}, ${sal.signature_type === 'team' ? sal.team_signature : 'Staff'}"`,
+                                            })),
+                                        ]}
+                                        value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : ''}
+                                        onChange={(v) => vm.handleChange('closing_salutation', v === '' ? null : Number(v))}
+                                    />
+                                </AdminFormField>
+                            )}
+
+                            <div className="tw:flex tw:flex-wrap tw:gap-4">
+                                {[
+                                    { key: 'use_master_template', label: 'Use Master Template', defaultVal: true },
+                                    { key: 'enable_tracking', label: 'Enable Tracking', defaultVal: false },
+                                    { key: 'enable_queue', label: 'Enable Queue', defaultVal: true },
+                                    { key: 'enhance_outlook_compatibility', label: 'Enhance Outlook Compatibility', defaultVal: false },
+                                    { key: 'is_master', label: 'Master Component', defaultVal: false },
+                                    { key: 'is_active', label: 'Active', defaultVal: true },
+                                ].map(({ key, label, defaultVal }) => (
+                                    <div key={key} className="tw:flex tw:items-center tw:gap-2">
+                                        <Checkbox
+                                            id={`cb-${key}`}
+                                            checked={(vm.formData as any)[key] ?? defaultVal}
+                                            onCheckedChange={(checked) => vm.handleChange(key as any, Boolean(checked))}
+                                        />
+                                        <Label htmlFor={`cb-${key}`}>{label}</Label>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="tw:flex tw:gap-4">
+                                <div className="tw:w-48">
+                                    <AdminFormField label="Max Retry Attempts">
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            max={10}
+                                            value={vm.formData.max_retry_attempts ?? 3}
+                                            onChange={(e) => vm.handleChange('max_retry_attempts', parseInt(e.target.value, 10) || 0)}
+                                        />
+                                    </AdminFormField>
+                                </div>
+                                <div className="tw:w-48">
+                                    <AdminFormField label="Retry Delay (minutes)">
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            max={1440}
+                                            value={vm.formData.retry_delay_minutes ?? 5}
+                                            onChange={(e) => vm.handleChange('retry_delay_minutes', parseInt(e.target.value, 10) || 0)}
+                                        />
+                                    </AdminFormField>
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    {/* MJML Editor Tab */}
+                    <TabsContent value={vm.activeTab} index={1}>
+                        {vm.isEditMode && vm.formData.id ? (
+                            <EmailTemplateMjmlEditor
+                                templateId={vm.formData.id}
+                                initialContent={vm.formData.mjml_content || ''}
+                                initialBasicModeContent={vm.formData.basic_mode_content || ''}
+                            />
+                        ) : (
+                            <div role="alert" className="tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-800">
+                                Save the template first to enable the MJML editor.
+                            </div>
                         )}
+                    </TabsContent>
 
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.use_master_template ?? true}
-                                        onChange={(e) => vm.handleChange('use_master_template', e.target.checked)}
-                                    />
-                                }
-                                label="Use Master Template"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.enable_tracking ?? false}
-                                        onChange={(e) => vm.handleChange('enable_tracking', e.target.checked)}
-                                    />
-                                }
-                                label="Enable Tracking"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.enable_queue ?? true}
-                                        onChange={(e) => vm.handleChange('enable_queue', e.target.checked)}
-                                    />
-                                }
-                                label="Enable Queue"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.enhance_outlook_compatibility ?? false}
-                                        onChange={(e) => vm.handleChange('enhance_outlook_compatibility', e.target.checked)}
-                                    />
-                                }
-                                label="Enhance Outlook Compatibility"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.is_master ?? false}
-                                        onChange={(e) => vm.handleChange('is_master', e.target.checked)}
-                                    />
-                                }
-                                label="Master Component"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={vm.formData.is_active ?? true}
-                                        onChange={(e) => vm.handleChange('is_active', e.target.checked)}
-                                    />
-                                }
-                                label="Active"
-                            />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <TextField
-                                label="Max Retry Attempts"
-                                value={vm.formData.max_retry_attempts ?? 3}
-                                onChange={(e) => vm.handleChange('max_retry_attempts', parseInt(e.target.value, 10) || 0)}
-                                type="number"
-                                inputProps={{ min: 0, max: 10 }}
-                                sx={{ width: 200 }}
-                            />
-                            <TextField
-                                label="Retry Delay (minutes)"
-                                value={vm.formData.retry_delay_minutes ?? 5}
-                                onChange={(e) => vm.handleChange('retry_delay_minutes', parseInt(e.target.value, 10) || 0)}
-                                type="number"
-                                inputProps={{ min: 0, max: 1440 }}
-                                sx={{ width: 200 }}
-                            />
-                        </Box>
-                    </Box>
-                </TabPanel>
-
-                {/* MJML Editor Tab */}
-                <TabPanel value={vm.activeTab} index={1}>
-                    {vm.isEditMode && vm.formData.id ? (
-                        <EmailTemplateMjmlEditor
-                            templateId={vm.formData.id}
-                            initialContent={vm.formData.mjml_content || ''}
-                            initialBasicModeContent={vm.formData.basic_mode_content || ''}
-                        />
-                    ) : (
-                        <Alert severity="info">
-                            Save the template first to enable the MJML editor.
-                        </Alert>
-                    )}
-                </TabPanel>
-
-                {/* Attachments Tab */}
-                <TabPanel value={vm.activeTab} index={2}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Template Attachments
-                    </Typography>
-                    <TableContainer component={Paper} variant="outlined">
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Attachment</TableCell>
-                                    <TableCell>Required</TableCell>
-                                    <TableCell>Order</TableCell>
-                                    <TableCell>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {vm.formData.attachments && vm.formData.attachments.length > 0 ? (
-                                    vm.formData.attachments.map((ta) => (
-                                        <TableRow key={ta.id}>
-                                            <TableCell>{ta.attachment.display_name}</TableCell>
-                                            <TableCell>{ta.is_required ? 'Yes' : 'No'}</TableCell>
-                                            <TableCell>{ta.order}</TableCell>
-                                            <TableCell>-</TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
+                    {/* Attachments Tab */}
+                    <TabsContent value={vm.activeTab} index={2}>
+                        <h3 className="tw:mb-3 tw:text-base tw:font-semibold tw:text-admin-fg">
+                            Template Attachments
+                        </h3>
+                        <div className="tw:rounded-md tw:border tw:border-admin-border">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={4} align="center">
-                                            No attachments configured. This feature will be enhanced in a future update.
-                                        </TableCell>
+                                        <TableHead>Attachment</TableHead>
+                                        <TableHead>Required</TableHead>
+                                        <TableHead>Order</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </TabPanel>
-
-                {/* Content Rules Tab */}
-                <TabPanel value={vm.activeTab} index={3}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Template Content Rules
-                    </Typography>
-                    <TableContainer component={Paper} variant="outlined">
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Content Rule</TableCell>
-                                    <TableCell>Enabled</TableCell>
-                                    <TableCell>Priority</TableCell>
-                                    <TableCell>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {vm.formData.template_content_rules && vm.formData.template_content_rules.length > 0 ? (
-                                    vm.formData.template_content_rules.map((tcr) => (
-                                        <TableRow key={tcr.id}>
-                                            <TableCell>{tcr.content_rule.name}</TableCell>
-                                            <TableCell>{tcr.is_enabled ? 'Yes' : 'No'}</TableCell>
-                                            <TableCell>{tcr.effective_priority}</TableCell>
-                                            <TableCell>-</TableCell>
+                                </TableHeader>
+                                <TableBody>
+                                    {vm.formData.attachments && vm.formData.attachments.length > 0 ? (
+                                        vm.formData.attachments.map((ta: any) => (
+                                            <TableRow key={ta.id}>
+                                                <TableCell>{ta.attachment.display_name}</TableCell>
+                                                <TableCell>{ta.is_required ? 'Yes' : 'No'}</TableCell>
+                                                <TableCell>{ta.order}</TableCell>
+                                                <TableCell>-</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="tw:text-center tw:text-admin-fg-muted">
+                                                No attachments configured. This feature will be enhanced in a future update.
+                                            </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TabsContent>
+
+                    {/* Content Rules Tab */}
+                    <TabsContent value={vm.activeTab} index={3}>
+                        <h3 className="tw:mb-3 tw:text-base tw:font-semibold tw:text-admin-fg">
+                            Template Content Rules
+                        </h3>
+                        <div className="tw:rounded-md tw:border tw:border-admin-border">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={4} align="center">
-                                            No content rules configured. This feature will be enhanced in a future update.
-                                        </TableCell>
+                                        <TableHead>Content Rule</TableHead>
+                                        <TableHead>Enabled</TableHead>
+                                        <TableHead>Priority</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </TabPanel>
-            </Paper>
-        </Container>
+                                </TableHeader>
+                                <TableBody>
+                                    {vm.formData.template_content_rules && vm.formData.template_content_rules.length > 0 ? (
+                                        vm.formData.template_content_rules.map((tcr: any) => (
+                                            <TableRow key={tcr.id}>
+                                                <TableCell>{tcr.content_rule.name}</TableCell>
+                                                <TableCell>{tcr.is_enabled ? 'Yes' : 'No'}</TableCell>
+                                                <TableCell>{tcr.effective_priority}</TableCell>
+                                                <TableCell>-</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="tw:text-center tw:text-admin-fg-muted">
+                                                No content rules configured. This feature will be enhanced in a future update.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </AdminPage>
     );
 };
 
