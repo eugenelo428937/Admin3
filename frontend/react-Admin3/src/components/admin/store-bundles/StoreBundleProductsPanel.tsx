@@ -1,8 +1,14 @@
 import React from 'react';
+import { AdminErrorAlert } from '@/components/admin/composed';
 import {
-  Table, TableBody, TableCell, TableHead, TableRow,
-  Box, Typography, CircularProgress, Alert
-} from '@mui/material';
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/admin/ui/table';
+import { Skeleton } from '@/components/admin/ui/skeleton';
 import useStoreBundleProductsPanelVM from './useStoreBundleProductsPanelVM';
 
 interface StoreBundleProductsPanelProps {
@@ -14,41 +20,39 @@ const StoreBundleProductsPanel: React.FC<StoreBundleProductsPanelProps> = ({ bun
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-                <CircularProgress />
-            </Box>
+            <div className="tw:p-4 tw:space-y-2">
+                <Skeleton className="tw:h-6 tw:w-40" />
+                <Skeleton className="tw:h-8 tw:w-full" />
+                <Skeleton className="tw:h-8 tw:w-full" />
+            </div>
         );
     }
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+        <div className="tw:p-4">
+            <h3 className="tw:mb-2 tw:text-sm tw:font-semibold tw:text-admin-fg">
                 Bundle Products
-            </Typography>
+            </h3>
 
-            {vm.error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                    {vm.error}
-                </Alert>
-            )}
+            <AdminErrorAlert message={vm.error} />
 
             {vm.bundleProducts.length === 0 && !vm.error ? (
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                <p className="tw:mb-2 tw:text-sm tw:text-admin-fg-muted">
                     No products in this bundle
-                </Typography>
+                </p>
             ) : (
-                <Table size="small" sx={{ mb: 2 }}>
-                    <TableHead>
+                <Table className="tw:mb-4">
+                    <TableHeader>
                         <TableRow>
-                            <TableCell>Product Code</TableCell>
-                            <TableCell>Product Name</TableCell>
-                            <TableCell>Variation</TableCell>
-                            <TableCell>Variation Type</TableCell>
-                            <TableCell>Price Type</TableCell>
-                            <TableCell>Qty</TableCell>
-                            <TableCell>Sort Order</TableCell>
+                            <TableHead>Product Code</TableHead>
+                            <TableHead>Product Name</TableHead>
+                            <TableHead>Variation</TableHead>
+                            <TableHead>Variation Type</TableHead>
+                            <TableHead>Price Type</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Sort Order</TableHead>
                         </TableRow>
-                    </TableHead>
+                    </TableHeader>
                     <TableBody>
                         {vm.bundleProducts.map((bp) => (
                             <TableRow key={bp.id}>
@@ -64,7 +68,7 @@ const StoreBundleProductsPanel: React.FC<StoreBundleProductsPanelProps> = ({ bun
                     </TableBody>
                 </Table>
             )}
-        </Box>
+        </div>
     );
 };
 

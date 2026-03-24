@@ -2,8 +2,7 @@ import { vi } from 'vitest';
 // src/components/admin/store-bundles/__tests__/StoreBundleForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import AdminStoreBundleForm from '../StoreBundleForm.js';
+import AdminStoreBundleForm from '../StoreBundleForm.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -55,11 +54,8 @@ import storeBundleService from '../../../../services/storeBundleService';
 import catalogBundleService from '../../../../services/catalogBundleService';
 import examSessionSubjectService from '../../../../services/examSessionSubjectService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -80,11 +76,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminStoreBundleForm />
-    </ThemeProvider>
-  );
+  return render(<AdminStoreBundleForm />);
 };
 
 describe('AdminStoreBundleForm', () => {
