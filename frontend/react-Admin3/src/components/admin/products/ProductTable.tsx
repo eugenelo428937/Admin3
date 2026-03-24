@@ -1,108 +1,123 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronDown, ChevronUp, MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/admin/ui/button';
 import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Button, Paper, Box, IconButton, Collapse,
-} from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/admin/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/admin/ui/dropdown-menu';
+import { AdminBadge } from '@/components/admin/composed';
 import ProductVariationsPanel from './ProductVariationsPanel.tsx';
 import type { Product } from '../../../types/product';
 
 interface ProductTableProps {
-    products: Product[];
-    onDelete: (id: number | string) => Promise<void>;
+  products: Product[];
+  onDelete: (id: number | string) => Promise<void>;
 }
 
 const AdminProductTable: React.FC<ProductTableProps> = ({ products, onDelete }) => {
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-    const handleToggleExpand = (productId: number) => {
-        setExpandedId((prev) => (prev === productId ? null : productId));
-    };
+  const handleToggleExpand = (productId: number) => {
+    setExpandedId((prev) => (prev === productId ? null : productId));
+  };
 
-    return (
-        <TableContainer component={Paper}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell sx={{ width: 50 }} />
-                        <TableCell>Code</TableCell>
-                        <TableCell>Full Name</TableCell>
-                        <TableCell>Short Name</TableCell>
-                        <TableCell>Description</TableCell>
-                        <TableCell>Active</TableCell>
-                        <TableCell>Buy Both</TableCell>
-                        <TableCell>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {products.map((product) => (
-                        <React.Fragment key={product.id}>
-                            <TableRow hover>
-                                <TableCell>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => handleToggleExpand(product.id)}
-                                        aria-label={expandedId === product.id ? `Collapse variations for ${product.code}` : `Expand variations for ${product.code}`}
-                                    >
-                                        {expandedId === product.id
-                                            ? <KeyboardArrowUpIcon />
-                                            : <KeyboardArrowDownIcon />}
-                                    </IconButton>
-                                </TableCell>
-                                <TableCell>{product.code}</TableCell>
-                                <TableCell>{product.fullname}</TableCell>
-                                <TableCell>{product.shortname}</TableCell>
-                                <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {product.description || '-'}
-                                </TableCell>
-                                <TableCell>{product.is_active ? 'Active' : 'Inactive'}</TableCell>
-                                <TableCell>{product.buy_both ? 'Yes' : 'No'}</TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <Button
-                                            component={Link}
-                                            to={`/admin/products/${product.id}`}
-                                            variant="contained"
-                                            color="info"
-                                            size="small"
-                                        >
-                                            View
-                                        </Button>
-                                        <Button
-                                            component={Link}
-                                            to={`/admin/products/${product.id}/edit`}
-                                            variant="contained"
-                                            color="warning"
-                                            size="small"
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            size="small"
-                                            onClick={() => onDelete(product.id)}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </Box>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow aria-hidden={expandedId !== product.id}>
-                                <TableCell sx={{ py: 0 }} colSpan={8}>
-                                    <Collapse in={expandedId === product.id} timeout="auto" unmountOnExit>
-                                        <ProductVariationsPanel productId={product.id} />
-                                    </Collapse>
-                                </TableCell>
-                            </TableRow>
-                        </React.Fragment>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-    );
+  return (
+    <div className="tw:rounded-admin tw:border tw:border-admin-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="tw:w-[50px]" />
+            <TableHead>Code</TableHead>
+            <TableHead>Full Name</TableHead>
+            <TableHead>Short Name</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Active</TableHead>
+            <TableHead>Buy Both</TableHead>
+            <TableHead className="tw:w-[50px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product) => (
+            <React.Fragment key={product.id}>
+              <TableRow>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => handleToggleExpand(product.id)}
+                    aria-label={
+                      expandedId === product.id
+                        ? `Collapse variations for ${product.code}`
+                        : `Expand variations for ${product.code}`
+                    }
+                  >
+                    {expandedId === product.id ? (
+                      <ChevronUp className="tw:h-4 tw:w-4" />
+                    ) : (
+                      <ChevronDown className="tw:h-4 tw:w-4" />
+                    )}
+                  </Button>
+                </TableCell>
+                <TableCell>{product.code}</TableCell>
+                <TableCell>{product.fullname}</TableCell>
+                <TableCell>{product.shortname}</TableCell>
+                <TableCell className="tw:max-w-[200px] tw:overflow-hidden tw:text-ellipsis tw:whitespace-nowrap">
+                  {product.description || '-'}
+                </TableCell>
+                <TableCell>{product.is_active ? 'Active' : 'Inactive'}</TableCell>
+                <TableCell>{product.buy_both ? 'Yes' : 'No'}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon-sm" aria-label="Open menu">
+                        <MoreHorizontal className="tw:h-4 tw:w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to={`/admin/products/${product.id}`}>
+                          <Eye className="tw:mr-2 tw:h-4 tw:w-4" /> View
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to={`/admin/products/${product.id}/edit`}>
+                          <Pencil className="tw:mr-2 tw:h-4 tw:w-4" /> Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="tw:text-admin-destructive"
+                        onClick={() => onDelete(product.id)}
+                      >
+                        <Trash2 className="tw:mr-2 tw:h-4 tw:w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+              {expandedId === product.id && (
+                <TableRow>
+                  <TableCell colSpan={8} className="tw:p-0">
+                    <ProductVariationsPanel productId={product.id} />
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 export default AdminProductTable;
