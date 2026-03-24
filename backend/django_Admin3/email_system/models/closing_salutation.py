@@ -10,17 +10,23 @@ class ClosingSalutation(models.Model):
         ('staff', 'Staff'),
     ]
 
-    STAFF_NAME_FORMAT_CHOICES = [
-        ('full_name', 'Full Name'),
-        ('first_name', 'First Name Only'),
-    ]
-
     name = models.CharField(max_length=100, unique=True, help_text="Salutation identifier")
     display_name = models.CharField(max_length=200, help_text="Human-readable name")
-    sign_off_text = models.CharField(max_length=200, default='Kind Regards', help_text="Sign-off line, e.g. 'Kind Regards'")
+    sign_off_text = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        help_text="Sign-off line. Falls back to team's default_sign_off_text if blank.",
+    )
     signature_type = models.CharField(max_length=10, choices=SIGNATURE_TYPE_CHOICES, default='team')
-    team_signature = models.CharField(max_length=200, blank=True, help_text="Team name when signature_type is 'team'")
-    staff_name_format = models.CharField(max_length=20, choices=STAFF_NAME_FORMAT_CHOICES, default='full_name', help_text="How staff names are displayed")
+    team = models.ForeignKey(
+        'staff.Team',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='closing_salutations',
+        help_text="Team used when signature_type is 'team'",
+    )
 
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,27 +41,41 @@ class ClosingSalutation(models.Model):
     def __str__(self):
         return f"{self.display_name} ({self.signature_type})"
 
+    def get_sign_off_text(self):
+        """Return sign-off text with fallback chain."""
+        if self.sign_off_text:
+            return self.sign_off_text
+        if self.signature_type == 'team' and self.team and self.team.default_sign_off_text:
+            return self.team.default_sign_off_text
+        return 'Kind Regards'
+
     def render_mjml(self):
         """Generate the MJML snippet for this closing salutation."""
-        if self.signature_type == 'team':
-            name_lines = f'<b>{escape(self.team_signature)}</b><br/>' if self.team_signature else ''
+        sign_off = self.get_sign_off_text()
+
+        if self.signature_type == 'team' and self.team:
+            name_lines = f'<b>{escape(self.team.display_name)}</b><br/>'
         else:
             staff_entries = self.staff_members.select_related('staff__user').order_by('display_order')
             lines = []
             for entry in staff_entries:
-                user = entry.staff.user
-                if self.staff_name_format == 'first_name':
+                staff_obj = entry.staff
+                user = staff_obj.user
+                if staff_obj.name_format == 'first_name':
                     name = escape(user.first_name)
                 else:
                     name = escape(user.get_full_name() or user.username)
-                lines.append(f'<b>{name}</b><br/>')
+                line = f'<b>{name}</b><br/>'
+                if staff_obj.show_job_title and staff_obj.job_title:
+                    line += f'{escape(staff_obj.job_title)}<br/>'
+                lines.append(line)
             name_lines = '\n      '.join(lines)
 
         return (
             '<mj-section background-color="#ffffff">\n'
             '  <mj-column width="100%" padding="0" background-color="#ffffff">\n'
             '    <mj-text align="left" css-class="signature-section" padding="12px 24px">\n'
-            f'      {escape(self.sign_off_text)},<br/>\n'
+            f'      {escape(sign_off)},<br/>\n'
             f'      {name_lines}\n'
             '    </mj-text>\n'
             '  </mj-column>\n'

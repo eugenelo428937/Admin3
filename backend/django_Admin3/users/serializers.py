@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
-from tutorials.models import Staff
+from staff.models import Staff
 
 
 # =============================================================================

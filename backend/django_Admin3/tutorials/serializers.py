@@ -7,9 +7,10 @@ Updated 2026-02-05: Added TutorialSessionsSerializer for sessions API.
 Updated 2026-02-06: Added FK serializers for instructor, venue, location.
 """
 from rest_framework import serializers
+from staff.models import Staff
 from .models import (
     TutorialEvents, TutorialSessions,
-    TutorialCourseTemplate, Staff, TutorialInstructor,
+    TutorialCourseTemplate, TutorialInstructor,
     TutorialLocation, TutorialVenue,
 )
 
