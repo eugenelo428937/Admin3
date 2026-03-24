@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/prices/__tests__/PriceForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminPriceForm from '../PriceForm.js';
 
 // Mock useAuth
@@ -46,11 +45,9 @@ vi.mock('../../../../services/storeProductService', () => ({
 import priceService from '../../../../services/priceService';
 import storeProductService from '../../../../services/storeProductService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
+
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -67,11 +64,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminPriceForm />
-    </ThemeProvider>
-  );
+  return render(<AdminPriceForm />);
 };
 
 describe('AdminPriceForm', () => {
