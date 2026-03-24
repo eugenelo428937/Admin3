@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import AdminSubjectList from '../SubjectList.tsx';
 
@@ -25,9 +25,6 @@ vi.mock('../../../../services/subjectService', () => ({
 
 import subjectService from '../../../../services/subjectService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockSubjects = [
   {
     id: '1',
@@ -46,9 +43,7 @@ const mockSubjects = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminSubjectList />
-      </ThemeProvider>
+      <AdminSubjectList />
     </BrowserRouter>
   );
 };
@@ -77,14 +72,15 @@ describe('AdminSubjectList', () => {
       (subjectService.list as any).mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows Skeleton loading state instead of data
+      expect(screen.queryByText('CM2')).not.toBeInTheDocument();
     });
 
     test('renders add new subject button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new subject/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new subject/i })).toBeInTheDocument();
       });
     });
 
@@ -92,7 +88,7 @@ describe('AdminSubjectList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /upload subject/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /upload subject/i })).toBeInTheDocument();
       });
     });
 
@@ -103,7 +99,6 @@ describe('AdminSubjectList', () => {
         expect(screen.getByText('Code')).toBeInTheDocument();
         expect(screen.getByText('Description')).toBeInTheDocument();
         expect(screen.getByText('Status')).toBeInTheDocument();
-        expect(screen.getByText('Actions')).toBeInTheDocument();
       });
     });
   });
@@ -128,36 +123,38 @@ describe('AdminSubjectList', () => {
       });
     });
 
-    test('displays view buttons for each subject', async () => {
+    test('displays action menus for each subject', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const viewButtons = screen.getAllByRole('link', { name: /view/i });
-        expect(viewButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 
-    test('displays edit buttons for each subject', async () => {
+    test('displays action items in dropdown menu', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
-        expect(editButtons).toHaveLength(2);
+        expect(screen.getByText('CM2')).toBeInTheDocument();
       });
-    });
 
-    test('displays delete buttons for each subject', async () => {
-      renderComponent();
+      // Open the first row's dropdown menu
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-        expect(deleteButtons).toHaveLength(2);
+        expect(screen.getByRole('menuitem', { name: /view/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /edit/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
     });
   });
 
   describe('delete functionality', () => {
-    test('calls delete when delete button clicked and confirmed', async () => {
+    test('calls delete when delete menu item clicked and confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       (subjectService.delete as any).mockResolvedValue({});
 
@@ -167,8 +164,15 @@ describe('AdminSubjectList', () => {
         expect(screen.getByText('CM2')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open dropdown menu for first row
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this subject?');
@@ -177,6 +181,7 @@ describe('AdminSubjectList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -185,8 +190,15 @@ describe('AdminSubjectList', () => {
         expect(screen.getByText('CM2')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open dropdown menu for first row
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       expect(subjectService.delete).not.toHaveBeenCalled();
     });
@@ -204,6 +216,7 @@ describe('AdminSubjectList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       (subjectService.delete as any).mockRejectedValueOnce(new Error('Delete error'));
 
@@ -213,8 +226,15 @@ describe('AdminSubjectList', () => {
         expect(screen.getByText('CM2')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-      fireEvent.click(deleteButtons[0]);
+      // Open dropdown menu for first row
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete subject/i)).toBeInTheDocument();
@@ -230,26 +250,6 @@ describe('AdminSubjectList', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/no subjects found/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('links', () => {
-    test('add new subject links to correct path', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new subject/i });
-        expect(link).toHaveAttribute('href', '/admin/subjects/new');
-      });
-    });
-
-    test('upload subject links to correct path', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const link = screen.getByRole('link', { name: /upload subject/i });
-        expect(link).toHaveAttribute('href', '/admin/subjects/import');
       });
     });
   });
