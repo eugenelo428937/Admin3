@@ -36,6 +36,25 @@ vi.mock('./components/styleguide/MaterialThemeVisualizer.js', () => ({ __esModul
 vi.mock('./components/Footer', () => ({ __esModule: true, default: () => <footer data-testid="footer">Footer</footer> }));
 vi.mock('./pages/Cart.tsx', () => ({ __esModule: true, default: () => <div data-testid="cart-page">Cart</div> }));
 
+// Note: AdminLayout is wrapped in React.lazy. Vitest's vi.mock cannot intercept
+// dynamic import() used by React.lazy. Admin route tests need longer timeouts
+// and the real AdminLayout to resolve. Mock its dependencies instead.
+vi.mock('./hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: () => ({ isSuperuser: true, isLoading: false, isAuthenticated: true }),
+  AuthProvider: ({ children }) => children,
+}));
+vi.mock('./hooks/useAuth.tsx', () => ({
+  __esModule: true,
+  useAuth: () => ({ isSuperuser: true, isLoading: false, isAuthenticated: true }),
+  AuthProvider: ({ children }) => children,
+}));
+vi.mock('./components/admin/styles/admin.css', () => ({}));
+vi.mock('./components/admin/layout/AdminSidebar', () => ({
+  __esModule: true,
+  AdminSidebar: () => null,
+}));
+
 // Mock admin components
 vi.mock('./components/admin/exam-sessions/ExamSessionList.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-sessions">Exam Sessions</div> }));
 vi.mock('./components/admin/exam-sessions/ExamSessionForm.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-exam-session-form">Exam Session Form</div> }));
@@ -127,7 +146,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 2000 });
     });
 
     test('renders home page at /home', async () => {
@@ -139,7 +158,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 2000 });
     });
 
     test('renders products page at /products', async () => {
@@ -263,7 +282,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('admin-exam-sessions')).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     test('renders admin subjects at admin/subjects', async () => {
@@ -275,7 +294,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('admin-subjects')).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     test('renders admin products at admin/products', async () => {
@@ -287,7 +306,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('admin-products')).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
   });
 
@@ -329,7 +348,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 2000 });
     });
 
     test('renders with reCAPTCHA key', async () => {
@@ -343,7 +362,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 2000 });
     });
   });
 
@@ -359,7 +378,7 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 2000 });
     });
   });
 });

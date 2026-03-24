@@ -72,8 +72,8 @@ const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-b
 // Admin: New Session Setup wizard
 const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.tsx"));
 
-// Admin: Layout shell (shadcn/ui)
-const AdminLayout = React.lazy(() => import("./components/admin/layout/AdminLayout"));
+// Admin: Layout shell (shadcn/ui) — not lazy-loaded since it's the wrapper for all admin routes
+import AdminLayout from "./components/admin/layout/AdminLayout";
 
 // Admin: Users & Staff (US5)
 const AdminUserProfileList = React.lazy(() => import("./components/admin/user-profiles/UserProfileList.tsx"));
