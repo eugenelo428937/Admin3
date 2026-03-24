@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/staff/__tests__/StaffForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminStaffForm from '../StaffForm.tsx';
 
 // Mock useAuth
@@ -37,11 +36,9 @@ vi.mock('../../../../services/staffService', () => ({
 
 import staffService from '../../../../services/staffService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
+
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -53,11 +50,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminStaffForm />
-    </ThemeProvider>
-  );
+  return render(<AdminStaffForm />);
 };
 
 describe('AdminStaffForm', () => {
