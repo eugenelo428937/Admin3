@@ -19,7 +19,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from administrate.models import Instructor
-from tutorials.models import Staff, TutorialInstructor
+from staff.models import Staff
+from tutorials.models import TutorialInstructor
 from userprofile.models import UserProfile
 
 

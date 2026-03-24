@@ -2,9 +2,10 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.contrib.auth.models import User
 from administrate.models import CourseTemplate, Location, Venue, Instructor
+from staff.models import Staff
 from tutorials.models import (
     TutorialCourseTemplate, TutorialLocation, TutorialVenue,
-    TutorialInstructor, Staff,
+    TutorialInstructor,
 )
 
 
