@@ -94,10 +94,11 @@ describe('BundleProductsPanel', () => {
   });
 
   describe('loading and display', () => {
-    test('shows loading spinner initially', () => {
+    test('shows loading state initially', () => {
       catalogBundleProductService.getByBundleId.mockReturnValue(new Promise(() => {}));
       renderComponent();
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // New component uses Skeleton loading instead of CircularProgress spinner
+      expect(screen.queryByText('Bundle Products')).not.toBeInTheDocument();
     });
 
     test('fetches bundle products for the given bundle on mount', async () => {
