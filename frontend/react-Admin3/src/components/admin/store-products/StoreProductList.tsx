@@ -1,53 +1,64 @@
 import React from 'react';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Button, Container, Alert, Paper, Typography, Box, CircularProgress,
-    TablePagination, IconButton, Collapse,
-} from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Link, Navigate } from 'react-router-dom';
-import StoreProductVariationsPanel from './StoreProductVariationsPanel.tsx';
+    AdminPage,
+    AdminPageHeader,
+    AdminErrorAlert,
+    AdminEmptyState,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/admin/ui/table';
 import useStoreProductListVM from './useStoreProductListVM';
+import StoreProductVariationsPanel from './StoreProductVariationsPanel.tsx';
 
 const COL_COUNT = 5;
 
 const AdminStoreProductList: React.FC = () => {
     const vm = useStoreProductListVM();
+    const navigate = useNavigate();
 
     if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography variant="h4" component="h2">Store Products</Typography>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        {vm.totalCount} store product{vm.totalCount !== 1 ? 's' : ''} total
-                    </Typography>
-                    <Button component={Link} to="/admin/store-products/new" variant="contained">
-                        Add New Store Product
-                    </Button>
-                </Box>
-            </Box>
+        <AdminPage>
+            <AdminPageHeader
+                title="Store Products"
+                description={`${vm.totalCount} store product${vm.totalCount !== 1 ? 's' : ''} total`}
+                actions={[
+                    {
+                        label: 'Add New Store Product',
+                        icon: Plus,
+                        onClick: () => navigate('/admin/store-products/new'),
+                    },
+                ]}
+            />
+            <AdminErrorAlert message={vm.error} />
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            {vm.pageProducts.length === 0 && !vm.error ? (
-                <Alert severity="info">No store products found.</Alert>
+            {vm.loading ? (
+                <AdminLoadingState rows={5} columns={COL_COUNT} />
+            ) : vm.pageProducts.length === 0 && !vm.error ? (
+                <AdminEmptyState title="No store products found" />
             ) : (
-                <TableContainer component={Paper}>
+                <div className="tw:rounded-admin tw:border tw:border-admin-border">
                     <Table>
-                        <TableHead>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell sx={{ width: 50 }} />
-                                <TableCell>Product Code</TableCell>
-                                <TableCell>Product Name</TableCell>
-                                <TableCell>Variations</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableHead className="tw:w-[50px]" />
+                                <TableHead>Product Code</TableHead>
+                                <TableHead>Product Name</TableHead>
+                                <TableHead>Variations</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
-                        </TableHead>
+                        </TableHeader>
                         <TableBody>
                             {vm.sortedSessions.map((sessionCode) => {
                                 const subjects = vm.groupedData[sessionCode];
@@ -58,155 +69,206 @@ const AdminStoreProductList: React.FC = () => {
                                 return (
                                     <React.Fragment key={sessionCode}>
                                         <TableRow
-                                            sx={{ cursor: 'pointer' }}
+                                            className="tw:cursor-pointer"
                                             onClick={() => vm.toggleSession(sessionCode)}
                                         >
                                             <TableCell
                                                 colSpan={COL_COUNT}
-                                                sx={{
-                                                    bgcolor: 'primary.main',
-                                                    color: 'primary.contrastText',
-                                                    py: 0.75,
-                                                }}
+                                                className="tw:bg-admin-primary tw:text-white tw:py-2"
                                             >
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        sx={{ color: 'inherit', p: 0.25 }}
-                                                        aria-label={sessionExpanded
-                                                            ? `Collapse session ${sessionCode}`
-                                                            : `Expand session ${sessionCode}`}
+                                                <div className="tw:flex tw:items-center tw:gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        className="tw:text-white tw:hover:bg-white/20 tw:hover:text-white tw:p-0.5"
+                                                        aria-label={
+                                                            sessionExpanded
+                                                                ? `Collapse session ${sessionCode}`
+                                                                : `Expand session ${sessionCode}`
+                                                        }
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            vm.toggleSession(sessionCode);
+                                                        }}
                                                     >
-                                                        {sessionExpanded
-                                                            ? <KeyboardArrowUpIcon fontSize="small" />
-                                                            : <KeyboardArrowDownIcon fontSize="small" />}
-                                                    </IconButton>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'inherit' }}>
+                                                        {sessionExpanded ? (
+                                                            <ChevronUp className="tw:h-4 tw:w-4" />
+                                                        ) : (
+                                                            <ChevronDown className="tw:h-4 tw:w-4" />
+                                                        )}
+                                                    </Button>
+                                                    <span className="tw:text-sm tw:font-bold">
                                                         Exam Session: {sessionCode}
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{ color: 'inherit', opacity: 0.8 }}>
-                                                        ({sortedSubjects.length} subject{sortedSubjects.length !== 1 ? 's' : ''}, {sessionProductCount} product{sessionProductCount !== 1 ? 's' : ''})
-                                                    </Typography>
-                                                </Box>
+                                                    </span>
+                                                    <span className="tw:text-xs tw:opacity-80">
+                                                        ({sortedSubjects.length} subject{sortedSubjects.length !== 1 ? 's' : ''},{' '}
+                                                        {sessionProductCount} product{sessionProductCount !== 1 ? 's' : ''})
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
 
-                                        {sessionExpanded && sortedSubjects.map((subjectCode) => {
-                                            const products = subjects[subjectCode];
-                                            const subjectKey = `${sessionCode}-${subjectCode}`;
-                                            const subjectExpanded = !!vm.expandedSubjects[subjectKey];
-                                            const sortedProducts = Object.values(products)
-                                                .sort((a, b) => (a.catalog_product_code || '').localeCompare(b.catalog_product_code || ''));
-                                            const subjectProductCount = vm.countSubjectProducts(products);
+                                        {sessionExpanded &&
+                                            sortedSubjects.map((subjectCode) => {
+                                                const products = subjects[subjectCode];
+                                                const subjectKey = `${sessionCode}-${subjectCode}`;
+                                                const subjectExpanded = !!vm.expandedSubjects[subjectKey];
+                                                const sortedProducts = Object.values(products).sort(
+                                                    (a: any, b: any) =>
+                                                        (a.catalog_product_code || '').localeCompare(
+                                                            b.catalog_product_code || ''
+                                                        )
+                                                ) as any[];
+                                                const subjectProductCount = vm.countSubjectProducts(products);
 
-                                            return (
-                                                <React.Fragment key={subjectKey}>
-                                                    <TableRow
-                                                        sx={{ cursor: 'pointer' }}
-                                                        onClick={() => vm.toggleSubject(subjectKey)}
-                                                    >
-                                                        <TableCell
-                                                            colSpan={COL_COUNT}
-                                                            sx={{
-                                                                bgcolor: 'grey.100',
-                                                                py: 0.5,
-                                                                pl: 4,
-                                                            }}
+                                                return (
+                                                    <React.Fragment key={subjectKey}>
+                                                        <TableRow
+                                                            className="tw:cursor-pointer"
+                                                            onClick={() => vm.toggleSubject(subjectKey)}
                                                         >
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    sx={{ p: 0.25 }}
-                                                                    aria-label={subjectExpanded
-                                                                        ? `Collapse subject ${subjectCode}`
-                                                                        : `Expand subject ${subjectCode}`}
-                                                                >
-                                                                    {subjectExpanded
-                                                                        ? <KeyboardArrowUpIcon fontSize="small" />
-                                                                        : <KeyboardArrowDownIcon fontSize="small" />}
-                                                                </IconButton>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                                                    Subject: {subjectCode}
-                                                                </Typography>
-                                                                <Typography variant="caption" color="text.secondary">
-                                                                    ({sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''}, {subjectProductCount} variation{subjectProductCount !== 1 ? 's' : ''})
-                                                                </Typography>
-                                                            </Box>
-                                                        </TableCell>
-                                                    </TableRow>
-
-                                                    {subjectExpanded && sortedProducts.map((product) => {
-                                                        const expandKey = `${sessionCode}-${subjectCode}-${product.catalog_product_id}`;
-
-                                                        return (
-                                                            <React.Fragment key={expandKey}>
-                                                                <TableRow hover>
-                                                                    <TableCell>
-                                                                        <IconButton
-                                                                            size="small"
-                                                                            onClick={() => vm.toggleProduct(expandKey)}
-                                                                            aria-label={vm.expandedProduct === expandKey
-                                                                                ? `Collapse variations for ${product.catalog_product_code}`
-                                                                                : `Expand variations for ${product.catalog_product_code}`}
-                                                                        >
-                                                                            {vm.expandedProduct === expandKey
-                                                                                ? <KeyboardArrowUpIcon />
-                                                                                : <KeyboardArrowDownIcon />}
-                                                                        </IconButton>
-                                                                    </TableCell>
-                                                                    <TableCell>{product.catalog_product_code || '-'}</TableCell>
-                                                                    <TableCell>{product.product_name || '-'}</TableCell>
-                                                                    <TableCell>{product.variations.length}</TableCell>
-                                                                    <TableCell>
-                                                                        {product.catalog_product_id && (
-                                                                            <Button
-                                                                                component={Link}
-                                                                                to={`/admin/products/${product.catalog_product_id}`}
-                                                                                variant="contained"
-                                                                                color="info"
-                                                                                size="small"
-                                                                            >
-                                                                                View
-                                                                            </Button>
+                                                            <TableCell
+                                                                colSpan={COL_COUNT}
+                                                                className="tw:bg-gray-100 tw:py-1.5 tw:pl-8"
+                                                            >
+                                                                <div className="tw:flex tw:items-center tw:gap-2">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon-sm"
+                                                                        className="tw:p-0.5"
+                                                                        aria-label={
+                                                                            subjectExpanded
+                                                                                ? `Collapse subject ${subjectCode}`
+                                                                                : `Expand subject ${subjectCode}`
+                                                                        }
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            vm.toggleSubject(subjectKey);
+                                                                        }}
+                                                                    >
+                                                                        {subjectExpanded ? (
+                                                                            <ChevronUp className="tw:h-4 tw:w-4" />
+                                                                        ) : (
+                                                                            <ChevronDown className="tw:h-4 tw:w-4" />
                                                                         )}
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                                <TableRow aria-hidden={vm.expandedProduct !== expandKey}>
-                                                                    <TableCell sx={{ py: 0 }} colSpan={COL_COUNT}>
-                                                                        <Collapse in={vm.expandedProduct === expandKey} timeout="auto" unmountOnExit>
-                                                                            <StoreProductVariationsPanel
-                                                                                storeProducts={product.variations}
-                                                                                onRefresh={vm.fetchProducts}
-                                                                            />
-                                                                        </Collapse>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            </React.Fragment>
-                                                        );
-                                                    })}
-                                                </React.Fragment>
-                                            );
-                                        })}
+                                                                    </Button>
+                                                                    <span className="tw:text-sm tw:font-bold">
+                                                                        Subject: {subjectCode}
+                                                                    </span>
+                                                                    <span className="tw:text-xs tw:text-admin-fg-muted">
+                                                                        ({sortedProducts.length} product{sortedProducts.length !== 1 ? 's' : ''},{' '}
+                                                                        {subjectProductCount} variation{subjectProductCount !== 1 ? 's' : ''})
+                                                                    </span>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+
+                                                        {subjectExpanded &&
+                                                            sortedProducts.map((product: any) => {
+                                                                const expandKey = `${sessionCode}-${subjectCode}-${product.catalog_product_id}`;
+
+                                                                return (
+                                                                    <React.Fragment key={expandKey}>
+                                                                        <TableRow className="tw:hover:bg-gray-50">
+                                                                            <TableCell>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon-sm"
+                                                                                    onClick={() =>
+                                                                                        vm.toggleProduct(expandKey)
+                                                                                    }
+                                                                                    aria-label={
+                                                                                        vm.expandedProduct === expandKey
+                                                                                            ? `Collapse variations for ${product.catalog_product_code}`
+                                                                                            : `Expand variations for ${product.catalog_product_code}`
+                                                                                    }
+                                                                                >
+                                                                                    {vm.expandedProduct === expandKey ? (
+                                                                                        <ChevronUp className="tw:h-4 tw:w-4" />
+                                                                                    ) : (
+                                                                                        <ChevronDown className="tw:h-4 tw:w-4" />
+                                                                                    )}
+                                                                                </Button>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                {product.catalog_product_code || '-'}
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                {product.product_name || '-'}
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                {product.variations.length}
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                {product.catalog_product_id && (
+                                                                                    <Button
+                                                                                        asChild
+                                                                                        variant="outline"
+                                                                                        size="sm"
+                                                                                    >
+                                                                                        <Link
+                                                                                            to={`/admin/products/${product.catalog_product_id}`}
+                                                                                        >
+                                                                                            View
+                                                                                        </Link>
+                                                                                    </Button>
+                                                                                )}
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                        {vm.expandedProduct === expandKey && (
+                                                                            <TableRow>
+                                                                                <TableCell
+                                                                                    colSpan={COL_COUNT}
+                                                                                    className="tw:p-0"
+                                                                                >
+                                                                                    <StoreProductVariationsPanel
+                                                                                        storeProducts={product.variations}
+                                                                                        onRefresh={vm.fetchProducts}
+                                                                                    />
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        )}
+                                                                    </React.Fragment>
+                                                                );
+                                                            })}
+                                                    </React.Fragment>
+                                                );
+                                            })}
                                     </React.Fragment>
                                 );
                             })}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </div>
             )}
 
             {vm.totalCount > vm.rowsPerPage && (
-                <TablePagination
-                    component="div"
-                    count={vm.totalCount}
-                    page={vm.page}
-                    onPageChange={vm.handleChangePage}
-                    rowsPerPage={vm.rowsPerPage}
-                    onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                    rowsPerPageOptions={[50, 100, 200, 400]}
-                />
+                <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:text-sm tw:text-admin-fg-muted">
+                    <span>
+                        Showing {vm.page * vm.rowsPerPage + 1}&ndash;
+                        {Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
+                    </span>
+                    <div className="tw:flex tw:items-center tw:gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
+                            disabled={vm.page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
+                            disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
             )}
-        </Container>
+        </AdminPage>
     );
 };
 

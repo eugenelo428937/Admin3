@@ -1,99 +1,117 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-    TextField, Button, Container, Alert, Box, Typography,
-    FormControl, FormLabel, Checkbox, FormControlLabel,
-    Select, MenuItem, CircularProgress,
-} from '@mui/material';
+    AdminPage,
+    AdminFormLayout,
+    AdminFormField,
+    AdminSelect,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
 import useStoreProductFormVM from './useStoreProductFormVM';
 
 const AdminStoreProductForm: React.FC = () => {
     const vm = useStoreProductFormVM();
 
     if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+
+    if (vm.loading) {
+        return (
+            <AdminPage>
+                <AdminLoadingState rows={4} columns={1} />
+            </AdminPage>
+        );
+    }
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                {vm.isEditMode ? 'Edit Store Product' : 'Add New Store Product'}
-            </Typography>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            <Box component="form" onSubmit={vm.handleSubmit}>
+        <AdminPage>
+            <AdminFormLayout
+                title={vm.isEditMode ? 'Edit Store Product' : 'Add New Store Product'}
+                onSubmit={vm.handleSubmit}
+                onCancel={vm.handleCancel}
+                error={vm.error}
+                submitLabel={
+                    vm.isEditMode ? 'Update Store Product' : 'Create Store Product'
+                }
+            >
                 {vm.isEditMode && vm.formData.product_code && (
-                    <FormControl fullWidth sx={{ mb: 3 }}>
-                        <FormLabel>Product Code</FormLabel>
-                        <TextField
+                    <AdminFormField label="Product Code">
+                        <Input
                             name="product_code"
                             value={vm.formData.product_code}
-                            fullWidth
                             disabled
-                            helperText="Product code is auto-generated and cannot be changed"
+                            readOnly
                         />
-                    </FormControl>
+                        <p className="tw:mt-1 tw:text-xs tw:text-admin-fg-muted">
+                            Product code is auto-generated and cannot be changed
+                        </p>
+                    </AdminFormField>
                 )}
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Exam Session Subject</FormLabel>
-                    <Select
-                        name="exam_session_subject"
-                        value={vm.formData.exam_session_subject}
-                        onChange={vm.handleChange as any}
-                        displayEmpty
-                        fullWidth
-                    >
-                        <MenuItem value="" disabled>Select an exam session subject</MenuItem>
-                        {vm.examSessionSubjects.map((ess: any) => (
-                            <MenuItem key={ess.id} value={ess.id}>
-                                {ess.subject_code || ess.subject?.code || ''} - {ess.session_code || ess.exam_session?.session_code || ''} (ID: {ess.id})
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Product Product Variation</FormLabel>
-                    <Select
-                        name="product_product_variation"
-                        value={vm.formData.product_product_variation}
-                        onChange={vm.handleChange as any}
-                        displayEmpty
-                        fullWidth
-                    >
-                        <MenuItem value="" disabled>Select a product product variation</MenuItem>
-                        {vm.productProductVariations.map((ppv: any) => (
-                            <MenuItem key={ppv.id} value={ppv.id}>
-                                {ppv.product_code || ppv.product?.code || ''} - {ppv.variation_code || ppv.product_variation?.code || ''} (ID: {ppv.id})
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="is_active"
-                                checked={vm.formData.is_active}
-                                onChange={vm.handleChange}
-                            />
-                        }
-                        label="Is Active"
+                <AdminFormField label="Exam Session Subject">
+                    <AdminSelect
+                        value={String(vm.formData.exam_session_subject || '')}
+                        onChange={(value) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'exam_session_subject',
+                                    value,
+                                    type: 'select',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
+                        placeholder="Select an exam session subject"
+                        options={vm.examSessionSubjects.map((ess: any) => ({
+                            value: String(ess.id),
+                            label: `${ess.subject_code || ess.subject?.code || ''} - ${ess.session_code || ess.exam_session?.session_code || ''} (ID: ${ess.id})`,
+                        }))}
                     />
-                </FormControl>
+                </AdminFormField>
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" type="submit">
-                        {vm.isEditMode ? 'Update Store Product' : 'Create Store Product'}
-                    </Button>
-                    <Button variant="outlined" onClick={vm.handleCancel}>
-                        Cancel
-                    </Button>
-                </Box>
-            </Box>
-        </Container>
+                <AdminFormField label="Product Product Variation">
+                    <AdminSelect
+                        value={String(vm.formData.product_product_variation || '')}
+                        onChange={(value) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'product_product_variation',
+                                    value,
+                                    type: 'select',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
+                        placeholder="Select a product product variation"
+                        options={vm.productProductVariations.map((ppv: any) => ({
+                            value: String(ppv.id),
+                            label: `${ppv.product_code || ppv.product?.code || ''} - ${ppv.variation_code || ppv.product_variation?.code || ''} (ID: ${ppv.id})`,
+                        }))}
+                    />
+                </AdminFormField>
+
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_active"
+                        checked={vm.formData.is_active}
+                        onCheckedChange={(checked) => {
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'is_active',
+                                    type: 'checkbox',
+                                    checked: Boolean(checked),
+                                    value: '',
+                                },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            vm.handleChange(syntheticEvent);
+                        }}
+                    />
+                    <Label htmlFor="is_active">Is Active</Label>
+                </div>
+            </AdminFormLayout>
+        </AdminPage>
     );
 };
 
