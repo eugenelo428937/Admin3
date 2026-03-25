@@ -7,6 +7,10 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface MachineLoginCredentials {
+  machine_token: string;
+}
+
 export interface AuthUser {
   id: number;
   email: string;
