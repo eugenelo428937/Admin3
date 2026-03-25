@@ -6,11 +6,10 @@ import {
     AdminFormField,
     AdminSelect,
     AdminLoadingState,
+    AdminCheckboxField,
 } from '@/components/admin/composed';
 import { Input } from '@/components/admin/ui/input';
 import { Textarea } from '@/components/admin/ui/textarea';
-import { Checkbox } from '@/components/admin/ui/checkbox';
-import { Label } from '@/components/admin/ui/label';
 import useProductBundleFormVM from './useProductBundleFormVM';
 
 const AdminProductBundleForm: React.FC = () => {
@@ -84,43 +83,19 @@ const AdminProductBundleForm: React.FC = () => {
                     />
                 </AdminFormField>
 
-                <div className="tw:flex tw:items-center tw:gap-2">
-                    <Checkbox
-                        id="is_featured"
-                        checked={vm.formData.is_featured}
-                        onCheckedChange={(checked) => {
-                            const syntheticEvent = {
-                                target: {
-                                    name: 'is_featured',
-                                    type: 'checkbox',
-                                    checked: Boolean(checked),
-                                    value: '',
-                                },
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            vm.handleChange(syntheticEvent);
-                        }}
-                    />
-                    <Label htmlFor="is_featured">Featured</Label>
-                </div>
+                <AdminCheckboxField
+                    name="is_featured"
+                    label="Featured"
+                    checked={vm.formData.is_featured}
+                    onChange={vm.handleChange}
+                />
 
-                <div className="tw:flex tw:items-center tw:gap-2">
-                    <Checkbox
-                        id="is_active"
-                        checked={vm.formData.is_active}
-                        onCheckedChange={(checked) => {
-                            const syntheticEvent = {
-                                target: {
-                                    name: 'is_active',
-                                    type: 'checkbox',
-                                    checked: Boolean(checked),
-                                    value: '',
-                                },
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            vm.handleChange(syntheticEvent);
-                        }}
-                    />
-                    <Label htmlFor="is_active">Active</Label>
-                </div>
+                <AdminCheckboxField
+                    name="is_active"
+                    label="Active"
+                    checked={vm.formData.is_active}
+                    onChange={vm.handleChange}
+                />
 
                 <AdminFormField label="Display Order">
                     <Input
