@@ -75,8 +75,10 @@ describe('AdminProductTable', () => {
     test('displays active status correctly', () => {
       renderComponent();
 
-      expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Inactive')).toBeInTheDocument();
+      // AdminBadge renders a checkmark SVG for active, nothing for inactive
+      const rows = screen.getAllByRole('row').slice(1); // skip header
+      expect(rows[0].querySelector('svg')).toBeInTheDocument(); // active product has checkmark
+      expect(rows[1].querySelector('svg')).toBeNull(); // inactive product has no checkmark
       expect(screen.getByText('Yes')).toBeInTheDocument();
       expect(screen.getByText('No')).toBeInTheDocument();
     });

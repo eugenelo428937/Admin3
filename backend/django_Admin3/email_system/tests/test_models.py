@@ -49,7 +49,7 @@ class EmailTemplateModelTest(TestCase):
         valid_types = [c[0] for c in EmailTemplate.TEMPLATE_TYPES]
         self.assertIn('order_confirmation', valid_types)
         self.assertIn('password_reset', valid_types)
-        self.assertIn('custom', valid_types)
+        self.assertIn('email_verification', valid_types)
 
     def test_priority_choices(self):
         valid_priorities = [c[0] for c in EmailTemplate.PRIORITY_LEVELS]
