@@ -10,12 +10,7 @@ class EmailTemplate(models.Model):
         ('password_reset', 'Password Reset'),
         ('password_reset_completed', 'Password Reset Completed'),
         ('account_activation', 'Account Activation'),
-        ('welcome', 'Welcome Email'),
-        ('reminder', 'Reminder Email'),
-        ('notification', 'System Notification'),
-        ('marketing', 'Marketing Email'),
-        ('support', 'Support Email'),
-        ('custom', 'Custom Email'),
+        ('email_verification', 'Email Verification'),
     ]
 
     PRIORITY_LEVELS = [
