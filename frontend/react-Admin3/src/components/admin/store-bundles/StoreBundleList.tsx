@@ -66,7 +66,7 @@ const AdminStoreBundleList: React.FC = () => {
                         <TableBody>
                             {vm.storeBundles.map((bundle) => (
                                 <React.Fragment key={bundle.id}>
-                                    <TableRow className="tw:hover:bg-gray-50">
+                                    <TableRow className="tw:hover:bg-muted/50">
                                         <TableCell>
                                             <Button
                                                 variant="ghost"
