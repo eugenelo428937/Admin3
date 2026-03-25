@@ -11,7 +11,6 @@ import {
     AdminToggleGroup,
 } from '@/components/admin/composed';
 import type { SimpleColumn } from '@/components/admin/composed';
-import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
 import useEmailTemplateListVM from './useEmailTemplateListVM';
 import type { TemplateType } from '../../../../types/email';
@@ -23,13 +22,7 @@ const TEMPLATE_TYPE_OPTIONS: { value: TemplateType | 'all'; label: string }[] = 
     { value: 'password_reset', label: 'Password Reset' },
     { value: 'password_reset_completed', label: 'Password Reset Completed' },
     { value: 'account_activation', label: 'Account Activation' },
-    { value: 'newsletter', label: 'Newsletter' },
-    { value: 'welcome', label: 'Welcome' },
-    { value: 'reminder', label: 'Reminder' },
-    { value: 'notification', label: 'Notification' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'support', label: 'Support' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'email_verification', label: 'Email Verification' },
 ];
 
 const MASTER_FILTER_OPTIONS: { value: MasterFilter; label: string }[] = [
@@ -50,19 +43,9 @@ const EmailTemplateList: React.FC = () => {
     }
 
     const columns: SimpleColumn<any>[] = [
-        { key: 'name', header: 'Name' },
         { key: 'display_name', header: 'Display Name' },
-        { key: 'template_type', header: 'Type' },
         { key: 'subject_template', header: 'Subject' },
         { key: 'default_priority', header: 'Priority' },
-        {
-            key: 'is_master',
-            header: 'Master',
-            render: (value: boolean) =>
-                value ? (
-                    <Badge variant="secondary">Master</Badge>
-                ) : null,
-        },
         {
             key: 'is_active',
             header: 'Active',

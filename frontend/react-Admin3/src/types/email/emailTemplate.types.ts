@@ -1,6 +1,6 @@
 import type { ClosingSalutationList } from './closingSalutation.types';
 
-export type TemplateType = 'order_confirmation' | 'password_reset' | 'password_reset_completed' | 'account_activation' | 'newsletter' | 'welcome' | 'reminder' | 'notification' | 'marketing' | 'support' | 'custom';
+export type TemplateType = 'order_confirmation' | 'password_reset' | 'password_reset_completed' | 'account_activation' | 'email_verification';
 
 export type Priority = 'low' | 'normal' | 'high' | 'urgent';
 
