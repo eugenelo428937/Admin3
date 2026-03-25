@@ -76,6 +76,7 @@ const EmailContentRuleList: React.FC = () => {
         {
             key: 'is_active',
             header: 'Active',
+            align: 'center',
             render: (value: boolean) => <AdminBadge active={value} />,
         },
     ];
