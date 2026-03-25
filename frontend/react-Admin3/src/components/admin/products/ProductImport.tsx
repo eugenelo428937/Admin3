@@ -27,7 +27,7 @@ const AdminProductImport: React.FC = () => {
 
       {vm.error && (
         <div
-          className="tw:mb-4 tw:rounded-admin tw:border tw:border-admin-destructive/20 tw:bg-admin-destructive/5 tw:px-4 tw:py-3 tw:text-sm tw:text-admin-destructive"
+          className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-destructive/20 tw:bg-admin-destructive/5 tw:px-4 tw:py-3 tw:text-sm tw:text-admin-destructive"
           role="alert"
         >
           {vm.error}
@@ -35,14 +35,14 @@ const AdminProductImport: React.FC = () => {
       )}
       {vm.success && (
         <div
-          className="tw:mb-4 tw:rounded-admin tw:border tw:border-admin-success/20 tw:bg-admin-success/5 tw:px-4 tw:py-3 tw:text-sm tw:text-admin-success"
+          className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-success/20 tw:bg-admin-success/5 tw:px-4 tw:py-3 tw:text-sm tw:text-admin-success"
           role="alert"
         >
           {vm.success}
         </div>
       )}
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6 tw:space-y-4">
+      <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6 tw:space-y-4">
         <div>
           <label className="tw:block tw:text-sm tw:font-medium tw:text-admin-fg tw:mb-2">
             Upload CSV File
@@ -61,7 +61,7 @@ const AdminProductImport: React.FC = () => {
         {vm.preview.length > 0 && (
           <div>
             <h3 className="tw:text-base tw:font-semibold tw:text-admin-fg tw:mb-2">Preview</h3>
-            <div className="tw:rounded-admin tw:border tw:border-admin-border">
+            <div className="tw:rounded-md tw:border tw:border-admin-border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -102,7 +102,7 @@ const AdminProductImport: React.FC = () => {
         </div>
       </div>
 
-      <div className="tw:mt-6 tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg-muted tw:p-6">
+      <div className="tw:mt-6 tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg-muted tw:p-6">
         <h3 className="tw:text-base tw:font-semibold tw:text-admin-fg tw:mb-2">CSV Format Guide</h3>
         <p className="tw:text-sm tw:text-admin-fg-muted tw:mb-3">Your CSV file should follow this format:</p>
         <pre className="tw:rounded tw:bg-admin-bg-subtle tw:p-3 tw:border tw:border-admin-border tw:overflow-x-auto tw:text-xs tw:font-mono tw:text-admin-fg">

@@ -48,7 +48,7 @@ const AdminStoreProductList: React.FC = () => {
             ) : vm.pageProducts.length === 0 && !vm.error ? (
                 <AdminEmptyState title="No store products found" />
             ) : (
-                <div className="tw:rounded-admin tw:border tw:border-admin-border">
+                <div className="tw:rounded-md tw:border tw:border-admin-border">
                     <Table>
                         <TableHeader>
                             <TableRow>

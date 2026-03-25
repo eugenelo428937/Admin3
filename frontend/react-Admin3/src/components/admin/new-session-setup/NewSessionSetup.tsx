@@ -38,14 +38,14 @@ const NewSessionSetup: React.FC = () => {
       </h1>
 
       {/* Step indicator */}
-      <div className="tw:mb-6 tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card tw:p-4">
+      <div className="tw:mb-6 tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-card tw:p-4">
         <div className="tw:flex tw:items-center tw:gap-2">
           {STEPS.map((step, i) => (
             <React.Fragment key={i}>
               {i > 0 && <div className="tw:h-px tw:flex-1 tw:bg-admin-border" />}
               <div
                 className={cn(
-                  'tw:flex tw:items-center tw:gap-2 tw:rounded-admin tw:px-3 tw:py-1.5 tw:text-sm',
+                  'tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-1.5 tw:text-sm',
                   activeStep === i
                     ? 'tw:bg-admin-primary tw:text-admin-primary-fg'
                     : activeStep > i

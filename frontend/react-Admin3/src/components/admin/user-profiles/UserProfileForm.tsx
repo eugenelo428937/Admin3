@@ -114,7 +114,7 @@ const AdminUserProfileForm: React.FC = () => {
         <div
           role="status"
           className={cn(
-            'tw:mb-4 tw:rounded-admin tw:border tw:p-4 tw:text-sm',
+            'tw:mb-4 tw:rounded-md tw:border tw:p-4 tw:text-sm',
             snackbar.severity === 'success' && 'tw:border-green-200 tw:bg-green-50 tw:text-green-800',
             snackbar.severity === 'error' && 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
             snackbar.severity === 'warning' && 'tw:border-yellow-200 tw:bg-yellow-50 tw:text-yellow-800',
@@ -135,7 +135,7 @@ const AdminUserProfileForm: React.FC = () => {
         </div>
       )}
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-surface tw:p-6">
+      <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-surface tw:p-6">
         {/* Step indicator */}
         <div className="tw:mb-6 tw:flex tw:items-center tw:gap-2">
           {ADMIN_STEPS.map((step, i) => {
@@ -149,7 +149,7 @@ const AdminUserProfileForm: React.FC = () => {
                   type="button"
                   onClick={() => setActiveStep(i)}
                   className={cn(
-                    'tw:flex tw:items-center tw:gap-2 tw:rounded-admin tw:px-3 tw:py-1.5 tw:text-sm tw:transition-colors',
+                    'tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-1.5 tw:text-sm tw:transition-colors',
                     activeStep === i
                       ? 'tw:bg-admin-primary tw:text-admin-primary-fg'
                       : 'tw:text-admin-fg-muted hover:tw:text-admin-fg',
