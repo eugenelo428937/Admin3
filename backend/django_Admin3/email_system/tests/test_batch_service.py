@@ -1,6 +1,8 @@
 """
-Tests for EmailBatchService: send_batch and query_batch.
+Tests for EmailBatchService: send_batch, query_batch, and batch completion.
 """
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth.models import User
 
@@ -319,3 +321,80 @@ class QueryBatchTest(TestCase):
             api_key=self.other_api_key,
         )
         self.assertIsNone(result)
+
+
+class BatchCompletionTest(TestCase):
+    """Tests for EmailBatchService.check_batch_completion."""
+
+    def setUp(self):
+        self.service = EmailBatchService()
+        self.template = EmailTemplate.objects.create(
+            name='completion_test_template',
+            display_name='Completion Test',
+            subject_template='Test',
+        )
+        self.api_key = ExternalApiKey.objects.create(
+            key_hash='f' * 64,
+            key_prefix='comp1234',
+            name='Test System',
+        )
+
+    def _create_batch_with_items(self, statuses):
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='Test User',
+            notify_email='admin@example.com',
+            total_items=len(statuses),
+            api_key=self.api_key,
+            status='processing',
+        )
+        for i, status in enumerate(statuses):
+            EmailQueue.objects.create(
+                to_emails=[f'user{i}@example.com'],
+                subject='Test',
+                template=self.template,
+                batch=batch,
+                status=status,
+            )
+        return batch
+
+    @patch.object(EmailBatchService, '_send_completion_notification')
+    def test_all_sent_completes_batch(self, mock_notify):
+        batch = self._create_batch_with_items(['sent', 'sent'])
+        self.service.check_batch_completion(batch.batch_id)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, 'completed')
+        self.assertEqual(batch.sent_count, 2)
+        self.assertEqual(batch.error_count, 0)
+        self.assertIsNotNone(batch.completed_at)
+        mock_notify.assert_called_once()
+
+    @patch.object(EmailBatchService, '_send_completion_notification')
+    def test_mixed_results_completed_with_errors(self, mock_notify):
+        batch = self._create_batch_with_items(['sent', 'failed'])
+        self.service.check_batch_completion(batch.batch_id)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, 'completed_with_errors')
+        self.assertEqual(batch.sent_count, 1)
+        self.assertEqual(batch.error_count, 1)
+
+    @patch.object(EmailBatchService, '_send_completion_notification')
+    def test_all_failed_sets_failed(self, mock_notify):
+        batch = self._create_batch_with_items(['failed', 'cancelled'])
+        self.service.check_batch_completion(batch.batch_id)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, 'failed')
+
+    def test_not_all_terminal_does_not_complete(self):
+        batch = self._create_batch_with_items(['sent', 'pending'])
+        self.service.check_batch_completion(batch.batch_id)
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, 'processing')
+
+    @patch.object(EmailBatchService, '_send_completion_notification')
+    def test_already_completed_is_noop(self, mock_notify):
+        batch = self._create_batch_with_items(['sent', 'sent'])
+        batch.status = 'completed'
+        batch.save()
+        self.service.check_batch_completion(batch.batch_id)
+        mock_notify.assert_not_called()

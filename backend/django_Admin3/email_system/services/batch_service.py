@@ -11,6 +11,8 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 class EmailBatchService:
 
+    TERMINAL_STATUSES = ('sent', 'failed', 'cancelled')
+
     def send_batch(self, template_id, requested_by, notify_email, items, api_key, max_items=None):
         """Create a batch of emails and queue them for sending."""
         # Validate template
@@ -135,6 +137,72 @@ class EmailBatchService:
             'sent_items': sent_items,
             'error_items': error_items,
         }
+
+
+    def check_batch_completion(self, batch_id):
+        """Check if all items in a batch have reached terminal state. If so, update batch and send notification."""
+        with transaction.atomic():
+            try:
+                batch = EmailBatch.objects.select_for_update().get(batch_id=batch_id)
+            except EmailBatch.DoesNotExist:
+                return
+
+            # Already terminal -- no-op
+            if batch.status in ('completed', 'completed_with_errors', 'failed'):
+                return
+
+            queue_items = batch.queue_items.all()
+            statuses = list(queue_items.values_list('status', flat=True))
+
+            # Check if all items are in terminal state
+            if not all(s in self.TERMINAL_STATUSES for s in statuses):
+                return
+
+            sent_count = statuses.count('sent')
+            error_count = len(statuses) - sent_count
+
+            if error_count == 0:
+                batch.status = 'completed'
+            elif sent_count == 0:
+                batch.status = 'failed'
+            else:
+                batch.status = 'completed_with_errors'
+
+            batch.sent_count = sent_count
+            batch.error_count = error_count
+            batch.completed_at = timezone.now()
+            batch.save(update_fields=['status', 'sent_count', 'error_count', 'completed_at'])
+
+        self._send_completion_notification(batch)
+
+    def _send_completion_notification(self, batch):
+        """Queue a completion notification email to the batch requester."""
+        error_items = []
+        for qi in batch.queue_items.filter(status__in=('failed', 'cancelled')):
+            error_items.append({
+                'to_email': qi.to_emails[0] if qi.to_emails else '',
+                'attempts': qi.attempts,
+                'error_response': qi.error_details or {'error_message': qi.error_message or ''},
+            })
+
+        context = {
+            'requested_by': batch.requested_by,
+            'batch_id': str(batch.batch_id),
+            'total_items': batch.total_items,
+            'sent_count': batch.sent_count,
+            'error_count': batch.error_count,
+            'error_items': error_items,
+        }
+
+        from email_system.services.queue_service import email_queue_service
+        try:
+            email_queue_service.queue_email(
+                template_name='batch_completion_report',
+                to_emails=batch.notify_email,
+                context=context,
+            )
+        except Exception:
+            pass  # Notification failure should not block batch completion
 
 
 email_batch_service = EmailBatchService()
