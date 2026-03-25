@@ -108,8 +108,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   A
                 </div>
                 <div className="tw:flex tw:flex-col tw:gap-0.5 tw:leading-none">
-                  <span className="tw:font-semibold">Admin3</span>
-                  <span className="tw:text-xs tw:text-muted-foreground">ActEd Store</span>
+                  <span className="tw:font-semibold">ActEd</span>
+                  <span className="tw:text-xs tw:text-muted-foreground">ActEd Management System</span>
                 </div>
               </Link>
             </SidebarMenuButton>
