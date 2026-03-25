@@ -187,10 +187,12 @@ function AdminDataTable<T extends Record<string, any>>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  const align = (header.column.columnDef.meta as any)?.align;
-                  const alignClass = align === 'right' ? 'tw:text-right' : align === 'center' ? 'tw:text-center' : '';
+                  const align = (header.column.columnDef.meta as any)?.align as string | undefined;
                   return (
-                    <TableHead key={header.id} className={alignClass}>
+                    <TableHead
+                      key={header.id}
+                      style={align ? { textAlign: align as any } : undefined}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -208,10 +210,12 @@ function AdminDataTable<T extends Record<string, any>>({
                 className={onRowClick ? 'tw:cursor-pointer' : undefined}
               >
                 {row.getVisibleCells().map((cell) => {
-                  const align = (cell.column.columnDef.meta as any)?.align;
-                  const alignClass = align === 'right' ? 'tw:text-right' : align === 'center' ? 'tw:text-center' : '';
+                  const align = (cell.column.columnDef.meta as any)?.align as string | undefined;
                   return (
-                    <TableCell key={cell.id} className={alignClass}>
+                    <TableCell
+                      key={cell.id}
+                      style={align ? { textAlign: align as any } : undefined}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   );
