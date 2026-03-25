@@ -29,7 +29,7 @@ const SubjectList: React.FC<{
   checked: number[];
   handleToggle: (id: number) => void;
 }> = ({ items, title, checked, handleToggle }) => (
-  <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card">
+  <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-card">
     <div className="tw:bg-admin-accent/50 tw:px-3 tw:py-2 tw:text-sm tw:font-medium">
       {title} ({items.length})
     </div>
@@ -73,7 +73,7 @@ const StepSubjects: React.FC<StepSubjectsProps> = ({
   }
 
   return (
-    <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
+    <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
       <h2 className="tw:mb-4 tw:text-xl tw:font-semibold tw:text-admin-fg">
         Step 2: Assign Subjects
       </h2>

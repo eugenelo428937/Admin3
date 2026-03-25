@@ -33,7 +33,7 @@ const AdminProductTable: React.FC<ProductTableProps> = ({ products, onDelete }) 
   };
 
   return (
-    <div className="tw:rounded-admin tw:border tw:border-admin-border">
+    <div className="tw:rounded-md tw:border tw:border-admin-border">
       <Table>
         <TableHeader>
           <TableRow>

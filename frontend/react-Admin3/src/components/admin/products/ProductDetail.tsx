@@ -30,7 +30,7 @@ const AdminProductDetail: React.FC = () => {
         ]}
       />
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
+      <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
         <h2 className="tw:text-xl tw:font-semibold tw:text-admin-fg tw:mb-4">
           {vm.product.fullname}
         </h2>

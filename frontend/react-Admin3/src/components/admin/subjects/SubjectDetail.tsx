@@ -29,7 +29,7 @@ const AdminSubjectDetail: React.FC = () => {
         ]}
       />
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
+      <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
         <dl className="tw:space-y-4">
           <div>
             <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Description</dt>

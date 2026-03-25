@@ -38,7 +38,6 @@
   --font-sans: var(--admin-font-sans);
   --font-mono: var(--admin-font-mono);
 
-  --radius-admin: var(--admin-radius);
 }
 
 /* ── Admin root variables (tweakcn oklch palette) ── */
@@ -100,7 +99,6 @@
   --admin-warning:         oklch(0.7500 0.1500 65.0000);
   --admin-warning-fg:      oklch(1.0000 0 0);
   --admin-ring:            var(--ring);
-  --admin-radius:          var(--radius);
   --admin-sidebar-bg:      var(--sidebar);
   --admin-sidebar-fg:      var(--sidebar-foreground);
   --admin-sidebar-active:  var(--sidebar-primary);
