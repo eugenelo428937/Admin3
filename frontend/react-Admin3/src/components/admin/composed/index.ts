@@ -50,3 +50,6 @@ export type { AdminToggleGroupProps, ToggleOption } from './AdminToggleGroup';
 
 export { AdminPagination } from './AdminPagination';
 export type { AdminPaginationProps } from './AdminPagination';
+
+export { AdminDetailCard, AdminDetailField } from './AdminDetailCard';
+export type { AdminDetailCardProps, AdminDetailFieldProps } from './AdminDetailCard';
