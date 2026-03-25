@@ -2,9 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import {
-  AdminPage, AdminFormLayout, AdminFormField, AdminSelect,
+  AdminPage, AdminFormLayout, AdminFormField, AdminSelect, AdminCheckboxField,
 } from '@/components/admin/composed';
-import { Checkbox } from '@/components/admin/ui/checkbox';
 import useExamSessionSubjectFormVM from './useExamSessionSubjectFormVM';
 
 const AdminExamSessionSubjectForm: React.FC = () => {
@@ -48,20 +47,13 @@ const AdminExamSessionSubjectForm: React.FC = () => {
         </AdminFormField>
 
         <AdminFormField label="Active">
-          <div className="tw:flex tw:items-center tw:gap-2">
-            <Checkbox
-              aria-label="Active"
-              name="is_active"
-              checked={vm.formData.is_active}
-              onCheckedChange={(checked) => {
-                vm.handleCheckboxChange({
-                  target: { name: 'is_active', checked: !!checked, type: 'checkbox', value: '' }
-                } as React.ChangeEvent<HTMLInputElement>);
-              }}
-              disabled={vm.isSubmitting}
-            />
-            <span className="tw:text-sm tw:text-admin-fg">Active</span>
-          </div>
+          <AdminCheckboxField
+            name="is_active"
+            label="Active"
+            checked={vm.formData.is_active}
+            onChange={vm.handleCheckboxChange}
+            disabled={vm.isSubmitting}
+          />
         </AdminFormField>
       </AdminFormLayout>
     </AdminPage>

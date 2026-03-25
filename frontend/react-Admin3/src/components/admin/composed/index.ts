@@ -41,3 +41,6 @@ export type { AdminFilterBarProps, FilterField } from './AdminFilterBar';
 
 export { AdminBreadcrumbs } from './AdminBreadcrumbs';
 export type { AdminBreadcrumbsProps } from './AdminBreadcrumbs';
+
+export { AdminCheckboxField } from './AdminCheckboxField';
+export type { AdminCheckboxFieldProps } from './AdminCheckboxField';
