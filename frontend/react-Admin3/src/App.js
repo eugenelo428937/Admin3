@@ -1,6 +1,6 @@
 // src/App.js
 import React, { Suspense, useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
@@ -12,7 +12,6 @@ import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth.tsx";
 import { ConfigProvider } from "./contexts/ConfigContext";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
-import Home from "./pages/Home.tsx";
 import MainNavBar from "./components/Navigation/MainNavBar.tsx";
 import NoMatch from "./components/NoMatch.tsx";
 import { CartProvider } from "./contexts/CartContext.tsx";
@@ -71,6 +70,10 @@ const AdminStoreBundleForm = React.lazy(() => import("./components/admin/store-b
 
 // Admin: New Session Setup wizard
 const NewSessionSetup = React.lazy(() => import("./components/admin/new-session-setup/NewSessionSetup.tsx"));
+
+// Admin: Dashboard + internal home
+const Dashboard = React.lazy(() => import("./pages/Dashboard.tsx"));
+const InternalHome = React.lazy(() => import("./pages/InternalHome.tsx"));
 
 // Admin: Layout shell (shadcn/ui) — not lazy-loaded since it's the wrapper for all admin routes
 import AdminLayout from "./components/admin/layout/AdminLayout";
@@ -208,15 +211,18 @@ function App() {
 									sx={bodyContainerStyles}>
 									<Suspense fallback={<LazyFallback />}>
 									<Routes>
-										<Route path="/" element={<Navigate to="/home" replace />} />
+										<Route path="/" element={<InternalHome />} />
 										<Route path="/styleguide" element={<StyleGuide />} />
 										<Route path="/theme-visualizer" element={<MaterialThemeVisualizer />} />
-										<Route path="/home" element={<Home />} />
+										<Route path="/home" element={<InternalHome />} />
 										<Route path="/profile" element={<ProfilePage />} />
 										<Route path="/products" element={<ProductList />} />
 
 										{/* Admin routes — wrapped by AdminLayout shell */}
 										<Route element={<AdminLayout />}>
+										{/* Admin: Dashboard (internal home) */}
+										<Route path="/admin/dashboard" element={<Dashboard />} />
+
 										{/* Admin: Exam Sessions (US2) */}
 										<Route path="/admin/exam-sessions" element={<AdminExamSessionList />} />
 										<Route path="/admin/exam-sessions/new" element={<AdminExamSessionForm />} />
