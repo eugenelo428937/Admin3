@@ -73,6 +73,7 @@ const EmailPlaceholderList: React.FC = () => {
                     {
                         key: 'is_active',
                         header: 'Active',
+                        align: 'center',
                         render: (val) => <AdminBadge active={!!val} />,
                     },
                 ]}

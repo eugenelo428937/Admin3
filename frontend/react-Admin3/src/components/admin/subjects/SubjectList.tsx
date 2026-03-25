@@ -30,7 +30,7 @@ const AdminSubjectList: React.FC = () => {
         columns={[
           { key: 'code', header: 'Code', sortable: true },
           { key: 'description', header: 'Description' },
-          { key: 'active', header: 'Status', render: (val) => <AdminBadge active={val} /> },
+          { key: 'active', header: 'Status', align: 'center', render: (val) => <AdminBadge active={val} /> },
         ]}
         data={vm.subjects}
         loading={vm.loading}
