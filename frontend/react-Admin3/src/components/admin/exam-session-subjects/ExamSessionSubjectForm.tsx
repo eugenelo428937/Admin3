@@ -1,96 +1,71 @@
 import React from 'react';
-import {
-    Button, Container, Alert, Box, Typography,
-    FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress,
-    Select, MenuItem,
-} from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
+import {
+  AdminPage, AdminFormLayout, AdminFormField, AdminSelect,
+} from '@/components/admin/composed';
+import { Checkbox } from '@/components/admin/ui/checkbox';
 import useExamSessionSubjectFormVM from './useExamSessionSubjectFormVM';
 
 const AdminExamSessionSubjectForm: React.FC = () => {
-    const { isSuperuser } = useAuth();
-    const vm = useExamSessionSubjectFormVM();
+  const { isSuperuser } = useAuth();
+  const vm = useExamSessionSubjectFormVM();
 
-    if (!isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (!isSuperuser) return <Navigate to="/" replace />;
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                {vm.isEditMode ? 'Edit Exam Session Subject' : 'Create Exam Session Subject'}
-            </Typography>
+  return (
+    <AdminPage>
+      <AdminFormLayout
+        title={vm.isEditMode ? 'Edit Exam Session Subject' : 'Create Exam Session Subject'}
+        onSubmit={vm.handleSubmit}
+        onCancel={vm.handleCancel}
+        loading={vm.isSubmitting}
+        error={vm.error}
+        submitLabel={`${vm.isSubmitting ? 'Saving...' : vm.isEditMode ? 'Update' : 'Create'} Exam Session Subject`}
+      >
+        <AdminFormField label="Exam Session" required>
+          <AdminSelect
+            options={vm.examSessions.map(es => ({ value: String(es.id), label: es.session_code }))}
+            value={String(vm.formData.exam_session)}
+            onChange={(value) => {
+              vm.handleSelectChange({ target: { name: 'exam_session', value } } as any);
+            }}
+            placeholder="Select an exam session"
+            disabled={vm.isSubmitting}
+          />
+        </AdminFormField>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+        <AdminFormField label="Subject" required>
+          <AdminSelect
+            options={vm.subjects.map(s => ({ value: String(s.id), label: s.code }))}
+            value={String(vm.formData.subject)}
+            onChange={(value) => {
+              vm.handleSelectChange({ target: { name: 'subject', value } } as any);
+            }}
+            placeholder="Select a subject"
+            disabled={vm.isSubmitting}
+          />
+        </AdminFormField>
 
-            <Box component="form" onSubmit={vm.handleSubmit}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Exam Session</FormLabel>
-                    <Select
-                        name="exam_session"
-                        value={String(vm.formData.exam_session)}
-                        onChange={vm.handleSelectChange}
-                        required
-                        displayEmpty
-                        disabled={vm.isSubmitting}
-                    >
-                        <MenuItem value="" disabled>Select an exam session</MenuItem>
-                        {vm.examSessions.map(session => (
-                            <MenuItem key={session.id} value={session.id}>
-                                {session.session_code}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Subject</FormLabel>
-                    <Select
-                        name="subject"
-                        value={String(vm.formData.subject)}
-                        onChange={vm.handleSelectChange}
-                        required
-                        displayEmpty
-                        disabled={vm.isSubmitting}
-                    >
-                        <MenuItem value="" disabled>Select a subject</MenuItem>
-                        {vm.subjects.map(subject => (
-                            <MenuItem key={subject.id} value={subject.id}>
-                                {subject.code}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="is_active"
-                                checked={vm.formData.is_active}
-                                onChange={vm.handleCheckboxChange}
-                                disabled={vm.isSubmitting}
-                            />
-                        }
-                        label="Active"
-                    />
-                </FormControl>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" type="submit" disabled={vm.isSubmitting}>
-                        {vm.isSubmitting ? 'Saving...' : vm.isEditMode ? 'Update' : 'Create'} Exam Session Subject
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={vm.handleCancel}
-                        disabled={vm.isSubmitting}
-                    >
-                        Cancel
-                    </Button>
-                </Box>
-            </Box>
-        </Container>
-    );
+        <AdminFormField label="Active">
+          <div className="tw:flex tw:items-center tw:gap-2">
+            <Checkbox
+              aria-label="Active"
+              name="is_active"
+              checked={vm.formData.is_active}
+              onCheckedChange={(checked) => {
+                vm.handleCheckboxChange({
+                  target: { name: 'is_active', checked: !!checked, type: 'checkbox', value: '' }
+                } as React.ChangeEvent<HTMLInputElement>);
+              }}
+              disabled={vm.isSubmitting}
+            />
+            <span className="tw:text-sm tw:text-admin-fg">Active</span>
+          </div>
+        </AdminFormField>
+      </AdminFormLayout>
+    </AdminPage>
+  );
 };
 
 export default AdminExamSessionSubjectForm;

@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import {
-    Box, Button, Chip, CircularProgress,
-    Select, MenuItem, Dialog, DialogTitle, DialogContent,
-    DialogContentText, DialogActions,
-} from '@mui/material';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/admin/ui/button';
+import { Badge } from '@/components/admin/ui/badge';
+import { AdminConfirmDialog } from '@/components/admin/composed';
+import { AdminSelect } from '@/components/admin/composed';
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { xml } from '@codemirror/lang-xml';
@@ -96,108 +96,81 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="tw:flex tw:flex-col tw:gap-4">
             {/* Toolbar */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Select
-                        value={vm.editorMode}
-                        onChange={(e) => handleModeChange(e.target.value)}
-                        size="small"
-                        sx={{ minWidth: 150 }}
-                    >
-                        <MenuItem value="basic">Basic Mode</MenuItem>
-                        <MenuItem value="advanced">Advanced Mode</MenuItem>
-                    </Select>
-                    {vm.shellLoading && (
-                        <Chip
-                            label="Loading preview shell..."
-                            size="small"
-                            variant="outlined"
-                            icon={<CircularProgress size={14} />}
+            <div className="tw:flex tw:items-center tw:justify-between">
+                <div className="tw:flex tw:items-center tw:gap-3">
+                    <div className="tw:w-40">
+                        <AdminSelect
+                            options={[
+                                { value: 'basic', label: 'Basic Mode' },
+                                { value: 'advanced', label: 'Advanced Mode' },
+                            ]}
+                            value={vm.editorMode}
+                            onChange={handleModeChange}
                         />
+                    </div>
+                    {vm.shellLoading && (
+                        <Badge variant="outline" className="tw:gap-1">
+                            <Loader2 className="tw:size-3 tw:animate-spin" />
+                            Loading preview shell...
+                        </Badge>
                     )}
                     {vm.isDirty && (
-                        <Chip
-                            label="Unsaved changes"
-                            color="warning"
-                            size="small"
-                            variant="outlined"
-                        />
+                        <Badge variant="outline" className="tw:border-amber-300 tw:bg-amber-50 tw:text-amber-700">
+                            Unsaved changes
+                        </Badge>
                     )}
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="contained"
-                        size="small"
-                        onClick={vm.handleSave}
-                        disabled={vm.isSaving || !vm.isDirty}
-                    >
-                        {vm.isSaving ? 'Saving...' : 'Save'}
-                    </Button>
-                </Box>
-            </Box>
+                </div>
+                <Button
+                    size="sm"
+                    onClick={vm.handleSave}
+                    disabled={vm.isSaving || !vm.isDirty}
+                >
+                    {vm.isSaving ? 'Saving...' : 'Save'}
+                </Button>
+            </div>
 
             {vm.editorMode === 'basic' && (
                 <BasicModeToolbar editorViewRef={editorViewRef} disabled={!isEditorReady} />
             )}
 
             {/* Split pane: Editor + Preview */}
-            <Box sx={{ display: 'flex', gap: 2, minHeight: 500 }}>
+            <div className="tw:flex tw:gap-4" style={{ minHeight: 500 }}>
                 {/* Left: CodeMirror Editor */}
-                <Box
-                    sx={{
-                        flex: 1,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        '& .cm-editor': {
-                            height: '100%',
-                            minHeight: 500,
-                            textAlign: 'left',
-                        },
-                        '& .cm-scroller': {
-                            overflow: 'auto',
-                        },
-                        '& .cm-content': {
-                            paddingLeft: 0,
-                            textAlign: 'left',
-                        },
-                        '& .cm-line': {
-                            paddingLeft: '2px',
-                            textAlign: 'left',
-                        },
+                <div
+                    className="tw:flex-1 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border"
+                    style={{
+                        /* CodeMirror sizing */
                     }}
                 >
+                    <style>{`
+                        .cm-editor { height: 100%; min-height: 500px; text-align: left; }
+                        .cm-scroller { overflow: auto; }
+                        .cm-content { padding-left: 0; text-align: left; }
+                        .cm-line { padding-left: 2px; text-align: left; }
+                    `}</style>
                     <div ref={editorRef} style={{ height: '100%', minHeight: 500 }} />
-                </Box>
+                </div>
 
                 {/* Right: Preview */}
-                <Box sx={{ flex: 1 }}>
+                <div className="tw:flex-1">
                     <MjmlPreviewPane
                         html={vm.htmlPreview}
                         error={vm.compileError}
                     />
-                </Box>
-            </Box>
+                </div>
+            </div>
 
-            <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-                <DialogTitle>Switch to Advanced Mode?</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Switching to Advanced Mode will convert your content to MJML.
-                        You won't be able to switch back to Basic Mode. Continue?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={confirmSwitchToAdvanced} variant="contained">
-                        Switch to Advanced
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+            <AdminConfirmDialog
+                open={confirmDialogOpen}
+                title="Switch to Advanced Mode?"
+                description="Switching to Advanced Mode will convert your content to MJML. You won't be able to switch back to Basic Mode. Continue?"
+                confirmLabel="Switch to Advanced"
+                onConfirm={confirmSwitchToAdvanced}
+                onCancel={() => setConfirmDialogOpen(false)}
+            />
+        </div>
     );
 };
 

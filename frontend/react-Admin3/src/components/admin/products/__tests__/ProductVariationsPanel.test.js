@@ -1,9 +1,7 @@
 import { vi } from 'vitest';
-// src/components/admin/products/__tests__/ProductVariationsPanel.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import ProductVariationsPanel from '../ProductVariationsPanel.js';
+import ProductVariationsPanel from '../ProductVariationsPanel.tsx';
 
 // Mock productProductVariationService
 vi.mock('../../../../services/productProductVariationService', () => ({
@@ -27,9 +25,6 @@ vi.mock('../../../../services/productVariationService', () => ({
 import productProductVariationService from '../../../../services/productProductVariationService';
 import productVariationService from '../../../../services/productVariationService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockPPVs = [
   { id: 10, product: 1, product_variation: 1, variation_name: 'eBook', variation_code: 'EB', variation_type: 'eBook' },
   { id: 11, product: 1, product_variation: 2, variation_name: 'Printed', variation_code: 'PC', variation_type: 'Printed' },
@@ -43,9 +38,7 @@ const mockAllVariations = [
 ];
 
 const renderComponent = (props = {}) => render(
-  <ThemeProvider theme={theme}>
-    <ProductVariationsPanel productId={1} {...props} />
-  </ThemeProvider>
+  <ProductVariationsPanel productId={1} {...props} />
 );
 
 describe('ProductVariationsPanel', () => {
@@ -56,13 +49,14 @@ describe('ProductVariationsPanel', () => {
   });
 
   describe('loading state', () => {
-    test('shows loading spinner initially', () => {
+    test('shows loading skeleton initially', () => {
       productProductVariationService.getByProduct.mockReturnValue(new Promise(() => {}));
       productVariationService.getAll.mockReturnValue(new Promise(() => {}));
 
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // Skeleton loading state renders div elements, not a progressbar
+      expect(screen.queryByText('Product Variations')).not.toBeInTheDocument();
     });
   });
 
@@ -81,7 +75,6 @@ describe('ProductVariationsPanel', () => {
       renderComponent();
 
       await waitFor(() => {
-        // variation_name and variation_type can be the same text, so use getAllByText
         expect(screen.getAllByText('eBook').length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText('Printed').length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText('EB')).toBeInTheDocument();
@@ -111,7 +104,6 @@ describe('ProductVariationsPanel', () => {
         expect(screen.getByText('EB')).toBeInTheDocument();
       });
 
-      // Find the first delete button (there should be one per row)
       const deleteButtons = screen.getAllByLabelText(/remove variation/i);
       fireEvent.click(deleteButtons[0]);
 
@@ -120,7 +112,6 @@ describe('ProductVariationsPanel', () => {
           expect.stringContaining('remove')
         );
         expect(productProductVariationService.delete).toHaveBeenCalledWith(10);
-        // Should refetch after deletion
         expect(productProductVariationService.getByProduct).toHaveBeenCalledTimes(2);
       });
     });
@@ -142,17 +133,17 @@ describe('ProductVariationsPanel', () => {
   });
 
   describe('add variation', () => {
-    test('autocomplete combobox is present', async () => {
+    test('add variation select is present', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
+        expect(screen.getByLabelText('Add variation')).toBeInTheDocument();
       });
     });
   });
 
   describe('edit variation', () => {
-    test('clicking edit shows autocomplete and save/cancel buttons', async () => {
+    test('clicking edit shows select and save/cancel buttons', async () => {
       renderComponent();
 
       await waitFor(() => {
@@ -162,9 +153,7 @@ describe('ProductVariationsPanel', () => {
       const editButtons = screen.getAllByLabelText(/edit variation/i);
       fireEvent.click(editButtons[0]);
 
-      // The row should now contain an Autocomplete with "Select variation" label
       expect(screen.getByLabelText('Select variation')).toBeInTheDocument();
-      // Save and cancel buttons should appear
       expect(screen.getByLabelText('save edit')).toBeInTheDocument();
       expect(screen.getByLabelText('cancel edit')).toBeInTheDocument();
     });
@@ -179,23 +168,18 @@ describe('ProductVariationsPanel', () => {
       const editButtons = screen.getAllByLabelText(/edit variation/i);
       fireEvent.click(editButtons[0]);
 
-      // Verify we are in edit mode
       expect(screen.getByLabelText('cancel edit')).toBeInTheDocument();
 
-      // Click cancel
       fireEvent.click(screen.getByLabelText('cancel edit'));
 
-      // The variation name, code, and type should reappear in the row
       await waitFor(() => {
         expect(screen.getByText('EB')).toBeInTheDocument();
         expect(screen.getAllByText('eBook').length).toBeGreaterThanOrEqual(1);
       });
 
-      // Save/cancel buttons should be gone
       expect(screen.queryByLabelText('save edit')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('cancel edit')).not.toBeInTheDocument();
 
-      // Edit buttons should be back for both rows
       expect(screen.getAllByLabelText(/edit variation/i)).toHaveLength(2);
     });
   });

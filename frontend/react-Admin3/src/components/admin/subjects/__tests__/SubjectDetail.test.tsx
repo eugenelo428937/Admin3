@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminSubjectDetail from '../SubjectDetail.tsx';
 
 // Mock useAuth
@@ -36,9 +35,6 @@ vi.mock('../../../../services/subjectService', () => ({
 
 import subjectService from '../../../../services/subjectService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockSubject = {
   id: '1',
   code: 'CM2',
@@ -49,11 +45,7 @@ const mockSubject = {
 };
 
 const renderComponent = () => {
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminSubjectDetail />
-    </ThemeProvider>
-  );
+  return render(<AdminSubjectDetail />);
 };
 
 describe('AdminSubjectDetail', () => {
@@ -72,14 +64,14 @@ describe('AdminSubjectDetail', () => {
       (subjectService.getById as any).mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
-    test('renders subject code in card header', async () => {
+    test('renders subject code in page header', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'CM2' })).toBeInTheDocument();
       });
     });
   });
@@ -127,7 +119,7 @@ describe('AdminSubjectDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /edit/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
       });
     });
 
@@ -156,7 +148,7 @@ describe('AdminSubjectDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'CM2' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
@@ -174,7 +166,7 @@ describe('AdminSubjectDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'CM2' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
@@ -188,7 +180,7 @@ describe('AdminSubjectDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'CM2' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /back to subjects/i }));
@@ -215,7 +207,7 @@ describe('AdminSubjectDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'CM2' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));

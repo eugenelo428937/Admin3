@@ -1,23 +1,22 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
-    Container, Typography, Box, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, Chip, CircularProgress, Alert, IconButton,
-    Button, TablePagination,
-} from '@mui/material';
-import {
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    Add as AddIcon,
-} from '@mui/icons-material';
+  AdminPage,
+  AdminPageHeader,
+  AdminDataTable,
+  AdminErrorAlert,
+  AdminBadge,
+} from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
 import useEmailAttachmentListVM from './useEmailAttachmentListVM';
 import type { AttachmentType } from '../../../../types/email';
 
-const ATTACHMENT_TYPE_COLOR: Record<AttachmentType, 'primary' | 'secondary' | 'info' | 'warning'> = {
-    static: 'primary',
-    dynamic: 'secondary',
-    template: 'info',
-    external: 'warning',
+const ATTACHMENT_TYPE_STYLE: Record<AttachmentType, string> = {
+    static: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
+    dynamic: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
+    template: 'tw:border-sky-200 tw:bg-sky-50 tw:text-sky-700',
+    external: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -37,106 +36,61 @@ const EmailAttachmentList: React.FC = () => {
     }, [vm.page, vm.rowsPerPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h5">Email Attachments</Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => navigate('/admin/email/attachments/new')}
-                >
-                    Add Attachment
-                </Button>
-            </Box>
+        <AdminPage>
+            <AdminPageHeader
+                title="Email Attachments"
+                actions={[
+                    { label: 'Add Attachment', icon: Plus, onClick: () => navigate('/admin/email/attachments/new') },
+                ]}
+            />
 
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
-            {vm.loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
-            ) : (
-                <Paper>
-                    <TableContainer>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Display Name</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Size</TableCell>
-                                    <TableCell>Active</TableCell>
-                                    <TableCell align="right">Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {vm.attachments.map(attachment => (
-                                    <TableRow key={attachment.id}>
-                                        <TableCell>
-                                            <Typography variant="body2" fontFamily="monospace">
-                                                {attachment.name}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>{attachment.display_name}</TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={attachment.attachment_type}
-                                                color={ATTACHMENT_TYPE_COLOR[attachment.attachment_type] || 'default'}
-                                                size="small"
-                                            />
-                                        </TableCell>
-                                        <TableCell>{formatFileSize(attachment.file_size)}</TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={attachment.is_active ? 'Active' : 'Inactive'}
-                                                color={attachment.is_active ? 'success' : 'default'}
-                                                size="small"
-                                            />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                <IconButton
-                                                    size="small"
-                                                    color="primary"
-                                                    onClick={() => vm.handleEdit(attachment.id)}
-                                                >
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => vm.handleDelete(attachment.id)}
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {vm.attachments.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={6} align="center">
-                                            <Typography color="text.secondary" sx={{ py: 2 }}>
-                                                No attachments found
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        component="div"
-                        count={vm.totalCount}
-                        page={vm.page}
-                        onPageChange={vm.handleChangePage}
-                        rowsPerPage={vm.rowsPerPage}
-                        onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                        rowsPerPageOptions={[10, 25, 50]}
-                    />
-                </Paper>
-            )}
-        </Container>
+            <AdminDataTable
+                columns={[
+                    {
+                        key: 'name',
+                        header: 'Name',
+                        render: (val) => <span className="tw:font-mono tw:text-sm">{val}</span>,
+                    },
+                    { key: 'display_name', header: 'Display Name' },
+                    {
+                        key: 'attachment_type',
+                        header: 'Type',
+                        render: (val) => (
+                            <Badge variant="outline" className={ATTACHMENT_TYPE_STYLE[val as AttachmentType] || ''}>
+                                {val}
+                            </Badge>
+                        ),
+                    },
+                    {
+                        key: 'file_size',
+                        header: 'Size',
+                        render: (val) => formatFileSize(val as number),
+                    },
+                    {
+                        key: 'is_active',
+                        header: 'Active',
+                        render: (val) => <AdminBadge active={!!val} />,
+                    },
+                ]}
+                data={vm.attachments}
+                loading={vm.loading}
+                emptyMessage="No attachments found"
+                pagination={{
+                    page: vm.page,
+                    pageSize: vm.rowsPerPage,
+                    total: vm.totalCount,
+                    onPageChange: vm.handleChangePage,
+                    onPageSizeChange: vm.handleChangeRowsPerPage,
+                    pageSizeOptions: [10, 25, 50],
+                }}
+                actions={(row) => [
+                    { label: 'Edit', icon: Pencil, onClick: () => vm.handleEdit(row.id) },
+                    { label: 'Delete', icon: Trash2, variant: 'destructive' as const, onClick: () => vm.handleDelete(row.id) },
+                ]}
+            />
+        </AdminPage>
     );
 };
 

@@ -16,3 +16,13 @@ global.BroadcastChannel = class BroadcastChannel {
   addEventListener() {}
   removeEventListener() {}
 };
+
+// ResizeObserver polyfill for Radix UI components (not available in jsdom)
+global.ResizeObserver = class ResizeObserver {
+  constructor(callback) {
+    this.callback = callback;
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

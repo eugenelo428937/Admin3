@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import type { SelectChangeEvent } from "@mui/material";
 import recommendationService from "../../../services/recommendationService";
 import productProductVariationService from "../../../services/productProductVariationService";
 
@@ -25,7 +24,8 @@ export interface RecommendationFormVM {
     productProductVariations: ProductProductVariation[];
     loading: boolean;
     error: string | null;
-    handleChange: (event: SelectChangeEvent<string>) => void;
+    handleSourceChange: (value: string) => void;
+    handleRecommendedChange: (value: string) => void;
     handleSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
     handleCancel: () => void;
 }
@@ -84,9 +84,12 @@ const useRecommendationFormVM = (): RecommendationFormVM => {
         init();
     }, [id, isEditMode]);
 
-    const handleChange = useCallback((event: SelectChangeEvent<string>) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const handleSourceChange = useCallback((value: string) => {
+        setFormData((prev) => ({ ...prev, source_ppv: value }));
+    }, []);
+
+    const handleRecommendedChange = useCallback((value: string) => {
+        setFormData((prev) => ({ ...prev, recommended_ppv: value }));
     }, []);
 
     const handleSubmit = useCallback(
@@ -141,7 +144,8 @@ const useRecommendationFormVM = (): RecommendationFormVM => {
         productProductVariations,
         loading,
         error,
-        handleChange,
+        handleSourceChange,
+        handleRecommendedChange,
         handleSubmit,
         handleCancel,
     };

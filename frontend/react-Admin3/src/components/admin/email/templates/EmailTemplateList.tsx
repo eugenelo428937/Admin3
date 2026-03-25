@@ -1,22 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
-    Container,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Button,
-    Alert,
-    Paper,
-    Typography,
-    Box,
-    CircularProgress,
-    TablePagination,
-    Chip,
-} from '@mui/material';
+    AdminPage,
+    AdminPageHeader,
+    AdminDataTable,
+    AdminErrorAlert,
+    AdminLoadingState,
+    AdminBadge,
+} from '@/components/admin/composed';
+import type { SimpleColumn } from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
+import { Button } from '@/components/admin/ui/button';
 import useEmailTemplateListVM from './useEmailTemplateListVM';
 import type { TemplateType } from '../../../../types/email';
 import type { MasterFilter } from './useEmailTemplateListVM';
@@ -43,138 +38,119 @@ const MASTER_FILTER_OPTIONS: { value: MasterFilter; label: string }[] = [
 
 const EmailTemplateList: React.FC = () => {
     const vm = useEmailTemplateListVM();
+    const navigate = useNavigate();
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', mt: 5 }}>
-                <CircularProgress />
-            </Box>
+            <AdminPage>
+                <AdminLoadingState rows={5} columns={8} />
+            </AdminPage>
         );
     }
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h4" component="h2">
-                    Email Templates
-                </Typography>
-                <Button
-                    component={Link}
-                    to="/admin/email/templates/new"
-                    variant="contained"
-                >
-                    Add Template
-                </Button>
-            </Box>
+    const columns: SimpleColumn<any>[] = [
+        { key: 'name', header: 'Name' },
+        { key: 'display_name', header: 'Display Name' },
+        { key: 'template_type', header: 'Type' },
+        { key: 'subject_template', header: 'Subject' },
+        { key: 'default_priority', header: 'Priority' },
+        {
+            key: 'is_master',
+            header: 'Master',
+            render: (value: boolean) =>
+                value ? (
+                    <Badge variant="secondary">Master</Badge>
+                ) : null,
+        },
+        {
+            key: 'is_active',
+            header: 'Active',
+            render: (value: boolean) => (
+                <AdminBadge active={value} />
+            ),
+        },
+    ];
 
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
+    return (
+        <AdminPage>
+            <AdminPageHeader
+                title="Email Templates"
+                actions={[
+                    {
+                        label: 'Add Template',
+                        icon: Plus,
+                        onClick: () => navigate('/admin/email/templates/new'),
+                    },
+                ]}
+            />
+
+            <AdminErrorAlert message={vm.error} />
 
             {/* Master filter */}
-            <Box sx={{ mb: 1, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>Master:</Typography>
+            <div className="tw:mb-2 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                <span className="tw:mr-1 tw:text-sm tw:text-admin-fg-muted">Master:</span>
                 {MASTER_FILTER_OPTIONS.map(opt => (
-                    <Chip
+                    <button
                         key={opt.value}
-                        label={opt.label}
-                        color={vm.filterMaster === opt.value ? 'primary' : 'default'}
+                        type="button"
                         onClick={() => vm.setFilterMaster(opt.value)}
-                        variant={vm.filterMaster === opt.value ? 'filled' : 'outlined'}
-                        size="small"
-                    />
+                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
+                            vm.filterMaster === opt.value
+                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
+                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
+                        }`}
+                    >
+                        {opt.label}
+                    </button>
                 ))}
-            </Box>
+            </div>
 
             {/* Template type filter */}
-            <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>Type:</Typography>
+            <div className="tw:mb-4 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                <span className="tw:mr-1 tw:text-sm tw:text-admin-fg-muted">Type:</span>
                 {TEMPLATE_TYPE_OPTIONS.map(opt => (
-                    <Chip
+                    <button
                         key={opt.value}
-                        label={opt.label}
-                        color={vm.filterTemplateType === opt.value ? 'primary' : 'default'}
+                        type="button"
                         onClick={() => vm.setFilterTemplateType(opt.value)}
-                        variant={vm.filterTemplateType === opt.value ? 'filled' : 'outlined'}
-                        size="small"
-                    />
+                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
+                            vm.filterTemplateType === opt.value
+                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
+                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
+                        }`}
+                    >
+                        {opt.label}
+                    </button>
                 ))}
-            </Box>
+            </div>
 
-            {vm.templates.length === 0 && !vm.error ? (
-                <Alert severity="info">No email templates found.</Alert>
-            ) : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Display Name</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Priority</TableCell>
-                                <TableCell>Master</TableCell>
-                                <TableCell>Active</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {vm.templates.map((template) => (
-                                <TableRow key={template.id} hover>
-                                    <TableCell>{template.name}</TableCell>
-                                    <TableCell>{template.display_name}</TableCell>
-                                    <TableCell>{template.template_type}</TableCell>
-                                    <TableCell>{template.subject_template}</TableCell>
-                                    <TableCell>{template.default_priority}</TableCell>
-                                    <TableCell>
-                                        {template.is_master && (
-                                            <Chip label="Master" color="info" size="small" />
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={template.is_active ? 'Active' : 'Inactive'}
-                                            color={template.is_active ? 'success' : 'default'}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Button
-                                                variant="contained"
-                                                color="warning"
-                                                size="small"
-                                                onClick={() => vm.handleEdit(template.id)}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="small"
-                                                onClick={() => vm.handleDelete(template.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-
-            {vm.totalCount > vm.rowsPerPage && (
-                <TablePagination
-                    component="div"
-                    count={vm.totalCount}
-                    page={vm.page}
-                    onPageChange={vm.handleChangePage}
-                    rowsPerPage={vm.rowsPerPage}
-                    onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                    rowsPerPageOptions={[10, 25, 50, 100]}
-                />
-            )}
-        </Container>
+            <AdminDataTable
+                columns={columns}
+                data={vm.templates}
+                emptyMessage="No email templates found."
+                actions={(row) => [
+                    {
+                        label: 'Edit',
+                        icon: Pencil,
+                        onClick: () => vm.handleEdit(row.id),
+                    },
+                    {
+                        label: 'Delete',
+                        icon: Trash2,
+                        variant: 'destructive',
+                        onClick: () => vm.handleDelete(row.id),
+                    },
+                ]}
+                pagination={vm.totalCount > vm.rowsPerPage ? {
+                    page: vm.page,
+                    pageSize: vm.rowsPerPage,
+                    total: vm.totalCount,
+                    onPageChange: vm.handleChangePage,
+                    onPageSizeChange: vm.handleChangeRowsPerPage,
+                    pageSizeOptions: [10, 25, 50, 100],
+                } : undefined}
+            />
+        </AdminPage>
     );
 };
 

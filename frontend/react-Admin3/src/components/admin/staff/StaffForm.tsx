@@ -1,18 +1,12 @@
 import React from 'react';
-import {
-  TextField,
-  Button,
-  Container,
-  Alert,
-  Box,
-  Typography,
-  FormControl,
-  FormLabel,
-  Checkbox,
-  FormControlLabel,
-  CircularProgress,
-} from '@mui/material';
 import { Navigate } from 'react-router-dom';
+import {
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Checkbox } from '@/components/admin/ui/checkbox';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import useStaffFormVM from './useStaffFormVM';
 
@@ -20,68 +14,48 @@ const AdminStaffForm: React.FC = () => {
   const { isSuperuser } = useAuth();
   const vm = useStaffFormVM();
 
-  const {
-    isEditMode,
-    formData,
-    loading,
-    error,
-    isSubmitting,
-    handleChange,
-    handleSubmit,
-    handleCancel,
-  } = vm;
-
   if (!isSuperuser) return <Navigate to="/" replace />;
-  if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (vm.loading) return null;
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-        {isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}
-      </Typography>
-      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-      <Box component="form" onSubmit={handleSubmit}>
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>User (ID or Email)</FormLabel>
-          <TextField
-            required
+    <AdminPage>
+      <AdminFormLayout
+        title={vm.isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}
+        onSubmit={vm.handleSubmit}
+        onCancel={vm.handleCancel}
+        loading={vm.isSubmitting}
+        error={vm.error}
+        submitLabel={vm.isEditMode ? 'Update Staff Member' : 'Create Staff Member'}
+      >
+        <AdminFormField label="User (ID or Email)" required>
+          <Input
             name="user"
-            value={formData.user}
-            onChange={handleChange}
+            value={vm.formData.user}
+            onChange={vm.handleChange}
             placeholder="Enter user ID or email address"
-            fullWidth
-            disabled={isSubmitting}
-            error={!formData.user && error !== null}
-            helperText={
-              !formData.user && error !== null
-                ? 'Please provide a user ID or email.'
-                : ''
-            }
+            disabled={vm.isSubmitting}
           />
-        </FormControl>
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
-            }
-            label="Active"
-          />
-        </FormControl>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="contained" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : isEditMode ? 'Update Staff Member' : 'Create Staff Member'}
-          </Button>
-          <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-        </Box>
-      </Box>
-    </Container>
+        </AdminFormField>
+
+        <AdminFormField label="Active">
+          <div className="tw:flex tw:items-center tw:gap-2">
+            <Checkbox
+              aria-label="Active"
+              name="is_active"
+              checked={vm.formData.is_active}
+              disabled={vm.isSubmitting}
+              onCheckedChange={(checked) => {
+                const syntheticEvent = {
+                  target: { name: 'is_active', value: '', type: 'checkbox', checked: !!checked },
+                } as React.ChangeEvent<HTMLInputElement>;
+                vm.handleChange(syntheticEvent);
+              }}
+            />
+            <span className="tw:text-sm tw:text-admin-fg">Active</span>
+          </div>
+        </AdminFormField>
+      </AdminFormLayout>
+    </AdminPage>
   );
 };
 
