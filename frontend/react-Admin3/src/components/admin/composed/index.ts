@@ -44,3 +44,6 @@ export type { AdminBreadcrumbsProps } from './AdminBreadcrumbs';
 
 export { AdminCheckboxField } from './AdminCheckboxField';
 export type { AdminCheckboxFieldProps } from './AdminCheckboxField';
+
+export { AdminToggleGroup } from './AdminToggleGroup';
+export type { AdminToggleGroupProps, ToggleOption } from './AdminToggleGroup';
