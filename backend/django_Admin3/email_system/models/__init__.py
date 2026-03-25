@@ -7,6 +7,8 @@ from .content_rule import EmailContentRule, EmailTemplateContentRule
 from .placeholder import EmailContentPlaceholder
 from .closing_salutation import ClosingSalutation, ClosingSalutationStaff
 from .email_mjml_element import EmailMjmlElement
+from .api_key import ExternalApiKey
+from .batch import EmailBatch
 
 __all__ = [
     'EmailTemplate',
@@ -21,4 +23,6 @@ __all__ = [
     'ClosingSalutation',
     'ClosingSalutationStaff',
     'EmailMjmlElement',
+    'ExternalApiKey',
+    'EmailBatch',
 ]

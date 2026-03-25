@@ -11,6 +11,7 @@ class EmailTemplate(models.Model):
         ('password_reset_completed', 'Password Reset Completed'),
         ('account_activation', 'Account Activation'),
         ('email_verification', 'Email Verification'),
+        ('batch_completion_report', 'Batch Completion Report'),
     ]
 
     PRIORITY_LEVELS = [

@@ -235,6 +235,12 @@ class EmailQueueService:
                     logger.error(f"Queue item {queue_item.queue_id} failed after max attempts")
 
             queue_item.save()
+
+            # Check batch completion if this item belongs to a batch
+            if queue_item.batch_id:
+                from email_system.services.batch_service import email_batch_service
+                email_batch_service.check_batch_completion(queue_item.batch_id)
+
             return all_success
 
         except Exception as e:
