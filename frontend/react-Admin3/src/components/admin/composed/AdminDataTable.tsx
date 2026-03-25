@@ -84,16 +84,16 @@ function AdminDataTable<T extends Record<string, any>>({
     const cols: ColumnDef<T>[] = columns.map((col) => ({
       id: col.id ?? col.key,
       accessorKey: col.key,
+      meta: { align: col.align },
       header: ({ column }) => {
-        const alignClass = col.align === 'right' ? 'tw:text-right' : col.align === 'center' ? 'tw:text-center' : '';
         if (!col.sortable) {
-          return <span className={alignClass}>{col.header}</span>;
+          return <span>{col.header}</span>;
         }
         return (
           <Button
             variant="ghost"
             size="sm"
-            className={cn('tw:-ml-3 tw:h-8', alignClass)}
+            className="tw:-ml-3 tw:h-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {col.header}
@@ -103,23 +103,23 @@ function AdminDataTable<T extends Record<string, any>>({
       },
       cell: ({ row }) => {
         const value = row.getValue(col.id ?? col.key);
-        const alignClass = col.align === 'right' ? 'tw:text-right' : col.align === 'center' ? 'tw:text-center' : '';
         if (col.render) {
-          return <div className={alignClass}>{col.render(value, row.original)}</div>;
+          return col.render(value, row.original);
         }
-        return <span className={cn(col.className, alignClass)}>{String(value ?? '')}</span>;
+        return <span className={col.className}>{String(value ?? '')}</span>;
       },
     }));
 
     if (actions) {
       cols.push({
         id: '_actions',
+        meta: { align: 'center' },
         header: () => <span className="tw:sr-only">Actions</span>,
         cell: ({ row }) => {
           const rowActions = actions(row.original);
           if (rowActions.length === 0) return null;
           return (
-            <div className="tw:text-right">
+            <div>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-xs">
@@ -186,13 +186,17 @@ function AdminDataTable<T extends Record<string, any>>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const align = (header.column.columnDef.meta as any)?.align;
+                  const alignClass = align === 'right' ? 'tw:text-right' : align === 'center' ? 'tw:text-center' : '';
+                  return (
+                    <TableHead key={header.id} className={alignClass}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -203,11 +207,15 @@ function AdminDataTable<T extends Record<string, any>>({
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 className={onRowClick ? 'tw:cursor-pointer' : undefined}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const align = (cell.column.columnDef.meta as any)?.align;
+                  const alignClass = align === 'right' ? 'tw:text-right' : align === 'center' ? 'tw:text-center' : '';
+                  return (
+                    <TableCell key={cell.id} className={alignClass}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
