@@ -68,8 +68,8 @@ const EmailSettingsList: React.FC = () => {
                                 <TableHead>Type</TableHead>
                                 <TableHead>Display Name</TableHead>
                                 <TableHead>Value</TableHead>
-                                <TableHead>Active</TableHead>
-                                <TableHead className="tw:text-right">Actions</TableHead>
+                                <TableHead style={{ textAlign: 'center' }}>Active</TableHead>
+                                <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -105,19 +105,21 @@ const EmailSettingsList: React.FC = () => {
                                             </span>
                                         )}
                                     </TableCell>
-                                    <TableCell>
-                                        {vm.editingId === setting.id ? (
-                                            <Switch
-                                                size="sm"
-                                                checked={vm.editFormData.is_active ?? setting.is_active}
-                                                onCheckedChange={(checked) => vm.handleEditChange('is_active', checked)}
-                                            />
-                                        ) : (
-                                            <AdminBadge active={setting.is_active} />
-                                        )}
+                                    <TableCell style={{ textAlign: 'center' }}>
+                                        <div className="tw:flex tw:justify-center">
+                                            {vm.editingId === setting.id ? (
+                                                <Switch
+                                                    size="sm"
+                                                    checked={vm.editFormData.is_active ?? setting.is_active}
+                                                    onCheckedChange={(checked) => vm.handleEditChange('is_active', checked)}
+                                                />
+                                            ) : (
+                                                <AdminBadge active={setting.is_active} />
+                                            )}
+                                        </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="tw:flex tw:justify-end tw:gap-1">
+                                    <TableCell style={{ textAlign: 'center' }}>
+                                        <div className="tw:flex tw:justify-center tw:gap-1">
                                             {vm.editingId === setting.id ? (
                                                 <>
                                                     <Button variant="ghost" size="icon-xs" onClick={vm.saveEdit}>
