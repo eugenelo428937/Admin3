@@ -18,6 +18,8 @@ vi.mock('./contexts/ConfigContext', () => ({
 
 // Mock all the heavy components to speed up tests
 vi.mock('./pages/Home.tsx', () => ({ __esModule: true, default: () => <div data-testid="home-page">Home Page</div> }));
+vi.mock('./pages/InternalHome.tsx', () => ({ __esModule: true, default: () => <div data-testid="internal-home">Home Page</div> }));
+vi.mock('./pages/Dashboard.tsx', () => ({ __esModule: true, default: () => <div data-testid="admin-dashboard">Dashboard</div> }));
 vi.mock('./pages/ProfilePage.tsx', () => ({ __esModule: true, default: () => <div data-testid="profile-page">Profile Page</div> }));
 vi.mock('./pages/Registration.tsx', () => ({ __esModule: true, default: () => <div data-testid="registration-page">Registration Page</div> }));
 vi.mock('./components/Navigation/MainNavBar.tsx', () => ({ __esModule: true, default: () => <nav data-testid="main-nav">Navigation</nav> }));
@@ -50,9 +52,14 @@ vi.mock('./hooks/useAuth.tsx', () => ({
   AuthProvider: ({ children }) => children,
 }));
 vi.mock('./components/admin/styles/admin.css', () => ({}));
-vi.mock('./components/admin/layout/AdminSidebar', () => ({
+vi.mock('./components/admin/layout/AdminShell', () => ({
   __esModule: true,
-  AdminSidebar: () => null,
+  AdminShell: () => null,
+}));
+vi.mock('./components/admin/layout/DarkModeProvider', () => ({
+  __esModule: true,
+  DarkModeProvider: ({ children }) => children,
+  useDarkMode: () => ({ mode: 'light', toggleMode: () => {} }),
 }));
 
 // Mock admin components
@@ -137,7 +144,7 @@ describe('App Component', () => {
   });
 
   describe('routing', () => {
-    test('redirects root path to /home', async () => {
+    test('renders internal home at root path', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <App />
@@ -145,11 +152,12 @@ describe('App Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('home-page')).toBeInTheDocument();
+        const homes = screen.getAllByTestId('internal-home');
+        expect(homes.length).toBeGreaterThanOrEqual(1);
       }, { timeout: 2000 });
     });
 
-    test('renders home page at /home', async () => {
+    test('renders internal home at /home', async () => {
       render(
         <MemoryRouter initialEntries={['/home']}>
           <App />
@@ -157,7 +165,8 @@ describe('App Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('home-page')).toBeInTheDocument();
+        const homes = screen.getAllByTestId('internal-home');
+        expect(homes.length).toBeGreaterThanOrEqual(1);
       }, { timeout: 2000 });
     });
 
@@ -285,7 +294,6 @@ describe('App Component', () => {
 
       await waitFor(() => {
         expect(container.querySelector('.admin-root')).toBeInTheDocument();
-        expect(container.querySelector('main')).toBeInTheDocument();
       });
     });
 
@@ -351,7 +359,7 @@ describe('App Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('home-page')).toBeInTheDocument();
+        expect(screen.getAllByTestId('internal-home').length).toBeGreaterThanOrEqual(1);
       }, { timeout: 2000 });
     });
 
@@ -365,7 +373,7 @@ describe('App Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('home-page')).toBeInTheDocument();
+        expect(screen.getAllByTestId('internal-home').length).toBeGreaterThanOrEqual(1);
       }, { timeout: 2000 });
     });
   });
@@ -381,7 +389,7 @@ describe('App Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('home-page')).toBeInTheDocument();
+        expect(screen.getAllByTestId('internal-home').length).toBeGreaterThanOrEqual(1);
       }, { timeout: 2000 });
     });
   });

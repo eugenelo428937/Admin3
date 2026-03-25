@@ -9,12 +9,10 @@ import {
 } from '@mui/material';
 import SearchModal from './SearchModal.tsx';
 import MobileNavigation from './MobileNavigation.tsx';
-import AdminMobileNavigation from './AdminMobileNavigation.tsx';
 import TopNavBar from './TopNavBar.tsx';
 import NavbarBrand from './NavbarBrand.tsx';
 import NavigationMenu from './NavigationMenu.tsx';
-import AdminNavigationMenu from './AdminNavigationMenu.tsx';
-import MainNavActions, { AdminNavActions } from './MainNavActions.tsx';
+import MainNavActions from './MainNavActions.tsx';
 import AuthModal from './AuthModal.tsx';
 import CartPanel from '../Ordering/CartPanel.tsx';
 import useMainNavBarVM from './useMainNavBarVM.ts';
@@ -23,14 +21,15 @@ const MainNavBar: React.FC = () => {
    const vm = useMainNavBarVM();
    const theme = useTheme() as any;
 
+   // Hide entire navbar in internal mode — admin shell provides its own top bar
+   if (vm.isInternal) return null;
+
    return (
       <div className="sticky-top">
-         {/* TopNavBar hidden on mobile (sm and smaller), hidden entirely in internal mode */}
-         {!vm.isInternal && (
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-               <TopNavBar onOpenSearch={vm.handleOpenSearchModal} />
-            </Box>
-         )}
+         {/* TopNavBar hidden on mobile (sm and smaller) */}
+         <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <TopNavBar onOpenSearch={vm.handleOpenSearchModal} />
+         </Box>
          <AppBar
             position="sticky"
             component="nav"
@@ -51,31 +50,24 @@ const MainNavBar: React.FC = () => {
                      px: '0 !Important',
                   }}
                >
-                  {/* Left Box - Action icons (mobile for public, all screens for internal) */}
+                  {/* Left Box - Action icons (mobile only) */}
                   <Box
                      sx={{
                         display: {
                            xs: 'flex',
-                           md: vm.isInternal ? 'flex' : 'none',
+                           md: 'none',
                         },
                         justifyContent: 'flex-start',
                         alignItems: 'center',
                         order: { xs: 1, lg: 3 },
                      }}
                   >
-                     {vm.isInternal ? (
-                        <AdminNavActions
-                           onOpenAuth={vm.handleOpenAuthModal}
-                           onOpenSearch={vm.handleOpenSearchModal}
-                        />
-                     ) : (
-                        <MainNavActions
-                           onOpenAuth={vm.handleOpenAuthModal}
-                           onOpenCart={vm.handleOpenCartPanel}
-                           onToggleMobileMenu={vm.toggleExpanded}
-                           isMobile={false}
-                        />
-                     )}
+                     <MainNavActions
+                        onOpenAuth={vm.handleOpenAuthModal}
+                        onOpenCart={vm.handleOpenCartPanel}
+                        onToggleMobileMenu={vm.toggleExpanded}
+                        isMobile={false}
+                     />
                   </Box>
 
                   {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
@@ -109,60 +101,46 @@ const MainNavBar: React.FC = () => {
                            width: 'auto',
                         }}
                      >
-                        {vm.isInternal ? (
-                           <AdminNavigationMenu
-                              onCollapseNavbar={() => vm.setExpanded(false)}
-                           />
-                        ) : (
-                           <NavigationMenu
-                              subjects={vm.subjects}
-                              navbarProductGroups={vm.navbarProductGroups}
-                              distanceLearningData={vm.distanceLearningData}
-                              tutorialData={vm.tutorialData}
-                              loadingProductGroups={vm.loadingNavigation}
-                              loadingDistanceLearning={vm.loadingNavigation}
-                              loadingTutorial={vm.loadingNavigation}
-                              handleSubjectClick={vm.handleSubjectClick}
-                              handleProductClick={vm.handleProductClick}
-                              handleProductGroupClick={vm.handleProductGroupClick}
-                              handleSpecificProductClick={vm.handleSpecificProductClick}
-                              handleProductVariationClick={vm.handleProductVariationClick}
-                              handleMarkingVouchersClick={vm.handleMarkingVouchersClick}
-                              onCollapseNavbar={() => vm.setExpanded(false)}
-                           />
-                        )}
+                        <NavigationMenu
+                           subjects={vm.subjects}
+                           navbarProductGroups={vm.navbarProductGroups}
+                           distanceLearningData={vm.distanceLearningData}
+                           tutorialData={vm.tutorialData}
+                           loadingProductGroups={vm.loadingNavigation}
+                           loadingDistanceLearning={vm.loadingNavigation}
+                           loadingTutorial={vm.loadingNavigation}
+                           handleSubjectClick={vm.handleSubjectClick}
+                           handleProductClick={vm.handleProductClick}
+                           handleProductGroupClick={vm.handleProductGroupClick}
+                           handleSpecificProductClick={vm.handleSpecificProductClick}
+                           handleProductVariationClick={vm.handleProductVariationClick}
+                           handleMarkingVouchersClick={vm.handleMarkingVouchersClick}
+                           onCollapseNavbar={() => vm.setExpanded(false)}
+                        />
                      </Container>
 
                      {/* Mobile Navigation - Visible only on mobile (below md breakpoint) */}
                      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                        {vm.isInternal ? (
-                           <AdminMobileNavigation
-                              open={vm.expanded}
-                              onClose={() => vm.setExpanded(false)}
-                              onOpenSearch={vm.handleOpenSearchModal}
-                           />
-                        ) : (
-                           <MobileNavigation
-                              open={vm.expanded}
-                              onClose={() => vm.setExpanded(false)}
-                              subjects={vm.subjects}
-                              navbarProductGroups={vm.navbarProductGroups}
-                              distanceLearningData={vm.distanceLearningData}
-                              tutorialData={vm.tutorialData}
-                              loadingProductGroups={vm.loadingNavigation}
-                              loadingDistanceLearning={vm.loadingNavigation}
-                              loadingTutorial={vm.loadingNavigation}
-                              handleSubjectClick={vm.handleSubjectClick}
-                              handleProductClick={vm.handleProductClick}
-                              handleProductGroupClick={vm.handleProductGroupClick}
-                              handleSpecificProductClick={vm.handleSpecificProductClick}
-                              handleProductVariationClick={vm.handleProductVariationClick}
-                              handleMarkingVouchersClick={vm.handleMarkingVouchersClick}
-                              onOpenSearch={vm.handleOpenSearchModal}
-                              onOpenCart={vm.handleOpenCartPanel}
-                              onOpenAuth={vm.handleOpenAuthModal}
-                           />
-                        )}
+                        <MobileNavigation
+                           open={vm.expanded}
+                           onClose={() => vm.setExpanded(false)}
+                           subjects={vm.subjects}
+                           navbarProductGroups={vm.navbarProductGroups}
+                           distanceLearningData={vm.distanceLearningData}
+                           tutorialData={vm.tutorialData}
+                           loadingProductGroups={vm.loadingNavigation}
+                           loadingDistanceLearning={vm.loadingNavigation}
+                           loadingTutorial={vm.loadingNavigation}
+                           handleSubjectClick={vm.handleSubjectClick}
+                           handleProductClick={vm.handleProductClick}
+                           handleProductGroupClick={vm.handleProductGroupClick}
+                           handleSpecificProductClick={vm.handleSpecificProductClick}
+                           handleProductVariationClick={vm.handleProductVariationClick}
+                           handleMarkingVouchersClick={vm.handleMarkingVouchersClick}
+                           onOpenSearch={vm.handleOpenSearchModal}
+                           onOpenCart={vm.handleOpenCartPanel}
+                           onOpenAuth={vm.handleOpenAuthModal}
+                        />
                      </Box>
                   </Box>
 
@@ -176,28 +154,21 @@ const MainNavBar: React.FC = () => {
                         order: 3,
                      }}
                   >
-                     {/* Desktop actions - hidden on mobile (not shown for internal - uses left box) */}
+                     {/* Desktop actions - hidden on mobile */}
                      <Box
                         sx={{
                            display: {
                               xs: 'none',
-                              md: vm.isInternal ? 'none' : 'flex',
+                              md: 'flex',
                            },
                         }}
                      >
-                        {vm.isInternal ? (
-                           <AdminNavActions
-                              onOpenAuth={vm.handleOpenAuthModal}
-                              onOpenSearch={vm.handleOpenSearchModal}
-                           />
-                        ) : (
-                           <MainNavActions
-                              onOpenAuth={vm.handleOpenAuthModal}
-                              onOpenCart={vm.handleOpenCartPanel}
-                              onToggleMobileMenu={vm.toggleExpanded}
-                              isMobile={false}
-                           />
-                        )}
+                        <MainNavActions
+                           onOpenAuth={vm.handleOpenAuthModal}
+                           onOpenCart={vm.handleOpenCartPanel}
+                           onToggleMobileMenu={vm.toggleExpanded}
+                           isMobile={false}
+                        />
                      </Box>
 
                      {/* Hamburger menu toggle - visible on mobile (below md breakpoint) */}
