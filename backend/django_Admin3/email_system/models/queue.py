@@ -78,6 +78,16 @@ class EmailQueue(models.Model):
         related_name='duplicates', help_text="Original queue item this was duplicated from"
     )
 
+    # Batch tracking
+    batch = models.ForeignKey(
+        'email_system.EmailBatch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='queue_items',
+        help_text='Batch this email belongs to, if any',
+    )
+
     class Meta:
         db_table = 'utils_email_queue'
         ordering = ['-priority', 'scheduled_at', 'created_at']
