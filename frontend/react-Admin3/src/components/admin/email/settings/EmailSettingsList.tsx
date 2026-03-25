@@ -7,6 +7,7 @@ import {
   AdminLoadingState,
   AdminEmptyState,
   AdminBadge,
+  AdminToggleGroup,
 } from '@/components/admin/composed';
 import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
@@ -47,23 +48,12 @@ const EmailSettingsList: React.FC = () => {
 
             <AdminErrorAlert message={vm.error} />
 
-            {/* Filter chips */}
-            <div className="tw:mb-6 tw:flex tw:flex-wrap tw:gap-2">
-                {SETTING_TYPE_OPTIONS.map(opt => (
-                    <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => vm.filterByType(opt.value)}
-                        className={`tw:rounded-full tw:border tw:px-3 tw:py-1 tw:text-xs tw:font-medium tw:transition-colors ${
-                            vm.filterType === opt.value
-                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
-                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
-                        }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
+            <AdminToggleGroup
+                options={SETTING_TYPE_OPTIONS}
+                value={vm.filterType}
+                onChange={vm.filterByType}
+                className="tw:mb-6"
+            />
 
             {vm.loading ? (
                 <AdminLoadingState rows={6} columns={6} />
