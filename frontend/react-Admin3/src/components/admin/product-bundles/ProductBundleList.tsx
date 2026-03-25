@@ -1,124 +1,207 @@
 import React from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
 import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Button, Container, Alert, Paper, Typography, Box, CircularProgress, TablePagination,
-    IconButton, Collapse
-} from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Link, Navigate } from 'react-router-dom';
+    AdminPage,
+    AdminPageHeader,
+    AdminBadge,
+    AdminErrorAlert,
+    AdminEmptyState,
+    AdminLoadingState,
+} from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/admin/ui/table';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/admin/ui/dropdown-menu';
 import useProductBundleListVM from './useProductBundleListVM';
-import BundleProductsPanel from './BundleProductsPanel.tsx';
+import BundleProductsPanel from './BundleProductsPanel';
 import type { ProductBundle } from '../../../types/productBundle';
 
 const AdminProductBundleList: React.FC = () => {
     const vm = useProductBundleListVM();
+    const navigate = useNavigate();
 
     if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
     return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                Product Bundles
-            </Typography>
+        <AdminPage>
+            <AdminPageHeader
+                title="Product Bundles"
+                actions={[
+                    {
+                        label: 'Create New Product Bundle',
+                        icon: Plus,
+                        onClick: () => navigate('/admin/product-bundles/new'),
+                    },
+                ]}
+            />
+            <AdminErrorAlert message={vm.error} />
 
-            <Button
-                component={Link}
-                to="/admin/product-bundles/new"
-                variant="contained"
-                sx={{ mb: 3 }}
-            >
-                Create New Product Bundle
-            </Button>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
-
-            {vm.bundles.length === 0 && !vm.error ? (
-                <Alert severity="info">No product bundles found.</Alert>
+            {vm.loading ? (
+                <AdminLoadingState rows={5} columns={6} />
+            ) : vm.bundles.length === 0 && !vm.error ? (
+                <AdminEmptyState title="No product bundles found" />
             ) : (
-                <TableContainer component={Paper}>
+                <div className="tw:rounded-admin tw:border tw:border-admin-border">
                     <Table>
-                        <TableHead>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell sx={{ width: 50 }} />
-                                <TableCell>ID</TableCell>
-                                <TableCell>Bundle Name</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Is Featured</TableCell>
-                                <TableCell>Is Active</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableHead className="tw:w-[50px]" />
+                                <TableHead>ID</TableHead>
+                                <TableHead>Bundle Name</TableHead>
+                                <TableHead>Subject</TableHead>
+                                <TableHead>Featured</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="tw:w-[50px]" />
                             </TableRow>
-                        </TableHead>
+                        </TableHeader>
                         <TableBody>
-                            {Array.isArray(vm.bundles) && vm.bundles.map((bundle: ProductBundle) => (
-                                <React.Fragment key={bundle.id}>
-                                    <TableRow hover>
-                                        <TableCell>
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => vm.handleToggleExpand(bundle.id)}
-                                                aria-label={vm.expandedId === bundle.id
-                                                    ? `Collapse products for ${bundle.bundle_name}`
-                                                    : `Expand products for ${bundle.bundle_name}`}
-                                            >
-                                                {vm.expandedId === bundle.id
-                                                    ? <KeyboardArrowUpIcon />
-                                                    : <KeyboardArrowDownIcon />}
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell>{bundle.id}</TableCell>
-                                        <TableCell>{bundle.bundle_name || '-'}</TableCell>
-                                        <TableCell>{(bundle.subject as { id: number; code: string })?.code || '-'}</TableCell>
-                                        <TableCell>{bundle.is_featured ? 'Yes' : 'No'}</TableCell>
-                                        <TableCell>{bundle.is_active ? 'Active' : 'Inactive'}</TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                            {Array.isArray(vm.bundles) &&
+                                vm.bundles.map((bundle: ProductBundle) => (
+                                    <React.Fragment key={bundle.id}>
+                                        <TableRow>
+                                            <TableCell>
                                                 <Button
-                                                    component={Link}
-                                                    to={`/admin/product-bundles/${bundle.id}/edit`}
-                                                    variant="contained"
-                                                    color="info"
-                                                    size="small"
+                                                    variant="ghost"
+                                                    size="icon-sm"
+                                                    onClick={() =>
+                                                        vm.handleToggleExpand(bundle.id)
+                                                    }
+                                                    aria-label={
+                                                        vm.expandedId === bundle.id
+                                                            ? `Collapse products for ${bundle.bundle_name}`
+                                                            : `Expand products for ${bundle.bundle_name}`
+                                                    }
                                                 >
-                                                    Edit
+                                                    {vm.expandedId === bundle.id ? (
+                                                        <ChevronUp className="tw:h-4 tw:w-4" />
+                                                    ) : (
+                                                        <ChevronDown className="tw:h-4 tw:w-4" />
+                                                    )}
                                                 </Button>
-                                                <Button
-                                                    variant="contained"
-                                                    color="error"
-                                                    size="small"
-                                                    onClick={() => vm.handleDelete(bundle.id)}
+                                            </TableCell>
+                                            <TableCell>{bundle.id}</TableCell>
+                                            <TableCell>
+                                                {bundle.bundle_name || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {(
+                                                    bundle.subject as {
+                                                        id: number;
+                                                        code: string;
+                                                    }
+                                                )?.code || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {bundle.is_featured ? 'Yes' : 'No'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <AdminBadge active={bundle.is_active} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon-sm"
+                                                            aria-label="Open menu"
+                                                        >
+                                                            <MoreHorizontal className="tw:h-4 tw:w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/admin/product-bundles/${bundle.id}/edit`
+                                                                )
+                                                            }
+                                                        >
+                                                            <Pencil className="tw:mr-2 tw:h-4 tw:w-4" />{' '}
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="tw:text-admin-destructive"
+                                                            onClick={() =>
+                                                                vm.handleDelete(bundle.id)
+                                                            }
+                                                        >
+                                                            <Trash2 className="tw:mr-2 tw:h-4 tw:w-4" />{' '}
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                        {vm.expandedId === bundle.id && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={7}
+                                                    className="tw:p-0"
                                                 >
-                                                    Delete
-                                                </Button>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow aria-hidden={vm.expandedId !== bundle.id}>
-                                        <TableCell sx={{ py: 0 }} colSpan={7}>
-                                            <Collapse in={vm.expandedId === bundle.id} timeout="auto" unmountOnExit>
-                                                <BundleProductsPanel bundleId={bundle.id} />
-                                            </Collapse>
-                                        </TableCell>
-                                    </TableRow>
-                                </React.Fragment>
-                            ))}
+                                                    <BundleProductsPanel
+                                                        bundleId={bundle.id}
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </React.Fragment>
+                                ))}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </div>
             )}
+
+            {/* Pagination */}
             {vm.totalCount > vm.rowsPerPage && (
-                <TablePagination
-                    component="div"
-                    count={vm.totalCount}
-                    page={vm.page}
-                    onPageChange={vm.handleChangePage}
-                    rowsPerPage={vm.rowsPerPage}
-                    onRowsPerPageChange={vm.handleChangeRowsPerPage}
-                    rowsPerPageOptions={[25, 50, 100]}
-                />
+                <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:text-sm tw:text-admin-fg-muted">
+                    <span>
+                        Showing {vm.page * vm.rowsPerPage + 1}&ndash;
+                        {Math.min(
+                            (vm.page + 1) * vm.rowsPerPage,
+                            vm.totalCount
+                        )}{' '}
+                        of {vm.totalCount}
+                    </span>
+                    <div className="tw:flex tw:items-center tw:gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) =>
+                                vm.handleChangePage(e, vm.page - 1)
+                            }
+                            disabled={vm.page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) =>
+                                vm.handleChangePage(e, vm.page + 1)
+                            }
+                            disabled={
+                                (vm.page + 1) * vm.rowsPerPage >=
+                                vm.totalCount
+                            }
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
             )}
-        </Container>
+        </AdminPage>
     );
 };
 

@@ -1,13 +1,19 @@
 import React from 'react';
+import { Save, X, Loader2 } from 'lucide-react';
 import {
-    Container, Typography, Box, TextField, Button, Paper,
-    CircularProgress, Alert, MenuItem, FormControlLabel, Checkbox,
-    Tabs, Tab, Divider,
-} from '@mui/material';
-import {
-    Save as SaveIcon,
-    Cancel as CancelIcon,
-} from '@mui/icons-material';
+    AdminPage,
+    AdminErrorAlert,
+    AdminLoadingState,
+    AdminFormField,
+    AdminSelect,
+} from '@/components/admin/composed';
+import { Button } from '@/components/admin/ui/button';
+import { Input } from '@/components/admin/ui/input';
+import { Textarea } from '@/components/admin/ui/textarea';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
+import { Separator } from '@/components/admin/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/admin/ui/tabs';
 import useEmailContentRuleFormVM from './useEmailContentRuleFormVM';
 import RuleConditionBuilder from '../shared/RuleConditionBuilder';
 import RuleJsonEditor from '../shared/RuleJsonEditor';
@@ -27,164 +33,158 @@ const EmailContentRuleForm: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <Container maxWidth="md" sx={{ mt: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
-            </Container>
+            <AdminPage>
+                <AdminLoadingState rows={8} columns={2} />
+            </AdminPage>
         );
     }
 
+    // Map conditionMode to tab index
+    const conditionTabIndex = vm.conditionMode === 'visual' ? 0 : 1;
+
     return (
-        <Container maxWidth="md" sx={{ mt: 2 }}>
-            <Typography variant="h5" gutterBottom>
+        <AdminPage>
+            <h1 className="tw:mb-6 tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
                 {vm.isEditMode ? 'Edit Content Rule' : 'New Content Rule'}
-            </Typography>
+            </h1>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
-            <Paper sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        label="Name"
-                        value={vm.formData.name}
-                        onChange={(e) => vm.handleChange('name', e.target.value)}
-                        fullWidth
-                        required
-                    />
-
-                    <TextField
-                        label="Description"
-                        value={vm.formData.description}
-                        onChange={(e) => vm.handleChange('description', e.target.value)}
-                        fullWidth
-                        multiline
-                        rows={3}
-                    />
-
-                    <TextField
-                        label="Rule Type"
-                        value={vm.formData.rule_type}
-                        onChange={(e) => vm.handleChange('rule_type', e.target.value)}
-                        select
-                        fullWidth
-                        required
-                    >
-                        {RULE_TYPES.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        label="Placeholder"
-                        value={vm.formData.placeholder}
-                        onChange={(e) => vm.handleChange('placeholder', e.target.value ? Number(e.target.value) : '')}
-                        select
-                        fullWidth
-                        required
-                    >
-                        <MenuItem value="">
-                            <em>Select a placeholder</em>
-                        </MenuItem>
-                        {vm.placeholders.map(p => (
-                            <MenuItem key={p.id} value={p.id}>
-                                {p.display_name || p.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <TextField
-                            label="Priority"
-                            type="number"
-                            value={vm.formData.priority}
-                            onChange={(e) => vm.handleChange('priority', parseInt(e.target.value, 10) || 0)}
-                            sx={{ width: 150 }}
+            <div className="tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <div className="tw:space-y-4">
+                    <AdminFormField label="Name" required>
+                        <Input
+                            value={vm.formData.name}
+                            onChange={(e) => vm.handleChange('name', e.target.value)}
                         />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={vm.formData.is_exclusive}
-                                    onChange={(e) => vm.handleChange('is_exclusive', e.target.checked)}
+                    </AdminFormField>
+
+                    <AdminFormField label="Description">
+                        <Textarea
+                            value={vm.formData.description}
+                            onChange={(e) => vm.handleChange('description', e.target.value)}
+                            rows={3}
+                        />
+                    </AdminFormField>
+
+                    <AdminFormField label="Rule Type" required>
+                        <AdminSelect
+                            options={RULE_TYPES.map(opt => ({ value: opt.value, label: opt.label }))}
+                            value={vm.formData.rule_type}
+                            onChange={(v) => vm.handleChange('rule_type', v)}
+                        />
+                    </AdminFormField>
+
+                    <AdminFormField label="Placeholder" required>
+                        <AdminSelect
+                            options={[
+                                { value: '', label: 'Select a placeholder' },
+                                ...vm.placeholders.map(p => ({
+                                    value: String(p.id),
+                                    label: p.display_name || p.name,
+                                })),
+                            ]}
+                            value={vm.formData.placeholder ? String(vm.formData.placeholder) : ''}
+                            onChange={(v) => vm.handleChange('placeholder', v ? Number(v) : '')}
+                        />
+                    </AdminFormField>
+
+                    <div className="tw:flex tw:items-center tw:gap-6">
+                        <div className="tw:w-36">
+                            <AdminFormField label="Priority">
+                                <Input
+                                    type="number"
+                                    value={vm.formData.priority}
+                                    onChange={(e) => vm.handleChange('priority', parseInt(e.target.value, 10) || 0)}
                                 />
-                            }
-                            label="Exclusive"
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={vm.formData.is_active}
-                                    onChange={(e) => vm.handleChange('is_active', e.target.checked)}
-                                />
-                            }
-                            label="Active"
-                        />
-                    </Box>
+                            </AdminFormField>
+                        </div>
+                        <div className="tw:flex tw:items-center tw:gap-2 tw:pt-5">
+                            <Checkbox
+                                id="cb-exclusive"
+                                checked={vm.formData.is_exclusive}
+                                onCheckedChange={(checked) => vm.handleChange('is_exclusive', Boolean(checked))}
+                            />
+                            <Label htmlFor="cb-exclusive">Exclusive</Label>
+                        </div>
+                        <div className="tw:flex tw:items-center tw:gap-2 tw:pt-5">
+                            <Checkbox
+                                id="cb-active"
+                                checked={vm.formData.is_active}
+                                onCheckedChange={(checked) => vm.handleChange('is_active', Boolean(checked))}
+                            />
+                            <Label htmlFor="cb-active">Active</Label>
+                        </div>
+                    </div>
 
-                    <Divider />
+                    <Separator />
 
                     {/* Condition Section */}
-                    <Typography variant="subtitle1">Condition</Typography>
+                    <h3 className="tw:text-base tw:font-semibold tw:text-admin-fg">Condition</h3>
 
                     <Tabs
-                        value={vm.conditionMode}
-                        onChange={(_, newValue) => vm.toggleConditionMode(newValue)}
-                        sx={{ mb: 1 }}
+                        value={conditionTabIndex}
+                        onValueChange={(idx) => vm.toggleConditionMode(idx === 0 ? 'visual' : 'json')}
                     >
-                        <Tab label="Visual Builder" value="visual" />
-                        <Tab label="JSON" value="json" />
+                        <TabsList>
+                            <TabsTrigger>Visual Builder</TabsTrigger>
+                            <TabsTrigger>JSON</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value={conditionTabIndex} index={0}>
+                            <RuleConditionBuilder
+                                conditionField={vm.formData.condition_field}
+                                conditionOperator={vm.formData.condition_operator}
+                                conditionValue={vm.formData.condition_value}
+                                additionalConditions={vm.formData.additional_conditions}
+                                onChange={vm.handleConditionChange}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value={conditionTabIndex} index={1}>
+                            <RuleJsonEditor
+                                value={vm.jsonCondition}
+                                onChange={vm.handleJsonConditionChange}
+                                error={vm.jsonConditionError}
+                            />
+                        </TabsContent>
                     </Tabs>
 
-                    {vm.conditionMode === 'visual' ? (
-                        <RuleConditionBuilder
-                            conditionField={vm.formData.condition_field}
-                            conditionOperator={vm.formData.condition_operator}
-                            conditionValue={vm.formData.condition_value}
-                            additionalConditions={vm.formData.additional_conditions}
-                            onChange={vm.handleConditionChange}
+                    <Separator />
+
+                    <AdminFormField label="Custom Logic" description="Advanced custom logic expression (optional)">
+                        <Textarea
+                            value={vm.formData.custom_logic}
+                            onChange={(e) => vm.handleChange('custom_logic', e.target.value)}
+                            rows={4}
+                            className="tw:font-mono tw:text-sm"
                         />
-                    ) : (
-                        <RuleJsonEditor
-                            value={vm.jsonCondition}
-                            onChange={vm.handleJsonConditionChange}
-                            error={vm.jsonConditionError}
-                        />
-                    )}
+                    </AdminFormField>
 
-                    <Divider />
-
-                    <TextField
-                        label="Custom Logic"
-                        value={vm.formData.custom_logic}
-                        onChange={(e) => vm.handleChange('custom_logic', e.target.value)}
-                        fullWidth
-                        multiline
-                        rows={4}
-                        helperText="Advanced custom logic expression (optional)"
-                        InputProps={{ sx: { fontFamily: 'monospace', fontSize: '0.875rem' } }}
-                    />
-
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+                    <div className="tw:flex tw:justify-end tw:gap-2 tw:pt-4">
                         <Button
-                            variant="outlined"
-                            startIcon={<CancelIcon />}
+                            variant="outline"
                             onClick={vm.handleCancel}
                             disabled={vm.isSubmitting}
                         >
+                            <X className="tw:size-4" />
                             Cancel
                         </Button>
                         <Button
-                            variant="contained"
-                            startIcon={vm.isSubmitting ? <CircularProgress size={20} /> : <SaveIcon />}
                             onClick={vm.handleSubmit}
                             disabled={vm.isSubmitting}
                         >
+                            {vm.isSubmitting ? (
+                                <Loader2 className="tw:size-4 tw:animate-spin" />
+                            ) : (
+                                <Save className="tw:size-4" />
+                            )}
                             {vm.isSubmitting ? 'Saving...' : 'Save'}
                         </Button>
-                    </Box>
-                </Box>
-            </Paper>
-        </Container>
+                    </div>
+                </div>
+            </div>
+        </AdminPage>
     );
 };
 

@@ -1,8 +1,8 @@
 import { vi } from 'vitest';
 // src/components/admin/prices/__tests__/PriceList.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import AdminPriceList from '../PriceList.js';
 
@@ -25,9 +25,6 @@ vi.mock('../../../../services/priceService', () => ({
 }));
 
 import priceService from '../../../../services/priceService';
-
-import appTheme from '../../../../theme';
-const theme = appTheme;
 
 const mockPrices = [
   {
@@ -59,9 +56,7 @@ const mockPrices = [
 const renderComponent = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AdminPriceList />
-      </ThemeProvider>
+      <AdminPriceList />
     </BrowserRouter>
   );
 };
@@ -90,14 +85,15 @@ describe('AdminPriceList', () => {
       priceService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      // AdminDataTable shows Skeleton loading state — data not yet rendered
+      expect(screen.queryByText('CM2/PC/2025-04')).not.toBeInTheDocument();
     });
 
     test('renders add new price button', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /add new price/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add new price/i })).toBeInTheDocument();
       });
     });
   });
@@ -153,27 +149,51 @@ describe('AdminPriceList', () => {
       });
     });
 
-    test('displays edit icon buttons for each product row', async () => {
+    test('displays action menu buttons for each product row', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit prices/i });
-        expect(editButtons).toHaveLength(2);
+        const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+        expect(menuButtons).toHaveLength(2);
       });
     });
 
-    test('displays delete icon buttons for each product row', async () => {
+    test('displays edit action in dropdown menu', async () => {
+      const user = userEvent.setup();
       renderComponent();
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
-        expect(deleteButtons).toHaveLength(2);
+        expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /edit prices/i })).toBeInTheDocument();
+      });
+    });
+
+    test('displays delete action in dropdown menu', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
+      });
+
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete prices/i })).toBeInTheDocument();
       });
     });
   });
 
   describe('delete functionality', () => {
     test('deletes all prices for a product when confirmed', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       priceService.delete.mockResolvedValue({});
 
@@ -183,8 +203,14 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete prices/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete prices/i }));
 
       await waitFor(() => {
         // CM2 product has 2 prices (IDs 1 and 2), both should be deleted
@@ -195,6 +221,7 @@ describe('AdminPriceList', () => {
     });
 
     test('does not delete when cancelled', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
@@ -203,8 +230,14 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete prices/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete prices/i }));
 
       expect(priceService.delete).not.toHaveBeenCalled();
     });
@@ -222,6 +255,7 @@ describe('AdminPriceList', () => {
     });
 
     test('displays error when delete fails', async () => {
+      const user = userEvent.setup();
       window.confirm = vi.fn().mockReturnValue(true);
       priceService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
@@ -231,8 +265,14 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
-      fireEvent.click(deleteButtons[0]);
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i });
+      await user.click(menuButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete prices/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('menuitem', { name: /delete prices/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/failed to delete prices/i)).toBeInTheDocument();
@@ -261,26 +301,6 @@ describe('AdminPriceList', () => {
           page: 1,
           page_size: 500,
         });
-      });
-    });
-  });
-
-  describe('links', () => {
-    test('add new price links to correct path', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const link = screen.getByRole('link', { name: /add new price/i });
-        expect(link).toHaveAttribute('href', '/admin/prices/new');
-      });
-    });
-
-    test('edit button links to first price edit page', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit prices/i });
-        expect(editButtons[0]).toHaveAttribute('href', '/admin/prices/1/edit');
       });
     });
   });

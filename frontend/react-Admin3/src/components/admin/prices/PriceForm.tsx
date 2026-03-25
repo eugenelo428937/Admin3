@@ -1,106 +1,84 @@
 import React from 'react';
-import {
-  TextField, Button, Container, Alert, Box, Typography,
-  FormControl, FormLabel, Select, MenuItem, CircularProgress
-} from '@mui/material';
 import { Navigate } from 'react-router-dom';
+import {
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+  AdminSelect,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
 import usePriceFormVM from './usePriceFormVM';
 
 const priceTypes = [
-    { value: 'standard', label: 'Standard' },
-    { value: 'retaker', label: 'Retaker' },
-    { value: 'reduced', label: 'Reduced' },
-    { value: 'additional', label: 'Additional' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'retaker', label: 'Retaker' },
+  { value: 'reduced', label: 'Reduced' },
+  { value: 'additional', label: 'Additional' },
 ];
 
 const AdminPriceForm: React.FC = () => {
-    const vm = usePriceFormVM();
+  const vm = usePriceFormVM();
 
-    if (!vm.isSuperuser) return <Navigate to="/" replace />;
-    if (vm.loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
-    return (
-        <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
-                {vm.isEditMode ? 'Edit Price' : 'Add New Price'}
-            </Typography>
+  return (
+    <AdminPage>
+      <AdminFormLayout
+        title={vm.isEditMode ? 'Edit Price' : 'Add New Price'}
+        onSubmit={vm.handleSubmit}
+        onCancel={vm.handleCancel}
+        loading={vm.loading}
+        error={vm.error}
+        submitLabel={vm.isEditMode ? 'Update Price' : 'Create Price'}
+      >
+        <AdminFormField label="Product" required>
+          <AdminSelect
+            options={vm.storeProducts.map((p) => ({
+              value: String(p.id),
+              label: p.product_code || `Product ID: ${p.id}`,
+            }))}
+            value={String(vm.formData.product)}
+            onChange={(value) =>
+              vm.handleChange({ target: { name: 'product', value } } as any)
+            }
+            placeholder="Select a product"
+          />
+        </AdminFormField>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+        <AdminFormField label="Price Type" required>
+          <AdminSelect
+            options={priceTypes}
+            value={vm.formData.price_type}
+            onChange={(value) =>
+              vm.handleChange({ target: { name: 'price_type', value } } as any)
+            }
+            placeholder="Select a price type"
+          />
+        </AdminFormField>
 
-            <Box component="form" onSubmit={vm.handleSubmit}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Product</FormLabel>
-                    <Select
-                        name="product"
-                        value={vm.formData.product}
-                        onChange={(e) => vm.handleChange(e as any)}
-                        displayEmpty
-                        fullWidth
-                    >
-                        <MenuItem value="" disabled>Select a product</MenuItem>
-                        {vm.storeProducts.map((product) => (
-                            <MenuItem key={product.id} value={product.id}>
-                                {product.product_code || `Product ID: ${product.id}`}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+        <AdminFormField label="Amount" required>
+          <Input
+            name="amount"
+            type="number"
+            value={vm.formData.amount}
+            onChange={vm.handleChange as any}
+            min={0}
+            step="0.01"
+          />
+        </AdminFormField>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Price Type</FormLabel>
-                    <Select
-                        name="price_type"
-                        value={vm.formData.price_type}
-                        onChange={(e) => vm.handleChange(e as any)}
-                        displayEmpty
-                        fullWidth
-                    >
-                        <MenuItem value="" disabled>Select a price type</MenuItem>
-                        {priceTypes.map((pt) => (
-                            <MenuItem key={pt.value} value={pt.value}>
-                                {pt.label}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Amount</FormLabel>
-                    <TextField
-                        name="amount"
-                        type="number"
-                        value={vm.formData.amount}
-                        onChange={vm.handleChange}
-                        required
-                        fullWidth
-                        inputProps={{ min: 0, step: '0.01' }}
-                    />
-                </FormControl>
-
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <FormLabel>Currency</FormLabel>
-                    <TextField
-                        name="currency"
-                        value={vm.formData.currency}
-                        onChange={vm.handleChange}
-                        required
-                        fullWidth
-                        inputProps={{ maxLength: 3 }}
-                        helperText="ISO 4217 currency code (e.g., GBP, USD, EUR)"
-                    />
-                </FormControl>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" type="submit">
-                        {vm.isEditMode ? 'Update Price' : 'Create Price'}
-                    </Button>
-                    <Button variant="outlined" onClick={vm.handleCancel}>
-                        Cancel
-                    </Button>
-                </Box>
-            </Box>
-        </Container>
-    );
+        <AdminFormField label="Currency" required>
+          <Input
+            name="currency"
+            value={vm.formData.currency}
+            onChange={vm.handleChange as any}
+            maxLength={3}
+            placeholder="ISO 4217 currency code (e.g., GBP, USD, EUR)"
+          />
+        </AdminFormField>
+      </AdminFormLayout>
+    </AdminPage>
+  );
 };
 
 export default AdminPriceForm;

@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 // src/components/admin/recommendations/__tests__/RecommendationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
 import AdminRecommendationForm from '../RecommendationForm.tsx';
 
 // Mock useAuth
@@ -46,11 +45,9 @@ vi.mock('../../../../services/productProductVariationService', () => ({
 import recommendationService from '../../../../services/recommendationService';
 import productProductVariationService from '../../../../services/productProductVariationService';
 
-const theme = appTheme;
-
 // import gets the mocked version since vi.mock is hoisted
 import { useParams } from 'react-router-dom';
-import appTheme from '../../../../theme';
+
 const setMockParams = (params) => {
   useParams.mockReturnValue(params);
 };
@@ -67,11 +64,7 @@ const renderComponent = (isEditMode = false) => {
     setMockParams({});
   }
 
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminRecommendationForm />
-    </ThemeProvider>
-  );
+  return render(<AdminRecommendationForm />);
 };
 
 describe('AdminRecommendationForm', () => {

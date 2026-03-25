@@ -1,30 +1,29 @@
 import React from 'react';
-import { Box, Button, Typography, Paper, Tooltip } from '@mui/material';
-
-// ─── Interfaces ───────────────────────────────────────────────
+import { Button } from '@/components/admin/ui/button';
 
 interface StepTutorialsProps {
   onComplete: () => void;
 }
 
-// ─── Component ────────────────────────────────────────────────
-
 const StepTutorials: React.FC<StepTutorialsProps> = ({ onComplete }) => {
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 3 }}>Step 4: Tutorials</Typography>
-      <Typography variant="body1" sx={{ mb: 3 }}>
-        Tutorial setup will be available in a future release. You can set up tutorials later from the admin panel.
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Tooltip title="Coming Soon" arrow>
-          <span>
-            <Button variant="contained" disabled>Upload</Button>
-          </span>
-        </Tooltip>
-        <Button variant="outlined" onClick={onComplete}>Set up later</Button>
-      </Box>
-    </Paper>
+    <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
+      <h2 className="tw:mb-4 tw:text-xl tw:font-semibold tw:text-admin-fg">
+        Step 4: Tutorials
+      </h2>
+      <p className="tw:mb-4 tw:text-sm tw:text-admin-fg-muted">
+        Tutorial setup will be available in a future release. You can set up tutorials
+        later from the admin panel.
+      </p>
+      <div className="tw:flex tw:gap-3">
+        <span title="Coming Soon">
+          <Button disabled>Upload</Button>
+        </span>
+        <Button variant="outline" onClick={onComplete}>
+          Set up later
+        </Button>
+      </div>
+    </div>
   );
 };
 

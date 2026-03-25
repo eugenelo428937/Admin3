@@ -1,9 +1,7 @@
 import { vi } from 'vitest';
-// src/components/admin/products/__tests__/ProductDetail.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import AdminProductDetail from '../ProductDetail.js';
+import AdminProductDetail from '../ProductDetail.tsx';
 
 // Mock useAuth
 vi.mock('../../../../hooks/useAuth.tsx', () => ({
@@ -37,9 +35,6 @@ vi.mock('../../../../services/catalogProductService', () => ({
 
 import catalogProductService from '../../../../services/catalogProductService';
 
-import appTheme from '../../../../theme';
-const theme = appTheme;
-
 const mockProduct = {
   id: '1',
   code: 'CM2-SM',
@@ -52,11 +47,7 @@ const mockProduct = {
 };
 
 const renderComponent = () => {
-  return render(
-    <ThemeProvider theme={theme}>
-      <AdminProductDetail />
-    </ThemeProvider>
-  );
+  return render(<AdminProductDetail />);
 };
 
 describe('AdminProductDetail', () => {
@@ -83,10 +74,10 @@ describe('AdminProductDetail', () => {
       catalogProductService.getById.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
-    test('renders product fullname in card header', async () => {
+    test('renders product fullname', async () => {
       renderComponent();
 
       await waitFor(() => {
@@ -154,7 +145,7 @@ describe('AdminProductDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /edit/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
       });
     });
 
@@ -170,7 +161,7 @@ describe('AdminProductDetail', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /back to list/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /back to list/i })).toBeInTheDocument();
       });
     });
   });

@@ -1,10 +1,25 @@
 import React, { useEffect } from 'react';
+import { Pencil, Save, X } from 'lucide-react';
 import {
-    Container, Typography, Box, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper, Chip, CircularProgress, Alert, IconButton,
-    TextField, Switch, Button,
-} from '@mui/material';
-import { Edit as EditIcon, Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
+  AdminPage,
+  AdminPageHeader,
+  AdminErrorAlert,
+  AdminLoadingState,
+  AdminEmptyState,
+  AdminBadge,
+} from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
+import { Button } from '@/components/admin/ui/button';
+import { Input } from '@/components/admin/ui/input';
+import { Switch } from '@/components/admin/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/admin/ui/table';
 import { useEmailSettingsListVM } from './useEmailSettingsListVM';
 import type { SettingType } from '../../../../types/email';
 
@@ -27,56 +42,60 @@ const EmailSettingsList: React.FC = () => {
     }, [vm.filterType]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Typography variant="h5" gutterBottom>Email Settings</Typography>
+        <AdminPage>
+            <AdminPageHeader title="Email Settings" />
 
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
-            <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {/* Filter chips */}
+            <div className="tw:mb-6 tw:flex tw:flex-wrap tw:gap-2">
                 {SETTING_TYPE_OPTIONS.map(opt => (
-                    <Chip
+                    <button
                         key={opt.value}
-                        label={opt.label}
-                        color={vm.filterType === opt.value ? 'primary' : 'default'}
+                        type="button"
                         onClick={() => vm.filterByType(opt.value)}
-                        variant={vm.filterType === opt.value ? 'filled' : 'outlined'}
-                    />
+                        className={`tw:rounded-full tw:border tw:px-3 tw:py-1 tw:text-xs tw:font-medium tw:transition-colors ${
+                            vm.filterType === opt.value
+                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
+                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
+                        }`}
+                    >
+                        {opt.label}
+                    </button>
                 ))}
-            </Box>
+            </div>
 
             {vm.loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
+                <AdminLoadingState rows={6} columns={6} />
+            ) : vm.settings.length === 0 ? (
+                <AdminEmptyState title="No settings found" />
             ) : (
-                <TableContainer component={Paper}>
-                    <Table size="small">
-                        <TableHead>
+                <div className="tw:rounded-md tw:border tw:border-admin-border">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell>Key</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Display Name</TableCell>
-                                <TableCell>Value</TableCell>
-                                <TableCell>Active</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableHead>Key</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Display Name</TableHead>
+                                <TableHead>Value</TableHead>
+                                <TableHead>Active</TableHead>
+                                <TableHead className="tw:text-right">Actions</TableHead>
                             </TableRow>
-                        </TableHead>
+                        </TableHeader>
                         <TableBody>
                             {vm.settings.map(setting => (
                                 <TableRow key={setting.id}>
                                     <TableCell>
-                                        <Typography variant="body2" fontFamily="monospace">
-                                            {setting.key}
-                                        </Typography>
+                                        <span className="tw:font-mono tw:text-sm">{setting.key}</span>
                                     </TableCell>
                                     <TableCell>
-                                        <Chip label={setting.setting_type} size="small" />
+                                        <Badge variant="outline">{setting.setting_type}</Badge>
                                     </TableCell>
                                     <TableCell>{setting.display_name}</TableCell>
                                     <TableCell>
                                         {vm.editingId === setting.id ? (
-                                            <TextField
-                                                size="small"
+                                            <Input
+                                                className="tw:h-8 tw:max-w-xs"
                                                 value={typeof vm.editFormData.value === 'string'
                                                     ? vm.editFormData.value
                                                     : JSON.stringify(vm.editFormData.value)}
@@ -85,65 +104,53 @@ const EmailSettingsList: React.FC = () => {
                                                     try { val = JSON.parse(val); } catch {}
                                                     vm.handleEditChange('value', val);
                                                 }}
-                                                fullWidth
                                             />
                                         ) : (
-                                            <Typography variant="body2" fontFamily="monospace">
+                                            <span className="tw:font-mono tw:text-sm">
                                                 {setting.is_sensitive
                                                     ? '********'
                                                     : typeof setting.value === 'string'
                                                         ? setting.value
                                                         : JSON.stringify(setting.value)}
-                                            </Typography>
+                                            </span>
                                         )}
                                     </TableCell>
                                     <TableCell>
                                         {vm.editingId === setting.id ? (
                                             <Switch
+                                                size="sm"
                                                 checked={vm.editFormData.is_active ?? setting.is_active}
-                                                onChange={(e) => vm.handleEditChange('is_active', e.target.checked)}
-                                                size="small"
+                                                onCheckedChange={(checked) => vm.handleEditChange('is_active', checked)}
                                             />
                                         ) : (
-                                            <Chip
-                                                label={setting.is_active ? 'Active' : 'Inactive'}
-                                                color={setting.is_active ? 'success' : 'default'}
-                                                size="small"
-                                            />
+                                            <AdminBadge active={setting.is_active} />
                                         )}
                                     </TableCell>
-                                    <TableCell align="right">
-                                        {vm.editingId === setting.id ? (
-                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                <IconButton size="small" color="primary" onClick={vm.saveEdit}>
-                                                    <SaveIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={vm.cancelEdit}>
-                                                    <CloseIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        ) : (
-                                            <IconButton size="small" onClick={() => vm.startEdit(setting)}>
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                        )}
+                                    <TableCell>
+                                        <div className="tw:flex tw:justify-end tw:gap-1">
+                                            {vm.editingId === setting.id ? (
+                                                <>
+                                                    <Button variant="ghost" size="icon-xs" onClick={vm.saveEdit}>
+                                                        <Save className="tw:size-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon-xs" onClick={vm.cancelEdit}>
+                                                        <X className="tw:size-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <Button variant="ghost" size="icon-xs" onClick={() => vm.startEdit(setting)}>
+                                                    <Pencil className="tw:size-4" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {vm.settings.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={6} align="center">
-                                        <Typography color="text.secondary" sx={{ py: 2 }}>
-                                            No settings found
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            )}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </div>
             )}
-        </Container>
+        </AdminPage>
     );
 };
 

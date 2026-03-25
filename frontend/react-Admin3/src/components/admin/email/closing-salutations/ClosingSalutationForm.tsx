@@ -1,21 +1,23 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 import {
-    Container, Typography, Box, TextField, Button, Paper,
-    CircularProgress, Alert, MenuItem, FormControlLabel, Checkbox,
-} from '@mui/material';
-import {
-    Save as SaveIcon,
-    Cancel as CancelIcon,
-} from '@mui/icons-material';
+  AdminPage,
+  AdminFormLayout,
+  AdminFormField,
+  AdminSelect,
+} from '@/components/admin/composed';
+import { Input } from '@/components/admin/ui/input';
+import { Checkbox } from '@/components/admin/ui/checkbox';
+import { Label } from '@/components/admin/ui/label';
 import useClosingSalutationFormVM from './useClosingSalutationFormVM';
 import type { SignatureType, StaffNameFormat } from '../../../../types/email';
 
-const SIGNATURE_TYPES: { value: SignatureType; label: string }[] = [
+const SIGNATURE_TYPES: { value: string; label: string }[] = [
     { value: 'team', label: 'Team' },
     { value: 'staff', label: 'Staff' },
 ];
 
-const STAFF_NAME_FORMATS: { value: StaffNameFormat; label: string }[] = [
+const STAFF_NAME_FORMATS: { value: string; label: string }[] = [
     { value: 'full_name', label: 'Full Name' },
     { value: 'first_name', label: 'First Name Only' },
 ];
@@ -23,128 +25,101 @@ const STAFF_NAME_FORMATS: { value: StaffNameFormat; label: string }[] = [
 const ClosingSalutationForm: React.FC = () => {
     const vm = useClosingSalutationFormVM();
 
-    if (vm.loading) {
-        return (
-            <Container maxWidth="md" sx={{ mt: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                </Box>
-            </Container>
-        );
-    }
+    if (vm.loading) return null;
 
     return (
-        <Container maxWidth="md" sx={{ mt: 2 }}>
-            <Typography variant="h5" gutterBottom>
-                {vm.isEditMode ? 'Edit Closing Salutation' : 'New Closing Salutation'}
-            </Typography>
-
-            {vm.error && <Alert severity="error" sx={{ mb: 2 }}>{vm.error}</Alert>}
-
-            <Paper sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        label="Name"
+        <AdminPage className="tw:max-w-3xl">
+            <AdminFormLayout
+                title={vm.isEditMode ? 'Edit Closing Salutation' : 'New Closing Salutation'}
+                onSubmit={(e) => { e.preventDefault(); vm.handleSubmit(); }}
+                onCancel={vm.handleCancel}
+                loading={vm.isSubmitting}
+                error={vm.error}
+            >
+                <AdminFormField
+                    label="Name"
+                    required
+                    description="Internal identifier (e.g., team_kind_regards)"
+                >
+                    <Input
                         value={vm.formData.name}
                         onChange={(e) => vm.handleChange('name', e.target.value)}
-                        fullWidth
-                        required
-                        helperText="Internal identifier (e.g., team_kind_regards)"
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    <TextField
-                        label="Display Name"
+                <AdminFormField label="Display Name" required>
+                    <Input
                         value={vm.formData.display_name}
                         onChange={(e) => vm.handleChange('display_name', e.target.value)}
-                        fullWidth
-                        required
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    <TextField
-                        label="Sign-off Text"
+                <AdminFormField
+                    label="Sign-off Text"
+                    required
+                    description='The closing phrase (e.g., "Kind Regards", "Best Wishes")'
+                >
+                    <Input
                         value={vm.formData.sign_off_text}
                         onChange={(e) => vm.handleChange('sign_off_text', e.target.value)}
-                        fullWidth
-                        required
-                        helperText='The closing phrase (e.g., "Kind Regards", "Best Wishes")'
+                        disabled={vm.isSubmitting}
                     />
+                </AdminFormField>
 
-                    <TextField
-                        label="Signature Type"
+                <AdminFormField label="Signature Type" required>
+                    <AdminSelect
+                        options={SIGNATURE_TYPES}
                         value={vm.formData.signature_type}
-                        onChange={(e) => vm.handleChange('signature_type', e.target.value)}
-                        select
-                        fullWidth
-                        required
-                    >
-                        {SIGNATURE_TYPES.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                        ))}
-                    </TextField>
+                        onChange={(val) => vm.handleChange('signature_type', val)}
+                        disabled={vm.isSubmitting}
+                    />
+                </AdminFormField>
 
-                    {vm.formData.signature_type === 'team' && (
-                        <TextField
-                            label="Team Signature"
+                {vm.formData.signature_type === 'team' && (
+                    <AdminFormField
+                        label="Team Signature"
+                        required
+                        description='The team name displayed as the signature (e.g., "The ActEd Team")'
+                    >
+                        <Input
                             value={vm.formData.team_signature}
                             onChange={(e) => vm.handleChange('team_signature', e.target.value)}
-                            fullWidth
-                            required
-                            helperText='The team name displayed as the signature (e.g., "The ActEd Team")'
+                            disabled={vm.isSubmitting}
                         />
-                    )}
+                    </AdminFormField>
+                )}
 
-                    {vm.formData.signature_type === 'staff' && (
-                        <>
-                            <TextField
-                                label="Staff Name Format"
+                {vm.formData.signature_type === 'staff' && (
+                    <>
+                        <AdminFormField label="Staff Name Format" required>
+                            <AdminSelect
+                                options={STAFF_NAME_FORMATS}
                                 value={vm.formData.staff_name_format}
-                                onChange={(e) => vm.handleChange('staff_name_format', e.target.value)}
-                                select
-                                fullWidth
-                                required
-                            >
-                                {STAFF_NAME_FORMATS.map(opt => (
-                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                                ))}
-                            </TextField>
-
-                            <Alert severity="info">
-                                Staff member selection will be available in a future update.
-                            </Alert>
-                        </>
-                    )}
-
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={vm.formData.is_active}
-                                onChange={(e) => vm.handleChange('is_active', e.target.checked)}
+                                onChange={(val) => vm.handleChange('staff_name_format', val)}
+                                disabled={vm.isSubmitting}
                             />
-                        }
-                        label="Active"
-                    />
+                        </AdminFormField>
 
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<CancelIcon />}
-                            onClick={vm.handleCancel}
-                            disabled={vm.isSubmitting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={vm.isSubmitting ? <CircularProgress size={20} /> : <SaveIcon />}
-                            onClick={vm.handleSubmit}
-                            disabled={vm.isSubmitting}
-                        >
-                            {vm.isSubmitting ? 'Saving...' : 'Save'}
-                        </Button>
-                    </Box>
-                </Box>
-            </Paper>
-        </Container>
+                        <div className="tw:flex tw:items-start tw:gap-3 tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-700">
+                            <Info className="tw:mt-0.5 tw:size-4 tw:shrink-0" />
+                            <p>Staff member selection will be available in a future update.</p>
+                        </div>
+                    </>
+                )}
+
+                <div className="tw:flex tw:items-center tw:gap-2">
+                    <Checkbox
+                        id="is_active"
+                        checked={vm.formData.is_active}
+                        onCheckedChange={(checked) => vm.handleChange('is_active', !!checked)}
+                        disabled={vm.isSubmitting}
+                    />
+                    <Label htmlFor="is_active">Active</Label>
+                </div>
+            </AdminFormLayout>
+        </AdminPage>
     );
 };
 

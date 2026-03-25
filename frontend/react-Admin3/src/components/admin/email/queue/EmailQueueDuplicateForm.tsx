@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Container,
-    Paper,
-    Typography,
-    Box,
-    CircularProgress,
-    Alert,
-    Chip,
-    Button,
-    TextField,
-    Divider,
-} from '@mui/material';
-import {
-    ArrowBack as ArrowBackIcon,
-    Save as SaveIcon,
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
+import {
+    AdminPage,
+    AdminErrorAlert,
+    AdminLoadingState,
+    AdminFormField,
+} from '@/components/admin/composed';
+import { Badge } from '@/components/admin/ui/badge';
+import { Button } from '@/components/admin/ui/button';
+import { Input } from '@/components/admin/ui/input';
+import { Separator } from '@/components/admin/ui/separator';
 import { useEmailQueueDuplicateFormVM } from './useEmailQueueDuplicateFormVM';
 
 interface EmailChipInputProps {
@@ -41,39 +36,35 @@ const EmailChipInput: React.FC<EmailChipInputProps> = ({ label, emails, onEmails
     };
 
     return (
-        <Box>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
-                {label}
-            </Typography>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 0.5,
-                    mb: 1,
-                    minHeight: emails.length > 0 ? 'auto' : 0,
-                }}
-            >
-                {emails.map((email, index) => (
-                    <Chip
-                        key={index}
-                        label={email}
-                        onDelete={() => handleDelete(index)}
-                        size="small"
-                        variant="outlined"
-                    />
-                ))}
-            </Box>
-            <TextField
-                fullWidth
-                size="small"
-                placeholder={`Type an email and press Enter to add`}
+        <div>
+            <p className="tw:mb-1 tw:text-xs tw:font-medium tw:text-admin-fg-muted">{label}</p>
+            {emails.length > 0 && (
+                <div className="tw:mb-2 tw:flex tw:flex-wrap tw:gap-1">
+                    {emails.map((email, index) => (
+                        <span
+                            key={index}
+                            className="tw:inline-flex tw:items-center tw:gap-1 tw:rounded-full tw:border tw:border-admin-border tw:px-2 tw:py-0.5 tw:text-xs"
+                        >
+                            {email}
+                            <button
+                                type="button"
+                                onClick={() => handleDelete(index)}
+                                className="tw:ml-0.5 tw:rounded-full tw:p-0.5 tw:hover:bg-admin-bg-muted"
+                            >
+                                <X className="tw:size-3" />
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
+            <Input
+                placeholder="Type an email and press Enter to add"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 type="email"
             />
-        </Box>
+        </div>
     );
 };
 
@@ -87,150 +78,131 @@ const EmailQueueDuplicateForm: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <Box sx={{ textAlign: 'center', mt: 5 }}>
-                <CircularProgress />
-            </Box>
+            <AdminPage>
+                <AdminLoadingState rows={6} columns={3} />
+            </AdminPage>
         );
     }
 
     if (!vm.originalItem && !vm.loading && !vm.error) {
         return (
-            <Container sx={{ mt: 4 }}>
-                <Alert severity="warning">Original queue item not found.</Alert>
+            <AdminPage>
+                <div role="alert" className="tw:rounded-md tw:border tw:border-amber-200 tw:bg-amber-50 tw:p-4 tw:text-sm tw:text-amber-800">
+                    Original queue item not found.
+                </div>
                 <Button
-                    startIcon={<ArrowBackIcon />}
+                    variant="ghost"
                     onClick={() => navigate('/admin/email/queue')}
-                    sx={{ mt: 2 }}
+                    className="tw:mt-4"
                 >
+                    <ArrowLeft className="tw:size-4" />
                     Back to Queue
                 </Button>
-            </Container>
+            </AdminPage>
         );
     }
 
     return (
-        <Container sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
-                <Typography variant="h4" component="h2">
-                    Duplicate Queue Item
-                </Typography>
-            </Box>
+        <AdminPage>
+            <h1 className="tw:mb-6 tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
+                Duplicate Queue Item
+            </h1>
 
-            {vm.error && <Alert severity="error" sx={{ mb: 3 }}>{vm.error}</Alert>}
+            <AdminErrorAlert message={vm.error} />
 
             {/* Original Item Info (read-only) */}
             {vm.originalItem && (
-                <Paper sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
-                    <Typography variant="h6" gutterBottom>
-                        Original Item
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-                        <Box>
-                            <Typography variant="subtitle2" color="text.secondary">
-                                Template
-                            </Typography>
-                            <Typography variant="body2">
-                                {vm.originalItem.template_name || '-'}
-                            </Typography>
-                        </Box>
-                        <Box>
-                            <Typography variant="subtitle2" color="text.secondary">
-                                Priority
-                            </Typography>
-                            <Chip label={vm.originalItem.priority} size="small" variant="outlined" />
-                        </Box>
-                        <Box>
-                            <Typography variant="subtitle2" color="text.secondary">
-                                Original Subject
-                            </Typography>
-                            <Typography variant="body2" noWrap>
-                                {vm.originalItem.subject || '-'}
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Paper>
+                <div className="tw:mb-4 tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg-muted/50 tw:p-5">
+                    <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-fg">Original Item</h2>
+                    <Separator className="tw:mb-4" />
+                    <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        <div>
+                            <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Template</p>
+                            <p className="tw:mt-1 tw:text-sm">{vm.originalItem.template_name || '-'}</p>
+                        </div>
+                        <div>
+                            <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Priority</p>
+                            <Badge variant="outline" className="tw:mt-1">{vm.originalItem.priority}</Badge>
+                        </div>
+                        <div>
+                            <p className="tw:text-xs tw:font-medium tw:text-admin-fg-muted">Original Subject</p>
+                            <p className="tw:mt-1 tw:truncate tw:text-sm">{vm.originalItem.subject || '-'}</p>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Editable Form */}
-            <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                    Email Details
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
+            <div className="tw:rounded-md tw:border tw:border-admin-border tw:p-5">
+                <h2 className="tw:mb-2 tw:text-lg tw:font-semibold tw:text-admin-fg">Email Details</h2>
+                <Separator className="tw:mb-5" />
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* To Emails */}
+                <div className="tw:space-y-5">
                     <EmailChipInput
                         label="To"
                         emails={vm.formData.to_emails}
                         onEmailsChange={(emails) => vm.handleEmailListChange('to_emails', emails)}
                     />
 
-                    {/* CC Emails */}
                     <EmailChipInput
                         label="CC"
                         emails={vm.formData.cc_emails}
                         onEmailsChange={(emails) => vm.handleEmailListChange('cc_emails', emails)}
                     />
 
-                    {/* BCC Emails */}
                     <EmailChipInput
                         label="BCC"
                         emails={vm.formData.bcc_emails}
                         onEmailsChange={(emails) => vm.handleEmailListChange('bcc_emails', emails)}
                     />
 
-                    {/* From Email */}
-                    <TextField
-                        label="From Email"
-                        fullWidth
-                        size="small"
-                        value={vm.formData.from_email}
-                        onChange={(e) => vm.handleChange('from_email', e.target.value)}
-                        type="email"
-                    />
+                    <AdminFormField label="From Email">
+                        <Input
+                            type="email"
+                            value={vm.formData.from_email}
+                            onChange={(e) => vm.handleChange('from_email', e.target.value)}
+                        />
+                    </AdminFormField>
 
-                    {/* Reply-To Email */}
-                    <TextField
-                        label="Reply-To Email"
-                        fullWidth
-                        size="small"
-                        value={vm.formData.reply_to_email}
-                        onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
-                        type="email"
-                    />
+                    <AdminFormField label="Reply-To Email">
+                        <Input
+                            type="email"
+                            value={vm.formData.reply_to_email}
+                            onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
+                        />
+                    </AdminFormField>
 
-                    {/* Subject */}
-                    <TextField
-                        label="Subject"
-                        fullWidth
-                        size="small"
-                        value={vm.formData.subject}
-                        onChange={(e) => vm.handleChange('subject', e.target.value)}
-                    />
-                </Box>
+                    <AdminFormField label="Subject">
+                        <Input
+                            value={vm.formData.subject}
+                            onChange={(e) => vm.handleChange('subject', e.target.value)}
+                        />
+                    </AdminFormField>
+                </div>
 
                 {/* Actions */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+                <div className="tw:mt-6 tw:flex tw:justify-end tw:gap-2">
                     <Button
-                        variant="outlined"
+                        variant="outline"
                         onClick={() => navigate('/admin/email/queue')}
                         disabled={vm.isSubmitting}
                     >
                         Cancel
                     </Button>
                     <Button
-                        variant="contained"
-                        startIcon={vm.isSubmitting ? <CircularProgress size={16} /> : <SaveIcon />}
                         onClick={vm.handleSubmit}
                         disabled={vm.isSubmitting}
                     >
+                        {vm.isSubmitting ? (
+                            <Loader2 className="tw:size-4 tw:animate-spin" />
+                        ) : (
+                            <Save className="tw:size-4" />
+                        )}
                         {vm.isSubmitting ? 'Saving...' : 'Save Duplicate'}
                     </Button>
-                </Box>
-            </Paper>
-        </Container>
+                </div>
+            </div>
+        </AdminPage>
     );
 };
 
