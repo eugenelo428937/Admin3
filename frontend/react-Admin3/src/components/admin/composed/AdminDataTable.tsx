@@ -103,10 +103,16 @@ function AdminDataTable<T extends Record<string, any>>({
       },
       cell: ({ row }) => {
         const value = row.getValue(col.id ?? col.key);
-        if (col.render) {
-          return col.render(value, row.original);
+        const content = col.render
+          ? col.render(value, row.original)
+          : <span className={col.className}>{String(value ?? '')}</span>;
+        if (col.align === 'center') {
+          return <div className="tw:flex tw:justify-center">{content}</div>;
         }
-        return <span className={col.className}>{String(value ?? '')}</span>;
+        if (col.align === 'right') {
+          return <div className="tw:flex tw:justify-end">{content}</div>;
+        }
+        return content;
       },
     }));
 
@@ -119,7 +125,7 @@ function AdminDataTable<T extends Record<string, any>>({
           const rowActions = actions(row.original);
           if (rowActions.length === 0) return null;
           return (
-            <div>
+            <div className="tw:flex tw:justify-center">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-xs">
