@@ -7,6 +7,7 @@ import {
     AdminErrorAlert,
     AdminEmptyState,
     AdminLoadingState,
+    AdminPagination,
 } from '@/components/admin/composed';
 import { Button } from '@/components/admin/ui/button';
 import {
@@ -242,32 +243,13 @@ const AdminStoreProductList: React.FC = () => {
                 </div>
             )}
 
-            {vm.totalCount > vm.rowsPerPage && (
-                <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:text-sm tw:text-admin-fg-muted">
-                    <span>
-                        Showing {vm.page * vm.rowsPerPage + 1}&ndash;
-                        {Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
-                    </span>
-                    <div className="tw:flex tw:items-center tw:gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
-                            disabled={vm.page === 0}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
-                            disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
-            )}
+            <AdminPagination
+                page={vm.page}
+                pageSize={vm.rowsPerPage}
+                total={vm.totalCount}
+                onPageChange={vm.handleChangePage}
+                className="tw:mt-4"
+            />
         </AdminPage>
     );
 };

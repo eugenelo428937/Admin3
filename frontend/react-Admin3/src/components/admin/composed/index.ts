@@ -47,3 +47,6 @@ export type { AdminCheckboxFieldProps } from './AdminCheckboxField';
 
 export { AdminToggleGroup } from './AdminToggleGroup';
 export type { AdminToggleGroupProps, ToggleOption } from './AdminToggleGroup';
+
+export { AdminPagination } from './AdminPagination';
+export type { AdminPaginationProps } from './AdminPagination';
