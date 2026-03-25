@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from email_system import views
+from email_system import batch_views
 
 router = DefaultRouter()
 router.register(r'settings', views.EmailSettingsViewSet)
@@ -15,5 +16,7 @@ router.register(r'closing-salutations', views.ClosingSalutationViewSet)
 router.register(r'mjml-elements', views.EmailMjmlElementViewSet)
 
 urlpatterns = [
+    path('batch/send/', batch_views.send_batch, name='email-batch-send'),
+    path('batch/<uuid:batch_id>/', batch_views.query_batch, name='email-batch-query'),
     path('', include(router.urls)),
 ]
