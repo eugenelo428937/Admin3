@@ -91,12 +91,12 @@ export function AdminTopBar() {
             </button>
 
             {showUserMenu && (
-              <div className="tw:absolute tw:right-0 tw:top-10 tw:z-50 tw:w-56 tw:rounded-lg tw:border tw:border-[var(--border)] tw:bg-[var(--popover)] tw:text-[var(--popover-foreground)] tw:shadow-lg tw:p-1">
+              <div className="tw:absolute tw:right-0 tw:top-10 tw:z-50 tw:w-56 tw:rounded-lg tw:border tw:border-border tw:bg-popover tw:text-popover-foreground tw:shadow-lg tw:p-1">
                 <div className="tw:px-3 tw:py-2">
                   <p className="tw:text-sm tw:font-medium">
                     {user.first_name} {user.last_name}
                   </p>
-                  <p className="tw:text-xs tw:text-[var(--muted-foreground)]">
+                  <p className="tw:text-xs tw:text-muted-foreground">
                     {user.email}
                   </p>
                 </div>
@@ -106,7 +106,7 @@ export function AdminTopBar() {
                     setShowUserMenu(false);
                     logout();
                   }}
-                  className="tw:flex tw:w-full tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-2 tw:text-sm tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-[var(--popover-foreground)] hover:tw:bg-[var(--accent)]"
+                  className="tw:flex tw:w-full tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-2 tw:text-sm tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-popover-foreground hover:tw:bg-accent"
                 >
                   <LogOut className="tw:h-4 tw:w-4" />
                   Log out
