@@ -9,6 +9,7 @@ from email_system.models import (
     EmailTemplate, EmailAttachment, EmailTemplateAttachment,
     EmailQueue, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
+    ExternalApiKey, EmailBatch,
 )
 
 
@@ -454,3 +455,25 @@ class EmailContentPlaceholderAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+
+@admin.register(ExternalApiKey)
+class ExternalApiKeyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'key_prefix', 'is_active', 'created_at', 'last_used_at')
+    list_filter = ('is_active',)
+    readonly_fields = ('key_hash', 'key_prefix', 'created_at', 'last_used_at')
+    search_fields = ('name', 'key_prefix')
+
+
+@admin.register(EmailBatch)
+class EmailBatchAdmin(admin.ModelAdmin):
+    list_display = ('batch_id', 'template', 'requested_by', 'status', 'total_items', 'sent_count', 'error_count', 'created_at', 'completed_at')
+    list_filter = ('status', 'template')
+    readonly_fields = ('batch_id', 'template', 'requested_by', 'notify_email', 'status', 'total_items', 'sent_count', 'error_count', 'created_at', 'completed_at', 'api_key')
+    search_fields = ('batch_id', 'requested_by', 'notify_email')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
