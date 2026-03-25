@@ -143,6 +143,137 @@
       }
     },
     {
+      "description": "a fuzzy search request with no matches",
+      "providerStates": [
+        {
+          "name": "searchable products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/search/fuzzy/",
+        "query": {
+          "limit": [
+            "50"
+          ],
+          "q": [
+            "xyznonexistent"
+          ]
+        }
+      },
+      "response": {
+        "body": {
+          "products": [],
+          "search_info": {
+            "matches_found": 0,
+            "query": "xyznonexistent"
+          },
+          "suggested_filters": {
+            "categories": [],
+            "products": [],
+            "subjects": []
+          },
+          "total_count": 0
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.search_info": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.search_info.matches_found": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.search_info.query": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.total_count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a login request with wrong password",
+      "providerStates": [
+        {
+          "name": "a registered user exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "password": "WrongPassword",
+          "username": "test@example.com"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/auth/login/"
+      },
+      "response": {
+        "body": {
+          "error": "Invalid credentials"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 401
+      }
+    },
+    {
       "description": "a logout request",
       "providerStates": [
         {
@@ -539,6 +670,101 @@
       }
     },
     {
+      "description": "a request for a single store product",
+      "providerStates": [
+        {
+          "name": "store product exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/products/1/"
+      },
+      "response": {
+        "body": {
+          "created_at": "2026-02-16T10:00:00Z",
+          "exam_session_subject": 1,
+          "id": 1,
+          "is_active": true,
+          "product_code": "CM2/PC/2025-04",
+          "product_product_variation": 1,
+          "updated_at": "2026-02-16T10:00:00Z"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.exam_session_subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.product_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.product_product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for a single user profile",
       "providerStates": [
         {
@@ -759,6 +985,238 @@
               ]
             },
             "$.results[*].rule_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for all tutorial products",
+      "providerStates": [
+        {
+          "name": "tutorial products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/tutorials/products/all/"
+      },
+      "response": {
+        "body": [
+          {
+            "location": "CM2 Tutorial London",
+            "product_id": 1,
+            "subject_code": "CM2",
+            "subject_name": "CM2 - Models"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].location": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].product_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].subject_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for available store products",
+      "providerStates": [
+        {
+          "name": "store products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/products/",
+        "query": {
+          "page": [
+            "1"
+          ],
+          "page_size": [
+            "50"
+          ]
+        }
+      },
+      "response": {
+        "body": {
+          "bundles_count": 0,
+          "count": 1,
+          "has_next": false,
+          "has_previous": false,
+          "page": 1,
+          "products_count": 1,
+          "results": [
+            {
+              "id": 1,
+              "is_active": true,
+              "is_bundle": false,
+              "name": "CM2 Printed Study Material",
+              "session_code": "2025-04",
+              "subject_code": "CM2"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.bundles_count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.has_next": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.has_previous": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.page": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.products_count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].is_bundle": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].session_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].subject_code": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1100,6 +1558,98 @@
               ]
             },
             "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog exam sessions",
+      "providerStates": [
+        {
+          "name": "catalog exam sessions exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/exam-sessions/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "next": null,
+          "previous": null,
+          "results": [
+            {
+              "end_date": "2025-04-30T00:00:00Z",
+              "id": 1,
+              "session_code": "2025-04",
+              "start_date": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].end_date": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].session_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].start_date": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1641,6 +2191,307 @@
       }
     },
     {
+      "description": "a request for default search data",
+      "providerStates": [
+        {
+          "name": "products exist for default search"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/search/default-data/",
+        "query": {
+          "limit": [
+            "5"
+          ]
+        }
+      },
+      "response": {
+        "body": {
+          "popular_products": [
+            {
+              "id": 1,
+              "product_code": "SM01",
+              "product_name": "CM2 Printed Study Material",
+              "subject_code": "CM2"
+            }
+          ],
+          "suggested_filters": {
+            "product_groups": [
+              {
+                "description": "",
+                "id": 1,
+                "name": "Study Materials"
+              }
+            ],
+            "subjects": [
+              {
+                "code": "CM2",
+                "description": "CM2 - Models",
+                "id": 1
+              }
+            ]
+          },
+          "total_count": 50
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.popular_products": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.popular_products[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.popular_products[*].product_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.popular_products[*].product_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.popular_products[*].subject_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.product_groups": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.suggested_filters.product_groups[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.product_groups[*].description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.product_groups[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.suggested_filters.product_groups[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.suggested_filters.subjects[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.subjects[*].code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.subjects[*].description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters.subjects[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.total_count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email attachments list",
+      "providerStates": [
+        {
+          "name": "email attachments exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/attachments/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "attachment_type": "static",
+              "display_name": "Terms and Conditions",
+              "file_size": 1024,
+              "id": 1,
+              "is_active": true,
+              "name": "terms_and_conditions"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].attachment_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].file_size": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for email content rules list",
       "providerStates": [
         {
@@ -2141,6 +2992,422 @@
       }
     },
     {
+      "description": "a request for filter configuration",
+      "providerStates": [
+        {
+          "name": "filter configuration exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/products/filter-configuration/"
+      },
+      "response": {
+        "body": {
+          "subjects": {
+            "allow_multiple": true,
+            "collapsible": true,
+            "default_open": true,
+            "display_order": 1,
+            "filter_groups": [],
+            "filter_key": "subjects",
+            "label": "Subjects",
+            "options": [
+              {
+                "id": 1,
+                "label": "CM2 - Models",
+                "value": "CM2"
+              }
+            ],
+            "type": "multi_select"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.allow_multiple": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.collapsible": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.default_open": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.display_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.subjects.filter_key": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.label": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.options": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.subjects.options[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.subjects.options[*].label": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.options[*].value": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for navigation data",
+      "providerStates": [
+        {
+          "name": "catalog data exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/navigation-data/"
+      },
+      "response": {
+        "body": {
+          "distance_learning_dropdown": {
+            "results": [
+              {
+                "id": 1,
+                "name": "Core Study Materials",
+                "products": [
+                  {
+                    "code": "SM01",
+                    "fullname": "CM2 Printed Study Material",
+                    "id": 1,
+                    "shortname": "CM2"
+                  }
+                ]
+              }
+            ]
+          },
+          "navbar_product_groups": {
+            "results": [
+              {
+                "id": 1,
+                "name": "Core Study Materials",
+                "products": [
+                  {
+                    "code": "SM01",
+                    "fullname": "CM2 Printed Study Material",
+                    "id": 1,
+                    "shortname": "CM2"
+                  }
+                ]
+              }
+            ]
+          },
+          "subjects": [
+            {
+              "active": true,
+              "code": "CM2",
+              "description": "CM2 - Models",
+              "id": 1,
+              "name": "CM2 - Models"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].products": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].products[*].code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].products[*].fullname": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].products[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.distance_learning_dropdown.results[*].products[*].shortname": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.navbar_product_groups": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].products": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].products[*].code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].products[*].fullname": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].products[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.navbar_product_groups.results[*].products[*].shortname": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.subjects[*].active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects[*].code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects[*].description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.subjects[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for profile addresses",
       "providerStates": [
         {
@@ -2249,6 +3516,77 @@
               "matchers": [
                 {
                   "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for profile contacts",
+      "providerStates": [
+        {
+          "name": "user profile with contacts exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/1/contacts/"
+      },
+      "response": {
+        "body": [
+          {
+            "contact_type": "MOBILE",
+            "country_code": "GB",
+            "id": 1,
+            "number": "+44 7700 900000"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].contact_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].country_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].number": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
                 }
               ]
             }
@@ -3094,6 +4432,123 @@
       }
     },
     {
+      "description": "a request to copy products from previous session",
+      "providerStates": [
+        {
+          "name": "session setup data exists for copy"
+        }
+      ],
+      "request": {
+        "body": {
+          "new_exam_session_id": 42,
+          "previous_exam_session_id": 41
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.new_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.previous_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "method": "POST",
+        "path": "/api/catalog/session-setup/copy-products/"
+      },
+      "response": {
+        "body": {
+          "bundle_products_created": 142,
+          "bundles_created": 28,
+          "message": "Successfully created 95 products, 285 prices, and 28 bundles for session 2026-09.",
+          "prices_created": 285,
+          "products_created": 95,
+          "skipped_subjects": [
+            "SP9"
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.bundle_products_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.bundles_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.prices_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.products_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.skipped_subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.skipped_subjects[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 201
+      }
+    },
+    {
       "description": "a request to copy products with missing ESS",
       "providerStates": [
         {
@@ -3377,6 +4832,278 @@
               "matchers": [
                 {
                   "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a valid registration request",
+      "providerStates": [
+        {
+          "name": "no user with email newuser@example.com exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "email": "newuser@example.com",
+          "first_name": "New",
+          "last_name": "User",
+          "password": "SecurePass123!",
+          "username": "newuser@example.com"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/auth/register/"
+      },
+      "response": {
+        "body": {
+          "message": "Account created successfully",
+          "refresh": "fake-refresh-token",
+          "status": "success",
+          "token": "fake-access-token",
+          "user": {
+            "email": "newuser@example.com",
+            "first_name": "New",
+            "id": 2,
+            "last_name": "User",
+            "username": "newuser@example.com"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.refresh": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.token": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.first_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.user.last_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.username": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 201
+      }
+    },
+    {
+      "description": "an advanced search request with subject filter",
+      "providerStates": [
+        {
+          "name": "searchable products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/search/advanced-fuzzy/",
+        "query": {
+          "limit": [
+            "50"
+          ],
+          "q": [
+            "CM2"
+          ]
+        }
+      },
+      "response": {
+        "body": {
+          "products": [
+            {
+              "id": 1,
+              "product_code": "SM01",
+              "product_name": "CM2 Printed Study Material",
+              "subject_code": "CM2"
+            }
+          ],
+          "search_info": {
+            "matches_found": 3,
+            "query": "CM2"
+          },
+          "suggested_filters": {
+            "categories": [],
+            "products": [],
+            "subjects": []
+          },
+          "total_count": 3
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.products": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.products[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.products[*].product_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.products[*].product_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.products[*].subject_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.search_info": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.search_info.matches_found": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.search_info.query": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.suggested_filters": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.total_count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
                 }
               ]
             }
