@@ -129,7 +129,7 @@ const AdminStoreProductList: React.FC = () => {
                                                         >
                                                             <TableCell
                                                                 colSpan={COL_COUNT}
-                                                                className="tw:bg-gray-100 tw:py-1.5 tw:pl-8"
+                                                                className="tw:bg-muted tw:py-1.5 tw:pl-8"
                                                             >
                                                                 <div className="tw:flex tw:items-center tw:gap-2">
                                                                     <Button
@@ -169,7 +169,7 @@ const AdminStoreProductList: React.FC = () => {
 
                                                                 return (
                                                                     <React.Fragment key={expandKey}>
-                                                                        <TableRow className="tw:hover:bg-gray-50">
+                                                                        <TableRow className="tw:hover:bg-muted/50">
                                                                             <TableCell>
                                                                                 <Button
                                                                                     variant="ghost"
