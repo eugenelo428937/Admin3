@@ -7,6 +7,7 @@ import {
   AdminLoadingState,
   AdminEmptyState,
   AdminBadge,
+  AdminToggleGroup,
 } from '@/components/admin/composed';
 import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
@@ -47,23 +48,12 @@ const EmailSettingsList: React.FC = () => {
 
             <AdminErrorAlert message={vm.error} />
 
-            {/* Filter chips */}
-            <div className="tw:mb-6 tw:flex tw:flex-wrap tw:gap-2">
-                {SETTING_TYPE_OPTIONS.map(opt => (
-                    <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => vm.filterByType(opt.value)}
-                        className={`tw:rounded-full tw:border tw:px-3 tw:py-1 tw:text-xs tw:font-medium tw:transition-colors ${
-                            vm.filterType === opt.value
-                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
-                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
-                        }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
+            <AdminToggleGroup
+                options={SETTING_TYPE_OPTIONS}
+                value={vm.filterType}
+                onChange={vm.filterByType}
+                className="tw:mb-6"
+            />
 
             {vm.loading ? (
                 <AdminLoadingState rows={6} columns={6} />
@@ -78,8 +68,8 @@ const EmailSettingsList: React.FC = () => {
                                 <TableHead>Type</TableHead>
                                 <TableHead>Display Name</TableHead>
                                 <TableHead>Value</TableHead>
-                                <TableHead>Active</TableHead>
-                                <TableHead className="tw:text-right">Actions</TableHead>
+                                <TableHead style={{ textAlign: 'center' }}>Active</TableHead>
+                                <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -115,19 +105,21 @@ const EmailSettingsList: React.FC = () => {
                                             </span>
                                         )}
                                     </TableCell>
-                                    <TableCell>
-                                        {vm.editingId === setting.id ? (
-                                            <Switch
-                                                size="sm"
-                                                checked={vm.editFormData.is_active ?? setting.is_active}
-                                                onCheckedChange={(checked) => vm.handleEditChange('is_active', checked)}
-                                            />
-                                        ) : (
-                                            <AdminBadge active={setting.is_active} />
-                                        )}
+                                    <TableCell style={{ textAlign: 'center' }}>
+                                        <div className="tw:flex tw:justify-center">
+                                            {vm.editingId === setting.id ? (
+                                                <Switch
+                                                    size="sm"
+                                                    checked={vm.editFormData.is_active ?? setting.is_active}
+                                                    onCheckedChange={(checked) => vm.handleEditChange('is_active', checked)}
+                                                />
+                                            ) : (
+                                                <AdminBadge active={setting.is_active} />
+                                            )}
+                                        </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="tw:flex tw:justify-end tw:gap-1">
+                                    <TableCell style={{ textAlign: 'center' }}>
+                                        <div className="tw:flex tw:justify-center tw:gap-1">
                                             {vm.editingId === setting.id ? (
                                                 <>
                                                     <Button variant="ghost" size="icon-xs" onClick={vm.saveEdit}>

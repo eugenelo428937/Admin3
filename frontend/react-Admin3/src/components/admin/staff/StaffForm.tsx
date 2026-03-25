@@ -4,9 +4,9 @@ import {
   AdminPage,
   AdminFormLayout,
   AdminFormField,
+  AdminCheckboxField,
 } from '@/components/admin/composed';
 import { Input } from '@/components/admin/ui/input';
-import { Checkbox } from '@/components/admin/ui/checkbox';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import useStaffFormVM from './useStaffFormVM';
 
@@ -38,21 +38,13 @@ const AdminStaffForm: React.FC = () => {
         </AdminFormField>
 
         <AdminFormField label="Active">
-          <div className="tw:flex tw:items-center tw:gap-2">
-            <Checkbox
-              aria-label="Active"
-              name="is_active"
-              checked={vm.formData.is_active}
-              disabled={vm.isSubmitting}
-              onCheckedChange={(checked) => {
-                const syntheticEvent = {
-                  target: { name: 'is_active', value: '', type: 'checkbox', checked: !!checked },
-                } as React.ChangeEvent<HTMLInputElement>;
-                vm.handleChange(syntheticEvent);
-              }}
-            />
-            <span className="tw:text-sm tw:text-admin-fg">Active</span>
-          </div>
+          <AdminCheckboxField
+            name="is_active"
+            label="Active"
+            checked={vm.formData.is_active}
+            onChange={vm.handleChange}
+            disabled={vm.isSubmitting}
+          />
         </AdminFormField>
       </AdminFormLayout>
     </AdminPage>

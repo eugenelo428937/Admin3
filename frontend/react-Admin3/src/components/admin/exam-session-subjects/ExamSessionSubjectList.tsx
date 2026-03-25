@@ -43,7 +43,7 @@ const AdminExamSessionSubjectList: React.FC = () => {
           { key: 'id', header: 'ID' },
           { key: 'exam_session', header: 'Exam Session', render: (val) => val?.session_code || '-' },
           { key: 'subject', header: 'Subject', render: (val) => val?.code || '-' },
-          { key: 'is_active', header: 'Active', render: (val) => <AdminBadge active={val} /> },
+          { key: 'is_active', header: 'Active', align: 'center', render: (val) => <AdminBadge active={val} /> },
         ]}
         data={vm.examSessionSubjects}
         loading={vm.loading}

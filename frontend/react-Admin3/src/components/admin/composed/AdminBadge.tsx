@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { Check } from 'lucide-react';
 import { cn } from '@/components/admin/styles/cn';
-import { Badge } from '@/components/admin/ui/badge';
 
 interface AdminBadgeProps {
   active: boolean;
@@ -11,22 +11,12 @@ interface AdminBadgeProps {
 
 function AdminBadge({
   active,
-  activeLabel = 'Active',
-  inactiveLabel = 'Inactive',
   className,
 }: AdminBadgeProps) {
+  if (!active) return null;
+
   return (
-    <Badge
-      variant="outline"
-      className={cn(
-        active
-          ? 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success'
-          : 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
-        className,
-      )}
-    >
-      {active ? activeLabel : inactiveLabel}
-    </Badge>
+    <Check className={cn('tw:size-4 tw:text-admin-success', className)} />
   );
 }
 

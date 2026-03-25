@@ -111,21 +111,23 @@ describe('AdminProductDetail', () => {
       });
     });
 
-    test('displays active status', async () => {
+    test('displays active status with checkmark', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Active')).toBeInTheDocument();
+        expect(screen.getByText('Status').closest('div')?.querySelector('svg')).toBeInTheDocument();
       });
     });
 
-    test('displays inactive status when product is not active', async () => {
+    test('displays no checkmark when product is not active', async () => {
       catalogProductService.getById.mockResolvedValueOnce({ ...mockProduct, active: false });
 
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Inactive')).toBeInTheDocument();
+        const statusDt = screen.getByText('Status');
+        const statusDd = statusDt.closest('div')?.querySelector('dd');
+        expect(statusDd?.querySelector('svg')).toBeNull();
       });
     });
 

@@ -56,7 +56,7 @@ const StepExamSession: React.FC<StepExamSessionProps> = ({ onSessionCreated }) =
   };
 
   return (
-    <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
+    <div className="tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-card tw:p-6">
       <h2 className="tw:mb-4 tw:text-xl tw:font-semibold tw:text-admin-fg">
         Step 1: Exam Session
       </h2>

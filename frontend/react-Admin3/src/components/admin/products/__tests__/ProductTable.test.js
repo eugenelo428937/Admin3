@@ -75,8 +75,13 @@ describe('AdminProductTable', () => {
     test('displays active status correctly', () => {
       renderComponent();
 
-      expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Inactive')).toBeInTheDocument();
+      // AdminBadge renders a checkmark SVG for active, nothing for inactive
+      // Active column is the 6th cell (index 5) in each row
+      const rows = screen.getAllByRole('row').slice(1); // skip header
+      const activeCellRow1 = rows[0].querySelectorAll('td')[5];
+      const activeCellRow2 = rows[1].querySelectorAll('td')[5];
+      expect(activeCellRow1.querySelector('svg')).not.toBeNull(); // active product has checkmark
+      expect(activeCellRow2.querySelector('svg')).toBeNull(); // inactive product has no checkmark
       expect(screen.getByText('Yes')).toBeInTheDocument();
       expect(screen.getByText('No')).toBeInTheDocument();
     });

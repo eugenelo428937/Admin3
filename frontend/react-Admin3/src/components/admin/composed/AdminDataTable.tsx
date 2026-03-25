@@ -26,6 +26,7 @@ import {
 } from '@/components/admin/ui/dropdown-menu';
 import { AdminLoadingState } from './AdminLoadingState';
 import { AdminEmptyState } from './AdminEmptyState';
+import { AdminPagination } from './AdminPagination';
 
 interface SimpleColumn<T> {
   key: keyof T & string;
@@ -34,6 +35,7 @@ interface SimpleColumn<T> {
   sortable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
   className?: string;
+  align?: 'left' | 'center' | 'right';
 }
 
 interface RowAction<T> {
@@ -82,6 +84,7 @@ function AdminDataTable<T extends Record<string, any>>({
     const cols: ColumnDef<T>[] = columns.map((col) => ({
       id: col.id ?? col.key,
       accessorKey: col.key,
+      meta: { align: col.align },
       header: ({ column }) => {
         if (!col.sortable) {
           return <span>{col.header}</span>;
@@ -100,47 +103,56 @@ function AdminDataTable<T extends Record<string, any>>({
       },
       cell: ({ row }) => {
         const value = row.getValue(col.id ?? col.key);
-        if (col.render) {
-          return col.render(value, row.original);
+        const content = col.render
+          ? col.render(value, row.original)
+          : <span className={col.className}>{String(value ?? '')}</span>;
+        if (col.align === 'center') {
+          return <div className="tw:flex tw:justify-center">{content}</div>;
         }
-        return <span className={col.className}>{String(value ?? '')}</span>;
+        if (col.align === 'right') {
+          return <div className="tw:flex tw:justify-end">{content}</div>;
+        }
+        return content;
       },
     }));
 
     if (actions) {
       cols.push({
         id: '_actions',
+        meta: { align: 'center' },
         header: () => <span className="tw:sr-only">Actions</span>,
         cell: ({ row }) => {
           const rowActions = actions(row.original);
           if (rowActions.length === 0) return null;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-xs">
-                  <MoreHorizontal className="tw:size-4" />
-                  <span className="tw:sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {rowActions.map((action) => {
-                  const Icon = action.icon;
-                  return (
-                    <DropdownMenuItem
-                      key={action.label}
-                      variant={action.variant === 'destructive' ? 'destructive' : 'default'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        action.onClick();
-                      }}
-                    >
-                      {Icon && <Icon className="tw:size-4" />}
-                      {action.label}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="tw:flex tw:justify-center">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-xs">
+                    <MoreHorizontal className="tw:size-4" />
+                    <span className="tw:sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4}>
+                  {rowActions.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={action.label}
+                        variant={action.variant === 'destructive' ? 'destructive' : 'default'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          action.onClick();
+                        }}
+                      >
+                        {Icon && <Icon className="tw:size-4" />}
+                        {action.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           );
         },
         enableSorting: false,
@@ -173,12 +185,6 @@ function AdminDataTable<T extends Record<string, any>>({
     );
   }
 
-  // Pagination calculations
-  const startIdx = pagination ? pagination.page * pagination.pageSize + 1 : 1;
-  const endIdx = pagination
-    ? Math.min((pagination.page + 1) * pagination.pageSize, pagination.total)
-    : data.length;
-
   return (
     <div className={cn('tw:space-y-4', className)}>
       <div className="tw:rounded-md tw:border tw:border-admin-border">
@@ -186,13 +192,19 @@ function AdminDataTable<T extends Record<string, any>>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const align = (header.column.columnDef.meta as any)?.align as string | undefined;
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={align ? { textAlign: align as any } : undefined}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -203,11 +215,17 @@ function AdminDataTable<T extends Record<string, any>>({
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 className={onRowClick ? 'tw:cursor-pointer' : undefined}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const align = (cell.column.columnDef.meta as any)?.align as string | undefined;
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      style={align ? { textAlign: align as any } : undefined}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
@@ -215,45 +233,16 @@ function AdminDataTable<T extends Record<string, any>>({
       </div>
 
       {pagination && (
-        <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:text-sm tw:text-admin-fg-muted">
-          <span>
-            Showing {startIdx}&ndash;{endIdx} of {pagination.total}
-          </span>
-          <div className="tw:flex tw:items-center tw:gap-4">
-            <div className="tw:flex tw:items-center tw:gap-2">
-              <span>Rows per page</span>
-              <select
-                className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
-                value={pagination.pageSize}
-                onChange={(e) => pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)}
-              >
-                {(pagination.pageSizeOptions ?? [10, 20, 50]).map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="tw:flex tw:items-center tw:gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page === 0}
-                onClick={(e) => pagination.onPageChange(e, pagination.page - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={endIdx >= pagination.total}
-                onClick={(e) => pagination.onPageChange(e, pagination.page + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
+        <AdminPagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={pagination.onPageChange}
+          onPageSizeChange={(e) =>
+            pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+          pageSizeOptions={pagination.pageSizeOptions}
+        />
       )}
     </div>
   );

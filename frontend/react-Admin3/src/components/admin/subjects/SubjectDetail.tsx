@@ -1,9 +1,8 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Pencil, Trash2, ArrowLeft } from 'lucide-react';
-import { AdminPage, AdminPageHeader, AdminBadge, AdminErrorAlert } from '@/components/admin/composed';
+import { AdminPage, AdminPageHeader, AdminBadge, AdminErrorAlert, AdminDetailCard, AdminDetailField } from '@/components/admin/composed';
 import { Button } from '@/components/admin/ui/button';
-import { Separator } from '@/components/admin/ui/separator';
 import useSubjectDetailVM from './useSubjectDetailVM';
 
 const AdminSubjectDetail: React.FC = () => {
@@ -29,29 +28,20 @@ const AdminSubjectDetail: React.FC = () => {
         ]}
       />
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
-        <dl className="tw:space-y-4">
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Description</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{vm.subject.description || 'No description available.'}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Status</dt>
-            <dd className="tw:mt-1"><AdminBadge active={vm.subject.active} /></dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Created</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{new Date(vm.subject.created_at).toLocaleString()}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Last Updated</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{new Date(vm.subject.updated_at).toLocaleString()}</dd>
-          </div>
-        </dl>
-      </div>
+      <AdminDetailCard>
+        <AdminDetailField label="Description">
+          {vm.subject.description || 'No description available.'}
+        </AdminDetailField>
+        <AdminDetailField label="Status">
+          <AdminBadge active={vm.subject.active} />
+        </AdminDetailField>
+        <AdminDetailField label="Created">
+          {new Date(vm.subject.created_at).toLocaleString()}
+        </AdminDetailField>
+        <AdminDetailField label="Last Updated">
+          {new Date(vm.subject.updated_at).toLocaleString()}
+        </AdminDetailField>
+      </AdminDetailCard>
 
       <div className="tw:mt-6">
         <Button variant="outline" onClick={vm.handleBack}>

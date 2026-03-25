@@ -79,7 +79,7 @@ const RuleJsonEditor: React.FC<RuleJsonEditorProps> = ({ value, onChange, error 
                     .cm-editor { height: 300px; min-height: 300px; }
                     .cm-scroller { overflow: auto; }
                 `}</style>
-                <div ref={editorRef} style={{ height: 300, minHeight: 300 }} />
+                <div ref={editorRef} className="tw:h-[300px] tw:min-h-[300px]" />
             </div>
             <div className="tw:mt-1 tw:flex tw:items-center tw:gap-1">
                 {error ? (
