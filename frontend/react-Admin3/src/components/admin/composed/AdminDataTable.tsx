@@ -26,6 +26,7 @@ import {
 } from '@/components/admin/ui/dropdown-menu';
 import { AdminLoadingState } from './AdminLoadingState';
 import { AdminEmptyState } from './AdminEmptyState';
+import { AdminPagination } from './AdminPagination';
 
 interface SimpleColumn<T> {
   key: keyof T & string;
@@ -173,12 +174,6 @@ function AdminDataTable<T extends Record<string, any>>({
     );
   }
 
-  // Pagination calculations
-  const startIdx = pagination ? pagination.page * pagination.pageSize + 1 : 1;
-  const endIdx = pagination
-    ? Math.min((pagination.page + 1) * pagination.pageSize, pagination.total)
-    : data.length;
-
   return (
     <div className={cn('tw:space-y-4', className)}>
       <div className="tw:rounded-md tw:border tw:border-admin-border">
@@ -215,45 +210,16 @@ function AdminDataTable<T extends Record<string, any>>({
       </div>
 
       {pagination && (
-        <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:text-sm tw:text-admin-fg-muted">
-          <span>
-            Showing {startIdx}&ndash;{endIdx} of {pagination.total}
-          </span>
-          <div className="tw:flex tw:items-center tw:gap-4">
-            <div className="tw:flex tw:items-center tw:gap-2">
-              <span>Rows per page</span>
-              <select
-                className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
-                value={pagination.pageSize}
-                onChange={(e) => pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)}
-              >
-                {(pagination.pageSizeOptions ?? [10, 20, 50]).map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="tw:flex tw:items-center tw:gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page === 0}
-                onClick={(e) => pagination.onPageChange(e, pagination.page - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={endIdx >= pagination.total}
-                onClick={(e) => pagination.onPageChange(e, pagination.page + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
+        <AdminPagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={pagination.onPageChange}
+          onPageSizeChange={(e) =>
+            pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+          pageSizeOptions={pagination.pageSizeOptions}
+        />
       )}
     </div>
   );
