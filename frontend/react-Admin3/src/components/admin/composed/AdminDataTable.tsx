@@ -35,6 +35,7 @@ interface SimpleColumn<T> {
   sortable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
   className?: string;
+  align?: 'left' | 'center' | 'right';
 }
 
 interface RowAction<T> {
@@ -84,14 +85,15 @@ function AdminDataTable<T extends Record<string, any>>({
       id: col.id ?? col.key,
       accessorKey: col.key,
       header: ({ column }) => {
+        const alignClass = col.align === 'right' ? 'tw:text-right' : col.align === 'center' ? 'tw:text-center' : '';
         if (!col.sortable) {
-          return <span>{col.header}</span>;
+          return <span className={alignClass}>{col.header}</span>;
         }
         return (
           <Button
             variant="ghost"
             size="sm"
-            className="tw:-ml-3 tw:h-8"
+            className={cn('tw:-ml-3 tw:h-8', alignClass)}
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {col.header}
@@ -101,10 +103,11 @@ function AdminDataTable<T extends Record<string, any>>({
       },
       cell: ({ row }) => {
         const value = row.getValue(col.id ?? col.key);
+        const alignClass = col.align === 'right' ? 'tw:text-right' : col.align === 'center' ? 'tw:text-center' : '';
         if (col.render) {
-          return col.render(value, row.original);
+          return <div className={alignClass}>{col.render(value, row.original)}</div>;
         }
-        return <span className={col.className}>{String(value ?? '')}</span>;
+        return <span className={cn(col.className, alignClass)}>{String(value ?? '')}</span>;
       },
     }));
 
@@ -116,32 +119,34 @@ function AdminDataTable<T extends Record<string, any>>({
           const rowActions = actions(row.original);
           if (rowActions.length === 0) return null;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-xs">
-                  <MoreHorizontal className="tw:size-4" />
-                  <span className="tw:sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {rowActions.map((action) => {
-                  const Icon = action.icon;
-                  return (
-                    <DropdownMenuItem
-                      key={action.label}
-                      variant={action.variant === 'destructive' ? 'destructive' : 'default'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        action.onClick();
-                      }}
-                    >
-                      {Icon && <Icon className="tw:size-4" />}
-                      {action.label}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="tw:text-right">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-xs">
+                    <MoreHorizontal className="tw:size-4" />
+                    <span className="tw:sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4}>
+                  {rowActions.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={action.label}
+                        variant={action.variant === 'destructive' ? 'destructive' : 'default'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          action.onClick();
+                        }}
+                      >
+                        {Icon && <Icon className="tw:size-4" />}
+                        {action.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           );
         },
         enableSorting: false,
