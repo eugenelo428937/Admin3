@@ -3,6 +3,7 @@
   "devDependencies": {
     "ai-labs-claude-skills": "^2.0.1",
     "bmad-method": "^4.44.1",
+    "shadcn": "^4.1.0",
     "tdd-guard-jest": "^0.1.3"
   }
 }
