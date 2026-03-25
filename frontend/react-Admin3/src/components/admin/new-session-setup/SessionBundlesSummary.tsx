@@ -34,7 +34,7 @@ const SessionBundlesSummary: React.FC<SessionBundlesSummaryProps> = ({ sessionId
 
   return (
     <div>
-      <div className="tw:rounded-admin tw:border tw:border-admin-border">
+      <div className="tw:rounded-md tw:border tw:border-admin-border">
         <Table>
           <TableHeader>
             <TableRow>

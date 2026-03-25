@@ -7,6 +7,7 @@ import {
     AdminErrorAlert,
     AdminEmptyState,
     AdminLoadingState,
+    AdminPagination,
 } from '@/components/admin/composed';
 import { Button } from '@/components/admin/ui/button';
 import {
@@ -48,7 +49,7 @@ const AdminStoreProductList: React.FC = () => {
             ) : vm.pageProducts.length === 0 && !vm.error ? (
                 <AdminEmptyState title="No store products found" />
             ) : (
-                <div className="tw:rounded-admin tw:border tw:border-admin-border">
+                <div className="tw:rounded-md tw:border tw:border-admin-border">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -129,7 +130,7 @@ const AdminStoreProductList: React.FC = () => {
                                                         >
                                                             <TableCell
                                                                 colSpan={COL_COUNT}
-                                                                className="tw:bg-gray-100 tw:py-1.5 tw:pl-8"
+                                                                className="tw:bg-muted tw:py-1.5 tw:pl-8"
                                                             >
                                                                 <div className="tw:flex tw:items-center tw:gap-2">
                                                                     <Button
@@ -169,7 +170,7 @@ const AdminStoreProductList: React.FC = () => {
 
                                                                 return (
                                                                     <React.Fragment key={expandKey}>
-                                                                        <TableRow className="tw:hover:bg-gray-50">
+                                                                        <TableRow className="tw:hover:bg-muted/50">
                                                                             <TableCell>
                                                                                 <Button
                                                                                     variant="ghost"
@@ -242,32 +243,13 @@ const AdminStoreProductList: React.FC = () => {
                 </div>
             )}
 
-            {vm.totalCount > vm.rowsPerPage && (
-                <div className="tw:mt-4 tw:flex tw:items-center tw:justify-between tw:text-sm tw:text-admin-fg-muted">
-                    <span>
-                        Showing {vm.page * vm.rowsPerPage + 1}&ndash;
-                        {Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
-                    </span>
-                    <div className="tw:flex tw:items-center tw:gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
-                            disabled={vm.page === 0}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
-                            disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
-            )}
+            <AdminPagination
+                page={vm.page}
+                pageSize={vm.rowsPerPage}
+                total={vm.totalCount}
+                onPageChange={vm.handleChangePage}
+                className="tw:mt-4"
+            />
         </AdminPage>
     );
 };

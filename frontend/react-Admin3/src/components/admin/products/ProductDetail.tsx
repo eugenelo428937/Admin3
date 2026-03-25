@@ -6,9 +6,10 @@ import {
   AdminPageHeader,
   AdminBadge,
   AdminErrorAlert,
+  AdminDetailCard,
+  AdminDetailField,
 } from '@/components/admin/composed';
 import { Button } from '@/components/admin/ui/button';
-import { Separator } from '@/components/admin/ui/separator';
 import useProductDetailVM from './useProductDetailVM';
 
 const AdminProductDetail: React.FC = () => {
@@ -30,42 +31,29 @@ const AdminProductDetail: React.FC = () => {
         ]}
       />
 
-      <div className="tw:rounded-admin tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6">
-        <h2 className="tw:text-xl tw:font-semibold tw:text-admin-fg tw:mb-4">
-          {vm.product.fullname}
-        </h2>
-        <dl className="tw:space-y-4">
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Code</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{vm.product.code}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Short Name</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{vm.product.shortname}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Description</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{vm.product.description || 'No description'}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Status</dt>
-            <dd className="tw:mt-1">{vm.product.active ? 'Active' : 'Inactive'}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Created</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{new Date(vm.product.created_at).toLocaleString()}</dd>
-          </div>
-          <Separator />
-          <div>
-            <dt className="tw:text-sm tw:font-medium tw:text-admin-fg-muted">Last Updated</dt>
-            <dd className="tw:mt-1 tw:text-admin-fg">{new Date(vm.product.updated_at).toLocaleString()}</dd>
-          </div>
-        </dl>
-      </div>
+      <h2 className="tw:text-xl tw:font-semibold tw:text-admin-fg tw:mb-4">
+        {vm.product.fullname}
+      </h2>
+      <AdminDetailCard>
+        <AdminDetailField label="Code">
+          {vm.product.code}
+        </AdminDetailField>
+        <AdminDetailField label="Short Name">
+          {vm.product.shortname}
+        </AdminDetailField>
+        <AdminDetailField label="Description">
+          {vm.product.description || 'No description'}
+        </AdminDetailField>
+        <AdminDetailField label="Status">
+          <AdminBadge active={vm.product.active} />
+        </AdminDetailField>
+        <AdminDetailField label="Created">
+          {new Date(vm.product.created_at).toLocaleString()}
+        </AdminDetailField>
+        <AdminDetailField label="Last Updated">
+          {new Date(vm.product.updated_at).toLocaleString()}
+        </AdminDetailField>
+      </AdminDetailCard>
 
       <div className="tw:mt-6">
         <Button variant="outline" onClick={() => navigate('/admin/products')}>

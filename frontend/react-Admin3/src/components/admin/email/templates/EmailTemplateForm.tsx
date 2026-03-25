@@ -23,13 +23,7 @@ const TEMPLATE_TYPE_CHOICES: { value: TemplateType; label: string }[] = [
     { value: 'password_reset', label: 'Password Reset' },
     { value: 'password_reset_completed', label: 'Password Reset Completed' },
     { value: 'account_activation', label: 'Account Activation' },
-    { value: 'newsletter', label: 'Newsletter' },
-    { value: 'welcome', label: 'Welcome' },
-    { value: 'reminder', label: 'Reminder' },
-    { value: 'notification', label: 'Notification' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'support', label: 'Support' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'email_verification', label: 'Email Verification' },
 ];
 
 const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
@@ -143,14 +137,14 @@ const EmailTemplateForm: React.FC = () => {
                                 <AdminFormField label="Closing Salutation">
                                     <AdminSelect
                                         options={[
-                                            { value: '', label: 'None' },
+                                            { value: '__none__', label: 'None' },
                                             ...vm.salutations.map((sal) => ({
                                                 value: String(sal.id),
                                                 label: `${sal.display_name} — "${sal.sign_off_text}, ${sal.signature_type === 'team' ? sal.team_signature : 'Staff'}"`,
                                             })),
                                         ]}
-                                        value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : ''}
-                                        onChange={(v) => vm.handleChange('closing_salutation', v === '' ? null : Number(v))}
+                                        value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : '__none__'}
+                                        onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
                                     />
                                 </AdminFormField>
                             )}

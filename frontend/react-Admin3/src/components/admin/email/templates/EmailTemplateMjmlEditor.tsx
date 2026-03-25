@@ -136,7 +136,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
             )}
 
             {/* Split pane: Editor + Preview */}
-            <div className="tw:flex tw:gap-4" style={{ minHeight: 500 }}>
+            <div className="tw:flex tw:gap-4 tw:min-h-[500px]">
                 {/* Left: CodeMirror Editor */}
                 <div
                     className="tw:flex-1 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border"
@@ -150,7 +150,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
                         .cm-content { padding-left: 0; text-align: left; }
                         .cm-line { padding-left: 2px; text-align: left; }
                     `}</style>
-                    <div ref={editorRef} style={{ height: '100%', minHeight: 500 }} />
+                    <div ref={editorRef} className="tw:h-full tw:min-h-[500px]" />
                 </div>
 
                 {/* Right: Preview */}

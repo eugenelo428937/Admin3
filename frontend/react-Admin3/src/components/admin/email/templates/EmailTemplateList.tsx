@@ -8,9 +8,9 @@ import {
     AdminErrorAlert,
     AdminLoadingState,
     AdminBadge,
+    AdminToggleGroup,
 } from '@/components/admin/composed';
 import type { SimpleColumn } from '@/components/admin/composed';
-import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
 import useEmailTemplateListVM from './useEmailTemplateListVM';
 import type { TemplateType } from '../../../../types/email';
@@ -22,13 +22,7 @@ const TEMPLATE_TYPE_OPTIONS: { value: TemplateType | 'all'; label: string }[] = 
     { value: 'password_reset', label: 'Password Reset' },
     { value: 'password_reset_completed', label: 'Password Reset Completed' },
     { value: 'account_activation', label: 'Account Activation' },
-    { value: 'newsletter', label: 'Newsletter' },
-    { value: 'welcome', label: 'Welcome' },
-    { value: 'reminder', label: 'Reminder' },
-    { value: 'notification', label: 'Notification' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'support', label: 'Support' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'email_verification', label: 'Email Verification' },
 ];
 
 const MASTER_FILTER_OPTIONS: { value: MasterFilter; label: string }[] = [
@@ -49,22 +43,13 @@ const EmailTemplateList: React.FC = () => {
     }
 
     const columns: SimpleColumn<any>[] = [
-        { key: 'name', header: 'Name' },
         { key: 'display_name', header: 'Display Name' },
-        { key: 'template_type', header: 'Type' },
         { key: 'subject_template', header: 'Subject' },
         { key: 'default_priority', header: 'Priority' },
         {
-            key: 'is_master',
-            header: 'Master',
-            render: (value: boolean) =>
-                value ? (
-                    <Badge variant="secondary">Master</Badge>
-                ) : null,
-        },
-        {
             key: 'is_active',
             header: 'Active',
+            align: 'center',
             render: (value: boolean) => (
                 <AdminBadge active={value} />
             ),
@@ -86,43 +71,21 @@ const EmailTemplateList: React.FC = () => {
 
             <AdminErrorAlert message={vm.error} />
 
-            {/* Master filter */}
-            <div className="tw:mb-2 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-                <span className="tw:mr-1 tw:text-sm tw:text-admin-fg-muted">Master:</span>
-                {MASTER_FILTER_OPTIONS.map(opt => (
-                    <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => vm.setFilterMaster(opt.value)}
-                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
-                            vm.filterMaster === opt.value
-                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
-                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
-                        }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
+            <AdminToggleGroup
+                label="Master"
+                options={MASTER_FILTER_OPTIONS}
+                value={vm.filterMaster}
+                onChange={vm.setFilterMaster}
+                className="tw:mb-2"
+            />
 
-            {/* Template type filter */}
-            <div className="tw:mb-4 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-                <span className="tw:mr-1 tw:text-sm tw:text-admin-fg-muted">Type:</span>
-                {TEMPLATE_TYPE_OPTIONS.map(opt => (
-                    <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => vm.setFilterTemplateType(opt.value)}
-                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
-                            vm.filterTemplateType === opt.value
-                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
-                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
-                        }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
+            <AdminToggleGroup
+                label="Type"
+                options={TEMPLATE_TYPE_OPTIONS}
+                value={vm.filterTemplateType}
+                onChange={vm.setFilterTemplateType}
+                className="tw:mb-4"
+            />
 
             <AdminDataTable
                 columns={columns}

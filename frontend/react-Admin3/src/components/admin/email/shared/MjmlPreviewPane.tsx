@@ -28,8 +28,7 @@ const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
                 </div>
             )}
             <div
-                className="tw:flex-1 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border tw:bg-white"
-                style={{ minHeight: 500 }}
+                className="tw:flex-1 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border tw:bg-card tw:min-h-[500px]"
             >
                 <iframe
                     ref={iframeRef}

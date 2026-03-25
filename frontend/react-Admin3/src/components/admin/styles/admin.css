@@ -38,11 +38,13 @@
   --font-sans: var(--admin-font-sans);
   --font-mono: var(--admin-font-mono);
 
-  --radius-admin: var(--admin-radius);
 }
 
 /* ── Admin root variables (tweakcn oklch palette) ── */
 .admin-root {
+  /* Reset text-align inherited from MUI Container (which centers content) */
+  text-align: left;
+
   /* ── shadcn standard tokens (used by shadcn/ui primitives) ── */
   --background: oklch(0.9383 0.0042 236.4993);
   --foreground: oklch(0.3211 0 0);
@@ -100,7 +102,6 @@
   --admin-warning:         oklch(0.7500 0.1500 65.0000);
   --admin-warning-fg:      oklch(1.0000 0 0);
   --admin-ring:            var(--ring);
-  --admin-radius:          var(--radius);
   --admin-sidebar-bg:      var(--sidebar);
   --admin-sidebar-fg:      var(--sidebar-foreground);
   --admin-sidebar-active:  var(--sidebar-primary);

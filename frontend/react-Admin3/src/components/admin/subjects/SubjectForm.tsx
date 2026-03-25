@@ -4,10 +4,10 @@ import {
   AdminPage,
   AdminFormLayout,
   AdminFormField,
+  AdminCheckboxField,
 } from '@/components/admin/composed';
 import { Input } from '@/components/admin/ui/input';
 import { Textarea } from '@/components/admin/ui/textarea';
-import { Checkbox } from '@/components/admin/ui/checkbox';
 import useSubjectFormVM from './useSubjectFormVM';
 
 const AdminSubjectForm: React.FC = () => {
@@ -45,21 +45,12 @@ const AdminSubjectForm: React.FC = () => {
         </AdminFormField>
 
         <AdminFormField label="Active">
-          <div className="tw:flex tw:items-center tw:gap-2">
-            <Checkbox
-              aria-label="Active"
-              name="active"
-              checked={vm.formData.active}
-              onCheckedChange={(checked) => {
-                // Create a synthetic event to match VM's handleChange interface
-                const syntheticEvent = {
-                  target: { name: 'active', value: '', type: 'checkbox', checked: !!checked }
-                } as React.ChangeEvent<HTMLInputElement>;
-                vm.handleChange(syntheticEvent);
-              }}
-            />
-            <span className="tw:text-sm tw:text-admin-fg">Active</span>
-          </div>
+          <AdminCheckboxField
+            name="active"
+            label="Active"
+            checked={vm.formData.active}
+            onChange={vm.handleChange}
+          />
         </AdminFormField>
       </AdminFormLayout>
     </AdminPage>

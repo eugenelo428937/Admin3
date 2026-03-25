@@ -33,7 +33,7 @@ const AdminProductTable: React.FC<ProductTableProps> = ({ products, onDelete }) 
   };
 
   return (
-    <div className="tw:rounded-admin tw:border tw:border-admin-border">
+    <div className="tw:rounded-md tw:border tw:border-admin-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -42,7 +42,7 @@ const AdminProductTable: React.FC<ProductTableProps> = ({ products, onDelete }) 
             <TableHead>Full Name</TableHead>
             <TableHead>Short Name</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead>Active</TableHead>
+            <TableHead style={{ textAlign: 'center' }}>Active</TableHead>
             <TableHead>Buy Both</TableHead>
             <TableHead className="tw:w-[50px]">Actions</TableHead>
           </TableRow>
@@ -75,7 +75,11 @@ const AdminProductTable: React.FC<ProductTableProps> = ({ products, onDelete }) 
                 <TableCell className="tw:max-w-[200px] tw:overflow-hidden tw:text-ellipsis tw:whitespace-nowrap">
                   {product.description || '-'}
                 </TableCell>
-                <TableCell>{product.is_active ? 'Active' : 'Inactive'}</TableCell>
+                <TableCell style={{ textAlign: 'center' }}>
+                  <div className="tw:flex tw:justify-center">
+                    <AdminBadge active={product.is_active} />
+                  </div>
+                </TableCell>
                 <TableCell>{product.buy_both ? 'Yes' : 'No'}</TableCell>
                 <TableCell>
                   <DropdownMenu>

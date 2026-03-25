@@ -6,10 +6,9 @@ import {
     AdminFormField,
     AdminSelect,
     AdminLoadingState,
+    AdminCheckboxField,
 } from '@/components/admin/composed';
 import { Input } from '@/components/admin/ui/input';
-import { Checkbox } from '@/components/admin/ui/checkbox';
-import { Label } from '@/components/admin/ui/label';
 import useStoreProductFormVM from './useStoreProductFormVM';
 
 const AdminStoreProductForm: React.FC = () => {
@@ -92,24 +91,12 @@ const AdminStoreProductForm: React.FC = () => {
                     />
                 </AdminFormField>
 
-                <div className="tw:flex tw:items-center tw:gap-2">
-                    <Checkbox
-                        id="is_active"
-                        checked={vm.formData.is_active}
-                        onCheckedChange={(checked) => {
-                            const syntheticEvent = {
-                                target: {
-                                    name: 'is_active',
-                                    type: 'checkbox',
-                                    checked: Boolean(checked),
-                                    value: '',
-                                },
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            vm.handleChange(syntheticEvent);
-                        }}
-                    />
-                    <Label htmlFor="is_active">Is Active</Label>
-                </div>
+                <AdminCheckboxField
+                    name="is_active"
+                    label="Is Active"
+                    checked={vm.formData.is_active}
+                    onChange={vm.handleChange}
+                />
             </AdminFormLayout>
         </AdminPage>
     );

@@ -6,6 +6,7 @@ import {
     AdminErrorAlert,
     AdminLoadingState,
     AdminConfirmDialog,
+    AdminToggleGroup,
 } from '@/components/admin/composed';
 import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
@@ -71,23 +72,12 @@ const EmailQueueList: React.FC = () => {
         <AdminPage>
             <AdminPageHeader title="Email Queue" />
 
-            {/* Status Filter Chips */}
-            <div className="tw:mb-4 tw:flex tw:flex-wrap tw:gap-2">
-                {STATUS_OPTIONS.map((status) => (
-                    <button
-                        key={status}
-                        type="button"
-                        onClick={() => vm.handleStatusFilter(status)}
-                        className={`tw:inline-flex tw:items-center tw:rounded-full tw:border tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium tw:transition-colors ${
-                            vm.statusFilter === status
-                                ? 'tw:border-primary tw:bg-primary tw:text-primary-foreground'
-                                : 'tw:border-admin-border tw:bg-transparent tw:text-admin-fg-muted tw:hover:bg-admin-bg-muted'
-                        }`}
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                ))}
-            </div>
+            <AdminToggleGroup
+                options={STATUS_OPTIONS.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))}
+                value={vm.statusFilter}
+                onChange={vm.handleStatusFilter}
+                className="tw:mb-4"
+            />
 
             <AdminErrorAlert message={vm.error} />
 

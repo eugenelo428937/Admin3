@@ -75,3 +75,4 @@ claude-mcp-trello/
 .playwright-mcp/
 Project settings/server setup/secrets/
 Project settings/server setup/misc/*
+.mcp.json
