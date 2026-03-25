@@ -22,11 +22,9 @@ import {
   BadgeCheck,
   SlidersHorizontal,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarGroup,
   SidebarGroupContent,
@@ -93,16 +91,11 @@ const navGroups = [
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  const { user } = useAuth() as any;
 
   const isActive = (path: string): boolean => {
     if (path === '/') return location.pathname === '/';
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
-
-  const userInitials = user
-    ? `${(user.first_name || '')[0] || ''}${(user.last_name || '')[0] || ''}`.toUpperCase() || 'U'
-    : 'U';
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -149,26 +142,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg">
-              <div className="tw:flex tw:aspect-square tw:size-8 tw:items-center tw:justify-center tw:rounded-full tw:bg-sidebar-primary tw:text-sidebar-primary-foreground tw:text-xs tw:font-bold">
-                {userInitials}
-              </div>
-              <div className="tw:flex tw:flex-col tw:gap-0.5 tw:leading-none">
-                <span className="tw:font-medium tw:text-sm">
-                  {user?.first_name} {user?.last_name}
-                </span>
-                <span className="tw:text-xs tw:text-muted-foreground">
-                  {user?.email}
-                </span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
