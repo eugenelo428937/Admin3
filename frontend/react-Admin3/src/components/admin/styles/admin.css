@@ -42,6 +42,9 @@
 
 /* ── Admin root variables (tweakcn oklch palette) ── */
 .admin-root {
+  /* Reset text-align inherited from MUI Container (which centers content) */
+  text-align: left;
+
   /* ── shadcn standard tokens (used by shadcn/ui primitives) ── */
   --background: oklch(0.9383 0.0042 236.4993);
   --foreground: oklch(0.3211 0 0);
