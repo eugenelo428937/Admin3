@@ -82,6 +82,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       setIsLoading(true);
       try {
+        // Check for machine token in URL fragment
+        const hash = window.location.hash;
+        if (hash.includes('machine_token=')) {
+          const token = hash.split('machine_token=')[1];
+          // Clear fragment immediately — before any network request
+          window.history.replaceState({}, '', window.location.pathname);
+
+          if (token) {
+            const result = await authService.machineLogin(token);
+            if (result.status === 'success' && result.user) {
+              setUser(result.user);
+              setIsAuthenticated(true);
+              updateUserRoles(result.user);
+              setIsLoading(false);
+              return;
+            }
+            // Machine login failed — set error, fall through to normal flow
+            setError(result.message || 'Auto-login failed. Please log in manually.');
+          }
+        }
+
+        // Normal auth initialization: check localStorage
         const storedUser = localStorage.getItem("user");
         const storedAuth = localStorage.getItem("isAuthenticated");
 

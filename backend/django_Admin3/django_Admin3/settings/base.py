@@ -382,3 +382,7 @@ RECAPTCHA_ACTIONS = {
 # When False (production): log warnings and skip gracefully.
 MIGRATION_ASSERT_MODE = os.environ.get('MIGRATION_ASSERT_MODE', 'false').lower() == 'true'
 
+# Machine Token Auto-Login
+# Trusted VPN subnets for machine token authentication
+MACHINE_LOGIN_TRUSTED_SUBNETS = ['7.32.0.0/16']
+

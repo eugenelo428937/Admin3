@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
@@ -11,6 +12,8 @@ from users.serializers import UserRegistrationSerializer
 from cart.services import cart_service
 from email_system.services.email_service import email_service
 from utils.recaptcha_utils import verify_recaptcha_v3, is_recaptcha_enabled, get_client_ip
+from core_auth.models import MachineToken
+from core_auth.utils import hash_token, is_trusted_ip
 # Token configuration - now using Django settings directly
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -22,6 +25,11 @@ import logging
 from students.models import Student
 from django.db import transaction
 logger = logging.getLogger(__name__)
+
+
+class MachineLoginThrottle(AnonRateThrottle):
+    scope = 'machine_login'
+    rate = '5/min'
 
 
 def serialize_user_for_email(user):
@@ -99,9 +107,76 @@ class AuthViewSet(viewsets.ViewSet):
             )
         except User.DoesNotExist:
             return Response(
-                {'error': 'Invalid credentials'}, 
+                {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+    @action(detail=False, methods=['post'],
+            permission_classes=[AllowAny],
+            throttle_classes=[MachineLoginThrottle])
+    def machine_login(self, request):
+        """
+        Authenticate via pre-provisioned machine token.
+        Validates token + VPN subnet, returns JWT tokens.
+        No cart merge — admin users don't browse the store.
+        """
+        error_response = Response(
+            {'error': 'Machine login failed'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+        raw_token = request.data.get('machine_token', '')
+        if not raw_token:
+            logger.warning('machine_login_failed: ip=%s reason=missing_token',
+                           get_client_ip(request))
+            return error_response
+
+        # Hash and look up
+        token_hash_value = hash_token(raw_token)
+        try:
+            machine_token = MachineToken.objects.select_related('user').get(
+                token_hash=token_hash_value
+            )
+        except MachineToken.DoesNotExist:
+            logger.warning('machine_login_failed: ip=%s reason=invalid_token',
+                           get_client_ip(request))
+            return error_response
+
+        # Check token active
+        if not machine_token.is_active:
+            logger.warning('machine_login_failed: ip=%s reason=inactive_token',
+                           get_client_ip(request))
+            return error_response
+
+        # Check trusted network
+        client_ip = get_client_ip(request)
+        if not is_trusted_ip(client_ip):
+            logger.warning('machine_login_failed: ip=%s reason=untrusted_network',
+                           client_ip)
+            return error_response
+
+        # Check user is active superuser
+        user = machine_token.user
+        if not user.is_active or not user.is_superuser:
+            logger.warning('machine_login_failed: ip=%s reason=user_not_eligible',
+                           client_ip)
+            return error_response
+
+        # Success — update timestamp and issue JWT
+        machine_token.last_used_at = timezone.now()
+        machine_token.save(update_fields=['last_used_at'])
+
+        refresh = RefreshToken.for_user(user)
+        serializer = UserRegistrationSerializer(user)
+
+        logger.info('machine_login: user=%s machine=%s ip=%s',
+                     user.email, machine_token.machine_name, client_ip)
+
+        return Response({
+            'token': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': serializer.data
+        })
 
     @action(detail=False, methods=['post'])
     def register(self, request):

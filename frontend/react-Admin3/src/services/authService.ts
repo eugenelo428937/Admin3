@@ -4,6 +4,7 @@ import config from "../config";
 import logger from "./loggerService";
 import type {
   LoginCredentials,
+  MachineLoginCredentials,
   AuthResult,
   RegistrationData,
   RegistrationResult,
@@ -113,6 +114,68 @@ const authService = {
       return {
         status: "error",
         message: "Login failed. Please try again later.",
+        code: error.response?.status || 500,
+      };
+    }
+  },
+
+  // ─── Machine Token Login ──────────────────────────────────────
+  machineLogin: async (rawToken: string): Promise<AuthResult> => {
+    (logger as any).debug("Attempting machine token login");
+
+    // Clear any existing auth data
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuthenticated");
+
+    try {
+      const response = await httpService.post(
+        `${API_AUTH_URL}/machine-login/`,
+        { machine_token: rawToken }
+      );
+
+      if (
+        response.status === 200 &&
+        response.data?.token &&
+        response.data?.user
+      ) {
+        localStorage.setItem("token", response.data.token);
+        if (response.data.refresh) {
+          localStorage.setItem("refreshToken", response.data.refresh);
+        }
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("isAuthenticated", "true");
+
+        (logger as any).info("Machine login successful", {
+          userId: response.data.user.id,
+        });
+
+        return {
+          status: "success",
+          user: response.data.user,
+          message: "Machine login successful",
+        };
+      }
+
+      return {
+        status: "error",
+        message: "Invalid response from server",
+        code: 500,
+      };
+    } catch (error: any) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isAuthenticated");
+
+      (logger as any).error("Machine login failed", {
+        status: error.response?.status,
+      });
+
+      return {
+        status: "error",
+        message: "Auto-login failed. Please log in manually.",
         code: error.response?.status || 500,
       };
     }
