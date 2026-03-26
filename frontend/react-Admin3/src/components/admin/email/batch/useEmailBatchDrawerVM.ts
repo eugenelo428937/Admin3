@@ -10,6 +10,8 @@ interface EmailBatchDrawerVM {
     toFilter: string;
     totalCount: number;
     setToFilter: (value: string) => void;
+    handleRetryAllFailed: () => Promise<void>;
+    handleResendEmail: (emailId: number) => Promise<void>;
 }
 
 export const useEmailBatchDrawerVM = (batchId: string | null): EmailBatchDrawerVM => {
@@ -50,6 +52,27 @@ export const useEmailBatchDrawerVM = (batchId: string | null): EmailBatchDrawerV
         }
     }, [batchId, toFilter]);
 
+    const handleRetryAllFailed = useCallback(async () => {
+        if (!batchId) return;
+        try {
+            await emailService.retryBatchFailed(batchId);
+            fetchBatch();
+            fetchEmails();
+        } catch (err: any) {
+            setError(err.response?.data?.detail || err.message || 'Failed to retry');
+        }
+    }, [batchId, fetchBatch, fetchEmails]);
+
+    const handleResendEmail = useCallback(async (emailId: number) => {
+        try {
+            await emailService.resendQueueItem(emailId);
+            fetchEmails();
+            fetchBatch();
+        } catch (err: any) {
+            setError(err.response?.data?.detail || err.message || 'Failed to resend');
+        }
+    }, [fetchBatch, fetchEmails]);
+
     useEffect(() => {
         if (batchId) {
             setBatch(null);
@@ -68,5 +91,7 @@ export const useEmailBatchDrawerVM = (batchId: string | null): EmailBatchDrawerV
         toFilter,
         totalCount,
         setToFilter,
+        handleRetryAllFailed,
+        handleResendEmail,
     };
 };

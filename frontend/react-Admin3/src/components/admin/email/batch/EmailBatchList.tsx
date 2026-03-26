@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
+import { RotateCcw } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
     AdminErrorAlert,
     AdminLoadingState,
+    AdminConfirmDialog,
     AdminToggleGroup,
 } from '@/components/admin/composed';
-import { Badge } from '@/components/admin/ui/badge';
 import {
     Table,
     TableBody,
@@ -19,22 +20,6 @@ import { Button } from '@/components/admin/ui/button';
 import { useEmailBatchListVM } from './useEmailBatchListVM';
 import EmailBatchDrawer from './EmailBatchDrawer';
 import type { BatchStatus } from '../../../../types/email';
-
-const STATUS_BADGE_CLASS: Record<BatchStatus, string> = {
-    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
-    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
-    completed: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
-    completed_with_errors: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
-    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
-};
-
-const STATUS_LABEL: Record<BatchStatus, string> = {
-    pending: 'Queued',
-    processing: 'Processing',
-    completed: 'Completed',
-    completed_with_errors: 'With Errors',
-    failed: 'Failed',
-};
 
 const STATUS_OPTIONS: Array<BatchStatus | 'all'> = [
     'all',
@@ -69,6 +54,21 @@ const formatRelativeTime = (dateString: string | null): string => {
     return 'just now';
 };
 
+const getProgressStatusLabel = (batch: { status: BatchStatus; error_count: number }): { text: string; color: string } => {
+    if (batch.error_count > 0) return { text: `(${batch.error_count} failed)`, color: '#d97706' };
+    if (batch.status === 'completed') return { text: '(Completed)', color: '#16a34a' };
+    if (batch.status === 'failed') return { text: '(Failed)', color: '#dc2626' };
+    if (batch.status === 'processing') return { text: '(Processing)', color: '#1d4ed8' };
+    if (batch.status === 'pending') return { text: '(Queued)', color: '#64748b' };
+    return { text: '', color: '#64748b' };
+};
+
+const getRetryIconColor = (batch: { status: BatchStatus; error_count: number }): string => {
+    if (batch.status === 'failed') return '#dc2626';
+    if (batch.error_count > 0) return '#d97706';
+    return '#64748b';
+};
+
 const EmailBatchList: React.FC = () => {
     const vm = useEmailBatchListVM();
 
@@ -93,7 +93,7 @@ const EmailBatchList: React.FC = () => {
             <AdminErrorAlert message={vm.error} />
 
             {vm.loading ? (
-                <AdminLoadingState rows={5} columns={7} />
+                <AdminLoadingState rows={5} columns={5} />
             ) : vm.batches.length === 0 && !vm.error ? (
                 <div role="alert" className="tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-800">
                     No batches found.
@@ -104,47 +104,60 @@ const EmailBatchList: React.FC = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Batch ID</TableHead>
                                     <TableHead>Template</TableHead>
-                                    <TableHead>Requested By</TableHead>
-                                    <TableHead className="tw:text-center">Sent</TableHead>
-                                    <TableHead className="tw:text-center">Errors</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Created</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Progress</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Created</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {vm.batches.map((batch) => (
-                                    <TableRow
-                                        key={batch.batch_id}
-                                        className={`tw:cursor-pointer ${vm.selectedBatchId === batch.batch_id ? 'tw:bg-blue-50' : ''}`}
-                                        onClick={() => vm.handleSelectBatch(batch.batch_id)}
-                                    >
-                                        <TableCell>
-                                            <span className="tw:font-mono tw:text-xs" title={batch.batch_id}>
-                                                {batch.batch_id.substring(0, 8)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>{batch.template_name || '-'}</TableCell>
-                                        <TableCell>{batch.requested_by}</TableCell>
-                                        <TableCell className="tw:text-center">
-                                            {batch.sent_count}/{batch.total_items}
-                                        </TableCell>
-                                        <TableCell className="tw:text-center">
-                                            {batch.error_count}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className={STATUS_BADGE_CLASS[batch.status]}>
-                                                {STATUS_LABEL[batch.status]}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="tw:text-sm" title={batch.created_at ? new Date(batch.created_at).toLocaleString() : ''}>
-                                                {formatRelativeTime(batch.created_at)}
-                                            </span>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {vm.batches.map((batch) => {
+                                    const progressStatus = getProgressStatusLabel(batch);
+                                    const hasErrors = batch.error_count > 0;
+                                    const retryColor = getRetryIconColor(batch);
+
+                                    return (
+                                        <TableRow
+                                            key={batch.batch_id}
+                                            className={`tw:cursor-pointer ${vm.selectedBatchId === batch.batch_id ? 'tw:bg-blue-50' : ''}`}
+                                            onClick={() => vm.handleSelectBatch(batch.batch_id)}
+                                        >
+                                            <TableCell>{batch.template_name || '-'}</TableCell>
+                                            <TableCell style={{ textAlign: 'center' }}>
+                                                <div>
+                                                    <span className="tw:font-semibold">
+                                                        {batch.sent_count}/{batch.total_items}
+                                                    </span>
+                                                </div>
+                                                <div style={{ color: progressStatus.color }}>
+                                                    {progressStatus.text}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell style={{ textAlign: 'center' }}>
+                                                <div>{batch.requested_by}</div>
+                                                <div className="tw:text-admin-fg-muted tw:text-xs">
+                                                    <span title={batch.created_at ? new Date(batch.created_at).toLocaleString() : ''}>
+                                                        {formatRelativeTime(batch.created_at)}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell style={{ textAlign: 'center' }}>
+                                                <button
+                                                    title="Resend failed emails"
+                                                    disabled={!hasErrors}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        vm.openRetryDialog(batch.batch_id);
+                                                    }}
+                                                    className="tw:inline-flex tw:items-center tw:justify-center tw:rounded-md tw:p-1.5 tw:transition-colors hover:tw:bg-gray-100"
+                                                    style={{ opacity: hasErrors ? 1 : 0.4, cursor: hasErrors ? 'pointer' : 'default' }}
+                                                >
+                                                    <RotateCcw size={16} style={{ color: retryColor }} />
+                                                </button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>
@@ -194,6 +207,16 @@ const EmailBatchList: React.FC = () => {
             <EmailBatchDrawer
                 batchId={vm.selectedBatchId}
                 onClose={vm.handleCloseDrawer}
+            />
+
+            {/* Retry Confirmation Dialog */}
+            <AdminConfirmDialog
+                open={vm.retryDialogOpen}
+                title="Confirm Retry"
+                description="Are you sure you want to resend all failed emails in this batch? This will re-queue the failed items and attempt to send them again."
+                confirmLabel="Resend"
+                onConfirm={vm.confirmRetry}
+                onCancel={vm.closeRetryDialog}
             />
         </AdminPage>
     );

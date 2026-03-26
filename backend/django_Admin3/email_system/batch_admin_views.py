@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from catalog.permissions import IsSuperUser
@@ -51,3 +51,30 @@ class EmailBatchAdminViewSet(
 
         serializer = EmailBatchEmailSerializer(qs, many=True)
         return Response({'results': serializer.data, 'count': qs.count()})
+
+    @action(detail=True, methods=['post'], url_path='retry-failed')
+    def retry_failed(self, request, pk=None):
+        """Reset all failed queue items in this batch to pending."""
+        batch = self.get_object()
+        failed_items = EmailQueue.objects.filter(batch=batch, status='failed')
+        count = failed_items.count()
+        if count == 0:
+            return Response({'detail': 'No failed emails to retry.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.utils import timezone
+        failed_items.update(
+            status='pending',
+            scheduled_at=timezone.now(),
+            attempts=0,
+            last_attempt_at=None,
+            next_retry_at=None,
+            error_message='',
+            error_details={},
+        )
+
+        # Update batch status back to processing
+        batch.status = 'processing'
+        batch.save(update_fields=['status'])
+
+        serializer = self.get_serializer(batch)
+        return Response({'detail': f'{count} failed emails queued for retry.', 'batch': serializer.data})

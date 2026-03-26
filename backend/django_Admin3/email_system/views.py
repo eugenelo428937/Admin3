@@ -193,7 +193,7 @@ class EmailQueueViewSet(
 ):
     """Read-only ViewSet for the email queue with filtering, duplicate, and resend actions."""
 
-    queryset = EmailQueue.objects.select_related('template').all()
+    queryset = EmailQueue.objects.select_related('template', 'created_by').all()
     serializer_class = EmailQueueSerializer
     permission_classes = [IsSuperUser]
 
