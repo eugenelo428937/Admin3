@@ -50,6 +50,11 @@ auth_send_email_verification = AuthViewSet.as_view({
     'post': 'send_email_verification'
 })
 
+# Machine token login
+auth_machine_login = AuthViewSet.as_view({
+    'post': 'machine_login'
+})
+
 urlpatterns = [
     path('login/', auth_viewset, name='auth-viewset'),
     path('register/', auth_register, name='auth-register'),
@@ -68,4 +73,7 @@ urlpatterns = [
     # Email verification endpoints  
     path('verify_email/', auth_verify_email, name='auth-verify-email'),
     path('send_email_verification/', auth_send_email_verification, name='auth-send-email-verification'),
+
+    # Machine token auto-login
+    path('machine-login/', auth_machine_login, name='auth-machine-login'),
 ]

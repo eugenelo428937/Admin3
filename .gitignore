@@ -76,3 +76,4 @@ claude-mcp-trello/
 Project settings/server setup/secrets/
 Project settings/server setup/misc/*
 .mcp.json
+pacts/*

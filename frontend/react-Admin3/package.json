@@ -89,7 +89,7 @@
     "msw": "^2.12.4",
     "postcss": "^8.5.8",
     "prop-types": "^15.8.1",
-    "shadcn": "^3.5.1",
+    "shadcn": "^4.1.0",
     "storybook": "^10.2.0",
     "storybook-design-token": "^5.0.0",
     "tailwindcss": "^4.2.2",
