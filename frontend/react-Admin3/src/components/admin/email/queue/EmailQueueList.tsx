@@ -20,6 +20,7 @@ import {
 } from '@/components/admin/ui/table';
 import { useEmailQueueListVM } from './useEmailQueueListVM';
 import type { QueueStatus } from '../../../../types/email';
+import EmailToFilter from '../shared/EmailToFilter';
 
 const STATUS_BADGE_CLASS: Record<QueueStatus, string> = {
     pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
@@ -78,6 +79,14 @@ const EmailQueueList: React.FC = () => {
                 onChange={vm.handleStatusFilter}
                 className="tw:mb-4"
             />
+
+            <div className="tw:mb-4 tw:max-w-sm">
+                <EmailToFilter
+                    value={vm.toFilter}
+                    onChange={vm.handleToFilter}
+                    placeholder="Filter by recipient email..."
+                />
+            </div>
 
             <AdminErrorAlert message={vm.error} />
 
