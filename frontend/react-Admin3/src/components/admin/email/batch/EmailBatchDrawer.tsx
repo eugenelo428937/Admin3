@@ -1,17 +1,17 @@
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/admin/ui/badge';
 import { Button } from '@/components/admin/ui/button';
 import EmailToFilter from '../shared/EmailToFilter';
 import { useEmailBatchDrawerVM } from './useEmailBatchDrawerVM';
 import type { BatchStatus } from '../../../../types/email';
 
-const STATUS_BADGE_CLASS: Record<BatchStatus, string> = {
-    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
-    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
-    completed: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
-    completed_with_errors: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
-    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
+const STATUS_BADGE_STYLE: Record<BatchStatus, React.CSSProperties> = {
+    pending: { borderColor: '#e2e8f0', backgroundColor: '#f1f5f9', color: '#64748b' },
+    processing: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff', color: '#1d4ed8' },
+    completed: { borderColor: '#86efac', backgroundColor: '#f0fdf4', color: '#16a34a' },
+    completed_with_errors: { borderColor: '#fde68a', backgroundColor: '#fffbeb', color: '#d97706' },
+    failed: { borderColor: '#fca5a5', backgroundColor: '#fef2f2', color: '#dc2626' },
 };
 
 const STATUS_LABEL: Record<BatchStatus, string> = {
@@ -22,13 +22,13 @@ const STATUS_LABEL: Record<BatchStatus, string> = {
     failed: 'Failed',
 };
 
-const EMAIL_STATUS_CLASS: Record<string, string> = {
-    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
-    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
-    sent: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
-    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
-    cancelled: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
-    retry: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
+const EMAIL_STATUS_STYLE: Record<string, React.CSSProperties> = {
+    pending: { borderColor: '#e2e8f0', backgroundColor: '#f1f5f9', color: '#64748b' },
+    processing: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff', color: '#1d4ed8' },
+    sent: { borderColor: '#86efac', backgroundColor: '#f0fdf4', color: '#16a34a' },
+    failed: { borderColor: '#fca5a5', backgroundColor: '#fef2f2', color: '#dc2626' },
+    cancelled: { borderColor: '#fde68a', backgroundColor: '#fffbeb', color: '#d97706' },
+    retry: { borderColor: '#d8b4fe', backgroundColor: '#faf5ff', color: '#7c3aed' },
 };
 
 const formatRelativeTime = (dateString: string | null): string => {
@@ -68,6 +68,16 @@ const EmailBatchDrawer: React.FC<EmailBatchDrawerProps> = ({ batchId, onClose })
                         Batch {batchId.substring(0, 8)} · {vm.batch?.total_items ?? '...'} emails
                     </p>
                 </div>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!vm.batch || vm.batch.error_count === 0}
+                    onClick={vm.handleRetryAllFailed}
+                    style={{ fontSize: '12px' }}
+                >
+                    <RotateCcw className="tw:size-3.5" />
+                    Retry All Failed
+                </Button>
                 <Button variant="ghost" size="icon-xs" onClick={onClose}>
                     <X className="tw:size-4" />
                 </Button>
@@ -78,7 +88,7 @@ const EmailBatchDrawer: React.FC<EmailBatchDrawerProps> = ({ batchId, onClose })
                 <div className="tw:flex tw:items-center tw:gap-4 tw:px-4 tw:py-2 tw:bg-admin-bg-muted tw:border-b tw:border-admin-border tw:text-xs">
                     <div className="tw:flex tw:items-center tw:gap-1.5">
                         <span className="tw:text-admin-fg-muted">Status:</span>
-                        <Badge variant="outline" className={STATUS_BADGE_CLASS[vm.batch.status]}>
+                        <Badge variant="outline" style={STATUS_BADGE_STYLE[vm.batch.status]}>
                             {STATUS_LABEL[vm.batch.status]}
                         </Badge>
                     </div>
@@ -116,6 +126,7 @@ const EmailBatchDrawer: React.FC<EmailBatchDrawerProps> = ({ batchId, onClose })
                             target="_blank"
                             rel="noopener noreferrer"
                             className="tw:flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:border-b tw:border-admin-border/50 tw:text-xs hover:tw:bg-admin-bg-muted tw:no-underline tw:text-inherit tw:cursor-pointer"
+                            style={{ backgroundColor: email.status === 'failed' ? '#fef2f2' : undefined }}
                         >
                             <div className="tw:flex-1 tw:min-w-0">
                                 <div className="tw:text-admin-fg tw:truncate">
@@ -125,7 +136,7 @@ const EmailBatchDrawer: React.FC<EmailBatchDrawerProps> = ({ batchId, onClose })
                                     {email.subject || '-'}
                                 </div>
                             </div>
-                            <Badge variant="outline" className={EMAIL_STATUS_CLASS[email.status] || ''}>
+                            <Badge variant="outline" style={EMAIL_STATUS_STYLE[email.status] || {}}>
                                 {email.status}
                             </Badge>
                             <span className="tw:text-admin-fg-muted tw:whitespace-nowrap">
@@ -133,6 +144,15 @@ const EmailBatchDrawer: React.FC<EmailBatchDrawerProps> = ({ batchId, onClose })
                                     ? email.error_message.substring(0, 20)
                                     : formatRelativeTime(email.sent_at)}
                             </span>
+                            {email.status === 'failed' && (
+                                <button
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); vm.handleResendEmail(email.id); }}
+                                    style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer', fontSize: '14px', color: '#d97706', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                    title="Resend this email"
+                                >
+                                    <RotateCcw style={{ width: '14px', height: '14px' }} />
+                                </button>
+                            )}
                             <ExternalLink className="tw:size-3 tw:text-admin-fg-muted tw:shrink-0" />
                         </a>
                     ))

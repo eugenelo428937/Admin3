@@ -295,6 +295,11 @@ const emailService = {
         const response = await httpService.get(`${BASE_URL}/batches/${batchId}/emails/`, { params });
         return parsePaginatedResponse(response.data);
     },
+
+    retryBatchFailed: async (batchId: string) => {
+        const response = await httpService.post(`${BASE_URL}/batches/${batchId}/retry-failed/`);
+        return response.data;
+    },
 };
 
 export default emailService;

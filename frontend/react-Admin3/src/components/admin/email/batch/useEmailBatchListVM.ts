@@ -11,12 +11,17 @@ interface EmailBatchListVM {
     rowsPerPage: number;
     totalCount: number;
     selectedBatchId: string | null;
+    retryBatchId: string | null;
+    retryDialogOpen: boolean;
     fetchBatches: () => Promise<void>;
     handleStatusFilter: (status: BatchStatus | 'all') => void;
     handleSelectBatch: (batchId: string) => void;
     handleCloseDrawer: () => void;
     handleChangePage: (event: unknown, newPage: number) => void;
     handleChangeRowsPerPage: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+    openRetryDialog: (batchId: string) => void;
+    closeRetryDialog: () => void;
+    confirmRetry: () => Promise<void>;
 }
 
 export const useEmailBatchListVM = (): EmailBatchListVM => {
@@ -28,6 +33,8 @@ export const useEmailBatchListVM = (): EmailBatchListVM => {
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [totalCount, setTotalCount] = useState(0);
     const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+    const [retryBatchId, setRetryBatchId] = useState<string | null>(null);
+    const [retryDialogOpen, setRetryDialogOpen] = useState(false);
 
     const fetchBatches = useCallback(async () => {
         setLoading(true);
@@ -73,6 +80,28 @@ export const useEmailBatchListVM = (): EmailBatchListVM => {
         setPage(0);
     }, []);
 
+    const openRetryDialog = useCallback((batchId: string) => {
+        setRetryBatchId(batchId);
+        setRetryDialogOpen(true);
+    }, []);
+
+    const closeRetryDialog = useCallback(() => {
+        setRetryBatchId(null);
+        setRetryDialogOpen(false);
+    }, []);
+
+    const confirmRetry = useCallback(async () => {
+        if (!retryBatchId) return;
+        try {
+            await emailService.retryBatchFailed(retryBatchId);
+            setRetryDialogOpen(false);
+            setRetryBatchId(null);
+            await fetchBatches();
+        } catch (err: any) {
+            setError(err.response?.data?.detail || err.message || 'Failed to retry batch');
+        }
+    }, [retryBatchId, fetchBatches]);
+
     return {
         batches,
         loading,
@@ -82,11 +111,16 @@ export const useEmailBatchListVM = (): EmailBatchListVM => {
         rowsPerPage,
         totalCount,
         selectedBatchId,
+        retryBatchId,
+        retryDialogOpen,
         fetchBatches,
         handleStatusFilter,
         handleSelectBatch,
         handleCloseDrawer,
         handleChangePage,
         handleChangeRowsPerPage,
+        openRetryDialog,
+        closeRetryDialog,
+        confirmRetry,
     };
 };
