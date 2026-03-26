@@ -202,6 +202,9 @@ class EmailQueueViewSet(
         status_filter = self.request.query_params.get('status')
         if status_filter:
             qs = qs.filter(status=status_filter)
+        to_email = self.request.query_params.get('to_email')
+        if to_email:
+            qs = qs.filter(to_emails__icontains=to_email)
         return qs
 
     @action(detail=True, methods=['post'])
