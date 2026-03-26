@@ -279,6 +279,22 @@ const emailService = {
         const response = await httpService.put(`${BASE_URL}/mjml-elements/${id}/`, data);
         return response.data;
     },
+
+    // ─── Batches (Admin) ───────────────────────────────────────
+    getBatches: async (params: Record<string, any> = {}) => {
+        const response = await httpService.get(`${BASE_URL}/batches/`, { params });
+        return parsePaginatedResponse(response.data);
+    },
+
+    getBatchById: async (batchId: string) => {
+        const response = await httpService.get(`${BASE_URL}/batches/${batchId}/`);
+        return response.data;
+    },
+
+    getBatchEmails: async (batchId: string, params: Record<string, any> = {}) => {
+        const response = await httpService.get(`${BASE_URL}/batches/${batchId}/emails/`, { params });
+        return parsePaginatedResponse(response.data);
+    },
 };
 
 export default emailService;
