@@ -162,3 +162,38 @@ class EmailBatchAdminViewSetTest(TestCase):
         client = APIClient()
         response = client.get('/api/email/batches/')
         self.assertEqual(response.status_code, 401)
+
+
+class EmailQueueToFilterTest(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser('admin3', 'admin3@test.com', 'pass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.admin)
+
+        self.template = EmailTemplate.objects.create(
+            name='queue_filter_template',
+            display_name='Queue Filter',
+            subject_template='Subject',
+        )
+        EmailQueue.objects.create(
+            template=self.template,
+            to_emails=['alice@example.com'],
+            subject='Hello Alice',
+            status='sent',
+        )
+        EmailQueue.objects.create(
+            template=self.template,
+            to_emails=['bob@example.com'],
+            subject='Hello Bob',
+            status='sent',
+        )
+
+    def test_queue_filter_by_to_email(self):
+        response = self.client.get('/api/email/queue/', {'to_email': 'alice'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_queue_no_filter_returns_all(self):
+        response = self.client.get('/api/email/queue/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 2)
