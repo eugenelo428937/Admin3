@@ -1,6 +1,6 @@
 // src/App.js
 import React, { Suspense, useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
@@ -220,6 +220,8 @@ function App() {
 
 										{/* Admin routes — wrapped by AdminLayout shell */}
 										<Route element={<AdminLayout />}>
+										{/* Admin: redirect /admin to /admin/dashboard */}
+										<Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 										{/* Admin: Dashboard (internal home) */}
 										<Route path="/admin/dashboard" element={<Dashboard />} />
 
