@@ -30,6 +30,7 @@ export interface EmailQueue {
   created_at: string;
   updated_at: string;
   created_by: number | null;
+  created_by_name?: string | null;
   tags: string[];
   duplicated_from: number | null;
 }
