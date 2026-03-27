@@ -21,6 +21,7 @@ import {
   Users,
   BadgeCheck,
   SlidersHorizontal,
+  Mail,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -55,6 +56,7 @@ const navGroups = [
       { label: 'Settings', path: '/admin/email/settings', icon: Settings },
       { label: 'Templates', path: '/admin/email/templates', icon: FileText },
       { label: 'Queue', path: '/admin/email/queue', icon: ListOrdered },
+      { label: 'Batches', path: '/admin/email/batches', icon: Mail },
       { label: 'Attachments', path: '/admin/email/attachments', icon: Paperclip },
       { label: 'Content Rules', path: '/admin/email/content-rules', icon: Scale },
       { label: 'Placeholders', path: '/admin/email/placeholders', icon: Code },

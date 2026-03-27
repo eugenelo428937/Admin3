@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Eye, Copy, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { MoreVertical, Eye, Copy, RotateCcw, FileText, X } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
@@ -18,16 +18,24 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/admin/ui/table';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/admin/ui/dropdown-menu';
 import { useEmailQueueListVM } from './useEmailQueueListVM';
-import type { QueueStatus } from '../../../../types/email';
+import type { QueueStatus, EmailQueue } from '../../../../types/email';
+import EmailToFilter from '../shared/EmailToFilter';
 
-const STATUS_BADGE_CLASS: Record<QueueStatus, string> = {
-    pending: 'tw:border-admin-border tw:bg-admin-bg-muted tw:text-admin-fg-muted',
-    processing: 'tw:border-blue-200 tw:bg-blue-50 tw:text-blue-700',
-    sent: 'tw:border-admin-success/30 tw:bg-admin-success/10 tw:text-admin-success',
-    failed: 'tw:border-admin-destructive/30 tw:bg-admin-destructive/10 tw:text-admin-destructive',
-    cancelled: 'tw:border-amber-200 tw:bg-amber-50 tw:text-amber-700',
-    retry: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
+const STATUS_BADGE_STYLE: Record<QueueStatus, React.CSSProperties> = {
+    pending: { borderColor: '#e2e8f0', backgroundColor: '#f1f5f9', color: '#64748b' },
+    processing: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff', color: '#1d4ed8' },
+    sent: { borderColor: '#86efac', backgroundColor: '#f0fdf4', color: '#16a34a' },
+    failed: { borderColor: '#fca5a5', backgroundColor: '#fef2f2', color: '#dc2626' },
+    cancelled: { borderColor: '#fde68a', backgroundColor: '#fffbeb', color: '#d97706' },
+    retry: { borderColor: '#d8b4fe', backgroundColor: '#faf5ff', color: '#7c3aed' },
 };
 
 const STATUS_OPTIONS: Array<QueueStatus | 'all'> = [
@@ -63,6 +71,11 @@ const truncate = (text: string, maxLength: number): string => {
 
 const EmailQueueList: React.FC = () => {
     const vm = useEmailQueueListVM();
+    const [previewItem, setPreviewItem] = useState<EmailQueue | null>(null);
+
+    const handlePreview = (item: EmailQueue) => {
+        setPreviewItem(previewItem?.id === item.id ? null : item);
+    };
 
     useEffect(() => {
         vm.fetchQueue();
@@ -79,6 +92,14 @@ const EmailQueueList: React.FC = () => {
                 className="tw:mb-4"
             />
 
+            <div className="tw:mb-4 tw:max-w-sm">
+                <EmailToFilter
+                    value={vm.toFilter}
+                    onChange={vm.handleToFilter}
+                    placeholder="Filter by recipient email..."
+                />
+            </div>
+
             <AdminErrorAlert message={vm.error} />
 
             {vm.loading ? (
@@ -93,26 +114,17 @@ const EmailQueueList: React.FC = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Queue ID</TableHead>
                                     <TableHead>Template</TableHead>
                                     <TableHead>To</TableHead>
                                     <TableHead>Subject</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Sent</TableHead>
-                                    <TableHead className="tw:text-right">Actions</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Status</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Sent</TableHead>
+                                    <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {vm.queueItems.map((item) => (
                                     <TableRow key={item.id}>
-                                        <TableCell>
-                                            <span
-                                                className="tw:font-mono tw:text-xs"
-                                                title={item.queue_id}
-                                            >
-                                                {item.queue_id.substring(0, 8)}
-                                            </span>
-                                        </TableCell>
                                         <TableCell>
                                             {item.template_name || '-'}
                                         </TableCell>
@@ -134,15 +146,15 @@ const EmailQueueList: React.FC = () => {
                                                 {truncate(item.subject, 40)}
                                             </span>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell style={{ textAlign: 'center' }}>
                                             <Badge
                                                 variant="outline"
-                                                className={STATUS_BADGE_CLASS[item.status]}
+                                                style={STATUS_BADGE_STYLE[item.status]}
                                             >
                                                 {item.status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell style={{ textAlign: 'center' }}>
                                             <span
                                                 className="tw:text-sm"
                                                 title={item.sent_at ? new Date(item.sent_at).toLocaleString() : ''}
@@ -150,39 +162,60 @@ const EmailQueueList: React.FC = () => {
                                                 {formatRelativeTime(item.sent_at)}
                                             </span>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="tw:flex tw:justify-end tw:gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-xs"
-                                                    title="View details"
-                                                    onClick={() => vm.handleViewDetail(item.id)}
-                                                >
-                                                    <Eye className="tw:size-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-xs"
-                                                    title="Duplicate"
-                                                    onClick={() => vm.handleDuplicate(item.id)}
-                                                >
-                                                    <Copy className="tw:size-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon-xs"
-                                                    title="Resend"
-                                                    onClick={() => vm.openResendDialog(item.id)}
-                                                >
-                                                    <RotateCcw className="tw:size-4" />
-                                                </Button>
-                                            </div>
+                                        <TableCell style={{ textAlign: 'center' }}>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon-xs">
+                                                        <MoreVertical className="tw:size-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handlePreview(item)}>
+                                                        <Eye className="tw:size-4" />
+                                                        Preview Email
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => vm.handleViewDetail(item.id)}>
+                                                        <FileText className="tw:size-4" />
+                                                        View Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => vm.handleDuplicate(item.id)}>
+                                                        <Copy className="tw:size-4" />
+                                                        Duplicate
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => vm.openResendDialog(item.id)}>
+                                                        <RotateCcw className="tw:size-4" />
+                                                        Resend
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </div>
+
+                    {previewItem && (
+                        <div className="tw:mt-4 tw:rounded-md tw:border tw:border-admin-border tw:overflow-hidden">
+                            <div className="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-2 tw:bg-admin-bg-muted tw:border-b tw:border-admin-border">
+                                <span className="tw:text-sm tw:font-semibold">Email Preview</span>
+                                <Button variant="ghost" size="icon-xs" onClick={() => setPreviewItem(null)}>
+                                    <X className="tw:size-4" />
+                                </Button>
+                            </div>
+                            {previewItem.html_content ? (
+                                <iframe
+                                    srcDoc={previewItem.html_content}
+                                    title="Email HTML Preview"
+                                    style={{ width: '100%', minHeight: 400, border: 'none' }}
+                                    sandbox="allow-same-origin"
+                                />
+                            ) : (
+                                <div className="tw:p-4 tw:text-sm tw:text-admin-fg-muted">No HTML content available.</div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Pagination */}
                     <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:py-4 tw:text-sm tw:text-admin-fg-muted">
