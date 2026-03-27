@@ -77,3 +77,8 @@ Project settings/server setup/secrets/
 Project settings/server setup/misc/*
 .mcp.json
 pacts/*
+
+
+#Ignore cursor AI rules
+.cursor\rules\codacy.mdc
+*.code-workspace
