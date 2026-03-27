@@ -246,6 +246,156 @@ If the completion notification itself fails to send, it goes through normal queu
 ### New EmailTemplate type
 `batch_completion_report` added to template_type choices. Default template created via data migration.
 
+## Staff Laptop Setup Guide
+
+### Prerequisites
+
+- Network access to the Admin3 server (e.g., VPN connected)
+- An API key created by a superuser (see below)
+- A tool to make HTTP requests: **curl** (built-in), **Postman**, or **Python + requests**
+
+### Step 1: Create an API Key
+
+A Django superuser runs the management command on the server:
+
+```bash
+cd backend/django_Admin3
+python manage.py create_api_key --name "Staff Laptop - Eugene"
+```
+
+Output:
+```
+API Key created successfully!
+Name:   Staff Laptop - Eugene
+Active: True
+Key:    a1b2c3d4e5f6g7h8i9j0kLmNoPqRsTuVwXyZ_abc1234567890
+```
+
+**Save the key immediately** — it is displayed only once and cannot be recovered. If lost, create a new key and deactivate the old one via Django Admin.
+
+To create an initially inactive key (e.g., for pre-provisioning):
+
+```bash
+python manage.py create_api_key --name "CI Pipeline" --inactive
+```
+
+### Step 2: Send a Batch Email
+
+**With curl:**
+```bash
+curl -X POST http://SERVER:8888/api/email/batch/send/ \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: YOUR_KEY_HERE" \
+  -d '{
+    "template_id": 9,
+    "requested_by": "Eugene Lo",
+    "notify_email": "eugene@example.com",
+    "items": [
+      {
+        "to_email": "student1@example.com",
+        "cc_email": ["manager@example.com"],
+        "subject_override": "Hello {firstname}",
+        "payload": {"firstname": "Alice", "lastname": "Smith"}
+      },
+      {
+        "to_email": "student2@example.com",
+        "payload": {"firstname": "Bob", "lastname": "Jones"}
+      }
+    ]
+  }'
+```
+
+**With Python:**
+```python
+import requests
+
+response = requests.post(
+    'http://SERVER:8888/api/email/batch/send/',
+    headers={'X-Api-Key': 'YOUR_KEY_HERE'},
+    json={
+        'template_id': 9,
+        'requested_by': 'Eugene Lo',
+        'notify_email': 'eugene@example.com',
+        'items': [
+            {
+                'to_email': 'student1@example.com',
+                'cc_email': ['manager@example.com'],
+                'subject_override': 'Hello {firstname}',
+                'payload': {'firstname': 'Alice', 'lastname': 'Smith'},
+            },
+            {
+                'to_email': 'student2@example.com',
+                'payload': {'firstname': 'Bob', 'lastname': 'Jones'},
+            },
+        ],
+    },
+)
+print(response.status_code)  # 201 on success
+data = response.json()
+print(data['batch']['batch_id'])  # Save this to check status later
+```
+
+### Step 3: Check Batch Status
+
+**With curl:**
+```bash
+curl http://SERVER:8888/api/email/batch/BATCH_ID_HERE/ \
+  -H "X-Api-Key: YOUR_KEY_HERE"
+```
+
+**With Python:**
+```python
+status = requests.get(
+    f'http://SERVER:8888/api/email/batch/{batch_id}/',
+    headers={'X-Api-Key': 'YOUR_KEY_HERE'},
+)
+print(status.json())
+# {'batch_id': '...', 'status': 'completed', 'total_items': 2, 'sent_count': 2, 'error_count': 0, ...}
+```
+
+### Step 4: Find Available Template IDs
+
+Staff can browse email templates in Django Admin:
+```
+http://SERVER:8888/admin/email_system/emailtemplate/
+```
+
+Each template has an **ID** (used as `template_id`) and **payload variables** documented in its description.
+
+### Quick Reference
+
+| Item | Value |
+|------|-------|
+| Auth header | `X-Api-Key: <your-key>` |
+| Send endpoint | `POST /api/email/batch/send/` |
+| Query endpoint | `GET /api/email/batch/{batch_id}/` |
+| Max items per batch | 500 (configurable) |
+| Key management | Django Admin → External API Keys |
+| Batch monitoring | Django Admin → Email Batches |
+
+### Troubleshooting
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| 401 `Invalid API key` | Key not found in database | Verify key was copied correctly; check Django Admin for the key prefix |
+| 401 `API key is inactive` | Key has been deactivated | Ask a superuser to reactivate it in Django Admin |
+| 400 `Invalid template_id` | Template doesn't exist or is inactive | Check available templates in Django Admin |
+| 400 `Batch size exceeds limit` | More than 500 items | Split into multiple batch requests |
+| Connection refused | Server not reachable | Check VPN connection and server URL |
+
+### Key Management via Django Admin
+
+Superusers can manage API keys at:
+```
+http://SERVER:8888/admin/email_system/externalapikey/
+```
+
+- **View**: See all keys with name, prefix, active status, and last used timestamp
+- **Deactivate**: Uncheck `is_active` to revoke a key without deleting it
+- **Audit**: `last_used_at` shows when each key was last used
+
+> **Note**: New keys cannot be created through Django Admin because the raw key is never stored. Always use the `create_api_key` management command.
+
 ## Files to Create/Modify
 
 ### New files
