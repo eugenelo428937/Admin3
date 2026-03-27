@@ -232,6 +232,7 @@ class EmailQueueSerializer(serializers.ModelSerializer):
 
     template_name = serializers.CharField(source='template.name', read_only=True, default=None)
     duplicated_from = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailQueue
@@ -244,10 +245,17 @@ class EmailQueueSerializer(serializers.ModelSerializer):
             'scheduled_at', 'process_after', 'expires_at',
             'attempts', 'max_attempts', 'last_attempt_at', 'next_retry_at',
             'sent_at', 'error_message', 'error_details',
-            'created_at', 'updated_at', 'created_by',
+            'created_at', 'updated_at', 'created_by', 'created_by_name',
             'tags', 'duplicated_from',
         ]
         read_only_fields = fields
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            user = obj.created_by
+            full_name = f"{user.first_name} {user.last_name}".strip()
+            return full_name if full_name else user.username
+        return None
 
 
 class EmailQueueDuplicateInputSerializer(serializers.Serializer):

@@ -8,6 +8,7 @@ interface EmailQueueListVM {
     loading: boolean;
     error: string | null;
     statusFilter: QueueStatus | 'all';
+    toFilter: string;
     page: number;
     rowsPerPage: number;
     totalCount: number;
@@ -15,6 +16,7 @@ interface EmailQueueListVM {
     resendTargetId: number | null;
     fetchQueue: () => Promise<void>;
     handleStatusFilter: (status: QueueStatus | 'all') => void;
+    handleToFilter: (value: string) => void;
     handleViewDetail: (id: number) => void;
     handleDuplicate: (id: number) => void;
     openResendDialog: (id: number) => void;
@@ -31,6 +33,7 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<QueueStatus | 'all'>('all');
+    const [toFilter, setToFilter] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [totalCount, setTotalCount] = useState(0);
@@ -48,6 +51,9 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
             if (statusFilter !== 'all') {
                 params.status = statusFilter;
             }
+            if (toFilter) {
+                params.to_email = toFilter;
+            }
             const response = await emailService.getQueue(params);
             setQueueItems(response.results);
             setTotalCount(response.count);
@@ -57,10 +63,15 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
         } finally {
             setLoading(false);
         }
-    }, [page, rowsPerPage, statusFilter]);
+    }, [page, rowsPerPage, statusFilter, toFilter]);
 
     const handleStatusFilter = useCallback((status: QueueStatus | 'all') => {
         setStatusFilter(status);
+        setPage(0);
+    }, []);
+
+    const handleToFilter = useCallback((value: string) => {
+        setToFilter(value);
         setPage(0);
     }, []);
 
@@ -110,6 +121,7 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
         loading,
         error,
         statusFilter,
+        toFilter,
         page,
         rowsPerPage,
         totalCount,
@@ -117,6 +129,7 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
         resendTargetId,
         fetchQueue,
         handleStatusFilter,
+        handleToFilter,
         handleViewDetail,
         handleDuplicate,
         openResendDialog,

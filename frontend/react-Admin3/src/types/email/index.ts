@@ -6,3 +6,4 @@ export * from './emailContentRule.types';
 export * from './emailPlaceholder.types';
 export * from './closingSalutation.types';
 export * from './emailMjmlElement.types';
+export * from './emailBatch.types';
