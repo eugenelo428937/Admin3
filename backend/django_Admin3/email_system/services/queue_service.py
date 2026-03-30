@@ -425,14 +425,37 @@ class EmailQueueService:
                     attachments=attachments
                 )
             else:
-                # Use MJML content from database
+                # Template not in map but use_master_template=True:
+                # Render DB mjml_content as a Django template, then wrap in master template
+                from django.template import Template, Context
+
+                rendered_content = Template(
+                    queue_item.template.mjml_content
+                ).render(Context(queue_item.email_context))
+
+                master_context = {
+                    'email_title': queue_item.subject or 'Email from ActEd',
+                    'email_preview': f"Email from {queue_item.template.display_name}",
+                    'email_content': rendered_content,
+                    **queue_item.email_context
+                }
+
+                master_db = self.email_service._get_db_master_template()
+                if master_db and master_db.mjml_content:
+                    mjml_content = Template(master_db.mjml_content).render(Context(master_context))
+                else:
+                    from django.template.loader import render_to_string
+                    master_template_path = f'{self.email_service.mjml_template_dir}/master_template.mjml'
+                    mjml_content = render_to_string(master_template_path, master_context)
+
                 return self.email_service._send_mjml_email_from_content(
-                    mjml_content=queue_item.template.mjml_content,
+                    mjml_content=mjml_content,
                     context=queue_item.email_context,
                     to_emails=[to_email],
                     subject=queue_item.subject,
                     from_email=queue_item.from_email,
-                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility
+                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility,
+                    attachments=attachments
                 )
 
         except Exception as e:

@@ -1,15 +1,6 @@
 <!-- Banner Section -->
-<mj-section background-color="#3c3c3c" css-class="banner-section" text-align="center" padding="0" >
-	<mj-column background-color="#3c333c" vertical-align="middle" padding="0"> 
-		<mj-text css-class="logo-text-BPP" padding="11px 32px" align="left" color="#fdfdfd" >
-			BPP
-		</mj-text>
-		<mj-text css-class="logo-text-acted" padding="11px 32px" align="left" color="#fdfdfd" >
-			ACTUARIAL
-		</mj-text>
-		<mj-text css-class="logo-text-acted" padding="11px 32px" align="left" color="#fdfdfd" >
-			<span class="logo-text-lyceum">LYCEUM</span>
-			<span class="logo-text-edu">EDUCATION GROUP</span>
-		</mj-text>
-	</mj-column>
+<mj-section background-color="#3c3c3c" padding="0">
+    <mj-column>
+        <mj-image width="150px" src="https://www.acted.co.uk/asset/ActEdlogo.png" align="left" />
+    </mj-column>
 </mj-section>
