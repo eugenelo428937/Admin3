@@ -34,6 +34,11 @@ class EmailTemplateAdmin(admin.ModelAdmin):
                 'subject_template', 'use_master_template'
             )
         }),
+        ('Template Content', {
+            'fields': ('mjml_content', 'basic_mode_content'),
+            'classes': ('collapse',),
+            'description': 'Raw MJML and basic mode content. Use the React admin editor for normal editing.',
+        }),
         ('Email Settings', {
             'fields': ('from_email', 'reply_to_email', 'default_priority')
         }),
