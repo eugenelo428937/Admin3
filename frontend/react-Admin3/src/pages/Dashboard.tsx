@@ -46,20 +46,8 @@ export default function Dashboard() {
                 Welcome back, {firstName}.
             </p>
 
-            <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:mt-6 md:tw:grid-cols-3">
-                {['Total Orders', 'Active Sessions', 'Pending Items'].map((title) => (
-                    <div
-                        key={title}
-                        className="tw:rounded-lg tw:border tw:border-[var(--border)] tw:bg-[var(--card)] tw:p-6"
-                    >
-                        <p className="tw:text-sm tw:text-[var(--muted-foreground)]">{title}</p>
-                        <p className="tw:text-2xl tw:font-bold tw:text-[var(--foreground)] tw:mt-1">—</p>
-                    </div>
-                ))}
-            </div>
-
             {/* Email Batches Card */}
-            <div className="tw:mt-6 tw:rounded-lg tw:border tw:border-[var(--border)] tw:bg-[var(--card)]">
+            <div className="tw:mt-6 tw:w-full md:tw:w-1/2 tw:rounded-lg tw:border tw:border-[var(--border)] tw:bg-[var(--card)]">
                 <div className="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-2.5 tw:border-b tw:border-[var(--border)]">
                     <span className="tw:text-sm tw:font-semibold tw:text-[var(--foreground)]">Email Batches</span>
                     <Link
