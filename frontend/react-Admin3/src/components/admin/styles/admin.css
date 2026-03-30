@@ -209,3 +209,13 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
+
+/* ── Radix portal overrides ──
+   Radix UI portals render at <body> level, outside .admin-root,
+   so they don't inherit the admin CSS variables. Force explicit
+   background/foreground on dropdown content rendered in portals. */
+[data-slot="dropdown-menu-content"] {
+  background-color: oklch(1.0000 0 0) !important;
+  color: oklch(0.3211 0 0) !important;
+  border-color: oklch(0.9022 0.0052 247.8822);
+}
