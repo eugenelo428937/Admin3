@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MoreVertical, Eye, Copy, RotateCcw, FileText, X } from 'lucide-react';
+import { MoreHorizontal, Eye, Copy, RotateCcw, FileText, X } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
@@ -166,7 +166,7 @@ const EmailQueueList: React.FC = () => {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" size="icon-xs">
-                                                        <MoreVertical className="tw:size-4" />
+                                                        <MoreHorizontal className="tw:size-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
