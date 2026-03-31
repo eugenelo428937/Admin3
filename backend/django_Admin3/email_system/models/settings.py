@@ -57,13 +57,19 @@ class EmailSettings(models.Model):
     def get_max_retry_attempts(cls):
         """Get the global max retry attempts setting."""
         val = cls.get_setting('max_retry_attempts', default=3)
-        return int(val) if val is not None else 3
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            return 3
 
     @classmethod
     def get_retry_delay_minutes(cls):
         """Get the global retry delay in minutes."""
         val = cls.get_setting('retry_delay_minutes', default=5)
-        return int(val) if val is not None else 5
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            return 5
 
     @classmethod
     def get_enhance_outlook_compatibility(cls):
@@ -71,7 +77,9 @@ class EmailSettings(models.Model):
         val = cls.get_setting('enhance_outlook_compatibility', default=True)
         if isinstance(val, bool):
             return val
-        return str(val).lower() in ('true', '1', 'yes')
+        if isinstance(val, str):
+            return val.lower() in ('true', '1', 'yes')
+        return True
 
     @classmethod
     def set_setting(cls, key, value, setting_type='template', display_name=None, description=None, user=None):
