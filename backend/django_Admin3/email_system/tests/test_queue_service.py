@@ -89,7 +89,7 @@ class QueueEmailTest(TestCase):
         self.assertEqual(queue_item.template, self.template)
         self.assertEqual(queue_item.to_emails, ['customer@example.com'])
         self.assertEqual(queue_item.from_email, 'eqs_orders@example.com')
-        self.assertEqual(queue_item.max_attempts, 5)
+        self.assertEqual(queue_item.max_attempts, 3)  # From EmailSettings default
         self.assertEqual(queue_item.status, 'pending')
 
     def test_queue_email_string_to_email_normalized(self):
