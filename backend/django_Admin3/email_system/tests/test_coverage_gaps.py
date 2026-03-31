@@ -2,8 +2,8 @@
 Tests covering remaining gaps in email_system production code.
 
 Targets:
-- email_service.py: lines 354-375 (include_loader fallback paths), 736-737 (content insertion error)
-- testing.py: lines 257-259, 304-325 (include_loader in preview_template, order_confirmation date formatting edge cases)
+- email_service.py: 736-737 (content insertion error)
+- testing.py: lines 257-259 (order_confirmation date formatting edge cases)
 - queue_service.py: lines 105-108 (context serialization fallback), 149 (isoformat path),
     163-164 (model field non-serializable), 168-169 (model conversion exception),
     181 (list item with __dict__), 183-188 (nested dict / string fallback in _clean_context),
@@ -13,8 +13,6 @@ Targets:
 - content_rule.py: lines 118-120 (evaluate_condition exception path)
 """
 import json
-import os
-import tempfile
 from datetime import timedelta
 from unittest.mock import patch, MagicMock, PropertyMock, mock_open
 from django.test import TestCase, override_settings
@@ -31,139 +29,7 @@ from email_system.testing import EmailTester
 
 
 # ============================================================================
-# email_service.py coverage - lines 354-375 (include_loader in _send_mjml_email_from_content)
-# ============================================================================
-
-class IncludeLoaderInSendMjmlEmailFromContentTest(TestCase):
-    """Tests for the include_loader closure inside _send_mjml_email_from_content.
-    Lines 354-375: The include_loader function has 3 fallback paths:
-      1. Django template rendering success (line 354-361)
-      2. Raw file read fallback (lines 364-369)
-      3. FileNotFoundError (lines 370-372)
-      4. General exception fallback (lines 373-375)
-    """
-
-    def setUp(self):
-        self.service = EmailService()
-
-    @patch('email_system.services.email_service.EmailMultiAlternatives')
-    @patch('email_system.services.email_service.mjml2html')
-    @patch('email_system.services.email_service.render_to_string')
-    def test_include_loader_django_template_success(self, mock_render, mock_mjml, mock_email_cls):
-        """Test include_loader path when Django template rendering succeeds (lines 354-361)."""
-        # Set up mjml2html to call the include_loader with a test path
-        def capture_include_loader(content, include_loader=None):
-            if include_loader:
-                # Simulate mjml calling include_loader
-                result = include_loader('./header.mjml')
-                return f'<html>{result}</html>'
-            return '<html>no-loader</html>'
-
-        mock_mjml.side_effect = capture_include_loader
-        mock_render.return_value = '<mj-section>header</mj-section>'
-
-        mock_email = MagicMock()
-        mock_email.send.return_value = 1
-        mock_email_cls.return_value = mock_email
-
-        result = self.service._send_mjml_email_from_content(
-            mjml_content='<mjml><mj-body></mj-body></mjml>',
-            context={'test': 'data'},
-            to_emails=['test@example.com'],
-            subject='Test Subject',
-        )
-        # render_to_string was called for include_loader path
-        self.assertTrue(mock_render.called)
-
-    @patch('email_system.services.email_service.EmailMultiAlternatives')
-    @patch('email_system.services.email_service.mjml2html')
-    @patch('email_system.services.email_service.render_to_string', side_effect=Exception('Template not found'))
-    def test_include_loader_file_not_found_fallback(self, mock_render, mock_mjml, mock_email_cls):
-        """Test include_loader path when Django template fails AND file not found (lines 370-372)."""
-        def capture_include_loader(content, include_loader=None):
-            if include_loader:
-                result = include_loader('nonexistent_include.mjml')
-                return f'<html>{result}</html>'
-            return '<html></html>'
-
-        mock_mjml.side_effect = capture_include_loader
-        mock_email = MagicMock()
-        mock_email.send.return_value = 1
-        mock_email_cls.return_value = mock_email
-
-        result = self.service._send_mjml_email_from_content(
-            mjml_content='<mjml></mjml>',
-            context={},
-            to_emails=['test@example.com'],
-            subject='Test',
-        )
-        # Should succeed despite include_loader returning placeholder
-        self.assertIn('success', result)
-
-    @patch('email_system.services.email_service.EmailMultiAlternatives')
-    @patch('email_system.services.email_service.mjml2html')
-    @patch('email_system.services.email_service.render_to_string', side_effect=Exception('Template error'))
-    def test_include_loader_raw_file_read_fallback(self, mock_render, mock_mjml, mock_email_cls):
-        """Test include_loader raw file read fallback path (lines 364-369)."""
-        # Create a temp file to simulate raw MJML include
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.mjml', delete=False, dir='/tmp') as f:
-            f.write('<mj-section>raw content</mj-section>')
-            temp_file = f.name
-
-        try:
-            def capture_include_loader(content, include_loader=None):
-                if include_loader:
-                    # Use the temp file name relative to mjml_base_path
-                    result = include_loader(os.path.basename(temp_file))
-                    return f'<html>{result}</html>'
-                return '<html></html>'
-
-            mock_mjml.side_effect = capture_include_loader
-            mock_email = MagicMock()
-            mock_email.send.return_value = 1
-            mock_email_cls.return_value = mock_email
-
-            # Patch the mjml_base_path to be /tmp so the raw file is found
-            with patch.object(self.service, 'mjml_template_dir', '/tmp'):
-                with patch('email_system.services.email_service.os.path.join', side_effect=lambda *args: temp_file):
-                    result = self.service._send_mjml_email_from_content(
-                        mjml_content='<mjml></mjml>',
-                        context={},
-                        to_emails=['test@example.com'],
-                        subject='Test',
-                    )
-        finally:
-            os.unlink(temp_file)
-
-    @patch('email_system.services.email_service.EmailMultiAlternatives')
-    @patch('email_system.services.email_service.mjml2html')
-    @patch('email_system.services.email_service.render_to_string', side_effect=Exception('Template error'))
-    def test_include_loader_general_exception_fallback(self, mock_render, mock_mjml, mock_email_cls):
-        """Test include_loader general exception fallback (lines 373-375)."""
-        def capture_include_loader(content, include_loader=None):
-            if include_loader:
-                result = include_loader('./test_include.mjml')
-                return f'<html>{result}</html>'
-            return '<html></html>'
-
-        mock_mjml.side_effect = capture_include_loader
-        mock_email = MagicMock()
-        mock_email.send.return_value = 1
-        mock_email_cls.return_value = mock_email
-
-        # Patch open to raise a generic exception (not FileNotFoundError)
-        with patch('builtins.open', side_effect=PermissionError('Permission denied')):
-            result = self.service._send_mjml_email_from_content(
-                mjml_content='<mjml></mjml>',
-                context={},
-                to_emails=['test@example.com'],
-                subject='Test',
-            )
-        # The include_loader should have returned the error placeholder
-
-
-# ============================================================================
-# email_service.py coverage - lines 736-737 (content insertion exception)
+# email_service.py coverage - content insertion exception
 # ============================================================================
 
 class ContentInsertionExceptionTest(TestCase):
@@ -174,17 +40,17 @@ class ContentInsertionExceptionTest(TestCase):
     def setUp(self):
         self.service = EmailService()
 
-    @patch('email_system.services.email_service.render_to_string')
-    def test_content_insertion_failure_continues(self, mock_render):
-        """Test that content insertion failure doesn't break rendering (lines 736-737)."""
-        # First call: render content template
-        # Second call: render master template
-        mock_render.side_effect = [
-            '<mj-section>content</mj-section>',
-            '<mjml><mj-body>{{ email_content }}</mj-body></mjml>',
-        ]
+    def test_content_insertion_failure_continues(self):
+        """Test that content insertion failure doesn't break rendering."""
+        mock_template = MagicMock()
+        mock_template.mjml_content = '<mj-section><mj-column><mj-text>content</mj-text></mj-column></mj-section>'
+        mock_master = MagicMock()
+        mock_master.mjml_content = '<mjml><mj-body>{{ email_content|safe }}</mj-body></mjml>'
 
-        with patch('email_system.services.content_insertion.content_insertion_service') as mock_insertion:
+        with patch.object(self.service, '_get_db_template', return_value=mock_template), \
+             patch.object(self.service, '_get_db_master_template', return_value=mock_master), \
+             patch.object(self.service, '_get_db_component', return_value=''), \
+             patch('email_system.services.content_insertion.content_insertion_service') as mock_insertion:
             mock_insertion.process_template_content.side_effect = Exception('Insertion failed')
 
             result = self.service._render_email_with_master_template(
@@ -520,8 +386,6 @@ class QueueServiceRetrySchedulingTest(TestCase):
             name='cov_retry_tpl',
             display_name='Coverage Retry Template',
             subject_template='Coverage Retry Subject',
-            retry_delay_minutes=10,
-            max_retry_attempts=5,
             is_active=True,
         )
 
@@ -552,8 +416,10 @@ class QueueServiceRetrySchedulingTest(TestCase):
         self.assertIsNotNone(queue_item.next_retry_at)
 
     @patch.object(EmailQueueService, '_send_single_email', return_value=False)
-    def test_retry_scheduled_with_template_delay(self, mock_send):
-        """Test that template retry_delay_minutes is used (line 229)."""
+    @patch('email_system.services.queue_service.EmailSettings')
+    def test_retry_scheduled_with_settings_delay(self, mock_settings, mock_send):
+        """Test that EmailSettings retry_delay_minutes is used (line 225)."""
+        mock_settings.get_retry_delay_minutes.return_value = 10
         queue_item = EmailQueue.objects.create(
             template=self.template,
             to_emails=['cov_retry_delay@example.com'],
@@ -568,12 +434,14 @@ class QueueServiceRetrySchedulingTest(TestCase):
         with patch.object(EmailQueue, 'can_retry', return_value=True):
             with patch.object(EmailQueue, 'schedule_retry') as mock_retry:
                 self.service.process_queue_item(queue_item)
-                # Should pass template's retry_delay_minutes (10)
+                # Should pass EmailSettings retry_delay_minutes (10)
                 mock_retry.assert_called_once_with(10)
 
+    @patch('email_system.services.queue_service.EmailSettings')
     @patch.object(EmailQueueService, '_send_single_email', return_value=False)
-    def test_retry_scheduled_without_template_uses_default(self, mock_send):
-        """Test that default delay is used when no template (line 229)."""
+    def test_retry_scheduled_without_template_uses_settings_default(self, mock_send, mock_settings):
+        """Test that EmailSettings delay is used when no template (line 225)."""
+        mock_settings.get_retry_delay_minutes.return_value = 5
         queue_item = EmailQueue.objects.create(
             template=None,
             to_emails=['cov_retry_notemplate@example.com'],
@@ -588,7 +456,7 @@ class QueueServiceRetrySchedulingTest(TestCase):
         with patch.object(EmailQueue, 'can_retry', return_value=True):
             with patch.object(EmailQueue, 'schedule_retry') as mock_retry:
                 self.service.process_queue_item(queue_item)
-                # Should pass default delay (5)
+                # Should pass EmailSettings default delay (5)
                 mock_retry.assert_called_once_with(5)
 
 

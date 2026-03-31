@@ -18,7 +18,7 @@ class EmailBatch(models.Model):
         related_name='batches',
     )
     requested_by = models.CharField(max_length=200)
-    notify_email = models.EmailField()
+    notify_emails = models.JSONField(default=list, blank=True, help_text='List of emails to receive batch completion report')
     status = models.CharField(max_length=30, choices=BATCH_STATUS_CHOICES, default='pending')
     total_items = models.IntegerField(default=0)
     sent_count = models.IntegerField(default=0)

@@ -1,6 +1,6 @@
 import type { ClosingSalutationList } from './closingSalutation.types';
 
-export type TemplateType = 'order_confirmation' | 'password_reset' | 'password_reset_completed' | 'account_activation' | 'email_verification';
+export type TemplateType = 'order_confirmation' | 'password_reset' | 'password_reset_completed' | 'account_activation' | 'email_verification' | 'batch_completion_report' | 'materials' | 'marking' | 'tutorials' | 'apprentice' | 'custom';
 
 export type Priority = 'low' | 'normal' | 'high' | 'urgent';
 
@@ -17,10 +17,6 @@ export interface EmailTemplate {
   default_priority: Priority;
   enable_tracking: boolean;
   enable_queue: boolean;
-  max_retry_attempts: number;
-  retry_delay_minutes: number;
-  enhance_outlook_compatibility: boolean;
-  is_master: boolean;
   mjml_content: string;
   basic_mode_content: string;
   is_active: boolean;

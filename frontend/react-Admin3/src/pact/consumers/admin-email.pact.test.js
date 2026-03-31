@@ -47,7 +47,7 @@ describe('Email Admin Service - Pact Consumer Tests', () => {
             key: string('smtp_host'),
             setting_type: string('smtp'),
             display_name: string('SMTP Host'),
-            value: string('mail.example.com'),
+            value: like('mail.example.com'),
             is_active: boolean(true),
           }),
         });
@@ -126,7 +126,7 @@ describe('Email Admin Service - Pact Consumer Tests', () => {
           body: like({
             id: integer(1),
             name: string('order_confirmation'),
-            template_type: string('transactional'),
+            template_type: string('order_confirmation'),
             display_name: string('Order Confirmation'),
             subject_template: string('Your Order #{{order_id}}'),
             use_master_template: boolean(true),

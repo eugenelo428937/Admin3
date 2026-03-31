@@ -23,7 +23,7 @@ class EmailBatchAdminSerializerTest(TestCase):
         self.batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='admin@acted.co.uk',
-            notify_email='admin@acted.co.uk',
+            notify_emails=['admin@acted.co.uk'],
             status='completed',
             total_items=3,
             sent_count=3,
@@ -85,7 +85,7 @@ class EmailBatchAdminViewSetTest(TestCase):
         self.batch_completed = EmailBatch.objects.create(
             template=self.template,
             requested_by='admin@acted.co.uk',
-            notify_email='admin@acted.co.uk',
+            notify_emails=['admin@acted.co.uk'],
             status='completed',
             total_items=2,
             sent_count=2,
@@ -95,7 +95,7 @@ class EmailBatchAdminViewSetTest(TestCase):
         self.batch_failed = EmailBatch.objects.create(
             template=self.template,
             requested_by='system',
-            notify_email='admin@acted.co.uk',
+            notify_emails=['admin@acted.co.uk'],
             status='failed',
             total_items=1,
             sent_count=0,

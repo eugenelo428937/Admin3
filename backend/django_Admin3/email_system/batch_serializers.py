@@ -14,8 +14,12 @@ class BatchItemSerializer(serializers.Serializer):
 
 class SendBatchRequestSerializer(serializers.Serializer):
     template_id = serializers.IntegerField()
-    requested_by = serializers.CharField(max_length=200)
-    notify_email = serializers.EmailField()
+    notify_emails = serializers.ListField(
+        child=serializers.EmailField(),
+        required=False,
+        default=list,
+        help_text='Additional recipients for the batch completion report',
+    )
     items = BatchItemSerializer(many=True)
 
 

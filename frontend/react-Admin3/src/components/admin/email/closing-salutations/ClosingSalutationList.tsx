@@ -8,14 +8,7 @@ import {
   AdminErrorAlert,
   AdminBadge,
 } from '@/components/admin/composed';
-import { Badge } from '@/components/admin/ui/badge';
 import useClosingSalutationListVM from './useClosingSalutationListVM';
-import type { SignatureType } from '../../../../types/email';
-
-const SIGNATURE_TYPE_STYLE: Record<SignatureType, string> = {
-    team: 'tw:border-sky-200 tw:bg-sky-50 tw:text-sky-700',
-    staff: 'tw:border-purple-200 tw:bg-purple-50 tw:text-purple-700',
-};
 
 const ClosingSalutationList: React.FC = () => {
     const navigate = useNavigate();
@@ -43,17 +36,9 @@ const ClosingSalutationList: React.FC = () => {
                         header: 'Name',
                         render: (val) => <span className="tw:font-mono tw:text-sm">{val}</span>,
                     },
-                    { key: 'display_name', header: 'Display Name' },
+                    { key: 'display_name', header: 'Signature' },
                     { key: 'sign_off_text', header: 'Sign-off' },
-                    {
-                        key: 'signature_type',
-                        header: 'Type',
-                        render: (val) => (
-                            <Badge variant="outline" className={SIGNATURE_TYPE_STYLE[val as SignatureType] || ''}>
-                                {val}
-                            </Badge>
-                        ),
-                    },
+                    { key: 'job_title', header: 'Job Title' },
                     {
                         key: 'is_active',
                         header: 'Active',

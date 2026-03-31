@@ -6,8 +6,8 @@ from django.db import IntegrityError, connection
 class StaffModelTest(TestCase):
     """Tests for staff.Staff model."""
 
-    def test_create_staff_with_new_fields(self):
-        """Staff should have job_title, name_format, show_job_title fields."""
+    def test_create_staff_with_job_title(self):
+        """Staff should have job_title field."""
         from staff.models import Staff
         user = User.objects.create_user(
             username='staff_new_1', password='testpass123',
@@ -16,13 +16,9 @@ class StaffModelTest(TestCase):
         staff = Staff.objects.create(
             user=user,
             job_title='Senior Tutor',
-            name_format='first_name',
-            show_job_title=True,
         )
         staff.refresh_from_db()
         self.assertEqual(staff.job_title, 'Senior Tutor')
-        self.assertEqual(staff.name_format, 'first_name')
-        self.assertTrue(staff.show_job_title)
 
     def test_default_field_values(self):
         """New fields should have sensible defaults."""
@@ -30,8 +26,6 @@ class StaffModelTest(TestCase):
         user = User.objects.create_user(username='staff_defaults', password='testpass123')
         staff = Staff.objects.create(user=user)
         self.assertEqual(staff.job_title, '')
-        self.assertEqual(staff.name_format, 'full_name')
-        self.assertFalse(staff.show_job_title)
 
     def test_str_with_full_name(self):
         from staff.models import Staff

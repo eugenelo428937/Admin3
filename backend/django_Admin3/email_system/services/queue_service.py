@@ -4,12 +4,8 @@ import json
 from typing import Dict, List, Optional, Union
 from django.utils import timezone
 from django.db import transaction
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from premailer import transform
-from mjml import mjml2html
 
-from email_system.models import EmailTemplate, EmailQueue, EmailLog, EmailAttachment, EmailTemplateAttachment
+from email_system.models import EmailTemplate, EmailQueue, EmailLog, EmailAttachment, EmailTemplateAttachment, EmailSettings
 from email_system.services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
@@ -121,7 +117,7 @@ class EmailQueueService:
                     priority=priority,
                     scheduled_at=scheduled_at or timezone.now(),
                     expires_at=expires_at,
-                    max_attempts=template.max_retry_attempts if template else 3,
+                    max_attempts=EmailSettings.get_max_retry_attempts(),
                     tags=tags or [],
                     created_by=user
                 )
@@ -226,7 +222,7 @@ class EmailQueueService:
             else:
                 # Schedule retry if possible
                 if queue_item.can_retry():
-                    delay_minutes = queue_item.template.retry_delay_minutes if queue_item.template else 5
+                    delay_minutes = EmailSettings.get_retry_delay_minutes()
                     queue_item.schedule_retry(delay_minutes)
                     logger.warning(f"Some emails failed, scheduled retry for {queue_item.queue_id}")
                 else:
@@ -309,22 +305,10 @@ class EmailQueueService:
                 if reply_to:
                     self.email_service.reply_to_email = reply_to
 
-                if queue_item.template and queue_item.template.use_master_template:
-                    # Use master template system
-                    response_data = self._send_with_master_template(
-                        queue_item, to_email, attachments
-                    )
-                else:
-                    # Use MJML content from database
-                    mjml = queue_item.template.mjml_content if queue_item.template else ''
-                    response_data = self.email_service._send_mjml_email_from_content(
-                        mjml_content=mjml,
-                        context=queue_item.email_context,
-                        to_emails=[to_email],
-                        subject=queue_item.subject,
-                        from_email=queue_item.from_email,
-                        enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility if queue_item.template else True
-                    )
+                # All templates use the DB-driven master template system
+                response_data = self._send_with_master_template(
+                    queue_item, to_email, attachments
+                )
 
                 # Extract response information
                 success = response_data.get('success', False)
@@ -393,47 +377,25 @@ class EmailQueueService:
             return False
 
     def _send_with_master_template(self, queue_item: EmailQueue, to_email: str, attachments: List) -> Dict:
-        """Send email using master template system and return detailed response."""
+        """Send email using DB-driven master template system and return detailed response."""
         try:
-            template_map = {
-                'order_confirmation': 'order_confirmation_content',
-                'password_reset': 'password_reset_content',
-                'password_reset_completed': 'password_reset_completed_content',
-                'account_activation': 'account_activation_content',
-                'email_verification': 'email_verification_content',
-            }
+            # All templates use the same DB-driven rendering path
+            mjml_content = self.email_service._render_email_with_master_template(
+                content_template=queue_item.template.name,
+                context=queue_item.email_context,
+                email_title=queue_item.subject,
+                email_preview=f"Email from {queue_item.template.display_name}"
+            )
 
-            if queue_item.template.name in template_map:
-                content_template = template_map[queue_item.template.name]
-
-                # Render using master template
-                mjml_content = self.email_service._render_email_with_master_template(
-                    content_template=content_template,
-                    context=queue_item.email_context,
-                    email_title=queue_item.subject,
-                    email_preview=f"Email from {queue_item.template.display_name}"
-                )
-
-                # Send the email using detailed response method
-                return self.email_service._send_mjml_email_from_content(
-                    mjml_content=mjml_content,
-                    context=queue_item.email_context,
-                    to_emails=[to_email],
-                    subject=queue_item.subject,
-                    from_email=queue_item.from_email,
-                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility,
-                    attachments=attachments
-                )
-            else:
-                # Use MJML content from database
-                return self.email_service._send_mjml_email_from_content(
-                    mjml_content=queue_item.template.mjml_content,
-                    context=queue_item.email_context,
-                    to_emails=[to_email],
-                    subject=queue_item.subject,
-                    from_email=queue_item.from_email,
-                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility
-                )
+            return self.email_service._send_mjml_email_from_content(
+                mjml_content=mjml_content,
+                context=queue_item.email_context,
+                to_emails=[to_email],
+                subject=queue_item.subject,
+                from_email=queue_item.from_email,
+                enhance_outlook_compatibility=EmailSettings.get_enhance_outlook_compatibility(),
+                attachments=attachments
+            )
 
         except Exception as e:
             # Return detailed error response

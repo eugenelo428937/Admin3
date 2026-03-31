@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import emailService from '../../../../services/emailService';
 import type { EmailTemplate, TemplateType } from '../../../../types/email';
 
-export type MasterFilter = 'master' | 'general';
-
 export interface EmailTemplateListVM {
     templates: EmailTemplate[];
     loading: boolean;
@@ -13,14 +11,12 @@ export interface EmailTemplateListVM {
     rowsPerPage: number;
     totalCount: number;
     filterTemplateType: TemplateType | 'all';
-    filterMaster: MasterFilter;
     fetchTemplates: () => Promise<void>;
     handleEdit: (id: number) => void;
     handleDelete: (id: number) => Promise<void>;
     handleChangePage: (event: unknown, newPage: number) => void;
     handleChangeRowsPerPage: (event: React.ChangeEvent<HTMLInputElement>) => void;
     setFilterTemplateType: (type: TemplateType | 'all') => void;
-    setFilterMaster: (filter: MasterFilter) => void;
 }
 
 const useEmailTemplateListVM = (): EmailTemplateListVM => {
@@ -32,7 +28,6 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(25);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [filterTemplateType, setFilterTemplateType] = useState<TemplateType | 'all'>('all');
-    const [filterMaster, setFilterMaster] = useState<MasterFilter>('general');
 
     const fetchTemplates = useCallback(async () => {
         try {
@@ -43,11 +38,6 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
             };
             if (filterTemplateType !== 'all') {
                 params.template_type = filterTemplateType;
-            }
-            if (filterMaster === 'master') {
-                params.is_master = 'true';
-            } else if (filterMaster === 'general') {
-                params.is_master = 'false';
             }
             const { results, count } = await emailService.getTemplates(params);
             setTemplates(results as EmailTemplate[]);
@@ -60,7 +50,7 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
         } finally {
             setLoading(false);
         }
-    }, [page, rowsPerPage, filterTemplateType, filterMaster]);
+    }, [page, rowsPerPage, filterTemplateType]);
 
     useEffect(() => {
         fetchTemplates();
@@ -100,14 +90,12 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
         rowsPerPage,
         totalCount,
         filterTemplateType,
-        filterMaster,
         fetchTemplates,
         handleEdit,
         handleDelete,
         handleChangePage,
         handleChangeRowsPerPage,
         setFilterTemplateType,
-        setFilterMaster,
     };
 };
 

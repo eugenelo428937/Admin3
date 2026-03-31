@@ -1,6 +1,5 @@
 """
 Tests for email_system management command: process_email_queue.
-Covers all 127 lines of email_system/management/commands/process_email_queue.py
 """
 import time
 from datetime import timedelta
@@ -29,6 +28,7 @@ class ProcessEmailQueueCommandArgumentsTest(TestCase):
         self.assertIsNone(args.priority)
         self.assertIsNone(args.template)
         self.assertFalse(args.dry_run)
+        self.assertFalse(args.verbose)
 
     def test_custom_arguments(self):
         """Test custom argument values."""
@@ -41,6 +41,7 @@ class ProcessEmailQueueCommandArgumentsTest(TestCase):
             '--priority', 'urgent',
             '--template', 'order_confirmation',
             '--dry-run',
+            '--verbose',
         ])
         self.assertEqual(args.limit, 100)
         self.assertTrue(args.continuous)
@@ -48,6 +49,7 @@ class ProcessEmailQueueCommandArgumentsTest(TestCase):
         self.assertEqual(args.priority, 'urgent')
         self.assertEqual(args.template, 'order_confirmation')
         self.assertTrue(args.dry_run)
+        self.assertTrue(args.verbose)
 
     def test_priority_choices(self):
         """Test that only valid priority values are accepted."""
@@ -67,14 +69,14 @@ class HandleMethodTest(TestCase):
         """Test handle runs single batch by default."""
         out = StringIO()
         call_command('process_email_queue', stdout=out)
-        mock_single.assert_called_once_with(50, None, None, False)
+        mock_single.assert_called_once_with(50, None, None, False, False)
 
     @patch.object(Command, 'run_continuous')
     def test_handle_continuous_mode(self, mock_continuous):
         """Test handle runs continuous when --continuous is passed."""
         out = StringIO()
         call_command('process_email_queue', '--continuous', stdout=out)
-        mock_continuous.assert_called_once_with(50, 30, None, None, False)
+        mock_continuous.assert_called_once_with(50, 30, None, None, False, False)
 
     @patch.object(Command, 'run_single_batch')
     def test_handle_dry_run_message(self, mock_single):
@@ -109,7 +111,23 @@ class HandleMethodTest(TestCase):
             '--template', 'order_confirmation',
             stdout=out,
         )
-        mock_single.assert_called_once_with(50, 'high', 'order_confirmation', False)
+        mock_single.assert_called_once_with(50, 'high', 'order_confirmation', False, False)
+
+    @patch.object(Command, 'run_single_batch')
+    def test_handle_shows_email_config(self, mock_single):
+        """Test handle displays email configuration."""
+        out = StringIO()
+        call_command('process_email_queue', stdout=out)
+        output = out.getvalue()
+        self.assertIn('USE_INTERNAL_SMTP', output)
+        self.assertIn('EMAIL_HOST', output)
+
+    @patch.object(Command, 'run_single_batch')
+    def test_handle_verbose_flag_passed(self, mock_single):
+        """Test handle passes verbose flag."""
+        out = StringIO()
+        call_command('process_email_queue', '--verbose', stdout=out)
+        mock_single.assert_called_once_with(50, None, None, False, True)
 
 
 class RunSingleBatchTest(TestCase):
@@ -123,15 +141,10 @@ class RunSingleBatchTest(TestCase):
         from django.core.management.color import color_style
         self.cmd.style = color_style()
 
-    @patch.object(Command, 'display_queue_stats')
     @patch.object(Command, 'display_processing_results')
     @patch('email_system.management.commands.process_email_queue.email_queue_service')
-    def test_single_batch_processes_queue(self, mock_service, mock_display_results, mock_display_stats):
-        """Test single batch calls process_pending_queue and displays stats."""
-        mock_service.get_queue_stats.return_value = {
-            'total': 5, 'pending': 3, 'processing': 0,
-            'sent': 1, 'failed': 1, 'cancelled': 0, 'retry': 0,
-        }
+    def test_single_batch_processes_queue(self, mock_service, mock_display_results):
+        """Test single batch calls process_pending_queue and displays results."""
         mock_service.process_pending_queue.return_value = {
             'processed': 3, 'successful': 2, 'failed': 1, 'errors': ['Error 1'],
         }
@@ -139,8 +152,37 @@ class RunSingleBatchTest(TestCase):
         self.cmd.run_single_batch(50, None, None, False)
 
         mock_service.process_pending_queue.assert_called_once_with(50)
-        self.assertEqual(mock_display_stats.call_count, 2)  # Before and After
         mock_display_results.assert_called_once()
+
+    @patch.object(Command, 'display_queue_stats')
+    @patch.object(Command, 'display_processing_results')
+    @patch('email_system.management.commands.process_email_queue.email_queue_service')
+    def test_single_batch_verbose_shows_stats(self, mock_service, mock_display_results, mock_display_stats):
+        """Test single batch with --verbose shows before/after stats."""
+        mock_service.get_queue_stats.return_value = {
+            'total': 5, 'pending': 3, 'processing': 0,
+            'sent': 1, 'failed': 1, 'cancelled': 0, 'retry': 0,
+        }
+        mock_service.process_pending_queue.return_value = {
+            'processed': 3, 'successful': 2, 'failed': 1, 'errors': [],
+        }
+
+        self.cmd.run_single_batch(50, None, None, False, verbose=True)
+
+        self.assertEqual(mock_display_stats.call_count, 2)  # Before and After
+
+    @patch.object(Command, 'display_queue_stats')
+    @patch.object(Command, 'display_processing_results')
+    @patch('email_system.management.commands.process_email_queue.email_queue_service')
+    def test_single_batch_no_verbose_skips_stats(self, mock_service, mock_display_results, mock_display_stats):
+        """Test single batch without --verbose does not show stats."""
+        mock_service.process_pending_queue.return_value = {
+            'processed': 3, 'successful': 2, 'failed': 1, 'errors': [],
+        }
+
+        self.cmd.run_single_batch(50, None, None, False)
+
+        mock_display_stats.assert_not_called()
 
     @patch.object(Command, 'get_pending_count', return_value=10)
     def test_single_batch_dry_run(self, mock_count):
@@ -179,8 +221,35 @@ class RunContinuousTest(TestCase):
         output = self.cmd.stdout.getvalue()
         self.assertIn('Starting continuous', output)
         self.assertIn('Batch size: 50', output)
-        self.assertIn('Cycle 1', output)
         self.assertIn('Final totals', output)
+
+    @patch('email_system.management.commands.process_email_queue.time.sleep', side_effect=KeyboardInterrupt)
+    @patch('email_system.management.commands.process_email_queue.email_queue_service')
+    def test_continuous_verbose_shows_cycle_header(self, mock_service, mock_sleep):
+        """Test continuous mode with --verbose shows cycle headers."""
+        mock_service.process_pending_queue.return_value = {
+            'processed': 2, 'successful': 2, 'failed': 0, 'errors': [],
+        }
+
+        self.cmd.run_continuous(50, 30, None, None, False, verbose=True)
+
+        output = self.cmd.stdout.getvalue()
+        self.assertIn('Cycle 1', output)
+        self.assertIn('Running totals:', output)
+
+    @patch('email_system.management.commands.process_email_queue.time.sleep', side_effect=KeyboardInterrupt)
+    @patch('email_system.management.commands.process_email_queue.email_queue_service')
+    def test_continuous_no_verbose_skips_cycle_header(self, mock_service, mock_sleep):
+        """Test continuous mode without --verbose skips cycle headers."""
+        mock_service.process_pending_queue.return_value = {
+            'processed': 2, 'successful': 2, 'failed': 0, 'errors': [],
+        }
+
+        self.cmd.run_continuous(50, 30, None, None, False)
+
+        output = self.cmd.stdout.getvalue()
+        self.assertNotIn('Cycle 1', output)
+        self.assertNotIn('Running totals:', output)
 
     @patch('email_system.management.commands.process_email_queue.time.sleep', side_effect=KeyboardInterrupt)
     @patch('email_system.management.commands.process_email_queue.email_queue_service')
@@ -204,11 +273,6 @@ class RunContinuousTest(TestCase):
             {'processed': 0, 'successful': 0, 'failed': 0, 'errors': []},
         ]
 
-        # The exception handler calls time.sleep(interval) at line 153.
-        # That sleep is inside the except block, so a KeyboardInterrupt there
-        # propagates up uncaught. We need to let the first sleep (in except handler)
-        # pass, then on the second sleep (line 144, after the successful cycle),
-        # raise KeyboardInterrupt.
         sleep_calls = [0]
 
         def mock_sleep(seconds):
@@ -255,22 +319,6 @@ class RunContinuousTest(TestCase):
 
         output = self.cmd.stdout.getvalue()
         self.assertIn('Template filter: order_confirmation', output)
-
-    @patch('email_system.management.commands.process_email_queue.time.sleep', side_effect=KeyboardInterrupt)
-    @patch('email_system.management.commands.process_email_queue.email_queue_service')
-    def test_continuous_accumulates_totals(self, mock_service, mock_sleep):
-        """Test continuous mode accumulates running totals."""
-        mock_service.process_pending_queue.return_value = {
-            'processed': 3, 'successful': 2, 'failed': 1, 'errors': [],
-        }
-
-        self.cmd.run_continuous(50, 1, None, None, False)
-
-        output = self.cmd.stdout.getvalue()
-        self.assertIn('Running totals:', output)
-        self.assertIn('3 processed', output)
-        self.assertIn('2 successful', output)
-        self.assertIn('1 failed', output)
 
 
 class GetPendingCountTest(TestCase):
@@ -443,7 +491,6 @@ class DisplayProcessingResultsTest(TestCase):
         output = self.cmd.stdout.getvalue()
         self.assertIn('Processing Results', output)
         self.assertIn('10', output)
-        self.assertIn('1.50s', output)
 
     def test_display_results_with_errors(self):
         """Test displaying results with errors."""
@@ -455,13 +502,13 @@ class DisplayProcessingResultsTest(TestCase):
         }
         self.cmd.display_processing_results(results, 2.0)
         output = self.cmd.stdout.getvalue()
-        self.assertIn('Errors', output)
+        self.assertIn('ERROR', output)
         self.assertIn('Error 1', output)
         self.assertIn('Error 2', output)
         self.assertIn('Error 3', output)
 
-    def test_display_results_with_many_errors_truncated(self):
-        """Test that only first 5 errors are shown."""
+    def test_display_results_shows_all_errors(self):
+        """Test that all errors are shown."""
         results = {
             'processed': 10,
             'successful': 0,
@@ -471,29 +518,49 @@ class DisplayProcessingResultsTest(TestCase):
         self.cmd.display_processing_results(results, 3.0)
         output = self.cmd.stdout.getvalue()
         self.assertIn('Error 0', output)
-        self.assertIn('Error 4', output)
-        self.assertIn('3 more errors', output)
+        self.assertIn('Error 7', output)
 
-    def test_display_results_processing_rate(self):
-        """Test that processing rate is displayed."""
-        results = {
-            'processed': 100,
-            'successful': 100,
-            'failed': 0,
-            'errors': [],
-        }
-        self.cmd.display_processing_results(results, 2.0)
-        output = self.cmd.stdout.getvalue()
-        self.assertIn('50.0 emails/second', output)
-
-    def test_display_results_zero_processing_time(self):
-        """Test display with zero processing time (no rate shown)."""
+    def test_display_results_summary_format(self):
+        """Test the concise summary format."""
         results = {
             'processed': 5,
             'successful': 5,
             'failed': 0,
             'errors': [],
         }
-        self.cmd.display_processing_results(results, 0.0)
+        self.cmd.display_processing_results(results, 0.5)
         output = self.cmd.stdout.getvalue()
-        self.assertNotIn('emails/second', output)
+        self.assertIn('Processed: 5 emails', output)
+        self.assertIn('Successful: 5', output)
+        self.assertIn('Failed: 0', output)
+
+
+class SuppressNoisyLoggersTest(TestCase):
+    """Tests for _suppress_noisy_loggers method."""
+
+    def test_suppresses_css_inline_logger(self):
+        """Test that css_inline logger is suppressed."""
+        cmd = Command()
+        cmd._suppress_noisy_loggers()
+        import logging
+        self.assertEqual(logging.getLogger('css_inline').level, logging.CRITICAL)
+
+    def test_suppresses_cssutils_logger(self):
+        """Test that cssutils logger is suppressed."""
+        cmd = Command()
+        cmd._suppress_noisy_loggers()
+        import logging
+        self.assertEqual(logging.getLogger('cssutils').level, logging.CRITICAL)
+
+
+class ShowEmailConfigTest(TestCase):
+    """Tests for _show_email_config method."""
+
+    def test_shows_smtp_config(self):
+        """Test that email config is displayed."""
+        cmd = Command()
+        cmd.stdout = StringIO()
+        cmd._show_email_config()
+        output = cmd.stdout.getvalue()
+        self.assertIn('USE_INTERNAL_SMTP', output)
+        self.assertIn('EMAIL_HOST', output)

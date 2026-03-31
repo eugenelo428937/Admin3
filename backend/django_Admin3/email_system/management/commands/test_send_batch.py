@@ -76,8 +76,7 @@ class Command(BaseCommand):
 
         payload = {
             'template_id': template.id,
-            'requested_by': 'test_send_batch script',
-            'notify_email': 'eugene.lo1030@gmail.com',
+            'notify_emails': ['eugene.lo1030@gmail.com'],
             'items': [
                 {
                     'to_email': email,
