@@ -614,7 +614,7 @@ def setup_email_template():
     template, _ = EmailTemplate.objects.get_or_create(
         name='order_confirmation',
         defaults={
-            'template_type': 'transactional',
+            'template_type': 'order_confirmation',
             'display_name': 'Order Confirmation',
             'description': 'Sent after a successful order',
             'subject_template': 'Your Order #{{order_id}}',

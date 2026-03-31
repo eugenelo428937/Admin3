@@ -74,7 +74,6 @@ class QueueEmailTest(TestCase):
             from_email='eqs_orders@example.com',
             reply_to_email='eqs_reply@example.com',
             default_priority='high',
-            max_retry_attempts=5,
             is_active=True,
         )
 
@@ -326,8 +325,6 @@ class ProcessQueueItemTest(TestCase):
             name='eqs_process_tpl',
             display_name='EQS Process Template',
             subject_template='EQS Process Test',
-            max_retry_attempts=3,
-            retry_delay_minutes=5,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
@@ -517,7 +514,6 @@ class SendSingleEmailTest(TestCase):
             display_name='EQS Send Single Template',
             subject_template='EQS Send Single Test',
             use_master_template=True,
-            enhance_outlook_compatibility=True,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
@@ -649,7 +645,6 @@ class SendWithMasterTemplateTest(TestCase):
             display_name='EQS OC Master',
             subject_template='Order Confirmed',
             use_master_template=True,
-            enhance_outlook_compatibility=True,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
