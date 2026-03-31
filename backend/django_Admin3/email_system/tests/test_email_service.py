@@ -20,7 +20,6 @@ class EmailServiceInitTest(TestCase):
         service = EmailService()
         self.assertIsNotNone(service.from_email)
         self.assertEqual(service.base_template_dir, 'emails')
-        self.assertEqual(service.mjml_template_dir, 'emails/mjml')
 
     @override_settings(DEFAULT_FROM_EMAIL='custom@test.com', DEFAULT_REPLY_TO_EMAIL='reply@test.com')
     def test_custom_from_email(self):
@@ -154,11 +153,11 @@ class SendTemplatedEmailTest(TestCase):
         )
         mock_mjml.assert_called_once()
 
-    @patch('email_system.services.email_service.get_template')
     @patch.object(EmailService, '_send_mjml_email', return_value={'success': True})
     @patch.object(EmailService, '_should_use_queue', return_value=False)
     @patch.object(EmailService, '_handle_dev_email_override', return_value=['user@test.com'])
-    def test_sends_mjml_non_core_template(self, mock_dev, mock_queue_check, mock_mjml, mock_get_tpl):
+    def test_sends_mjml_non_core_template(self, mock_dev, mock_queue_check, mock_mjml):
+        """Non-core templates also go through the DB-driven MJML path."""
         result = self.service.send_templated_email(
             template_name='newsletter',
             context={},
@@ -168,17 +167,17 @@ class SendTemplatedEmailTest(TestCase):
         )
         mock_mjml.assert_called_once()
 
-    @patch('email_system.services.email_service.get_template', side_effect=Exception('Not found'))
     @patch.object(EmailService, '_send_html_email', return_value=True)
     @patch.object(EmailService, '_should_use_queue', return_value=False)
     @patch.object(EmailService, '_handle_dev_email_override', return_value=['user@test.com'])
-    def test_falls_back_to_html_template(self, mock_dev, mock_queue_check, mock_html, mock_get_tpl):
+    def test_falls_back_to_html_template(self, mock_dev, mock_queue_check, mock_html):
+        """When use_mjml=False, falls back to HTML template."""
         result = self.service.send_templated_email(
             template_name='newsletter',
             context={},
             to_emails=['user@test.com'],
             subject='Test',
-            use_mjml=True,
+            use_mjml=False,
         )
         mock_html.assert_called_once()
 
@@ -259,7 +258,7 @@ class SendMjmlEmailTest(TestCase):
         mock_send.assert_called_once()
 
     @patch.object(EmailService, '_send_mjml_email_from_content', return_value={'success': True})
-    @patch('email_system.services.email_service.render_to_string', return_value='<mjml></mjml>')
+    @patch.object(EmailService, '_render_email_with_master_template', return_value='<mjml></mjml>')
     def test_non_core_template_renders(self, mock_render, mock_send):
         result = self.service._send_mjml_email(
             template_name='newsletter',
@@ -658,23 +657,28 @@ class RenderEmailWithMasterTemplateTest(TestCase):
     def setUp(self):
         self.service = EmailService()
 
-    @patch('email_system.services.email_service.render_to_string')
-    @patch.object(EmailService, '_get_db_master_template', return_value=None)
+    @patch.object(EmailService, '_get_db_component', return_value='<mj-section>component</mj-section>')
+    @patch.object(EmailService, '_get_template_placeholders', return_value={})
+    def test_successful_render(self, mock_placeholders, mock_component):
+        from unittest.mock import MagicMock
+        mock_template = MagicMock()
+        mock_template.mjml_content = '<mj-section><mj-column><mj-text>content</mj-text></mj-column></mj-section>'
+        mock_master = MagicMock()
+        mock_master.mjml_content = '<mjml><mj-body>{{ email_content|safe }}</mj-body></mjml>'
+
+        with patch.object(self.service, '_get_db_template', return_value=mock_template), \
+             patch.object(self.service, '_get_db_master_template', return_value=mock_master):
+            result = self.service._render_email_with_master_template(
+                content_template='order_confirmation_content',
+                context={},
+                email_title='Test',
+                email_preview='Preview',
+            )
+        self.assertIn('content', result)
+
     @patch.object(EmailService, '_get_db_template', return_value=None)
     @patch.object(EmailService, '_get_template_placeholders', return_value={})
-    def test_successful_render(self, mock_placeholders, mock_db_tpl, mock_db_master, mock_render):
-        mock_render.side_effect = ['<content>rendered</content>', '<master>final</master>']
-        result = self.service._render_email_with_master_template(
-            content_template='order_confirmation_content',
-            context={},
-            email_title='Test',
-            email_preview='Preview',
-        )
-        self.assertEqual(result, '<master>final</master>')
-
-    @patch('email_system.services.email_service.render_to_string', side_effect=Exception('Template not found'))
-    @patch.object(EmailService, '_get_template_placeholders', return_value={})
-    def test_render_failure(self, mock_placeholders, mock_render):
+    def test_render_failure(self, mock_placeholders, mock_db_tpl):
         with self.assertRaises(Exception):
             self.service._render_email_with_master_template(
                 content_template='missing_content',

@@ -23,12 +23,19 @@ def send_batch(request):
 
     data = serializer.validated_data
     api_key = request.auth
+    user = api_key.user
+
+    # Derive requested_by from the authenticated user
+    if user:
+        requested_by = user.get_full_name() or user.username
+    else:
+        requested_by = api_key.name
 
     try:
         result = email_batch_service.send_batch(
             template_id=data['template_id'],
-            requested_by=data['requested_by'],
-            notify_email=data['notify_email'],
+            requested_by=requested_by,
+            notify_emails=data.get('notify_emails', []),
             items=data['items'],
             api_key=api_key,
         )

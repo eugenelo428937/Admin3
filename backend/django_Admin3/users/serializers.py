@@ -87,7 +87,7 @@ class StaffAdminSerializer(serializers.ModelSerializer):
         model = Staff
         fields = [
             'id', 'user', 'user_detail',
-            'job_title', 'name_format', 'show_job_title',
+            'job_title',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

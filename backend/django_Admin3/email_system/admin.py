@@ -7,6 +7,7 @@ import json
 
 from .models import (
     EmailTemplate, EmailAttachment, EmailTemplateAttachment,
+    EmailMasterComponent,
     EmailQueue, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
 )
@@ -56,6 +57,27 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('created_by')
+
+
+@admin.register(EmailMasterComponent)
+class EmailMasterComponentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'component_type', 'display_name', 'is_active', 'updated_at']
+    list_filter = ['component_type', 'is_active']
+    search_fields = ['name', 'display_name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Component Info', {
+            'fields': ('name', 'component_type', 'display_name', 'description')
+        }),
+        ('MJML Content', {
+            'fields': ('mjml_content',),
+        }),
+        ('Metadata', {
+            'fields': ('is_active', 'created_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 class EmailTemplateAttachmentInline(admin.TabularInline):

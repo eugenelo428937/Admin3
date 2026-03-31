@@ -578,7 +578,7 @@ class SendSingleEmailTest(TestCase):
 
     @patch.object(EmailQueueService, '_get_template_attachments', return_value=[])
     def test_send_single_email_non_master_template(self, mock_attach):
-        """Test send with non-master template."""
+        """Test send with non-master template still uses DB-driven master template path."""
         self.template.use_master_template = False
         self.template.save()
 
@@ -588,6 +588,9 @@ class SendSingleEmailTest(TestCase):
             'esp_message_id': None
         }
         with patch.object(
+            self.service.email_service, '_render_email_with_master_template',
+            return_value='<mjml></mjml>'
+        ), patch.object(
             self.service.email_service, '_send_mjml_email_from_content',
             return_value=mock_response
         ):
@@ -599,24 +602,16 @@ class SendSingleEmailTest(TestCase):
 
     @patch.object(EmailQueueService, '_get_template_attachments', return_value=[])
     def test_send_single_email_no_template(self, mock_attach):
-        """Test send without a template."""
+        """Test send without a template fails gracefully (no template to render)."""
         self.queue_item.template = None
         self.queue_item.save()
 
-        mock_response = {
-            'success': True, 'response_code': '250',
-            'response_message': 'Sent', 'esp_response': {},
-            'esp_message_id': None
-        }
-        with patch.object(
-            self.service.email_service, '_send_mjml_email_from_content',
-            return_value=mock_response
-        ):
-            start_time = timezone.now()
-            result = self.service._send_single_email(
-                self.queue_item, 'eqs_notpl@example.com', start_time
-            )
-            self.assertTrue(result)
+        start_time = timezone.now()
+        result = self.service._send_single_email(
+            self.queue_item, 'eqs_notpl@example.com', start_time
+        )
+        # Without a template, _send_with_master_template will fail
+        self.assertFalse(result)
 
     @patch.object(EmailQueueService, '_create_email_log', side_effect=Exception('Log creation failed'))
     def test_send_single_email_log_creation_failure(self, mock_log):
@@ -689,8 +684,9 @@ class SendWithMasterTemplateTest(TestCase):
 
     @patch.object(EmailQueueService, '_get_template_attachments', return_value=[])
     def test_send_with_unknown_master_template(self, mock_attach):
-        """Test sending with an unknown template name falls back to regular."""
+        """Test sending with an unknown template name uses DB-driven rendering."""
         self.template.name = 'eqs_custom_unknown_tpl'
+        self.template.mjml_content = '<mj-section><mj-column><mj-text>test</mj-text></mj-column></mj-section>'
         self.template.save()
 
         mock_response = {
@@ -699,6 +695,9 @@ class SendWithMasterTemplateTest(TestCase):
             'esp_message_id': None
         }
         with patch.object(
+            self.service.email_service, '_render_email_with_master_template',
+            return_value='<mjml></mjml>'
+        ), patch.object(
             self.service.email_service, '_send_mjml_email_from_content',
             return_value=mock_response
         ):

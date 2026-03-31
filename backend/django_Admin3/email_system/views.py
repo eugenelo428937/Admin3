@@ -10,13 +10,15 @@ from catalog.permissions import IsSuperUser
 
 from email_system.models import (
     EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
+    EmailMasterComponent,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
-    ClosingSalutation, ClosingSalutationStaff,
+    ClosingSalutation,
     EmailMjmlElement,
 )
 from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
     EmailAttachmentSerializer, EmailTemplateAttachmentSerializer,
+    EmailMasterComponentSerializer,
     EmailQueueSerializer, EmailQueueDuplicateInputSerializer,
     EmailContentPlaceholderSerializer, EmailContentRuleSerializer,
     EmailTemplateContentRuleSerializer,
@@ -55,9 +57,6 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
         template_type = self.request.query_params.get('template_type')
         if template_type:
             qs = qs.filter(template_type=template_type)
-        is_master = self.request.query_params.get('is_master')
-        if is_master is not None:
-            qs = qs.filter(is_master=is_master.lower() in ('true', '1'))
         return qs
 
     def get_serializer_class(self):
@@ -95,20 +94,19 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
         """Return the assembled MJML shell (master + banner + styles + footer)
         with a <!-- CONTENT_PLACEHOLDER --> marker where content goes.
         Frontend caches this and inserts user content for instant preview."""
-        mjml_dir = os.path.join(
-            settings.BASE_DIR, 'utils', 'templates', 'emails', 'mjml',
-        )
+        from email_system.models import EmailMasterComponent
 
         parts = {}
         for part_name in ('banner', 'styles', 'footer'):
-            part_path = os.path.join(mjml_dir, f'{part_name}.mjml')
-            if not os.path.isfile(part_path):
+            component = EmailMasterComponent.objects.filter(
+                name=part_name, is_active=True
+            ).first()
+            if not component or not component.mjml_content:
                 return Response(
-                    {'error': f'MJML part not found: {part_name}.mjml'},
+                    {'error': f'DB component not found: {part_name}'},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            with open(part_path, 'r', encoding='utf-8') as f:
-                parts[part_name] = f.read()
+            parts[part_name] = component.mjml_content
 
         shell = (
             '<mjml>\n'
@@ -137,14 +135,29 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='signature-mjml')
     def signature_mjml(self, request, pk=None):
-        """Return the MJML snippet for this template's closing salutation."""
+        """Return the closing salutation fields for this template."""
         instance = self.get_object()
         if instance.closing_salutation:
-            mjml = instance.closing_salutation.render_mjml()
-        else:
-            mjml = ''
-        return Response({'signature_mjml': mjml})
+            sal = instance.closing_salutation
+            return Response({
+                'signature_mjml': f'{sal.sign_off_text},<br/>{sal.display_name}',
+                'sign_off_text': sal.sign_off_text,
+                'display_name': sal.display_name,
+                'job_title': sal.job_title,
+            })
+        return Response({'signature_mjml': '', 'sign_off_text': '', 'display_name': '', 'job_title': ''})
 
+
+
+class EmailMasterComponentViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing shared MJML components (banner, footer, styles, etc.)."""
+
+    queryset = EmailMasterComponent.objects.all()
+    serializer_class = EmailMasterComponentSerializer
+    permission_classes = [IsSuperUser]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class EmailAttachmentViewSet(viewsets.ModelViewSet):
@@ -284,9 +297,7 @@ class EmailTemplateContentRuleViewSet(viewsets.ModelViewSet):
 class ClosingSalutationViewSet(viewsets.ModelViewSet):
     """ViewSet for managing closing salutations."""
 
-    queryset = ClosingSalutation.objects.prefetch_related(
-        'staff_members__staff__user'
-    ).all()
+    queryset = ClosingSalutation.objects.all()
     permission_classes = [IsSuperUser]
 
     def get_serializer_class(self):

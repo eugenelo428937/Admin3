@@ -10,9 +10,8 @@ class TeamStaffInline(admin.TabularInline):
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('user', 'job_title', 'name_format', 'show_job_title', 'created_at')
+    list_display = ('user', 'job_title', 'created_at')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'job_title')
-    list_filter = ('name_format', 'show_job_title')
     readonly_fields = ('created_at', 'updated_at')
 
 

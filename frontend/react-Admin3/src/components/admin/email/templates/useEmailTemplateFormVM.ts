@@ -29,9 +29,6 @@ const DEFAULT_FORM_DATA: Partial<EmailTemplate> = {
     default_priority: 'normal',
     enable_tracking: false,
     enable_queue: true,
-    max_retry_attempts: 3,
-    retry_delay_minutes: 5,
-    enhance_outlook_compatibility: false,
     mjml_content: '',
     is_active: true,
 };

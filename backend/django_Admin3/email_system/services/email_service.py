@@ -1,7 +1,7 @@
 import logging
 import os
 from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string, get_template
+from django.template.loader import render_to_string
 from django.conf import settings
 from premailer import transform
 from mjml import mjml2html
@@ -26,7 +26,6 @@ class EmailService:
         self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@admin3.com')
         self.reply_to_email = getattr(settings, 'DEFAULT_REPLY_TO_EMAIL', None)
         self.base_template_dir = 'emails'
-        self.mjml_template_dir = 'emails/mjml'
 
     def _handle_dev_email_override(self, to_emails: List[str], context: Dict) -> List[str]:
         """
@@ -124,41 +123,16 @@ class EmailService:
                 user=user
             )
         else:
-            # Send immediately using existing logic
+            # Send immediately using DB-driven MJML rendering
             if use_mjml:
-                # Core email types always use master template approach - handle them directly
-                core_email_types = {
-                    'order_confirmation': 'order_confirmation_content',
-                    'password_reset': 'password_reset_content',
-                    'password_reset_completed': 'password_reset_completed_content',
-                    'account_activation': 'account_activation_content',
-                    'email_verification': 'email_verification_content'
-                }
-
-                if template_name in core_email_types:
-                    return self._send_mjml_email(
-                        template_name,
-                        context,
-                        actual_recipients,
-                        subject,
-                        from_email,
-                        enhance_outlook_compatibility
-                    )
-
-                # For non-core email types, try MJML template first
-                try:
-                    mjml_template_path = f'{self.mjml_template_dir}/{template_name}.mjml'
-                    get_template(mjml_template_path)  # Check if MJML template exists
-                    return self._send_mjml_email(
-                        template_name,
-                        context,
-                        actual_recipients,
-                        subject,
-                        from_email,
-                        enhance_outlook_compatibility
-                    )
-                except Exception:
-                    pass
+                return self._send_mjml_email(
+                    template_name,
+                    context,
+                    actual_recipients,
+                    subject,
+                    from_email,
+                    enhance_outlook_compatibility
+                )
 
             # Fallback to regular HTML template
             return self._send_html_email(template_name, context, actual_recipients, subject, from_email)
@@ -236,44 +210,14 @@ class EmailService:
         }
 
         try:
-            # Check if this is a core email type that should use the master template approach
-            core_email_types = {
-                'order_confirmation': 'order_confirmation_content',
-                'password_reset': 'password_reset_content',
-                'password_reset_completed': 'password_reset_completed_content',
-                'account_activation': 'account_activation_content',
-                'email_verification': 'email_verification_content'
-            }
+            # All templates use DB-driven master template approach
+            mjml_content = self._render_email_with_master_template(
+                content_template=template_name,
+                context=context,
+                email_title=subject,
+                email_preview=f"Email from ActEd"
+            )
 
-            if template_name in core_email_types:
-                # Use master template approach for core email types
-                content_template = core_email_types[template_name]
-
-                # Render using master template
-                mjml_content = self._render_email_with_master_template(
-                    content_template=content_template,
-                    context=context,
-                    email_title=subject,
-                    email_preview=f"Email from ActEd"
-                )
-
-                # Send using the pre-rendered content method
-                return self._send_mjml_email_from_content(
-                    mjml_content=mjml_content,
-                    context=context,
-                    to_emails=to_emails,
-                    subject=subject,
-                    from_email=from_email,
-                    enhance_outlook_compatibility=enhance_outlook_compatibility
-                )
-
-            # For non-core email types, try the standalone MJML template approach
-            # Render MJML template with Django context
-            mjml_template = f'{self.mjml_template_dir}/{template_name}.mjml'
-
-            mjml_content = render_to_string(mjml_template, context)
-
-            # Send using the pre-rendered content method
             return self._send_mjml_email_from_content(
                 mjml_content=mjml_content,
                 context=context,
@@ -340,45 +284,10 @@ class EmailService:
             # Handle development email override
             actual_recipients = self._handle_dev_email_override(to_emails, context)
 
-            # Define include loader for mjml-python
-            mjml_base_path = os.path.join(
-                settings.BASE_DIR,
-                'utils',
-                'templates',
-                'emails',
-                'mjml'
-            )
-
-            def include_loader(path: str) -> str:
-                """Load included MJML files for mjml-python with Django template processing."""
-                try:
-                    # Normalize the path to remove ./ prefix and other path issues
-                    normalized_path = path.lstrip('./')
-
-                    # Process the include file as a Django template with context
-                    include_template_path = f'{self.mjml_template_dir}/{normalized_path}'
-                    rendered_content = render_to_string(include_template_path, context)
-                    return rendered_content
-                except Exception as e:
-                    # Fallback to reading raw file if Django template processing fails
-                    normalized_path = path.lstrip('./')
-                    include_path = os.path.join(mjml_base_path, normalized_path)
-                    try:
-                        with open(include_path, 'r', encoding='utf-8') as f:
-                            logger.warning(f"Django template processing failed for {normalized_path}, using raw file: {str(e)}")
-                            return f.read()
-                    except FileNotFoundError:
-                        logger.error(f"MJML include file not found: {include_path}")
-                        return f"<!-- Include not found: {normalized_path} -->"
-                    except Exception as fallback_error:
-                        logger.error(f"Error loading MJML include {normalized_path}: {str(fallback_error)}")
-                        return f"<!-- Error loading include: {normalized_path} -->"
-
-            # Convert MJML to HTML using mjml-python with include support
-            html_content = mjml2html(
-                mjml_content,
-                include_loader=include_loader
-            )
+            # Convert MJML to HTML (no include_loader needed — all components pre-assembled)
+            # Strip trailing whitespace per line — mrml parser rejects it after />
+            mjml_content = '\n'.join(line.rstrip() for line in mjml_content.splitlines())
+            html_content = mjml2html(mjml_content)
 
             # Enhanced Outlook compatibility: Apply Premailer post-processing to MJML output
             if enhance_outlook_compatibility:
@@ -695,75 +604,134 @@ class EmailService:
 
     def _render_email_with_master_template(self, content_template: str, context: Dict, email_title: str = None, email_preview: str = None) -> str:
         """
-        Render email content using the master template with dynamic content injection.
+        Render email content using DB-driven master template with component injection.
+
+        All components (master, banner, footer, styles, content) are loaded from the
+        EmailTemplate DB table. No filesystem templates are used.
 
         Args:
-            content_template: Name of the content template (e.g., 'order_confirmation_content')
+            content_template: Template name (e.g., 'order_confirmation' or 'order_confirmation_content')
             context: Context data for the content template
             email_title: Email title for the master template
             email_preview: Email preview text for the master template
 
         Returns:
-            str: Rendered MJML content with master template
+            str: Fully assembled MJML content ready for mjml2html()
         """
         try:
             from django.template import Template, Context
 
-            # Determine template name from content template
+            # Normalize: 'order_confirmation_content' → 'order_confirmation'
             template_name = content_template.replace('_content', '') if content_template.endswith('_content') else content_template
 
             # Get dynamic content placeholders for this template
             template_placeholders = self._get_template_placeholders(template_name)
 
-            # Add placeholders to context to prevent Django from removing them
             placeholder_context = {
-                **template_placeholders,  # Dynamic placeholders from database
-                **context  # Original context takes precedence
+                **template_placeholders,
+                **context
             }
 
-            # Render the content template — prefer DB content over disk files
+            # 1. Load and render the content template from DB
             db_template = self._get_db_template(template_name)
-            if db_template and db_template.mjml_content:
-                rendered_content = Template(db_template.mjml_content).render(Context(placeholder_context))
-            else:
-                content_template_path = f'{self.mjml_template_dir}/{content_template}.mjml'
-                rendered_content = render_to_string(content_template_path, placeholder_context)
+            if not db_template or not db_template.mjml_content:
+                raise Exception(f"No DB template found for '{template_name}' or mjml_content is empty")
+
+            rendered_content = Template(db_template.mjml_content).render(Context(placeholder_context))
 
             # Process dynamic content insertion for placeholders
             try:
                 from email_system.services.content_insertion import content_insertion_service
-
                 rendered_content = content_insertion_service.process_template_content(
                     template_name=template_name,
                     content=rendered_content,
                     context=context
                 )
-
             except Exception as content_error:
                 logger.warning(f"Failed to process dynamic content insertion: {str(content_error)}")
-                # Continue with original content if dynamic content processing fails
 
-            # Prepare context for master template
+            # 2. Load shared components from DB
+            banner_content = self._get_db_component('banner')
+            footer_content = self._get_db_component('footer')
+            styles_content = self._get_db_component('styles')
+            closing_content = self._get_db_component('closing')
+            dev_mode_banner_content = self._get_db_component('dev_mode_banner')
+
+            # 3. Load EmailSettings values for footer/closing dynamic variables
+            email_settings_context = self._get_email_settings_context()
+
+            # 4. Render footer with EmailSettings variables
+            footer_content = Template(footer_content).render(Context(email_settings_context))
+
+            # 5. Build closing context: salutation fields from template FK + company info from settings
+            closing_context = dict(email_settings_context)
+            if db_template.closing_salutation:
+                sal = db_template.closing_salutation
+                closing_context['salutation'] = sal.sign_off_text or 'Kind Regards'
+                closing_context['signature'] = sal.display_name
+                closing_context['job_title'] = sal.job_title or ''
+            closing_content = Template(closing_content).render(Context(closing_context))
+
+            # 6. Load and render master template with all components injected
+            master_db = self._get_db_master_template()
+            if not master_db or not master_db.mjml_content:
+                raise Exception("No DB master template found or mjml_content is empty")
+
             master_context = {
                 'email_title': email_title or 'Email from ActEd',
                 'email_preview': email_preview or 'Email from ActEd',
                 'email_content': rendered_content,
-                **context  # Include original context for any master template variables
+                'banner_content': banner_content,
+                'footer_content': footer_content,
+                'styles_content': styles_content,
+                'closing': closing_content,
+                'dev_mode_banner': dev_mode_banner_content,
+                **context
             }
 
-            # Render the master template — prefer DB content over disk files
-            master_db = self._get_db_master_template()
-            if master_db and master_db.mjml_content:
-                final_mjml = Template(master_db.mjml_content).render(Context(master_context))
-            else:
-                master_template_path = f'{self.mjml_template_dir}/master_template.mjml'
-                final_mjml = render_to_string(master_template_path, master_context)
-
+            final_mjml = Template(master_db.mjml_content).render(Context(master_context))
             return final_mjml
 
         except Exception as e:
             logger.error(f"Failed to render email with master template: {str(e)}")
             raise Exception(f"Email template rendering failed: {str(e)}")
+
+    def _get_email_settings_context(self) -> dict:
+        """Load email settings values used as template variables in shared components.
+
+        Values containing HTML (like address with <br/> tags) are marked safe
+        so Django's template engine does not escape them.
+        """
+        try:
+            from django.utils.safestring import mark_safe
+            from email_system.models import EmailSettings
+            address = mark_safe(EmailSettings.get_setting('company_address', ''))
+            return {
+                'company_name': EmailSettings.get_setting('company_name', ''),
+                'website': EmailSettings.get_setting('company_url', ''),
+                'email': EmailSettings.get_setting('support_email', ''),
+                'phone': EmailSettings.get_setting('support_phone', ''),
+                'address': address,
+                'company_address': address,
+            }
+        except Exception as e:
+            logger.warning(f"Failed to load email settings for template context: {str(e)}")
+            return {'company_name': '', 'website': '', 'email': '', 'phone': '', 'address': '', 'company_address': ''}
+
+    def _get_db_component(self, component_name: str) -> str:
+        """Load a shared MJML component (banner, footer, styles) from EmailMasterComponent."""
+        try:
+            from email_system.models import EmailMasterComponent
+            component = EmailMasterComponent.objects.filter(
+                name=component_name, is_active=True
+            ).first()
+            if component and component.mjml_content:
+                return component.mjml_content
+            logger.warning(f"DB component '{component_name}' not found or empty")
+            return f'<!-- Component not found: {component_name} -->'
+        except Exception as e:
+            logger.error(f"Failed to load DB component '{component_name}': {str(e)}")
+            return f'<!-- Error loading component: {component_name} -->'
 
     def _get_db_template(self, template_name: str):
         """Look up an active EmailTemplate by name. Returns None on miss."""
@@ -774,10 +742,12 @@ class EmailService:
             return None
 
     def _get_db_master_template(self):
-        """Look up the active master EmailTemplate. Returns None on miss."""
+        """Look up the active master template from EmailMasterComponent. Returns None on miss."""
         try:
-            from email_system.models import EmailTemplate
-            return EmailTemplate.objects.filter(name='master_template', is_master=True, is_active=True).first()
+            from email_system.models import EmailMasterComponent
+            return EmailMasterComponent.objects.filter(
+                name='master_template', is_active=True
+            ).first()
         except Exception:
             return None
 

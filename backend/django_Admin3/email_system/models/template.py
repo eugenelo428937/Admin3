@@ -12,6 +12,10 @@ class EmailTemplate(models.Model):
         ('account_activation', 'Account Activation'),
         ('email_verification', 'Email Verification'),
         ('batch_completion_report', 'Batch Completion Report'),
+        ('materials', 'Materials'),
+        ('marking', 'Marking'),
+        ('tutorials', 'Tutorials'),
+        ('apprentice', 'Apprentice'),
     ]
 
     PRIORITY_LEVELS = [
@@ -38,14 +42,6 @@ class EmailTemplate(models.Model):
     # Processing options
     enable_tracking = models.BooleanField(default=True, help_text="Enable open/click tracking")
     enable_queue = models.BooleanField(default=True, help_text="Queue emails instead of immediate send")
-    max_retry_attempts = models.IntegerField(default=3, help_text="Maximum retry attempts for failed emails")
-    retry_delay_minutes = models.IntegerField(default=5, help_text="Delay between retries in minutes")
-
-    # Outlook compatibility
-    enhance_outlook_compatibility = models.BooleanField(default=True, help_text="Apply Outlook enhancements")
-
-    # Master/shared template flag
-    is_master = models.BooleanField(default=False, help_text="Shared MJML component (master template, banner, footer, styles)")
 
     closing_salutation = models.ForeignKey(
         'email_system.ClosingSalutation',

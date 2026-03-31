@@ -7,6 +7,7 @@ from email_system import batch_admin_views
 router = DefaultRouter()
 router.register(r'settings', views.EmailSettingsViewSet)
 router.register(r'templates', views.EmailTemplateViewSet)
+router.register(r'master-components', views.EmailMasterComponentViewSet)
 router.register(r'attachments', views.EmailAttachmentViewSet)
 router.register(r'template-attachments', views.EmailTemplateAttachmentViewSet)
 router.register(r'queue', views.EmailQueueViewSet)
