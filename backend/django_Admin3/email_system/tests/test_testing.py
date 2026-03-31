@@ -129,11 +129,16 @@ class PreviewTemplateTest(TestCase):
         self.assertEqual(result, 'Plain text content')
         mock_render.assert_called_once()
 
-    @patch('email_system.testing.render_to_string', return_value='<mjml>raw content</mjml>')
-    def test_preview_mjml_format(self, mock_render):
-        """Test preview in raw MJML format."""
+    @patch('email_system.testing.EmailService')
+    def test_preview_mjml_format(self, mock_service_cls):
+        """Test preview in raw MJML format returns assembled MJML from DB."""
+        mock_service = MagicMock()
+        mock_service._render_email_with_master_template.return_value = '<mjml>assembled content</mjml>'
+        mock_service_cls.return_value = mock_service
+
         result = self.tester.preview_template('password_reset', output_format='mjml')
-        self.assertEqual(result, '<mjml>raw content</mjml>')
+        self.assertEqual(result, '<mjml>assembled content</mjml>')
+        mock_service._render_email_with_master_template.assert_called_once()
 
     def test_preview_invalid_format(self):
         """Test preview with invalid format returns error."""
@@ -154,15 +159,19 @@ class PreviewTemplateTest(TestCase):
         self.assertIn('compiled', result)
         mock_service._render_email_with_master_template.assert_called_once()
 
-    @patch('email_system.testing.get_template')
-    @patch('email_system.testing.render_to_string', return_value='<mjml>standalone</mjml>')
-    @patch('email_system.testing.mjml2html', return_value='<html>standalone_html</html>')
-    def test_preview_html_non_core_template(self, mock_mjml, mock_render, mock_get_tpl):
-        """Test preview of non-core template uses standalone MJML."""
+    @patch('email_system.testing.EmailService')
+    @patch('email_system.testing.mjml2html', return_value='<html>db_driven_html</html>')
+    def test_preview_html_non_core_template(self, mock_mjml, mock_service_cls):
+        """Test preview of non-core template uses DB-driven master template."""
+        mock_service = MagicMock()
+        mock_service._render_email_with_master_template.return_value = '<mjml>db content</mjml>'
+        mock_service_cls.return_value = mock_service
+
         result = self.tester.preview_template(
             'custom_template_xyz', output_format='html', use_mjml=True
         )
-        self.assertIn('standalone_html', result)
+        self.assertIn('db_driven_html', result)
+        mock_service._render_email_with_master_template.assert_called_once()
 
     @patch('email_system.testing.EmailService')
     @patch('email_system.testing.mjml2html', return_value='<html>outlook content</html>')
@@ -179,19 +188,17 @@ class PreviewTemplateTest(TestCase):
         mock_service._enhance_outlook_compatibility.assert_called_once()
 
     @patch('email_system.testing.render_to_string', return_value='<html>fallback html</html>')
-    @patch('email_system.testing.get_template', side_effect=Exception('Template not found'))
     @patch('email_system.testing.EmailService')
-    def test_preview_html_fallback_when_mjml_fails(self, mock_service_cls, mock_get_tpl, mock_render):
-        """Test fallback to HTML when MJML template not found for non-core."""
+    def test_preview_html_fallback_when_mjml_fails(self, mock_service_cls, mock_render):
+        """Test fallback to HTML when DB template rendering fails."""
         mock_service = MagicMock()
         mock_service._render_email_with_master_template.side_effect = Exception('Not found')
         mock_service_cls.return_value = mock_service
 
-        # Use a non-core template to trigger standalone path
         result = self.tester.preview_template(
             'unknown_tpl', output_format='html', use_mjml=True
         )
-        # After both MJML paths fail, should fall back to HTML
+        # After MJML fails, should fall back to HTML
         self.assertIsInstance(result, str)
 
     @patch('email_system.testing.transform', return_value='<html>inlined</html>')

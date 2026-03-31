@@ -1,6 +1,7 @@
 import logging
 import time
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from django.utils import timezone
 from email_system.services.queue_service import email_queue_service
 
@@ -50,39 +51,61 @@ class Command(BaseCommand):
             help='Show what would be processed without actually sending emails'
         )
 
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            help='Show detailed queue stats before and after processing'
+        )
+
+    def _suppress_noisy_loggers(self):
+        """Suppress non-critical library loggers (e.g. css_inline MediaQuery warnings)."""
+        for name in ('css_inline', 'cssutils', 'premailer', 'PIL', 'parso'):
+            logging.getLogger(name).setLevel(logging.CRITICAL)
+
+    def _show_email_config(self):
+        """Print email configuration summary."""
+        use_internal = getattr(settings, 'USE_INTERNAL_SMTP', False)
+        email_host = getattr(settings, 'EMAIL_HOST', 'not set')
+        self.stdout.write(f'USE_INTERNAL_SMTP : {use_internal}')
+        self.stdout.write(f'EMAIL_HOST : {email_host}')
+
     def handle(self, *args, **options):
+        self._suppress_noisy_loggers()
+
         limit = options['limit']
         continuous = options['continuous']
         interval = options['interval']
         priority_filter = options.get('priority')
         template_filter = options.get('template')
         dry_run = options['dry_run']
+        verbose = options['verbose']
+
+        self._show_email_config()
+        self.stdout.write('')
 
         if dry_run:
             self.stdout.write(self.style.WARNING('DRY RUN MODE - No emails will be sent'))
 
         try:
             if continuous:
-                self.run_continuous(limit, interval, priority_filter, template_filter, dry_run)
+                self.run_continuous(limit, interval, priority_filter, template_filter, dry_run, verbose)
             else:
-                self.run_single_batch(limit, priority_filter, template_filter, dry_run)
+                self.run_single_batch(limit, priority_filter, template_filter, dry_run, verbose)
         except KeyboardInterrupt:
             self.stdout.write(self.style.WARNING('\nGracefully shutting down email queue processor...'))
         except Exception as e:
             raise CommandError(f'Email queue processing failed: {str(e)}')
 
-    def run_single_batch(self, limit, priority_filter, template_filter, dry_run):
+    def run_single_batch(self, limit, priority_filter, template_filter, dry_run, verbose=False):
         """Process a single batch of emails."""
-        self.stdout.write(f'Processing up to {limit} emails from queue...')
-
         if dry_run:
             pending_count = self.get_pending_count(priority_filter, template_filter)
             self.stdout.write(f'Would process {min(pending_count, limit)} emails')
             return
 
-        # Show queue stats before processing
-        stats = email_queue_service.get_queue_stats()
-        self.display_queue_stats(stats, 'Before Processing')
+        if verbose:
+            stats = email_queue_service.get_queue_stats()
+            self.display_queue_stats(stats, 'Before Processing')
 
         # Process the queue
         start_time = timezone.now()
@@ -92,11 +115,11 @@ class Command(BaseCommand):
         # Display results
         self.display_processing_results(results, processing_time)
 
-        # Show updated stats
-        stats = email_queue_service.get_queue_stats()
-        self.display_queue_stats(stats, 'After Processing')
+        if verbose:
+            stats = email_queue_service.get_queue_stats()
+            self.display_queue_stats(stats, 'After Processing')
 
-    def run_continuous(self, limit, interval, priority_filter, template_filter, dry_run):
+    def run_continuous(self, limit, interval, priority_filter, template_filter, dry_run, verbose=False):
         """Run continuously, processing emails at regular intervals."""
         self.stdout.write(f'Starting continuous email queue processor...')
         self.stdout.write(f'Batch size: {limit}, Interval: {interval}s')
@@ -114,7 +137,8 @@ class Command(BaseCommand):
         while True:
             try:
                 cycles += 1
-                self.stdout.write(f'\n--- Cycle {cycles} at {timezone.now().strftime("%Y-%m-%d %H:%M:%S")} ---')
+                if verbose:
+                    self.stdout.write(f'\n--- Cycle {cycles} at {timezone.now().strftime("%Y-%m-%d %H:%M:%S")} ---')
 
                 if dry_run:
                     pending_count = self.get_pending_count(priority_filter, template_filter)
@@ -136,8 +160,8 @@ class Command(BaseCommand):
                     else:
                         self.stdout.write('No emails to process')
 
-                    # Display running totals
-                    self.stdout.write(f'Running totals: {total_processed} processed, {total_successful} successful, {total_failed} failed')
+                    if verbose:
+                        self.stdout.write(f'Running totals: {total_processed} processed, {total_successful} successful, {total_failed} failed')
 
                 # Wait for next cycle
                 if not dry_run or cycles == 1:  # In dry run, only show once
@@ -197,20 +221,13 @@ class Command(BaseCommand):
 
     def display_processing_results(self, results, processing_time):
         """Display processing results."""
+        # Show errors first (most important)
+        if results['errors']:
+            self.stdout.write('')
+            for error in results['errors']:
+                self.stdout.write(self.style.ERROR(f'  ERROR {error}'))
+
         self.stdout.write(f'\nProcessing Results:')
         self.stdout.write(f'  Processed: {results["processed"]} emails')
-        self.stdout.write(f'  Successful: {self.style.SUCCESS(str(results["successful"]))}')
-        self.stdout.write(f'  Failed: {self.style.ERROR(str(results["failed"]))}')
-        self.stdout.write(f'  Processing time: {processing_time:.2f}s')
-
-        if results['errors']:
-            self.stdout.write(f'\nErrors:')
-            for error in results['errors'][:5]:  # Show first 5 errors
-                self.stdout.write(f'  - {error}')
-            if len(results['errors']) > 5:
-                self.stdout.write(f'  ... and {len(results["errors"]) - 5} more errors')
-
-        # Calculate rate
-        if processing_time > 0:
-            rate = results['processed'] / processing_time
-            self.stdout.write(f'  Processing rate: {rate:.1f} emails/second')
+        self.stdout.write(f'  Successful: {results["successful"]}')
+        self.stdout.write(f'  Failed: {results["failed"]}')

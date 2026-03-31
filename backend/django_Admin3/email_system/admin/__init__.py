@@ -40,8 +40,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         }),
         ('Processing Options', {
             'fields': (
-                'enable_tracking', 'enable_queue', 'max_retry_attempts',
-                'retry_delay_minutes', 'enhance_outlook_compatibility'
+                'enable_tracking', 'enable_queue',
             )
         }),
         ('Metadata', {
@@ -469,8 +468,8 @@ class ExternalApiKeyAdmin(admin.ModelAdmin):
 class EmailBatchAdmin(admin.ModelAdmin):
     list_display = ('batch_id', 'template', 'requested_by', 'status', 'total_items', 'sent_count', 'error_count', 'created_at', 'completed_at')
     list_filter = ('status', 'template')
-    readonly_fields = ('batch_id', 'template', 'requested_by', 'notify_email', 'status', 'total_items', 'sent_count', 'error_count', 'created_at', 'completed_at', 'api_key')
-    search_fields = ('batch_id', 'requested_by', 'notify_email')
+    readonly_fields = ('batch_id', 'template', 'requested_by', 'notify_emails', 'status', 'total_items', 'sent_count', 'error_count', 'created_at', 'completed_at', 'api_key')
+    search_fields = ('batch_id', 'requested_by')
 
     def has_add_permission(self, request):
         return False

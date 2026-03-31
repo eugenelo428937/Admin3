@@ -35,10 +35,15 @@ class SendBatchTest(TestCase):
             subject_template='Order for {{ product_name }}',
             default_priority='normal',
         )
+        self.user = User.objects.create_user(
+            username='batchsender', email='sender@example.com',
+            first_name='Batch', last_name='Sender',
+        )
         self.api_key = ExternalApiKey.objects.create(
             key_hash='a' * 64,
             key_prefix='test1234',
             name='Test Key',
+            user=self.user,
         )
 
     # --- happy path ---
@@ -51,8 +56,8 @@ class SendBatchTest(TestCase):
         ]
         result = self.service.send_batch(
             template_id=self.template.id,
-            requested_by='test-system',
-            notify_email='admin@example.com',
+            requested_by='Batch Sender',
+            notify_emails=['admin@example.com'],
             items=items,
             api_key=self.api_key,
         )
@@ -73,8 +78,8 @@ class SendBatchTest(TestCase):
         batch = EmailBatch.objects.get(batch_id=result['batch_id'])
         self.assertEqual(batch.total_items, 2)
         self.assertEqual(batch.status, 'processing')
-        self.assertEqual(batch.requested_by, 'test-system')
-        self.assertEqual(batch.notify_email, 'admin@example.com')
+        self.assertEqual(batch.requested_by, 'Batch Sender')
+        self.assertEqual(batch.notify_emails, ['admin@example.com'])
         self.assertEqual(batch.api_key, self.api_key)
 
         queue_items = EmailQueue.objects.filter(batch=batch)
@@ -85,6 +90,32 @@ class SendBatchTest(TestCase):
         self.assertEqual(alice_qi.subject, 'Order for Widget')
         self.assertEqual(alice_qi.priority, 'normal')
         self.assertEqual(alice_qi.email_context, {'product_name': 'Widget'})
+
+    def test_notify_emails_stored_as_list(self):
+        """notify_emails is stored as a JSON list on the batch."""
+        items = [{'to_email': 'user@example.com', 'payload': {}}]
+        result = self.service.send_batch(
+            template_id=self.template.id,
+            requested_by='Tester',
+            notify_emails=['a@b.com', 'c@d.com'],
+            items=items,
+            api_key=self.api_key,
+        )
+        batch = EmailBatch.objects.get(batch_id=result['batch_id'])
+        self.assertEqual(batch.notify_emails, ['a@b.com', 'c@d.com'])
+
+    def test_empty_notify_emails(self):
+        """Empty notify_emails list is stored correctly."""
+        items = [{'to_email': 'user@example.com', 'payload': {}}]
+        result = self.service.send_batch(
+            template_id=self.template.id,
+            requested_by='Tester',
+            notify_emails=[],
+            items=items,
+            api_key=self.api_key,
+        )
+        batch = EmailBatch.objects.get(batch_id=result['batch_id'])
+        self.assertEqual(batch.notify_emails, [])
 
     def test_subject_override_with_template_variables(self):
         """subject_override is rendered with Django template syntax using payload."""
@@ -98,7 +129,7 @@ class SendBatchTest(TestCase):
         result = self.service.send_batch(
             template_id=self.template.id,
             requested_by='test-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             items=items,
             api_key=self.api_key,
         )
@@ -121,7 +152,7 @@ class SendBatchTest(TestCase):
         result = self.service.send_batch(
             template_id=self.template.id,
             requested_by='test-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             items=items,
             api_key=self.api_key,
         )
@@ -141,7 +172,7 @@ class SendBatchTest(TestCase):
         result = self.service.send_batch(
             template_id=self.template.id,
             requested_by='test-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             items=items,
             api_key=self.api_key,
         )
@@ -169,7 +200,7 @@ class SendBatchTest(TestCase):
             self.service.send_batch(
                 template_id=99999,
                 requested_by='test-system',
-                notify_email='admin@example.com',
+                notify_emails=[],
                 items=[{'to_email': 'x@example.com', 'payload': {}}],
                 api_key=self.api_key,
             )
@@ -184,7 +215,7 @@ class SendBatchTest(TestCase):
             self.service.send_batch(
                 template_id=self.template.id,
                 requested_by='test-system',
-                notify_email='admin@example.com',
+                notify_emails=[],
                 items=[{'to_email': 'x@example.com', 'payload': {}}],
                 api_key=self.api_key,
             )
@@ -197,7 +228,7 @@ class SendBatchTest(TestCase):
             self.service.send_batch(
                 template_id=self.template.id,
                 requested_by='test-system',
-                notify_email='admin@example.com',
+                notify_emails=[],
                 items=items,
                 api_key=self.api_key,
                 max_items=5,
@@ -230,7 +261,7 @@ class QueryBatchTest(TestCase):
         self.batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='test-system',
-            notify_email='admin@example.com',
+            notify_emails=['admin@example.com'],
             api_key=self.api_key,
             total_items=3,
             sent_count=2,
@@ -333,17 +364,21 @@ class BatchCompletionTest(TestCase):
             display_name='Completion Test',
             subject_template='Test',
         )
+        self.user = User.objects.create_user(
+            username='completer', email='completer@example.com',
+        )
         self.api_key = ExternalApiKey.objects.create(
             key_hash='f' * 64,
             key_prefix='comp1234',
             name='Test System',
+            user=self.user,
         )
 
     def _create_batch_with_items(self, statuses):
         batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='Test User',
-            notify_email='admin@example.com',
+            notify_emails=['admin@example.com'],
             total_items=len(statuses),
             api_key=self.api_key,
             status='processing',
@@ -398,3 +433,130 @@ class BatchCompletionTest(TestCase):
         batch.save()
         self.service.check_batch_completion(batch.batch_id)
         mock_notify.assert_not_called()
+
+
+class NotificationRecipientsTest(TestCase):
+    """Tests for _get_notification_recipients deduplication logic."""
+
+    def setUp(self):
+        self.service = EmailBatchService()
+        self.template = EmailTemplate.objects.create(
+            name='notif_test_template',
+            display_name='Notification Test',
+            subject_template='Test',
+        )
+
+    def test_sender_email_plus_notify_emails(self):
+        """Recipients include sender email and notify_emails."""
+        user = User.objects.create_user(
+            username='notifuser', email='sender@example.com',
+        )
+        api_key = ExternalApiKey.objects.create(
+            key_hash='n' * 64, key_prefix='notif123', name='Notif Key', user=user,
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='Notif User',
+            notify_emails=['extra@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, ['sender@example.com', 'extra@example.com'])
+
+    def test_deduplication_of_sender_in_notify_emails(self):
+        """Sender email is not duplicated if also in notify_emails."""
+        user = User.objects.create_user(
+            username='dupuser', email='sender@example.com',
+        )
+        api_key = ExternalApiKey.objects.create(
+            key_hash='d' * 64, key_prefix='dup12345', name='Dup Key', user=user,
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='Dup User',
+            notify_emails=['sender@example.com', 'other@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, ['sender@example.com', 'other@example.com'])
+
+    def test_deduplication_case_insensitive(self):
+        """Deduplication is case-insensitive."""
+        user = User.objects.create_user(
+            username='caseuser', email='Sender@Example.com',
+        )
+        api_key = ExternalApiKey.objects.create(
+            key_hash='e' * 64, key_prefix='case1234', name='Case Key', user=user,
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='Case User',
+            notify_emails=['sender@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(len(recipients), 1)
+
+    def test_dedup_within_notify_emails(self):
+        """Duplicate entries within notify_emails are deduplicated."""
+        api_key = ExternalApiKey.objects.create(
+            key_hash='g' * 64, key_prefix='dedup123', name='Dedup Key',
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='Dedup User',
+            notify_emails=['dup@example.com', 'dup@example.com', 'other@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, ['dup@example.com', 'other@example.com'])
+
+    def test_no_user_only_notify_emails(self):
+        """When API key has no user, only notify_emails are used."""
+        api_key = ExternalApiKey.objects.create(
+            key_hash='h' * 64, key_prefix='nouser12', name='No User Key',
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='System',
+            notify_emails=['ops@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, ['ops@example.com'])
+
+    def test_no_user_no_notify_emails_returns_empty(self):
+        """When no user and no notify_emails, returns empty list."""
+        api_key = ExternalApiKey.objects.create(
+            key_hash='i' * 64, key_prefix='empty123', name='Empty Key',
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='System',
+            notify_emails=[],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, [])
+
+    def test_user_without_email_only_notify_emails(self):
+        """When user has no email, only notify_emails are used."""
+        user = User.objects.create_user(username='noemail', email='')
+        api_key = ExternalApiKey.objects.create(
+            key_hash='j' * 64, key_prefix='noem1234', name='No Email Key', user=user,
+        )
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='No Email User',
+            notify_emails=['fallback@example.com'],
+            api_key=api_key,
+            total_items=1,
+        )
+        recipients = self.service._get_notification_recipients(batch)
+        self.assertEqual(recipients, ['fallback@example.com'])

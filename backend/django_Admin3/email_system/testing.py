@@ -2,7 +2,7 @@ import logging
 import json
 from typing import Dict, List, Optional
 from django.core.management.base import BaseCommand
-from django.template.loader import render_to_string, get_template
+from django.template.loader import render_to_string
 from django.utils import timezone
 from premailer import transform
 from mjml import mjml2html
@@ -225,118 +225,57 @@ class EmailTester:
                 return render_to_string(template_path, context)
 
             elif output_format == 'mjml':
-                # Return raw MJML content
-                mjml_template_path = f'emails/mjml/{template_name}.mjml'
-                return render_to_string(mjml_template_path, context)
+                # Return raw assembled MJML from DB
+                email_service = EmailService()
+                return email_service._render_email_with_master_template(
+                    content_template=template_name,
+                    context=context,
+                    email_title=f"{template_name.replace('_', ' ').title()} - ActEd",
+                    email_preview=f"Preview of {template_name.replace('_', ' ')} email"
+                )
 
             elif output_format in ['html', 'inlined', 'outlook']:
-                # Try MJML first if use_mjml is True
                 if use_mjml:
                     try:
-                        # Check if we should use the master template system for core email types
-                        if template_name in ['order_confirmation', 'password_reset', 'password_reset_completed', 'account_activation', 'email_verification']:
-                            # Use the new master template system
-                            content_template_map = {
-                                'order_confirmation': 'order_confirmation_content',
-                                'password_reset': 'password_reset_content',
-                                'password_reset_completed': 'password_reset_completed_content',
-                                'account_activation': 'account_activation_content',
-                                'email_verification': 'email_verification_content',
-                                'email_verification': 'email_verification_content'
+                        # For order_confirmation, apply the same date formatting logic
+                        if template_name == 'order_confirmation':
+                            order_created_at = context.get('created_at')
+                            if order_created_at:
+                                if hasattr(order_created_at, 'strftime'):
+                                    formatted_date = order_created_at.strftime("%B %d, %Y at %I:%M %p")
+                                else:
+                                    formatted_date = str(order_created_at)
+                            else:
+                                formatted_date = "Date not available"
+
+                            context['order'] = {
+                                'created_at': order_created_at,
+                                'created_at_formatted': formatted_date,
+                                'subtotal': context.get('subtotal', 0),
+                                'vat_amount': context.get('vat_amount', 0),
+                                'discount_amount': context.get('discount_amount', 0),
                             }
 
-                            # For order_confirmation, apply the same date formatting logic as send_order_confirmation
-                            if template_name == 'order_confirmation':
-                                # Format the order date in Python to avoid MJML template filter issues
-                                order_created_at = context.get('created_at')
-                                if order_created_at:
-                                    if hasattr(order_created_at, 'strftime'):
-                                        # Format datetime to readable string
-                                        formatted_date = order_created_at.strftime("%B %d, %Y at %I:%M %p")
-                                    else:
-                                        formatted_date = str(order_created_at)
-                                else:
-                                    formatted_date = "Date not available"
+                        # All templates use DB-driven master template rendering
+                        email_service = EmailService()
+                        mjml_content = email_service._render_email_with_master_template(
+                            content_template=template_name,
+                            context=context,
+                            email_title=f"{template_name.replace('_', ' ').title()} - ActEd",
+                            email_preview=f"Preview of {template_name.replace('_', ' ')} email"
+                        )
 
-                                # Create order object for template compatibility (same as email service)
-                                order_obj = {
-                                    'created_at': order_created_at,  # Keep original for any other uses
-                                    'created_at_formatted': formatted_date,  # Pre-formatted string for display
-                                    'subtotal': context.get('subtotal', 0),
-                                    'vat_amount': context.get('vat_amount', 0),
-                                    'discount_amount': context.get('discount_amount', 0),
-                                }
+                        # Convert MJML to HTML (no include_loader needed)
+                        html_content = mjml2html(mjml_content)
 
-                                # Update context with properly formatted order object
-                                context['order'] = order_obj
+                        # Apply Outlook enhancements if requested
+                        if enhance_outlook or output_format == 'outlook':
+                            html_content = email_service._enhance_outlook_compatibility(html_content)
 
-                            email_service = EmailService()
-                            mjml_content = email_service._render_email_with_master_template(
-                                content_template=content_template_map[template_name],
-                                context=context,
-                                email_title=f"{template_name.replace('_', ' ').title()} - ActEd",
-                                email_preview=f"Preview of {template_name.replace('_', ' ')} email"
-                            )
-                        else:
-                            # Try standalone MJML template
-                            mjml_template_path = f'emails/mjml/{template_name}.mjml'
-                            get_template(mjml_template_path)  # Check if MJML template exists
+                        return html_content
 
-                            # Render MJML template with context
-                            mjml_content = render_to_string(mjml_template_path, context)
-
-                        # Convert MJML to HTML using mjml-python
-                        try:
-                            # Set up include loader for MJML includes
-                            import os
-                            from django.conf import settings
-
-                            mjml_base_path = os.path.join(
-                                settings.BASE_DIR,
-                                'email_system',
-                                'templates',
-                                'emails',
-                                'mjml'
-                            )
-
-                            def include_loader(path: str) -> str:
-                                """Load included MJML files for mjml-python with Django template processing."""
-                                try:
-                                    # Normalize the path to remove ./ prefix and other path issues
-                                    normalized_path = path.lstrip('./')
-
-                                    # Process the include file as a Django template with context
-                                    include_template_path = f'emails/mjml/{normalized_path}'
-                                    rendered_content = render_to_string(include_template_path, context)
-                                    return rendered_content
-                                except Exception as e:
-                                    # Fallback to reading raw file if Django template processing fails
-                                    normalized_path = path.lstrip('./')
-                                    include_path = os.path.join(mjml_base_path, normalized_path)
-                                    try:
-                                        with open(include_path, 'r', encoding='utf-8') as f:
-                                            logger.warning(f"Django template processing failed for {normalized_path}, using raw file: {str(e)}")
-                                            return f.read()
-                                    except FileNotFoundError:
-                                        logger.error(f"MJML include file not found: {include_path}")
-                                        return f"<!-- Include not found: {normalized_path} -->"
-                                    except Exception as fallback_error:
-                                        logger.error(f"Error loading MJML include {normalized_path}: {str(fallback_error)}")
-                                        return f"<!-- Error loading include: {normalized_path} -->"
-
-                            html_content = mjml2html(mjml_content, include_loader=include_loader)
-
-                            # Apply Outlook enhancements if requested
-                            if enhance_outlook or output_format == 'outlook':
-                                email_service = EmailService()
-                                html_content = email_service._enhance_outlook_compatibility(html_content)
-
-                            return html_content
-                        except Exception as e:
-                            logger.error(f"MJML compilation error: {str(e)}")
-                            # Fallback to HTML template
-                            use_mjml = False
                     except Exception as e:
+                        logger.error(f"MJML compilation error: {str(e)}")
                         use_mjml = False
 
                 # Fallback to HTML template

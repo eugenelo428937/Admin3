@@ -10,11 +10,6 @@ from django.db import models
 
 
 class Staff(models.Model):
-    NAME_FORMAT_CHOICES = [
-        ('full_name', 'Full Name'),
-        ('first_name', 'First Name Only'),
-    ]
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -24,16 +19,6 @@ class Staff(models.Model):
         blank=True,
         default='',
         help_text="e.g. 'Senior Tutor'",
-    )
-    name_format = models.CharField(
-        max_length=20,
-        choices=NAME_FORMAT_CHOICES,
-        default='full_name',
-        help_text="How this staff member's name appears in salutations",
-    )
-    show_job_title = models.BooleanField(
-        default=False,
-        help_text="Whether to display job title in email salutations",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

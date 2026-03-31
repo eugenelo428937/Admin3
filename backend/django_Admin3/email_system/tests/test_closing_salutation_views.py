@@ -2,8 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status as http_status
-from email_system.models import ClosingSalutation, EmailTemplate
-from staff.models import Team
+from email_system.models import ClosingSalutation, EmailTemplate, EmailMasterComponent
 
 
 class ClosingSalutationViewSetTest(TestCase):
@@ -12,49 +11,57 @@ class ClosingSalutationViewSetTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.admin)
 
-        self.team = Team.objects.create(
-            name='test_team',
-            display_name='Test Team',
-        )
-
         self.salutation = ClosingSalutation.objects.create(
             name='test_sal',
-            display_name='Test',
+            display_name='The ActEd Team',
             sign_off_text='Best',
-            signature_type='team',
-            team=self.team,
+            job_title='',
         )
+
+        # Ensure DB master components have content for mjml-shell endpoint
+        for name in ('banner', 'styles', 'footer'):
+            content = f'<mj-section><!-- {name} -->Mctimoney House</mj-section>' if name == 'footer' else f'<mj-section><!-- {name} --></mj-section>'
+            EmailMasterComponent.objects.update_or_create(
+                name=name,
+                defaults={
+                    'component_type': name,
+                    'display_name': name.title(),
+                    'is_active': True,
+                    'mjml_content': content,
+                },
+            )
 
     def test_list_salutations(self):
         response = self.client.get('/api/email/closing-salutations/')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_create_salutation(self):
-        team2 = Team.objects.create(name='new_team', display_name='New Team')
         data = {
             'name': 'new_sal',
-            'display_name': 'New',
+            'display_name': 'Eugene',
             'sign_off_text': 'Cheers',
-            'signature_type': 'team',
-            'team': team2.id,
+            'job_title': 'IT',
         }
         response = self.client.post('/api/email/closing-salutations/', data, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertEqual(response.data['job_title'], 'IT')
 
     def test_retrieve_salutation(self):
         response = self.client.get(f'/api/email/closing-salutations/{self.salutation.id}/')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'test_sal')
+        self.assertNotIn('signature_type', response.data)
 
     def test_update_salutation(self):
         response = self.client.patch(
             f'/api/email/closing-salutations/{self.salutation.id}/',
-            {'sign_off_text': 'Warm regards'},
+            {'sign_off_text': 'Warm regards', 'job_title': 'Senior Tutor'},
             format='json',
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.salutation.refresh_from_db()
         self.assertEqual(self.salutation.sign_off_text, 'Warm regards')
+        self.assertEqual(self.salutation.job_title, 'Senior Tutor')
 
     def test_signature_mjml_endpoint(self):
         template = EmailTemplate.objects.create(
@@ -66,8 +73,10 @@ class ClosingSalutationViewSetTest(TestCase):
         response = self.client.get(f'/api/email/templates/{template.id}/signature-mjml/')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertIn('signature_mjml', response.data)
-        self.assertIn('Best,', response.data['signature_mjml'])
-        self.assertIn('Test Team', response.data['signature_mjml'])
+        self.assertIn('Best', response.data['signature_mjml'])
+        self.assertIn('The ActEd Team', response.data['signature_mjml'])
+        self.assertEqual(response.data['sign_off_text'], 'Best')
+        self.assertEqual(response.data['display_name'], 'The ActEd Team')
 
     def test_signature_mjml_returns_empty_when_no_salutation(self):
         template = EmailTemplate.objects.create(

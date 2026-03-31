@@ -6,6 +6,7 @@ import hashlib
 import secrets
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -17,10 +18,15 @@ class BatchLifecycleIntegrationTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.raw_key = secrets.token_urlsafe(32)
+        self.user = User.objects.create_user(
+            username='integrationuser', email='integration@example.com',
+            first_name='Integration', last_name='Tester',
+        )
         self.api_key = ExternalApiKey.objects.create(
             key_hash=hashlib.sha256(self.raw_key.encode()).hexdigest(),
             key_prefix=self.raw_key[:8],
             name='Integration Test System',
+            user=self.user,
         )
         self.template = EmailTemplate.objects.create(
             name='integration_template',
@@ -30,13 +36,12 @@ class BatchLifecycleIntegrationTest(TestCase):
 
     def test_full_lifecycle(self):
         """Send batch -> simulate processing -> completion detection -> query status."""
-        # 1. Send batch via API
+        # 1. Send batch via API (no requested_by — derived from user)
         response = self.client.post(
             '/api/email/batch/send/',
             data={
                 'template_id': self.template.id,
-                'requested_by': 'Integration Tester',
-                'notify_email': 'notify@example.com',
+                'notify_emails': ['notify@example.com'],
                 'items': [
                     {'to_email': 'user1@example.com', 'payload': {'firstname': 'Alice'}},
                     {'to_email': 'user2@example.com', 'payload': {'firstname': 'Bob'}},
@@ -52,6 +57,8 @@ class BatchLifecycleIntegrationTest(TestCase):
         batch = EmailBatch.objects.get(batch_id=batch_id)
         self.assertEqual(batch.status, 'processing')
         self.assertEqual(batch.queue_items.count(), 2)
+        # requested_by derived from user full name
+        self.assertEqual(batch.requested_by, 'Integration Tester')
 
         # 3. Verify subjects were rendered from payload
         subjects = list(batch.queue_items.values_list('subject', flat=True))
@@ -88,8 +95,7 @@ class BatchLifecycleIntegrationTest(TestCase):
             '/api/email/batch/send/',
             data={
                 'template_id': self.template.id,
-                'requested_by': 'Tester',
-                'notify_email': 'notify@example.com',
+                'notify_emails': ['notify@example.com'],
                 'items': [
                     {'to_email': 'good@example.com', 'payload': {}},
                     {'to_email': 'bad@example.com', 'payload': {}},
