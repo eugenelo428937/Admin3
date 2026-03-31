@@ -11,11 +11,8 @@ import {
     AdminToggleGroup,
 } from '@/components/admin/composed';
 import type { SimpleColumn } from '@/components/admin/composed';
-import { Button } from '@/components/admin/ui/button';
 import useEmailTemplateListVM from './useEmailTemplateListVM';
 import type { TemplateType } from '../../../../types/email';
-import type { MasterFilter } from './useEmailTemplateListVM';
-
 const TEMPLATE_TYPE_OPTIONS: { value: TemplateType | 'all'; label: string }[] = [
     { value: 'all', label: 'All Types' },
     { value: 'order_confirmation', label: 'Order Confirmation' },
@@ -23,11 +20,10 @@ const TEMPLATE_TYPE_OPTIONS: { value: TemplateType | 'all'; label: string }[] = 
     { value: 'password_reset_completed', label: 'Password Reset Completed' },
     { value: 'account_activation', label: 'Account Activation' },
     { value: 'email_verification', label: 'Email Verification' },
-];
-
-const MASTER_FILTER_OPTIONS: { value: MasterFilter; label: string }[] = [
-    { value: 'general', label: 'General Templates' },
-    { value: 'master', label: 'Master Templates' },
+    { value: 'materials', label: 'Materials' },
+    { value: 'marking', label: 'Marking' },
+    { value: 'tutorials', label: 'Tutorials' },
+    { value: 'apprentice', label: 'Apprentice' },
 ];
 
 const EmailTemplateList: React.FC = () => {
@@ -70,14 +66,6 @@ const EmailTemplateList: React.FC = () => {
             />
 
             <AdminErrorAlert message={vm.error} />
-
-            <AdminToggleGroup
-                label="Master"
-                options={MASTER_FILTER_OPTIONS}
-                value={vm.filterMaster}
-                onChange={vm.setFilterMaster}
-                className="tw:mb-2"
-            />
 
             <AdminToggleGroup
                 label="Type"

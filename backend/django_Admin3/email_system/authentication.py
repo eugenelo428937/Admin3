@@ -26,7 +26,7 @@ class ExternalApiKeyAuthentication(BaseAuthentication):
         api_key.last_used_at = timezone.now()
         api_key.save(update_fields=['last_used_at'])
 
-        return (None, api_key)
+        return (api_key.user, api_key)
 
     def authenticate_header(self, request):
         return 'X-Api-Key'

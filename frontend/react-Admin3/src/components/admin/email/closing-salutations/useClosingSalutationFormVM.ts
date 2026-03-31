@@ -1,15 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import emailService from '../../../../services/emailService';
-import type { ClosingSalutation, SignatureType, StaffNameFormat } from '../../../../types/email';
+import type { ClosingSalutation } from '../../../../types/email';
 
 interface SalutationFormData {
     name: string;
     display_name: string;
     sign_off_text: string;
-    signature_type: SignatureType;
-    team_signature: string;
-    staff_name_format: StaffNameFormat;
+    job_title: string;
     is_active: boolean;
 }
 
@@ -17,9 +15,7 @@ const initialFormData: SalutationFormData = {
     name: '',
     display_name: '',
     sign_off_text: 'Kind Regards',
-    signature_type: 'team',
-    team_signature: '',
-    staff_name_format: 'full_name',
+    job_title: '',
     is_active: true,
 };
 
@@ -53,9 +49,7 @@ const useClosingSalutationFormVM = (): ClosingSalutationFormVM => {
                 name: salutation.name,
                 display_name: salutation.display_name,
                 sign_off_text: salutation.sign_off_text,
-                signature_type: salutation.signature_type,
-                team_signature: salutation.team_signature,
-                staff_name_format: salutation.staff_name_format,
+                job_title: salutation.job_title,
                 is_active: salutation.is_active,
             });
             setError(null);
@@ -86,9 +80,7 @@ const useClosingSalutationFormVM = (): ClosingSalutationFormVM => {
                 name: formData.name,
                 display_name: formData.display_name,
                 sign_off_text: formData.sign_off_text,
-                signature_type: formData.signature_type,
-                team_signature: formData.team_signature,
-                staff_name_format: formData.staff_name_format,
+                job_title: formData.job_title,
                 is_active: formData.is_active,
             };
 

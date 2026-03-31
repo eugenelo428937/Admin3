@@ -29,6 +29,32 @@ class ExternalApiKeyModelTest(TestCase):
         self.assertTrue(api_key.is_active)
         self.assertIsNotNone(api_key.created_at)
         self.assertIsNone(api_key.last_used_at)
+        self.assertIsNone(api_key.user)
+
+    def test_create_api_key_with_user(self):
+        """Test creating an ExternalApiKey linked to a user."""
+        user = User.objects.create_user(username='apiuser', email='apiuser@example.com')
+        api_key = ExternalApiKey.objects.create(
+            key_hash='u' * 64,
+            key_prefix='user1234',
+            name='User API Key',
+            user=user,
+        )
+        self.assertEqual(api_key.user, user)
+        self.assertEqual(user.api_keys.count(), 1)
+
+    def test_user_set_null_on_delete(self):
+        """Test that deleting a user sets api_key.user to null."""
+        user = User.objects.create_user(username='deluser', email='del@example.com')
+        api_key = ExternalApiKey.objects.create(
+            key_hash='v' * 64,
+            key_prefix='del12345',
+            name='Del User Key',
+            user=user,
+        )
+        user.delete()
+        api_key.refresh_from_db()
+        self.assertIsNone(api_key.user)
 
     def test_str_representation(self):
         """Test __str__ returns name and prefix."""
@@ -91,7 +117,7 @@ class EmailBatchModelTest(TestCase):
         batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='external-system',
-            notify_email='admin@example.com',
+            notify_emails=['admin@example.com'],
             api_key=self.api_key,
         )
         self.assertIsNotNone(batch.batch_id)
@@ -101,6 +127,27 @@ class EmailBatchModelTest(TestCase):
         self.assertEqual(batch.error_count, 0)
         self.assertIsNotNone(batch.created_at)
         self.assertIsNone(batch.completed_at)
+        self.assertEqual(batch.notify_emails, ['admin@example.com'])
+
+    def test_notify_emails_stores_list(self):
+        """Test that notify_emails stores a list of emails."""
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='system',
+            notify_emails=['a@b.com', 'c@d.com'],
+            api_key=self.api_key,
+        )
+        batch.refresh_from_db()
+        self.assertEqual(batch.notify_emails, ['a@b.com', 'c@d.com'])
+
+    def test_notify_emails_defaults_to_empty_list(self):
+        """Test that notify_emails defaults to empty list."""
+        batch = EmailBatch.objects.create(
+            template=self.template,
+            requested_by='system',
+            api_key=self.api_key,
+        )
+        self.assertEqual(batch.notify_emails, [])
 
     def test_status_choices(self):
         """Test all valid batch status choices."""
@@ -116,7 +163,7 @@ class EmailBatchModelTest(TestCase):
         batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='external-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             api_key=self.api_key,
             total_items=50,
         )
@@ -136,7 +183,7 @@ class EmailBatchModelTest(TestCase):
         EmailBatch.objects.create(
             template=self.template,
             requested_by='external-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             api_key=self.api_key,
         )
         from django.db.models import ProtectedError
@@ -148,7 +195,7 @@ class EmailBatchModelTest(TestCase):
         EmailBatch.objects.create(
             template=self.template,
             requested_by='external-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             api_key=self.api_key,
         )
         from django.db.models import ProtectedError
@@ -175,7 +222,7 @@ class EmailQueueBatchFKTest(TestCase):
         self.batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='external-system',
-            notify_email='admin@example.com',
+            notify_emails=[],
             api_key=self.api_key,
             total_items=10,
         )
@@ -224,8 +271,6 @@ class EmailQueueBatchFKTest(TestCase):
             subject='Test email',
             batch=self.batch,
         )
-        # Delete the batch - need to remove the PROTECT from api_key first
-        # Actually EmailBatch has no PROTECT from EmailQueue side; EmailQueue uses SET_NULL
         batch_id = self.batch.batch_id
         self.batch.delete()
         queue_item.refresh_from_db()

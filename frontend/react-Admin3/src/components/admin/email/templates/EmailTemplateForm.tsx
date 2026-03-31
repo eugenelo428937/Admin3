@@ -24,6 +24,10 @@ const TEMPLATE_TYPE_CHOICES: { value: TemplateType; label: string }[] = [
     { value: 'password_reset_completed', label: 'Password Reset Completed' },
     { value: 'account_activation', label: 'Account Activation' },
     { value: 'email_verification', label: 'Email Verification' },
+    { value: 'materials', label: 'Materials' },
+    { value: 'marking', label: 'Marking' },
+    { value: 'tutorials', label: 'Tutorials' },
+    { value: 'apprentice', label: 'Apprentice' },
 ];
 
 const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
@@ -75,17 +79,13 @@ const EmailTemplateForm: React.FC = () => {
                     {/* General Tab */}
                     <TabsContent value={vm.activeTab} index={0}>
                         <div className="tw:space-y-5">
-                            <AdminFormField label="Name" required>
-                                <Input
-                                    value={vm.formData.name || ''}
-                                    onChange={(e) => vm.handleChange('name', e.target.value)}
-                                />
-                            </AdminFormField>
-
-                            <AdminFormField label="Display Name">
+                            <AdminFormField label="Display Name" required>
                                 <Input
                                     value={vm.formData.display_name || ''}
-                                    onChange={(e) => vm.handleChange('display_name', e.target.value)}
+                                    onChange={(e) => {
+                                        vm.handleChange('display_name', e.target.value);
+                                        vm.handleChange('name', e.target.value.replace(/\s+/g, '_').toLowerCase());
+                                    }}
                                 />
                             </AdminFormField>
 
@@ -133,65 +133,27 @@ const EmailTemplateForm: React.FC = () => {
                                 />
                             </AdminFormField>
 
-                            {!vm.formData.is_master && (
-                                <AdminFormField label="Closing Salutation">
-                                    <AdminSelect
-                                        options={[
-                                            { value: '__none__', label: 'None' },
-                                            ...vm.salutations.map((sal) => ({
-                                                value: String(sal.id),
-                                                label: `${sal.display_name} — "${sal.sign_off_text}, ${sal.signature_type === 'team' ? sal.team_signature : 'Staff'}"`,
-                                            })),
-                                        ]}
-                                        value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : '__none__'}
-                                        onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
-                                    />
-                                </AdminFormField>
-                            )}
+                            <AdminFormField label="Closing Salutation">
+                                <AdminSelect
+                                    options={[
+                                        { value: '__none__', label: 'None' },
+                                        ...vm.salutations.map((sal) => ({
+                                            value: String(sal.id),
+                                            label: `${sal.display_name}${sal.job_title ? ` (${sal.job_title})` : ''} — "${sal.sign_off_text}"`,
+                                        })),
+                                    ]}
+                                    value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : '__none__'}
+                                    onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
+                                />
+                            </AdminFormField>
 
-                            <div className="tw:flex tw:flex-wrap tw:gap-4">
-                                {[
-                                    { key: 'use_master_template', label: 'Use Master Template', defaultVal: true },
-                                    { key: 'enable_tracking', label: 'Enable Tracking', defaultVal: false },
-                                    { key: 'enable_queue', label: 'Enable Queue', defaultVal: true },
-                                    { key: 'enhance_outlook_compatibility', label: 'Enhance Outlook Compatibility', defaultVal: false },
-                                    { key: 'is_master', label: 'Master Component', defaultVal: false },
-                                    { key: 'is_active', label: 'Active', defaultVal: true },
-                                ].map(({ key, label, defaultVal }) => (
-                                    <div key={key} className="tw:flex tw:items-center tw:gap-2">
-                                        <Checkbox
-                                            id={`cb-${key}`}
-                                            checked={(vm.formData as any)[key] ?? defaultVal}
-                                            onCheckedChange={(checked) => vm.handleChange(key as any, Boolean(checked))}
-                                        />
-                                        <Label htmlFor={`cb-${key}`}>{label}</Label>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="tw:flex tw:gap-4">
-                                <div className="tw:w-48">
-                                    <AdminFormField label="Max Retry Attempts">
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            max={10}
-                                            value={vm.formData.max_retry_attempts ?? 3}
-                                            onChange={(e) => vm.handleChange('max_retry_attempts', parseInt(e.target.value, 10) || 0)}
-                                        />
-                                    </AdminFormField>
-                                </div>
-                                <div className="tw:w-48">
-                                    <AdminFormField label="Retry Delay (minutes)">
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            max={1440}
-                                            value={vm.formData.retry_delay_minutes ?? 5}
-                                            onChange={(e) => vm.handleChange('retry_delay_minutes', parseInt(e.target.value, 10) || 0)}
-                                        />
-                                    </AdminFormField>
-                                </div>
+                            <div className="tw:flex tw:items-center tw:gap-2">
+                                <Checkbox
+                                    id="cb-is_active"
+                                    checked={vm.formData.is_active ?? true}
+                                    onCheckedChange={(checked) => vm.handleChange('is_active', Boolean(checked))}
+                                />
+                                <Label htmlFor="cb-is_active">Active</Label>
                             </div>
                         </div>
                     </TabsContent>

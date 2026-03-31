@@ -1,5 +1,6 @@
 import hashlib
 import secrets
+from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 from email_system.models import ExternalApiKey, EmailTemplate, EmailBatch, EmailQueue
@@ -9,10 +10,15 @@ class SendBatchViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.raw_key = secrets.token_urlsafe(32)
+        self.user = User.objects.create_user(
+            username='batchuser', email='batchuser@example.com',
+            first_name='Batch', last_name='User',
+        )
         self.api_key = ExternalApiKey.objects.create(
             key_hash=hashlib.sha256(self.raw_key.encode()).hexdigest(),
             key_prefix=self.raw_key[:8],
             name='Test System',
+            user=self.user,
         )
         self.template = EmailTemplate.objects.create(
             name='view_test_template',
@@ -25,8 +31,7 @@ class SendBatchViewTest(TestCase):
             '/api/email/batch/send/',
             data={
                 'template_id': self.template.id,
-                'requested_by': 'Test User',
-                'notify_email': 'admin@example.com',
+                'notify_emails': ['admin@example.com'],
                 'items': [
                     {'to_email': 'user@example.com', 'payload': {'name': 'Test'}},
                 ],
@@ -38,10 +43,42 @@ class SendBatchViewTest(TestCase):
         self.assertIn('batch', response.data)
         self.assertIn('batch_id', response.data['batch'])
 
+    def test_send_batch_derives_requested_by_from_user(self):
+        """requested_by is auto-populated from the authenticated user."""
+        response = self.client.post(
+            '/api/email/batch/send/',
+            data={
+                'template_id': self.template.id,
+                'items': [{'to_email': 'user@example.com', 'payload': {}}],
+            },
+            format='json',
+            HTTP_X_API_KEY=self.raw_key,
+        )
+        self.assertEqual(response.status_code, 201)
+        batch = EmailBatch.objects.get(batch_id=response.data['batch']['batch_id'])
+        self.assertEqual(batch.requested_by, 'Batch User')
+
+    def test_send_batch_falls_back_to_api_key_name(self):
+        """requested_by falls back to api_key.name when no user linked."""
+        self.api_key.user = None
+        self.api_key.save()
+        response = self.client.post(
+            '/api/email/batch/send/',
+            data={
+                'template_id': self.template.id,
+                'items': [{'to_email': 'user@example.com', 'payload': {}}],
+            },
+            format='json',
+            HTTP_X_API_KEY=self.raw_key,
+        )
+        self.assertEqual(response.status_code, 201)
+        batch = EmailBatch.objects.get(batch_id=response.data['batch']['batch_id'])
+        self.assertEqual(batch.requested_by, 'Test System')
+
     def test_send_batch_no_auth(self):
         response = self.client.post(
             '/api/email/batch/send/',
-            data={'template_id': 1, 'requested_by': 'X', 'notify_email': 'a@b.com', 'items': []},
+            data={'template_id': 1, 'items': []},
             format='json',
         )
         self.assertIn(response.status_code, [401, 403])
@@ -51,8 +88,7 @@ class SendBatchViewTest(TestCase):
             '/api/email/batch/send/',
             data={
                 'template_id': 99999,
-                'requested_by': 'Test',
-                'notify_email': 'a@b.com',
+                'notify_emails': ['a@b.com'],
                 'items': [{'to_email': 'u@b.com', 'payload': {}}],
             },
             format='json',
@@ -65,10 +101,14 @@ class QueryBatchViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.raw_key = secrets.token_urlsafe(32)
+        self.user = User.objects.create_user(
+            username='queryuser', email='queryuser@example.com',
+        )
         self.api_key = ExternalApiKey.objects.create(
             key_hash=hashlib.sha256(self.raw_key.encode()).hexdigest(),
             key_prefix=self.raw_key[:8],
             name='Test System',
+            user=self.user,
         )
         self.template = EmailTemplate.objects.create(
             name='query_view_template',
@@ -78,7 +118,7 @@ class QueryBatchViewTest(TestCase):
         self.batch = EmailBatch.objects.create(
             template=self.template,
             requested_by='Test User',
-            notify_email='admin@example.com',
+            notify_emails=['admin@example.com'],
             total_items=1,
             api_key=self.api_key,
             status='completed',

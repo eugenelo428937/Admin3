@@ -329,7 +329,7 @@
           "mjml_content": "",
           "name": "order_confirmation",
           "subject_template": "Your Order #{{order_id}}",
-          "template_type": "transactional",
+          "template_type": "order_confirmation",
           "use_master_template": true
         },
         "headers": {
@@ -2904,7 +2904,7 @@
               "is_active": true,
               "name": "order_confirmation",
               "subject_template": "Your Order #{{order_id}}",
-              "template_type": "transactional"
+              "template_type": "order_confirmation"
             }
           ]
         },

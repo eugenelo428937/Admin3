@@ -48,10 +48,7 @@ if not os.getenv('DJANGO_ENV') and settings_module:
         os.environ.setdefault('DJANGO_ENV', 'test')
 
 DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
-print(f'DJANGO_ENV {DJANGO_ENV}')
-print(f'DJANGO_SETTINGS_MODULE {settings_module}')
 env_file = os.path.join(BASE_DIR, f'.env.{DJANGO_ENV}')
-print(f'DJANGO_ENV FILE {env_file}')
 if os.path.exists(env_file):
     print(f'Loading environment from: {env_file}')
     environ.Env.read_env(env_file)

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from email_system.models import (
     EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
+    EmailMasterComponent,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
-    ClosingSalutation, ClosingSalutationStaff,
+    ClosingSalutation,
     EmailMjmlElement,
 )
 
@@ -127,40 +128,24 @@ class EmailTemplateContentRuleSerializer(serializers.ModelSerializer):
 # ClosingSalutation
 # ---------------------------------------------------------------------------
 
-class ClosingSalutationStaffSerializer(serializers.ModelSerializer):
-    """Serializer for staff entries within a closing salutation."""
-    display_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ClosingSalutationStaff
-        fields = ['id', 'staff', 'display_name', 'display_order']
-
-    def get_display_name(self, obj):
-        return str(obj.staff)
-
-
 class ClosingSalutationListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for salutation list views."""
 
     class Meta:
         model = ClosingSalutation
         fields = [
-            'id', 'name', 'display_name', 'sign_off_text',
-            'signature_type', 'team',
+            'id', 'name', 'display_name', 'sign_off_text', 'job_title',
             'is_active', 'created_at', 'updated_at',
         ]
 
 
 class ClosingSalutationSerializer(serializers.ModelSerializer):
     """Full serializer for salutation detail, create, and update views."""
-    staff_members = ClosingSalutationStaffSerializer(many=True, read_only=True)
 
     class Meta:
         model = ClosingSalutation
         fields = [
-            'id', 'name', 'display_name', 'sign_off_text',
-            'signature_type', 'team',
-            'staff_members',
+            'id', 'name', 'display_name', 'sign_off_text', 'job_title',
             'is_active', 'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -191,7 +176,7 @@ class EmailTemplateListSerializer(serializers.ModelSerializer):
         model = EmailTemplate
         fields = [
             'id', 'name', 'template_type', 'display_name',
-            'subject_template', 'default_priority', 'is_master',
+            'subject_template', 'default_priority',
             'closing_salutation', 'basic_mode_content',
             'is_active', 'created_at', 'updated_at',
         ]
@@ -213,12 +198,29 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
             'id', 'name', 'template_type', 'display_name', 'description',
             'subject_template', 'use_master_template',
             'from_email', 'reply_to_email', 'default_priority',
-            'enable_tracking', 'enable_queue', 'max_retry_attempts',
-            'retry_delay_minutes', 'enhance_outlook_compatibility',
-            'is_master', 'mjml_content', 'basic_mode_content',
+            'enable_tracking', 'enable_queue',
+            'mjml_content', 'basic_mode_content',
             'closing_salutation', 'closing_salutation_detail',
             'is_active', 'created_at', 'updated_at', 'created_by',
             'attachments', 'template_content_rules',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'created_by']
+
+
+# ---------------------------------------------------------------------------
+# EmailMasterComponent
+# ---------------------------------------------------------------------------
+
+class EmailMasterComponentSerializer(serializers.ModelSerializer):
+    """Serializer for shared MJML components (banner, footer, styles, etc.)."""
+
+    created_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = EmailMasterComponent
+        fields = [
+            'id', 'name', 'component_type', 'display_name', 'description',
+            'mjml_content', 'is_active', 'created_at', 'updated_at', 'created_by',
         ]
         read_only_fields = ['created_at', 'updated_at', 'created_by']
 

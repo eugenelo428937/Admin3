@@ -13,7 +13,7 @@ class EmailBatchService:
 
     TERMINAL_STATUSES = ('sent', 'failed', 'cancelled')
 
-    def send_batch(self, template_id, requested_by, notify_email, items, api_key, max_items=None):
+    def send_batch(self, template_id, requested_by, notify_emails, items, api_key, max_items=None):
         """Create a batch of emails and queue them for sending."""
         # Validate template
         try:
@@ -35,7 +35,7 @@ class EmailBatchService:
             batch = EmailBatch.objects.create(
                 template=template,
                 requested_by=requested_by,
-                notify_email=notify_email,
+                notify_emails=notify_emails or [],
                 total_items=0,
                 api_key=api_key,
                 status='pending',
@@ -175,8 +175,30 @@ class EmailBatchService:
 
         self._send_completion_notification(batch)
 
+    def _get_notification_recipients(self, batch):
+        """Build deduplicated list of recipients for the batch completion report.
+
+        Recipients = sender email (from api_key.user) + batch.notify_emails, deduplicated.
+        """
+        recipients = []
+
+        # Primary recipient: the user who sent the batch (via API key)
+        if batch.api_key and batch.api_key.user and batch.api_key.user.email:
+            recipients.append(batch.api_key.user.email.lower())
+
+        # Additional recipients from notify_emails
+        for email in (batch.notify_emails or []):
+            if email and email.lower() not in recipients:
+                recipients.append(email.lower())
+
+        return recipients
+
     def _send_completion_notification(self, batch):
-        """Queue a completion notification email to the batch requester."""
+        """Queue a completion notification email to the sender and notify_emails recipients."""
+        recipients = self._get_notification_recipients(batch)
+        if not recipients:
+            return
+
         error_items = []
         for qi in batch.queue_items.filter(status__in=('failed', 'cancelled')):
             error_items.append({
@@ -198,7 +220,7 @@ class EmailBatchService:
         try:
             email_queue_service.queue_email(
                 template_name='batch_completion_report',
-                to_emails=batch.notify_email,
+                to_emails=recipients,
                 context=context,
             )
         except Exception:

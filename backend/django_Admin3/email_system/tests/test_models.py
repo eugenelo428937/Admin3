@@ -35,9 +35,6 @@ class EmailTemplateModelTest(TestCase):
             default_priority='normal',
             enable_tracking=True,
             enable_queue=True,
-            max_retry_attempts=3,
-            retry_delay_minutes=5,
-            enhance_outlook_compatibility=True,
             is_active=True,
             created_by=self.user,
         )
@@ -68,9 +65,6 @@ class EmailTemplateModelTest(TestCase):
         self.assertEqual(t.default_priority, 'normal')
         self.assertTrue(t.enable_tracking)
         self.assertTrue(t.enable_queue)
-        self.assertEqual(t.max_retry_attempts, 3)
-        self.assertEqual(t.retry_delay_minutes, 5)
-        self.assertTrue(t.enhance_outlook_compatibility)
         self.assertTrue(t.is_active)
 
     def test_meta_options(self):
