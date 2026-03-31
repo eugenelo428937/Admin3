@@ -74,7 +74,6 @@ class QueueEmailTest(TestCase):
             from_email='eqs_orders@example.com',
             reply_to_email='eqs_reply@example.com',
             default_priority='high',
-            max_retry_attempts=5,
             is_active=True,
         )
 
@@ -90,7 +89,7 @@ class QueueEmailTest(TestCase):
         self.assertEqual(queue_item.template, self.template)
         self.assertEqual(queue_item.to_emails, ['customer@example.com'])
         self.assertEqual(queue_item.from_email, 'eqs_orders@example.com')
-        self.assertEqual(queue_item.max_attempts, 5)
+        self.assertEqual(queue_item.max_attempts, 3)  # From EmailSettings default
         self.assertEqual(queue_item.status, 'pending')
 
     def test_queue_email_string_to_email_normalized(self):
@@ -326,8 +325,6 @@ class ProcessQueueItemTest(TestCase):
             name='eqs_process_tpl',
             display_name='EQS Process Template',
             subject_template='EQS Process Test',
-            max_retry_attempts=3,
-            retry_delay_minutes=5,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
@@ -517,7 +514,6 @@ class SendSingleEmailTest(TestCase):
             display_name='EQS Send Single Template',
             subject_template='EQS Send Single Test',
             use_master_template=True,
-            enhance_outlook_compatibility=True,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
@@ -649,7 +645,6 @@ class SendWithMasterTemplateTest(TestCase):
             display_name='EQS OC Master',
             subject_template='Order Confirmed',
             use_master_template=True,
-            enhance_outlook_compatibility=True,
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(

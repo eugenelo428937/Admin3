@@ -605,23 +605,30 @@ def state_tutorial_products_exist(params=None):
 # ---------------------------------------------------------------------------
 
 def setup_email_template():
-    """Create a test email template.
+    """Create a test email template at id=1.
 
     Returns the template instance.
     """
     from email_system.models import EmailTemplate
 
-    template, _ = EmailTemplate.objects.get_or_create(
+    existing = EmailTemplate.objects.filter(name='order_confirmation').first()
+    if existing and existing.id == 1:
+        return existing
+
+    # Clear the id=1 slot and any existing order_confirmation template
+    EmailTemplate.objects.filter(name='order_confirmation').delete()
+    EmailTemplate.objects.filter(id=1).delete()
+
+    template = EmailTemplate.objects.create(
+        id=1,
         name='order_confirmation',
-        defaults={
-            'template_type': 'transactional',
-            'display_name': 'Order Confirmation',
-            'description': 'Sent after a successful order',
-            'subject_template': 'Your Order #{{order_id}}',
-            'use_master_template': True,
-            'default_priority': 'normal',
-            'is_active': True,
-        },
+        template_type='order_confirmation',
+        display_name='Order Confirmation',
+        description='Sent after a successful order',
+        subject_template='Your Order #{{order_id}}',
+        use_master_template=True,
+        default_priority='normal',
+        is_active=True,
     )
     return template
 

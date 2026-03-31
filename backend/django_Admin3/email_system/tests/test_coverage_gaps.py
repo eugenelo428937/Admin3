@@ -386,8 +386,6 @@ class QueueServiceRetrySchedulingTest(TestCase):
             name='cov_retry_tpl',
             display_name='Coverage Retry Template',
             subject_template='Coverage Retry Subject',
-            retry_delay_minutes=10,
-            max_retry_attempts=5,
             is_active=True,
         )
 
@@ -418,8 +416,10 @@ class QueueServiceRetrySchedulingTest(TestCase):
         self.assertIsNotNone(queue_item.next_retry_at)
 
     @patch.object(EmailQueueService, '_send_single_email', return_value=False)
-    def test_retry_scheduled_with_template_delay(self, mock_send):
-        """Test that template retry_delay_minutes is used (line 229)."""
+    @patch('email_system.services.queue_service.EmailSettings')
+    def test_retry_scheduled_with_settings_delay(self, mock_settings, mock_send):
+        """Test that EmailSettings retry_delay_minutes is used (line 225)."""
+        mock_settings.get_retry_delay_minutes.return_value = 10
         queue_item = EmailQueue.objects.create(
             template=self.template,
             to_emails=['cov_retry_delay@example.com'],
@@ -434,12 +434,14 @@ class QueueServiceRetrySchedulingTest(TestCase):
         with patch.object(EmailQueue, 'can_retry', return_value=True):
             with patch.object(EmailQueue, 'schedule_retry') as mock_retry:
                 self.service.process_queue_item(queue_item)
-                # Should pass template's retry_delay_minutes (10)
+                # Should pass EmailSettings retry_delay_minutes (10)
                 mock_retry.assert_called_once_with(10)
 
+    @patch('email_system.services.queue_service.EmailSettings')
     @patch.object(EmailQueueService, '_send_single_email', return_value=False)
-    def test_retry_scheduled_without_template_uses_default(self, mock_send):
-        """Test that default delay is used when no template (line 229)."""
+    def test_retry_scheduled_without_template_uses_settings_default(self, mock_send, mock_settings):
+        """Test that EmailSettings delay is used when no template (line 225)."""
+        mock_settings.get_retry_delay_minutes.return_value = 5
         queue_item = EmailQueue.objects.create(
             template=None,
             to_emails=['cov_retry_notemplate@example.com'],
@@ -454,7 +456,7 @@ class QueueServiceRetrySchedulingTest(TestCase):
         with patch.object(EmailQueue, 'can_retry', return_value=True):
             with patch.object(EmailQueue, 'schedule_retry') as mock_retry:
                 self.service.process_queue_item(queue_item)
-                # Should pass default delay (5)
+                # Should pass EmailSettings default delay (5)
                 mock_retry.assert_called_once_with(5)
 
 
