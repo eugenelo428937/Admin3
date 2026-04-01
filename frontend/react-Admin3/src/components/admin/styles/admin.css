@@ -270,16 +270,21 @@
   background: var(--primary);
   border-radius: 0 2px 2px 0;
   box-shadow:
-    0 0 10px var(--accent-glow-tight),
-    0 0 24px var(--accent-glow-tight),
-    0 0 40px var(--accent-glow-wide);
+    0 0 6px 2px rgba(196,112,75,0.6),
+    0 0 16px 4px rgba(196,112,75,0.4),
+    0 0 36px 8px rgba(196,112,75,0.25),
+    0 0 60px 16px rgba(196,112,75,0.1);
   z-index: 1;
   pointer-events: none;
 }
 
-/* Sidebar nav hover background */
+/* Sidebar nav hover background — lighter top, slightly darker bottom */
 .admin-root [data-sidebar="menu-button"]:not([data-active="true"]):hover {
-  background: rgba(0,0,0,0.035) !important;
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,0.02) 0%,
+      rgba(0,0,0,0.05) 100%
+    ) !important;
 }
 
 /* ── Card hover effect ── */
