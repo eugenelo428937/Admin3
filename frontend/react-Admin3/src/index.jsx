@@ -7,8 +7,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import "@fontsource-variable/dm-sans";
 import "@fontsource/poppins";
-import "@fontsource-variable/inter";
 import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 
 const container = document.getElementById("root");
 const root = createRoot(container);
