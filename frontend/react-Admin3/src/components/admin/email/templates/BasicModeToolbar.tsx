@@ -496,7 +496,7 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                             <SquareIcon className="tw:size-4 tw:mr-2" />
                             Cell
                         </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
+                            <DropdownMenuSubContent style={{ backgroundColor: 'white' }}>
                                 {HIGHLIGHT_VARIANTS.map((h) => (
                                     <DropdownMenuItem key={h.variant} onClick={() => {
                                         const view = editorViewRef.current;
@@ -513,7 +513,7 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                             <Rows3 className="tw:size-4 tw:mr-2" />
                             Row
                         </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
+                            <DropdownMenuSubContent style={{ backgroundColor: 'white' }}>
                                 {HIGHLIGHT_VARIANTS.map((h) => (
                                     <DropdownMenuItem key={h.variant} onClick={() => {
                                         const view = editorViewRef.current;
@@ -530,7 +530,7 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                             <Columns3 className="tw:size-4 tw:mr-2" />
                             Column
                         </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
+                            <DropdownMenuSubContent style={{ backgroundColor: 'white' }}>
                                 {HIGHLIGHT_VARIANTS.map((h) => (
                                     <DropdownMenuItem key={h.variant} onClick={() => {
                                         const view = editorViewRef.current;
