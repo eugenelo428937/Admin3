@@ -53,3 +53,6 @@ export type { AdminPaginationProps } from './AdminPagination';
 
 export { AdminDetailCard, AdminDetailField } from './AdminDetailCard';
 export type { AdminDetailCardProps, AdminDetailFieldProps } from './AdminDetailCard';
+
+export { AdminOutlinedField } from './AdminOutlinedField';
+export type { AdminOutlinedFieldProps } from './AdminOutlinedField';
