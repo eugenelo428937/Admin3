@@ -37,8 +37,10 @@ const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
                     style={{
                         width: '100%',
                         height: '100%',
-                        minHeight: 500,
+                        minHeight: 625,
                         border: 'none',
+                        transform: 'scale(1.0)',
+                        transformOrigin: 'top left',
                     }}
                 />
             </div>

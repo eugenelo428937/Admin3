@@ -9,7 +9,7 @@ export function AdminShell() {
       <AppSidebar />
       <SidebarInset>
         <AdminTopBar />
-        <main className="tw:flex-1 tw:overflow-auto tw:p-4 tw:min-w-0">
+        <main className="tw:flex-1 tw:overflow-auto tw:p-1 tw:min-w-0">
           <Outlet />
         </main>
       </SidebarInset>

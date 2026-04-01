@@ -3,8 +3,10 @@
  * used by the Basic Mode editor.
  *
  * This is a best-effort conversion: it recognises MJML blocks produced
- * by markdownToMjml (headings, paragraphs, tables, dividers) and extracts
- * the text content back into markdown form.
+ * by markdownToMjml (headings, paragraphs, lists, callouts, tables,
+ * dividers) and extracts the text content back into markdown form.
+ *
+ * Classification priority: mj-class → css-class → fallback text extraction.
  */
 export function mjmlToMarkdown(mjml: string): string {
     if (!mjml.trim()) return '';
@@ -46,28 +48,102 @@ function convertMjBlockToMarkdown(block: string): string | null {
         return '---';
     }
 
-    // Classify by css-class attribute
+    // Classify by mj-class first, then fall back to css-class
+    const mjClass = extractAttr(block, 'mj-class');
     const cssClass = extractAttr(block, 'css-class');
+    const cls = mjClass || cssClass || '';
 
-    if (cssClass === 'email-title') {
-        return `# ${extractTextContent(block)}`;
+    // Detect alignment from classes
+    const alignment = extractAlignment(cls);
+
+    // Callout: callout-(info|warning|success|error)
+    const calloutMatch = cls.match(/\bcallout-(info|warning|success|error)\b/);
+    if (calloutMatch) {
+        const variant = calloutMatch[1];
+        const text = extractTextContent(block);
+        return `[!${variant}] ${text}`;
     }
-    if (cssClass === 'email-subtitle') {
-        return `## ${extractTextContent(block)}`;
+
+    // Unordered list
+    if (/\bul\b/.test(cls) && !calloutMatch) {
+        const items = extractListItems(block);
+        return items.map((item) => `- ${item}`).join('\n');
     }
-    if (cssClass === 'email-heading3') {
-        return `### ${extractTextContent(block)}`;
+
+    // Ordered list
+    if (/\bol\b/.test(cls) && !calloutMatch) {
+        const items = extractListItems(block);
+        return items.map((item, i) => `${i + 1}. ${item}`).join('\n');
     }
-    if (cssClass === 'order-items') {
+
+    // Table / order-items
+    if (/\btable\b/.test(cls) || /\border-items\b/.test(cls) || cssClass === 'order-items') {
         return extractTable(block);
     }
-    if (cssClass === 'content-text') {
-        return extractTextContent(block);
+
+    // Headings
+    let md: string | null = null;
+
+    if (/\bemail-title\b/.test(cls)) {
+        md = `# ${extractTextContent(block)}`;
+    } else if (/\bh2\b/.test(cls)) {
+        md = `## ${extractTextContent(block)}`;
+    } else if (/\bh3\b/.test(cls)) {
+        md = `### ${extractTextContent(block)}`;
+    } else if (cssClass === 'email-subtitle') {
+        // Legacy css-class fallback
+        md = `## ${extractTextContent(block)}`;
+    } else if (cssClass === 'email-heading3') {
+        // Legacy css-class fallback
+        md = `### ${extractTextContent(block)}`;
+    } else if (cssClass === 'content-text') {
+        md = extractTextContent(block);
+    } else {
+        // Fallback: try to extract any text content
+        const text = extractTextContent(block);
+        md = text || null;
     }
 
-    // Fallback: try to extract any text content from unknown mj-text blocks
-    const text = extractTextContent(block);
-    return text || null;
+    if (md !== null && alignment) {
+        md = applyAlignmentMarkers(md, alignment);
+    }
+
+    return md;
+}
+
+// --- Alignment ---
+
+function extractAlignment(cls: string): 'center' | 'right' | 'left' | null {
+    if (/\btext-center\b/.test(cls)) return 'center';
+    if (/\btext-right\b/.test(cls)) return 'right';
+    if (/\btext-start\b/.test(cls)) return 'left';
+    return null;
+}
+
+function applyAlignmentMarkers(md: string, alignment: 'center' | 'right' | 'left'): string {
+    switch (alignment) {
+        case 'center':
+            return `>> ${md} <<`;
+        case 'right':
+            return `>>>> ${md}`;
+        case 'left':
+            return `${md} <<<<`;
+        default:
+            return md;
+    }
+}
+
+// --- List Item Extraction ---
+
+function extractListItems(mjBlock: string): string[] {
+    const items: string[] = [];
+    const liRegex = /<li>([\s\S]*?)<\/li>/gi;
+    let match;
+    while ((match = liRegex.exec(mjBlock)) !== null) {
+        const text = reverseInlines(match[1].trim());
+        items.push(text);
+    }
+    return items;
 }
 
 // --- Attribute extraction ---

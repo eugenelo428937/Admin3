@@ -44,7 +44,7 @@ class SendBatchViewTest(TestCase):
         self.assertIn('batch_id', response.data['batch'])
 
     def test_send_batch_derives_requested_by_from_user(self):
-        """requested_by is auto-populated from the authenticated user."""
+        """requested_by is auto-populated with the authenticated user's ID."""
         response = self.client.post(
             '/api/email/batch/send/',
             data={
@@ -56,7 +56,7 @@ class SendBatchViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 201)
         batch = EmailBatch.objects.get(batch_id=response.data['batch']['batch_id'])
-        self.assertEqual(batch.requested_by, 'Batch User')
+        self.assertEqual(batch.requested_by, str(self.user.id))
 
     def test_send_batch_falls_back_to_api_key_name(self):
         """requested_by falls back to api_key.name when no user linked."""
@@ -74,6 +74,60 @@ class SendBatchViewTest(TestCase):
         self.assertEqual(response.status_code, 201)
         batch = EmailBatch.objects.get(batch_id=response.data['batch']['batch_id'])
         self.assertEqual(batch.requested_by, 'Test System')
+
+    def test_send_batch_populates_from_and_reply_to_from_template(self):
+        """Queue items get from_email and reply_to_email from the template."""
+        self.template.from_email = 'sender@acted.com'
+        self.template.reply_to_email = 'reply@acted.com'
+        self.template.save()
+        response = self.client.post(
+            '/api/email/batch/send/',
+            data={
+                'template_id': self.template.id,
+                'items': [{'to_email': 'user@example.com', 'payload': {}}],
+            },
+            format='json',
+            HTTP_X_API_KEY=self.raw_key,
+        )
+        self.assertEqual(response.status_code, 201)
+        qi = EmailQueue.objects.get(
+            queue_id=response.data['batch']['items'][0]['queue_id'],
+        )
+        self.assertEqual(qi.from_email, 'sender@acted.com')
+        self.assertEqual(qi.reply_to_email, 'reply@acted.com')
+
+    def test_send_batch_sets_template_created_by(self):
+        """Template created_by is set to the authenticated user if null."""
+        self.assertIsNone(self.template.created_by)
+        response = self.client.post(
+            '/api/email/batch/send/',
+            data={
+                'template_id': self.template.id,
+                'items': [{'to_email': 'user@example.com', 'payload': {}}],
+            },
+            format='json',
+            HTTP_X_API_KEY=self.raw_key,
+        )
+        self.assertEqual(response.status_code, 201)
+        self.template.refresh_from_db()
+        self.assertEqual(self.template.created_by, self.user)
+
+    def test_send_batch_sets_queue_created_by(self):
+        """Queue items get created_by set to the authenticated user."""
+        response = self.client.post(
+            '/api/email/batch/send/',
+            data={
+                'template_id': self.template.id,
+                'items': [{'to_email': 'user@example.com', 'payload': {}}],
+            },
+            format='json',
+            HTTP_X_API_KEY=self.raw_key,
+        )
+        self.assertEqual(response.status_code, 201)
+        qi = EmailQueue.objects.get(
+            queue_id=response.data['batch']['items'][0]['queue_id'],
+        )
+        self.assertEqual(qi.created_by, self.user)
 
     def test_send_batch_no_auth(self):
         response = self.client.post(

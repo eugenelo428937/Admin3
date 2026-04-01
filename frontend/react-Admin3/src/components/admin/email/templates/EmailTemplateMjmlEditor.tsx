@@ -62,6 +62,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
                 basicSetup,
                 lang,
                 oneDark,
+                EditorView.lineWrapping,
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         changeHandler(update.state.doc.toString());

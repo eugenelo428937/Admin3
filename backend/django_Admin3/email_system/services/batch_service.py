@@ -13,13 +13,18 @@ class EmailBatchService:
 
     TERMINAL_STATUSES = ('sent', 'failed', 'cancelled')
 
-    def send_batch(self, template_id, requested_by, notify_emails, items, api_key, max_items=None):
+    def send_batch(self, template_id, requested_by, notify_emails, items, api_key, user=None, max_items=None):
         """Create a batch of emails and queue them for sending."""
         # Validate template
         try:
             template = EmailTemplate.objects.get(id=template_id, is_active=True)
         except EmailTemplate.DoesNotExist:
             raise ValueError(f'Template with id {template_id} not found or inactive.')
+
+        # Set template created_by if not already set
+        if user and not template.created_by_id:
+            template.created_by = user
+            template.save(update_fields=['created_by'])
 
         # Validate batch size
         if max_items is None:
@@ -73,11 +78,14 @@ class EmailBatchService:
                 queue_item = EmailQueue.objects.create(
                     to_emails=[to_email],
                     cc_emails=cc_email if cc_email else [],
+                    from_email=template.from_email or '',
+                    reply_to_email=template.reply_to_email or '',
                     subject=subject,
                     email_context=payload,
                     template=template,
                     batch=batch,
                     priority=template.default_priority or 'normal',
+                    created_by=user,
                 )
 
                 result_items.append({
