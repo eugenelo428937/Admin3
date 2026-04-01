@@ -234,9 +234,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ── Sidebar active glow bar ──
-   Uses inset box-shadow to create a left accent bar + diffusing glow
-   that stays within the element bounds (avoids overflow clipping). */
+/* ── Sidebar active state ──
+   Gradient background only, no bar. */
 .admin-root [data-sidebar="menu-button"][data-active="true"] {
   background:
     linear-gradient(90deg,
@@ -245,13 +244,33 @@
       transparent 75%
     ),
     rgba(0,0,0,0.03) !important;
-  box-shadow:
-    inset 4px 0 0 0 var(--primary),
-    inset 20px 0 12px -8px var(--accent-glow-tight),
-    inset 36px 0 20px -16px var(--accent-glow-wide) !important;
 }
 
-/* Sidebar nav hover — softer than shadcn default */
+/* ── Sidebar hover glow bar ──
+   Uses ::before on the parent <li> (SidebarMenuItem) which has
+   position:relative and NO overflow:hidden, so the bar renders
+   at the item's left edge with a diffusing glow. */
+.admin-root [data-sidebar="menu-item"] {
+  position: relative;
+}
+
+.admin-root [data-sidebar="menu-item"]:hover::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 4px;
+  bottom: 4px;
+  width: 3.5px;
+  background: var(--primary);
+  border-radius: 2px;
+  box-shadow:
+    0 0 8px var(--accent-glow-tight),
+    0 0 20px var(--accent-glow-wide);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Sidebar nav hover background */
 .admin-root [data-sidebar="menu-button"]:not([data-active="true"]):hover {
   background: rgba(0,0,0,0.035) !important;
 }
