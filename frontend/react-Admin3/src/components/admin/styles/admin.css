@@ -235,8 +235,8 @@
 }
 
 /* ── Sidebar active glow bar ──
-   The shadcn SidebarMenuButton uses data-active="true" for active state.
-   We override its default bg-sidebar-accent with a gradient + glow bar. */
+   Uses inset box-shadow to create a left accent bar + diffusing glow
+   that stays within the element bounds (avoids overflow clipping). */
 .admin-root [data-sidebar="menu-button"][data-active="true"] {
   background:
     linear-gradient(90deg,
@@ -245,21 +245,10 @@
       transparent 75%
     ),
     rgba(0,0,0,0.03) !important;
-  position: relative;
-}
-
-.admin-root [data-sidebar="menu-button"][data-active="true"]::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 3px;
-  bottom: 3px;
-  width: 3.5px;
-  background: var(--primary);
-  border-radius: 0 3px 3px 0;
   box-shadow:
-    0 0 8px var(--accent-glow-tight),
-    0 0 20px var(--accent-glow-wide);
+    inset 3.5px 0 0 0 var(--primary),
+    inset 12px 0 8px -8px var(--accent-glow-tight),
+    inset 24px 0 16px -16px var(--accent-glow-wide) !important;
 }
 
 /* Sidebar nav hover — softer than shadcn default */
