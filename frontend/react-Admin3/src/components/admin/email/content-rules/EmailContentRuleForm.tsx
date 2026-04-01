@@ -39,9 +39,6 @@ const EmailContentRuleForm: React.FC = () => {
         );
     }
 
-    // Map conditionMode to tab index
-    const conditionTabIndex = vm.conditionMode === 'visual' ? 0 : 1;
-
     return (
         <AdminPage>
             <h1 className="tw:mb-6 tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
@@ -123,15 +120,15 @@ const EmailContentRuleForm: React.FC = () => {
                     <h3 className="tw:text-base tw:font-semibold tw:text-admin-fg">Condition</h3>
 
                     <Tabs
-                        value={conditionTabIndex}
-                        onValueChange={(idx) => vm.toggleConditionMode(idx === 0 ? 'visual' : 'json')}
+                        value={vm.conditionMode}
+                        onValueChange={(v) => vm.toggleConditionMode(v as 'visual' | 'json')}
                     >
                         <TabsList>
-                            <TabsTrigger>Visual Builder</TabsTrigger>
-                            <TabsTrigger>JSON</TabsTrigger>
+                            <TabsTrigger value="visual">Visual Builder</TabsTrigger>
+                            <TabsTrigger value="json">JSON</TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value={conditionTabIndex} index={0}>
+                        <TabsContent value="visual">
                             <RuleConditionBuilder
                                 conditionField={vm.formData.condition_field}
                                 conditionOperator={vm.formData.condition_operator}
@@ -141,7 +138,7 @@ const EmailContentRuleForm: React.FC = () => {
                             />
                         </TabsContent>
 
-                        <TabsContent value={conditionTabIndex} index={1}>
+                        <TabsContent value="json">
                             <RuleJsonEditor
                                 value={vm.jsonCondition}
                                 onChange={vm.handleJsonConditionChange}
