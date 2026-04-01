@@ -57,8 +57,8 @@ class BatchLifecycleIntegrationTest(TestCase):
         batch = EmailBatch.objects.get(batch_id=batch_id)
         self.assertEqual(batch.status, 'processing')
         self.assertEqual(batch.queue_items.count(), 2)
-        # requested_by derived from user full name
-        self.assertEqual(batch.requested_by, 'Integration Tester')
+        # requested_by derived from authenticated user's ID
+        self.assertEqual(batch.requested_by, str(self.user.id))
 
         # 3. Verify subjects were rendered from payload
         subjects = list(batch.queue_items.values_list('subject', flat=True))

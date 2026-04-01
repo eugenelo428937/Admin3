@@ -8,9 +8,24 @@ import {
     Heading1,
     Heading2,
     Heading3,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    List,
+    ListOrdered,
+    Info,
+    AlertTriangle,
+    CheckCircle,
+    XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/admin/ui/button';
 import { Separator } from '@/components/admin/ui/separator';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/admin/ui/dropdown-menu';
 import { EditorView } from 'codemirror';
 
 interface BasicModeToolbarProps {
@@ -70,6 +85,23 @@ function insertAtCursor(view: EditorView, text: string): void {
     view.focus();
 }
 
+/** Strip existing alignment markers from current line and wrap with new markers */
+function wrapLineAlignment(view: EditorView, before: string, after: string): void {
+    const { from } = view.state.selection.main;
+    const line = view.state.doc.lineAt(from);
+    const lineText = view.state.sliceDoc(line.from, line.to);
+    // Order matters: strip >>>> before >> to avoid partial matches
+    let clean = lineText
+        .replace(/^>>>>\s*/, '')
+        .replace(/^>>\s*/, '')
+        .replace(/\s*<<<<\s*$/, '')
+        .replace(/\s*<<\s*$/, '')
+        .trim();
+    const insert = `${before}${clean}${after}`;
+    view.dispatch({ changes: { from: line.from, to: line.to, insert } });
+    view.focus();
+}
+
 const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAction; group: string }[] = [
     {
         label: 'Heading 1',
@@ -125,6 +157,36 @@ const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAct
         },
     },
     {
+        label: 'Align Left',
+        icon: <AlignLeft className="tw:size-4" />,
+        group: 'alignment',
+        action: (view) => wrapLineAlignment(view, '', ' <<<<'),
+    },
+    {
+        label: 'Align Center',
+        icon: <AlignCenter className="tw:size-4" />,
+        group: 'alignment',
+        action: (view) => wrapLineAlignment(view, '>> ', ' <<'),
+    },
+    {
+        label: 'Align Right',
+        icon: <AlignRight className="tw:size-4" />,
+        group: 'alignment',
+        action: (view) => wrapLineAlignment(view, '>>>> ', ''),
+    },
+    {
+        label: 'Bullet List',
+        icon: <List className="tw:size-4" />,
+        group: 'lists',
+        action: (view) => insertAtCursor(view, '\n- Item\n- Item\n'),
+    },
+    {
+        label: 'Numbered List',
+        icon: <ListOrdered className="tw:size-4" />,
+        group: 'lists',
+        action: (view) => insertAtCursor(view, '\n1. Item\n2. Item\n'),
+    },
+    {
         label: 'Divider',
         icon: <Minus className="tw:size-4" />,
         group: 'divider',
@@ -140,6 +202,13 @@ const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAct
                 '\n| Column 1 | Column 2 |\n| --- | --- |\n| data | data |\n'
             ),
     },
+];
+
+const CALLOUT_VARIANTS = [
+    { label: 'Info', variant: 'info', icon: <Info className="tw:size-4" /> },
+    { label: 'Warning', variant: 'warning', icon: <AlertTriangle className="tw:size-4" /> },
+    { label: 'Success', variant: 'success', icon: <CheckCircle className="tw:size-4" /> },
+    { label: 'Error', variant: 'error', icon: <XCircle className="tw:size-4" /> },
 ];
 
 const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disabled }) => {
@@ -171,6 +240,37 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                     </React.Fragment>
                 );
             })}
+
+            <Separator orientation="vertical" className="tw:mx-1 tw:h-5" />
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        disabled={disabled}
+                        title="Callout"
+                    >
+                        <Info className="tw:size-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                    {CALLOUT_VARIANTS.map((c) => (
+                        <DropdownMenuItem
+                            key={c.variant}
+                            onClick={() => {
+                                const view = editorViewRef.current;
+                                if (view) {
+                                    insertAtCursor(view, `\n[!${c.variant}] Message here.\n`);
+                                }
+                            }}
+                        >
+                            {c.icon}
+                            <span className="tw:ml-2">{c.label}</span>
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 };

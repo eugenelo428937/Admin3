@@ -91,13 +91,14 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='mjml-shell')
     def mjml_shell(self, request):
-        """Return the assembled MJML shell (master + banner + styles + footer)
+        """Return the assembled MJML shell derived from the master_template
         with a <!-- CONTENT_PLACEHOLDER --> marker where content goes.
         Frontend caches this and inserts user content for instant preview."""
+        import re
         from email_system.models import EmailMasterComponent
 
         parts = {}
-        for part_name in ('banner', 'styles', 'footer'):
+        for part_name in ('master_template', 'banner', 'styles', 'footer'):
             component = EmailMasterComponent.objects.filter(
                 name=part_name, is_active=True
             ).first()
@@ -108,16 +109,19 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
                 )
             parts[part_name] = component.mjml_content
 
+        # Extract <mj-attributes>...</mj-attributes> from master_template
+        attr_match = re.search(
+            r'<mj-attributes>(.*?)</mj-attributes>',
+            parts['master_template'],
+            re.DOTALL,
+        )
+        attributes_block = attr_match.group(1) if attr_match else ''
+
         shell = (
             '<mjml>\n'
             '  <mj-head>\n'
             '    <mj-title>Email Preview</mj-title>\n'
-            '    <mj-attributes>\n'
-            '      <mj-all font-family="\'Poppins\', Helvetica, Arial, sans-serif" />\n'
-            '      <mj-text font-size="16px" line-height="20px" color="#555555" />\n'
-            '      <mj-section padding="0" />\n'
-            '      <mj-column padding="0" />\n'
-            '    </mj-attributes>\n'
+            f'    <mj-attributes>{attributes_block}</mj-attributes>\n'
             f'    {parts["styles"]}\n'
             '  </mj-head>\n'
             '  <mj-body background-color="#f3f3f3" width="600px">\n'
@@ -139,8 +143,16 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.closing_salutation:
             sal = instance.closing_salutation
+            lines = f'{sal.sign_off_text},<br/>{sal.display_name}'
+            if sal.job_title:
+                lines += f'<br/>{sal.job_title}'
+            signature_mjml = (
+                '<mj-section><mj-column>'
+                f'<mj-text padding-top="24px" padding-bottom="24px" align="left">{lines}</mj-text>'
+                '</mj-column></mj-section>'
+            )
             return Response({
-                'signature_mjml': f'{sal.sign_off_text},<br/>{sal.display_name}',
+                'signature_mjml': signature_mjml,
                 'sign_off_text': sal.sign_off_text,
                 'display_name': sal.display_name,
                 'job_title': sal.job_title,

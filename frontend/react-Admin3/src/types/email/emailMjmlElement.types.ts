@@ -9,7 +9,13 @@ export interface EmailMjmlElement {
         | 'bold'
         | 'italic'
         | 'link'
-        | 'horizontal_divider';
+        | 'horizontal_divider'
+        | 'unordered_list'
+        | 'ordered_list'
+        | 'callout_info'
+        | 'callout_warning'
+        | 'callout_success'
+        | 'callout_error';
     display_name: string;
     description: string;
     mjml_template: string;

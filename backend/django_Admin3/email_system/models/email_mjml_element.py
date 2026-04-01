@@ -17,6 +17,12 @@ class EmailMjmlElement(models.Model):
         ('italic', 'Italic'),
         ('link', 'Link'),
         ('horizontal_divider', 'Horizontal Divider'),
+        ('unordered_list', 'Unordered List'),
+        ('ordered_list', 'Ordered List'),
+        ('callout_info', 'Callout (Info)'),
+        ('callout_warning', 'Callout (Warning)'),
+        ('callout_success', 'Callout (Success)'),
+        ('callout_error', 'Callout (Error)'),
     ]
 
     element_type = models.CharField(

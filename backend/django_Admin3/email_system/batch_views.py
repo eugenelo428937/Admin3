@@ -25,9 +25,9 @@ def send_batch(request):
     api_key = request.auth
     user = api_key.user
 
-    # Derive requested_by from the authenticated user
+    # Use authenticated user's ID for requested_by
     if user:
-        requested_by = user.get_full_name() or user.username
+        requested_by = str(user.id)
     else:
         requested_by = api_key.name
 
@@ -38,6 +38,7 @@ def send_batch(request):
             notify_emails=data.get('notify_emails', []),
             items=data['items'],
             api_key=api_key,
+            user=user,
         )
     except ValueError as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

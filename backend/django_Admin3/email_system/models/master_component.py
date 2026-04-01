@@ -16,6 +16,7 @@ class EmailMasterComponent(models.Model):
         ('banner', 'Banner'),
         ('footer', 'Footer'),
         ('styles', 'Styles'),
+        ('attributes', 'Attributes'),
         ('closing', 'Closing'),
         ('dev_mode_banner', 'Dev Mode Banner'),
     ]
