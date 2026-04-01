@@ -12,6 +12,7 @@ interface AdminFormLayoutProps {
   error?: string | null;
   submitLabel?: string;
   cancelLabel?: string;
+  variant?: 'default' | 'two-column';
   children: React.ReactNode;
   className?: string;
 }
@@ -25,6 +26,7 @@ function AdminFormLayout({
   error,
   submitLabel = 'Save',
   cancelLabel = 'Cancel',
+  variant = 'default',
   children,
   className,
 }: AdminFormLayoutProps) {
@@ -43,7 +45,20 @@ function AdminFormLayout({
 
       <AdminErrorAlert message={error} />
 
-      <div className="tw:space-y-4">{children}</div>
+      {variant === 'two-column' ? (
+        <div className="tw:space-y-6">
+          {React.Children.map(children, (child, index) => (
+            <>
+              {index > 0 && (
+                <div className="tw:h-px tw:bg-[var(--border)]" />
+              )}
+              {child}
+            </>
+          ))}
+        </div>
+      ) : (
+        <div className="tw:space-y-4">{children}</div>
+      )}
 
       <div className="tw:flex tw:items-center tw:justify-end tw:gap-2 tw:border-t tw:border-admin-border tw:pt-4">
         <Button
