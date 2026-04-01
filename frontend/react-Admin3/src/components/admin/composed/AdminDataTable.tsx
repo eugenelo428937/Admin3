@@ -187,7 +187,7 @@ function AdminDataTable<T extends Record<string, any>>({
 
   return (
     <div className={cn('tw:space-y-4', className)}>
-      <div className="tw:rounded-md tw:border tw:border-admin-border">
+      <div className="tw:rounded-[10px] tw:bg-card tw:transition-shadow tw:duration-200 hover:tw:shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

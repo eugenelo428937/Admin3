@@ -11,7 +11,7 @@ function AdminDetailCard({ children, className }: AdminDetailCardProps) {
   return (
     <div
       className={cn(
-        'tw:rounded-md tw:border tw:border-admin-border tw:bg-admin-bg tw:p-6',
+        'tw:rounded-[10px] tw:bg-card tw:p-6 tw:transition-shadow tw:duration-200 hover:tw:shadow-[0_2px_12px_rgba(0,0,0,0.06)]',
         className
       )}
     >

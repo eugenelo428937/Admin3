@@ -40,41 +40,49 @@
 
 }
 
-/* ── Admin root variables (tweakcn oklch palette) ── */
+/* ── Admin root variables (design system v2 — monochromatic stone) ── */
 .admin-root {
-  /* Reset text-align inherited from MUI Container (which centers content) */
   text-align: left;
 
-  /* ── shadcn standard tokens (used by shadcn/ui primitives) ── */
-  --background: oklch(0.9383 0.0042 236.4993);
-  --foreground: oklch(0.3211 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.3211 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.3211 0 0);
-  --primary: oklch(0.6397 0.1720 36.4421);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9670 0.0029 264.5419);
-  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
-  --muted: oklch(0.9846 0.0017 247.8389);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.9119 0.0222 243.8174);
-  --accent-foreground: oklch(0.3791 0.1378 265.5222);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9022 0.0052 247.8822);
-  --input: oklch(0.9700 0.0029 264.5420);
-  --ring: oklch(0.6397 0.1720 36.4421);
-  --radius: 0.375rem;
+  /* ── Surface hierarchy ── */
+  --background: oklch(0.955 0.003 90);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1.0 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1.0 0 0);
+  --popover-foreground: oklch(0.145 0 0);
 
-  /* ── Sidebar tokens (used by shadcn sidebar primitive) ── */
-  --sidebar: oklch(0.9030 0.0046 258.3257);
-  --sidebar-foreground: oklch(0.3211 0 0);
+  /* ── Interactive (accent orange — unchanged) ── */
+  --primary: oklch(0.6397 0.1720 36.4421);
+  --primary-foreground: oklch(1.0 0 0);
+  --primary-hover: oklch(0.58 0.16 36);
+
+  /* ── Secondary / Muted ── */
+  --secondary: oklch(0.965 0.002 90);
+  --secondary-foreground: oklch(0.663 0 0);
+  --muted: oklch(0.975 0.002 90);
+  --muted-foreground: oklch(0.467 0 0);
+  --accent: oklch(0.945 0.003 90);
+  --accent-foreground: oklch(0.145 0 0);
+
+  /* ── Destructive ── */
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0 0 0);
+
+  /* ── Borders (near-invisible) ── */
+  --border: rgba(0,0,0,0.05);
+  --input: rgba(0,0,0,0.05);
+  --ring: rgba(0,0,0,0.2);
+  --radius: 0.5rem;
+
+  /* ── Sidebar tokens ── */
+  --sidebar: oklch(0.977 0.002 90);
+  --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.6397 0.1720 36.4421);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9119 0.0222 243.8174);
-  --sidebar-accent-foreground: oklch(0.3791 0.1378 265.5222);
-  --sidebar-border: oklch(0.9276 0.0058 264.5313);
+  --sidebar-primary-foreground: oklch(1.0 0 0);
+  --sidebar-accent: oklch(0.945 0.003 90);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: rgba(0,0,0,0.05);
   --sidebar-ring: oklch(0.6397 0.1720 36.4421);
 
   /* ── Chart tokens ── */
@@ -84,7 +92,23 @@
   --chart-4: oklch(0.5016 0.0849 259.4902);
   --chart-5: oklch(0.4241 0.0952 264.0306);
 
-  /* ── Admin-prefixed aliases (used by existing admin components via @theme) ── */
+  /* ── Accent glow (sidebar active bar) ── */
+  --accent-glow-tight: rgba(196,112,75,0.5);
+  --accent-glow-wide: rgba(196,112,75,0.2);
+  --accent-gradient-start: rgba(196,112,75,0.12);
+  --accent-gradient-mid: rgba(196,112,75,0.04);
+
+  /* ── Status colors ── */
+  --green: #3d7c47;
+  --green-bg: rgba(61,124,71,0.07);
+  --amber: #9a7b2e;
+  --amber-bg: rgba(154,123,46,0.07);
+  --blue: #3a6ca8;
+  --blue-bg: rgba(58,108,168,0.07);
+  --red: #b44437;
+  --red-bg: rgba(180,68,55,0.07);
+
+  /* ── Admin-prefixed aliases ── */
   --admin-bg:              var(--background);
   --admin-bg-muted:        var(--muted);
   --admin-bg-subtle:       var(--accent);
@@ -92,15 +116,15 @@
   --admin-fg-muted:        var(--muted-foreground);
   --admin-fg-subtle:       var(--secondary-foreground);
   --admin-border:          var(--border);
-  --admin-border-strong:   oklch(0.8500 0.0060 247.8822);
+  --admin-border-strong:   rgba(0,0,0,0.1);
   --admin-primary:         var(--primary);
   --admin-primary-fg:      var(--primary-foreground);
   --admin-destructive:     var(--destructive);
   --admin-destructive-fg:  var(--destructive-foreground);
   --admin-success:         oklch(0.6500 0.1700 145.0000);
-  --admin-success-fg:      oklch(1.0000 0 0);
+  --admin-success-fg:      oklch(1.0 0 0);
   --admin-warning:         oklch(0.7500 0.1500 65.0000);
-  --admin-warning-fg:      oklch(1.0000 0 0);
+  --admin-warning-fg:      oklch(1.0 0 0);
   --admin-ring:            var(--ring);
   --admin-sidebar-bg:      var(--sidebar);
   --admin-sidebar-fg:      var(--sidebar-foreground);
@@ -109,8 +133,8 @@
   --admin-sidebar-width:   240px;
 
   /* ── Typography ── */
-  --admin-font-sans:       'Inter', system-ui, sans-serif;
-  --admin-font-mono:       'JetBrains Mono', monospace;
+  --admin-font-sans:       'Geist Variable', 'Geist', system-ui, sans-serif;
+  --admin-font-mono:       'Geist Mono Variable', 'Geist Mono', monospace;
 }
 
 /* ── Dark mode ── */
@@ -210,12 +234,75 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ── Sidebar active state ──
+   Gradient background only, no bar. */
+.admin-root [data-sidebar="menu-button"][data-active="true"] {
+  background:
+    linear-gradient(90deg,
+      var(--accent-gradient-start) 0%,
+      var(--accent-gradient-mid) 40%,
+      transparent 75%
+    ),
+    rgba(0,0,0,0.03) !important;
+}
+
+/* ── Sidebar hover glow bar ──
+   Uses ::before on the parent <li> (SidebarMenuItem) which has
+   position:relative and NO overflow:hidden, so the bar renders
+   at the item's left edge with a diffusing glow. */
+.admin-root [data-sidebar="menu-item"] {
+  position: relative;
+}
+
+/* Allow horizontal glow to bleed past sidebar content bounds */
+.admin-root [data-sidebar="content"] {
+  overflow-x: visible !important;
+  overflow-y: auto;
+}
+
+.admin-root [data-sidebar="menu-item"]:hover::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+  box-shadow:
+    0 0 6px 2px rgba(196,112,75,0.6),
+    0 0 16px 4px rgba(196,112,75,0.4),
+    0 0 36px 8px rgba(196,112,75,0.25),
+    0 0 60px 16px rgba(196,112,75,0.1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Sidebar nav hover background — lighter top, slightly darker bottom */
+.admin-root [data-sidebar="menu-button"]:not([data-active="true"]):hover {
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,0.02) 0%,
+      rgba(0,0,0,0.05) 100%
+    ) !important;
+}
+
+/* ── Card hover effect ── */
+.admin-root .admin-card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-root .admin-card-hover:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
 /* ── Radix portal overrides ──
    Radix UI portals render at <body> level, outside .admin-root,
    so they don't inherit the admin CSS variables. Force explicit
    background/foreground on dropdown content rendered in portals. */
 [data-slot="dropdown-menu-content"] {
-  background-color: oklch(1.0000 0 0) !important;
-  color: oklch(0.3211 0 0) !important;
-  border-color: oklch(0.9022 0.0052 247.8822);
+  background-color: oklch(1.0 0 0) !important;
+  color: oklch(0.145 0 0) !important;
+  border-color: rgba(0,0,0,0.05);
 }

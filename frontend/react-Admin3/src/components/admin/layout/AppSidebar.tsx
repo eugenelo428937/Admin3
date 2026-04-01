@@ -23,10 +23,12 @@ import {
   SlidersHorizontal,
   Mail,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -40,7 +42,7 @@ const navGroups = [
   {
     label: 'Overview',
     items: [
-      { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     ],
   },
   {
@@ -95,9 +97,16 @@ const navGroups = [
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
+  const { user } = useAuth() as any;
+  const initials = user
+    ? `${(user.first_name || '')[0] || ''}${(user.last_name || '')[0] || ''}`.toUpperCase() || 'A'
+    : 'A';
+  const displayName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Admin' : 'Admin';
 
   const isActive = (path: string): boolean => {
-    if (path === '/') return location.pathname === '/';
+    if (path === '/admin/dashboard') {
+      return location.pathname === '/' || location.pathname === '/admin/dashboard';
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -107,7 +116,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/">
+              <Link to="/admin/dashboard">
                 <div className="tw:flex tw:aspect-square tw:size-8 tw:items-center tw:justify-center tw:rounded-lg tw:bg-sidebar-primary tw:text-sidebar-primary-foreground tw:font-bold tw:text-sm">
                   A
                 </div>
@@ -146,6 +155,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
+
+      <SidebarFooter>
+        <div className="tw:flex tw:items-center tw:gap-2.5 tw:px-2 tw:py-1">
+          <div className="tw:flex tw:size-7 tw:items-center tw:justify-center tw:rounded-full tw:bg-[rgba(0,0,0,0.06)] tw:text-[10px] tw:font-semibold tw:text-muted-foreground">
+            {initials}
+          </div>
+          <div className="tw:flex tw:flex-col tw:leading-none tw:group-data-[collapsible=icon]:hidden">
+            <span className="tw:text-xs tw:font-medium">{displayName}</span>
+            <span className="tw:text-[10px] tw:text-muted-foreground">Admin</span>
+          </div>
+        </div>
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
