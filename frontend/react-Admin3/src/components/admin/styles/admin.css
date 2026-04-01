@@ -254,18 +254,25 @@
   position: relative;
 }
 
+/* Allow horizontal glow to bleed past sidebar content bounds */
+.admin-root [data-sidebar="content"] {
+  overflow-x: visible !important;
+  overflow-y: auto;
+}
+
 .admin-root [data-sidebar="menu-item"]:hover::before {
   content: '';
   position: absolute;
-  left: -2px;
+  left: -8px;
   top: 4px;
   bottom: 4px;
-  width: 3.5px;
+  width: 3px;
   background: var(--primary);
-  border-radius: 2px;
+  border-radius: 0 2px 2px 0;
   box-shadow:
-    0 0 8px var(--accent-glow-tight),
-    0 0 20px var(--accent-glow-wide);
+    0 0 10px var(--accent-glow-tight),
+    0 0 24px var(--accent-glow-tight),
+    0 0 40px var(--accent-glow-wide);
   z-index: 1;
   pointer-events: none;
 }
