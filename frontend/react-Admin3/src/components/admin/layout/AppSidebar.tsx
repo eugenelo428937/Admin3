@@ -42,7 +42,7 @@ const navGroups = [
   {
     label: 'Overview',
     items: [
-      { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     ],
   },
   {
@@ -104,7 +104,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const displayName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Admin' : 'Admin';
 
   const isActive = (path: string): boolean => {
-    if (path === '/') return location.pathname === '/';
+    if (path === '/admin/dashboard') {
+      return location.pathname === '/' || location.pathname === '/admin/dashboard';
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -114,7 +116,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/">
+              <Link to="/admin/dashboard">
                 <div className="tw:flex tw:aspect-square tw:size-8 tw:items-center tw:justify-center tw:rounded-lg tw:bg-sidebar-primary tw:text-sidebar-primary-foreground tw:font-bold tw:text-sm">
                   A
                 </div>
