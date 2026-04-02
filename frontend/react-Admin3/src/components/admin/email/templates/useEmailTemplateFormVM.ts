@@ -3,18 +3,20 @@ import { useNavigate, useParams } from 'react-router-dom';
 import emailService from '../../../../services/emailService';
 import type { EmailTemplate, ClosingSalutationList } from '../../../../types/email';
 
+export type FormTab = 'general' | 'editor' | 'attachments' | 'content-rules';
+
 export interface EmailTemplateFormVM {
     formData: Partial<EmailTemplate>;
     salutations: ClosingSalutationList[];
     loading: boolean;
     error: string | null;
     isSubmitting: boolean;
-    activeTab: number;
+    activeTab: FormTab;
     isEditMode: boolean;
     fetchTemplate: () => Promise<void>;
     handleChange: (field: keyof EmailTemplate, value: any) => void;
     handleSubmit: () => Promise<void>;
-    setActiveTab: (tab: number) => void;
+    setActiveTab: (tab: FormTab) => void;
 }
 
 const DEFAULT_FORM_DATA: Partial<EmailTemplate> = {
@@ -42,7 +44,7 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [activeTab, setActiveTab] = useState<number>(0);
+    const [activeTab, setActiveTab] = useState<FormTab>('general');
     const [salutations, setSalutations] = useState<ClosingSalutationList[]>([]);
 
     const fetchTemplate = useCallback(async () => {

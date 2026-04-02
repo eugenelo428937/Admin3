@@ -2,8 +2,8 @@ import * as React from 'react';
 import { cn } from '@/components/admin/styles/cn';
 
 interface TabsProps {
-  value: number;
-  onValueChange: (value: number) => void;
+  value: string;
+  onValueChange: (value: string) => void;
   children: React.ReactNode;
   className?: string;
 }
@@ -27,8 +27,8 @@ function Tabs({ value, onValueChange, children, className }: TabsProps) {
 interface TabsListProps {
   children: React.ReactNode;
   className?: string;
-  _value?: number;
-  _onValueChange?: (value: number) => void;
+  _value?: string;
+  _onValueChange?: (value: string) => void;
 }
 
 function TabsList({ children, className, _value, _onValueChange }: TabsListProps) {
@@ -41,12 +41,12 @@ function TabsList({ children, className, _value, _onValueChange }: TabsListProps
         className,
       )}
     >
-      {React.Children.map(children, (child, index) => {
+      {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
+          const triggerValue = (child.props as any).value;
           return React.cloneElement(child as React.ReactElement<any>, {
-            _index: index,
-            _selected: _value === index,
-            _onSelect: () => _onValueChange?.(index),
+            _selected: _value === triggerValue,
+            _onSelect: () => _onValueChange?.(triggerValue),
           });
         }
         return child;
@@ -57,9 +57,9 @@ function TabsList({ children, className, _value, _onValueChange }: TabsListProps
 
 interface TabsTriggerProps {
   children: React.ReactNode;
+  value: string;
   className?: string;
   disabled?: boolean;
-  _index?: number;
   _selected?: boolean;
   _onSelect?: () => void;
 }
@@ -95,13 +95,13 @@ function TabsTrigger({
 
 interface TabsContentProps {
   children: React.ReactNode;
-  value: number;
-  index: number;
+  value: string;
   className?: string;
+  _value?: string;
 }
 
-function TabsContent({ children, value, index, className }: TabsContentProps) {
-  if (value !== index) return null;
+function TabsContent({ children, value, className, _value }: TabsContentProps) {
+  if (_value !== value) return null;
   return (
     <div
       data-slot="tabs-content"
