@@ -47,9 +47,9 @@
   /* ── Surface hierarchy ── */
   --background: oklch(0.955 0.003 90);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1.0 0 0);
+  --card: oklch(0.985 0.002 90);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1.0 0 0);
+  --popover: oklch(0.985 0.002 90);
   --popover-foreground: oklch(0.145 0 0);
 
   /* ── Interactive (accent orange — unchanged) ── */
@@ -69,9 +69,9 @@
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1.0 0 0);
 
-  /* ── Borders (near-invisible) ── */
-  --border: rgba(0,0,0,0.05);
-  --input: rgba(0,0,0,0.05);
+  /* ── Borders ── */
+  --border: rgba(0,0,0,0.10);
+  --input: rgba(0,0,0,0.10);
   --ring: rgba(0,0,0,0.2);
   --radius: 0.5rem;
 
@@ -301,8 +301,9 @@
    Radix UI portals render at <body> level, outside .admin-root,
    so they don't inherit the admin CSS variables. Force explicit
    background/foreground on dropdown content rendered in portals. */
-[data-slot="dropdown-menu-content"] {
-  background-color: oklch(1.0 0 0) !important;
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  background-color: oklch(0.985 0.002 90) !important;
   color: oklch(0.145 0 0) !important;
-  border-color: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.10);
 }

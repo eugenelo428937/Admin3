@@ -43,16 +43,14 @@ const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
     { value: 'urgent', label: 'Urgent' },
 ];
 
-/** Floating label wrapper for non-input children (selects, etc.) */
+/** Floating label positioned over a child component's own border (e.g. SelectTrigger) */
 function OutlinedLabel({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="tw:relative tw:mb-[18px] last:tw:mb-0">
-            <div className="tw:relative tw:rounded-lg tw:border-[1.5px] tw:border-[var(--border)] tw:px-1 tw:py-1 tw:transition-[border-color] tw:duration-200">
-                {children}
-                <label className="tw:absolute tw:left-[11px] tw:-top-[7px] tw:bg-card tw:px-1 tw:text-[10.5px] tw:font-medium tw:text-muted-foreground tw:z-[1]">
-                    {label}
-                </label>
-            </div>
+            {children}
+            <label className="tw:absolute tw:left-[11px] tw:-top-[7px] tw:bg-[var(--card)] tw:px-1 tw:text-[10.5px] tw:font-medium tw:text-muted-foreground tw:z-[1] tw:pointer-events-none">
+                {label}
+            </label>
         </div>
     );
 }
@@ -89,115 +87,113 @@ const EmailTemplateForm: React.FC = () => {
 
             <Tabs value={vm.activeTab} onValueChange={(v) => vm.setActiveTab(v as any)}>
                 <TabsList>
-                    <TabsTrigger value="editor">Editor</TabsTrigger>
+                    <TabsTrigger value="general">General</TabsTrigger>
+                    <TabsTrigger value="editor">MJML Editor</TabsTrigger>
                     <TabsTrigger value="attachments">Attachments</TabsTrigger>
                     <TabsTrigger value="content-rules">Content Rules</TabsTrigger>
                 </TabsList>
 
-                {/* Editor Tab — Combined General + MJML Editor */}
-                <TabsContent value="editor">
-                    <div className="tw:space-y-8">
-                        {/* General Section */}
-                        <AdminFormSection label="General" description="Template metadata and delivery settings">
-                            <div className="tw:space-y-1">
-                                {/* Row 1: Display Name + Active */}
-                                <div className="tw:flex tw:items-start tw:gap-4">
-                                    <div className="tw:flex-1">
-                                        <AdminOutlinedField label="Display Name" required>
-                                            <Input
-                                                value={vm.formData.display_name || ''}
-                                                onChange={(e) => {
-                                                    vm.handleChange('display_name', e.target.value);
-                                                    vm.handleChange('name', e.target.value.replace(/\s+/g, '_').toLowerCase());
-                                                }}
-                                            />
-                                        </AdminOutlinedField>
-                                    </div>
-                                    <div className="tw:pt-1">
-                                        <AdminToggleField
-                                            label="Active"
-                                            checked={vm.formData.is_active ?? true}
-                                            onCheckedChange={(checked) => vm.handleChange('is_active', checked)}
+                {/* General Tab */}
+                <TabsContent value="general">
+                    <AdminFormSection label="General" description="Template metadata and delivery settings">
+                        <div className="tw:space-y-1">
+                            {/* Row 1: Display Name (half width) + Active */}
+                            <div className="tw:flex tw:items-start tw:gap-4">
+                                <div className="tw:w-1/2">
+                                    <AdminOutlinedField label="Display Name" required>
+                                        <Input
+                                            value={vm.formData.display_name || ''}
+                                            onChange={(e) => {
+                                                vm.handleChange('display_name', e.target.value);
+                                                vm.handleChange('name', e.target.value.replace(/\s+/g, '_').toLowerCase());
+                                            }}
                                         />
-                                    </div>
+                                    </AdminOutlinedField>
                                 </div>
-
-                                {/* Row 2: Template Type + Default Priority */}
-                                <div className="tw:flex tw:gap-4">
-                                    <div className="tw:flex-1">
-                                        <OutlinedLabel label="Template Type">
-                                            <AdminSelect
-                                                options={TEMPLATE_TYPE_CHOICES.map(c => ({ value: c.value, label: c.label }))}
-                                                value={vm.formData.template_type || 'custom'}
-                                                onChange={(v) => vm.handleChange('template_type', v)}
-                                            />
-                                        </OutlinedLabel>
-                                    </div>
-                                    <div className="tw:flex-1">
-                                        <OutlinedLabel label="Default Priority">
-                                            <AdminSelect
-                                                options={PRIORITY_CHOICES.map(c => ({ value: c.value, label: c.label }))}
-                                                value={vm.formData.default_priority || 'normal'}
-                                                onChange={(v) => vm.handleChange('default_priority', v)}
-                                            />
-                                        </OutlinedLabel>
-                                    </div>
-                                </div>
-
-                                {/* Row 3: From + Reply-To */}
-                                <div className="tw:flex tw:gap-4">
-                                    <div className="tw:flex-1">
-                                        <AdminOutlinedField label="From">
-                                            <Input
-                                                type="email"
-                                                value={vm.formData.from_email || ''}
-                                                onChange={(e) => vm.handleChange('from_email', e.target.value)}
-                                            />
-                                        </AdminOutlinedField>
-                                    </div>
-                                    <div className="tw:flex-1">
-                                        <AdminOutlinedField label="Reply-To">
-                                            <Input
-                                                type="email"
-                                                value={vm.formData.reply_to_email || ''}
-                                                onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
-                                            />
-                                        </AdminOutlinedField>
-                                    </div>
-                                </div>
-
-                                {/* Row 4: Closing Salutation */}
-                                <OutlinedLabel label="Closing Salutation">
-                                    <AdminSelect
-                                        options={[
-                                            { value: '__none__', label: 'None' },
-                                            ...vm.salutations.map((sal) => ({
-                                                value: String(sal.id),
-                                                label: `${sal.display_name}${sal.job_title ? ` (${sal.job_title})` : ''} — "${sal.sign_off_text}"`,
-                                            })),
-                                        ]}
-                                        value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : '__none__'}
-                                        onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
+                                <div className="tw:pt-1">
+                                    <AdminToggleField
+                                        label="Active"
+                                        checked={vm.formData.is_active ?? true}
+                                        onCheckedChange={(checked) => vm.handleChange('is_active', checked)}
                                     />
-                                </OutlinedLabel>
-                            </div>
-                        </AdminFormSection>
-
-                        {/* Editor Section */}
-                        <AdminFormSection label="Editor" description="MJML / Rich text editor with live preview">
-                            {vm.isEditMode && vm.formData.id ? (
-                                <EmailTemplateMjmlEditor
-                                    templateId={vm.formData.id}
-                                    initialContent={vm.formData.mjml_content || ''}
-                                    initialBasicModeContent={vm.formData.basic_mode_content || ''}
-                                />
-                            ) : (
-                                <div className="tw:rounded-lg tw:bg-[var(--muted)] tw:p-4 tw:text-sm tw:text-muted-foreground">
-                                    Save the template first to enable the MJML editor.
                                 </div>
-                            )}
-                        </AdminFormSection>
-                    </div>
+                            </div>
+
+                            {/* Row 2: Template Type + Default Priority */}
+                            <div className="tw:flex tw:gap-4">
+                                <div className="tw:flex-1">
+                                    <OutlinedLabel label="Template Type">
+                                        <AdminSelect
+                                            options={TEMPLATE_TYPE_CHOICES.map(c => ({ value: c.value, label: c.label }))}
+                                            value={vm.formData.template_type || 'custom'}
+                                            onChange={(v) => vm.handleChange('template_type', v)}
+                                        />
+                                    </OutlinedLabel>
+                                </div>
+                                <div className="tw:flex-1">
+                                    <OutlinedLabel label="Default Priority">
+                                        <AdminSelect
+                                            options={PRIORITY_CHOICES.map(c => ({ value: c.value, label: c.label }))}
+                                            value={vm.formData.default_priority || 'normal'}
+                                            onChange={(v) => vm.handleChange('default_priority', v)}
+                                        />
+                                    </OutlinedLabel>
+                                </div>
+                            </div>
+
+                            {/* Row 3: From + Reply-To */}
+                            <div className="tw:flex tw:gap-4">
+                                <div className="tw:flex-1">
+                                    <AdminOutlinedField label="From">
+                                        <Input
+                                            type="email"
+                                            value={vm.formData.from_email || ''}
+                                            onChange={(e) => vm.handleChange('from_email', e.target.value)}
+                                        />
+                                    </AdminOutlinedField>
+                                </div>
+                                <div className="tw:flex-1">
+                                    <AdminOutlinedField label="Reply-To">
+                                        <Input
+                                            type="email"
+                                            value={vm.formData.reply_to_email || ''}
+                                            onChange={(e) => vm.handleChange('reply_to_email', e.target.value)}
+                                        />
+                                    </AdminOutlinedField>
+                                </div>
+                            </div>
+
+                            {/* Row 4: Closing Salutation */}
+                            <OutlinedLabel label="Closing Salutation">
+                                <AdminSelect
+                                    options={[
+                                        { value: '__none__', label: 'None' },
+                                        ...vm.salutations.map((sal) => ({
+                                            value: String(sal.id),
+                                            label: `${sal.display_name}${sal.job_title ? ` (${sal.job_title})` : ''} — "${sal.sign_off_text}"`,
+                                        })),
+                                    ]}
+                                    value={vm.formData.closing_salutation != null ? String(vm.formData.closing_salutation) : '__none__'}
+                                    onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
+                                />
+                            </OutlinedLabel>
+                        </div>
+                    </AdminFormSection>
+                </TabsContent>
+
+                {/* MJML Editor Tab */}
+                <TabsContent value="editor">
+                    {vm.isEditMode && vm.formData.id ? (
+                        <EmailTemplateMjmlEditor
+                            templateId={vm.formData.id}
+                            initialContent={vm.formData.mjml_content || ''}
+                            initialBasicModeContent={vm.formData.basic_mode_content || ''}
+                        />
+                    ) : (
+                        <div className="tw:rounded-lg tw:bg-[var(--muted)] tw:p-4 tw:text-sm tw:text-muted-foreground">
+                            Save the template first to enable the MJML editor.
+                        </div>
+                    )}
                 </TabsContent>
 
                 {/* Attachments Tab */}
