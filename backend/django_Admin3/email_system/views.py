@@ -19,7 +19,7 @@ from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
     EmailAttachmentSerializer, EmailTemplateAttachmentSerializer,
     EmailMasterComponentSerializer,
-    EmailQueueSerializer, EmailQueueDuplicateInputSerializer,
+    EmailQueueSerializer, EmailQueueListSerializer, EmailQueueDuplicateInputSerializer,
     EmailContentPlaceholderSerializer, EmailContentRuleSerializer,
     EmailTemplateContentRuleSerializer,
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
@@ -64,8 +64,26 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
             return EmailTemplateListSerializer
         return EmailTemplateSerializer
 
+    # Fields whose changes warrant a new template version
+    _VERSIONED_FIELDS = {'mjml_content', 'basic_mode_content', 'subject_template', 'closing_salutation'}
+
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        instance = serializer.save(created_by=self.request.user)
+        instance.create_version(user=self.request.user, change_note='Initial version')
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        # Detect content changes before saving
+        changed = any(
+            field in serializer.validated_data
+            and getattr(instance, field if field != 'closing_salutation' else 'closing_salutation_id')
+            != serializer.validated_data[field]
+            for field in self._VERSIONED_FIELDS
+            if field in serializer.validated_data
+        )
+        instance = serializer.save()
+        if changed:
+            instance.create_version(user=self.request.user)
 
     @action(detail=True, methods=['post'])
     def preview(self, request, pk=None):
@@ -222,6 +240,11 @@ class EmailQueueViewSet(
     serializer_class = EmailQueueSerializer
     permission_classes = [IsSuperUser]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return EmailQueueListSerializer
+        return EmailQueueSerializer
+
     def get_queryset(self):
         qs = super().get_queryset()
         status_filter = self.request.query_params.get('status')
@@ -264,7 +287,7 @@ class EmailQueueViewSet(
 
     @action(detail=True, methods=['post'])
     def resend(self, request, pk=None):
-        """Reset a queue item so it will be processed again."""
+        """Reset a queue item so it will be picked up by the worker."""
         item = self.get_object()
         item.status = 'pending'
         item.scheduled_at = timezone.now()
@@ -277,6 +300,37 @@ class EmailQueueViewSet(
 
         serializer = self.get_serializer(item)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='view-email')
+    def view_email(self, request, pk=None):
+        """Render the email as it was sent, using the versioned template + stored context."""
+        item = self.get_object()
+
+        # If we have a snapshot already, return it directly
+        if item.html_content:
+            return Response({'html': item.html_content})
+
+        # Render on-the-fly from the versioned template
+        if not item.template_version:
+            return Response(
+                {'detail': 'No template version recorded for this queue item.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            from email_system.services.email_service import EmailService
+            email_service = EmailService()
+            html = email_service.render_version_to_html(
+                template_version=item.template_version,
+                context=item.email_context,
+                subject=item.subject,
+            )
+            return Response({'html': html})
+        except Exception as e:
+            return Response(
+                {'detail': f'Failed to render email: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class EmailContentPlaceholderViewSet(viewsets.ModelViewSet):

@@ -14,6 +14,7 @@ export interface EmailQueue {
   subject: string;
   email_context: Record<string, any>;
   html_content: string;
+  can_view_email?: boolean;
   text_content: string;
   priority: QueuePriority;
   status: QueueStatus;

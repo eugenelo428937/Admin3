@@ -164,6 +164,11 @@ const emailService = {
         return response.data;
     },
 
+    viewQueueItemEmail: async (id: number): Promise<string> => {
+        const response = await httpService.get(`${BASE_URL}/queue/${id}/view-email/`);
+        return response.data.html;
+    },
+
     // ─── Placeholders ─────────────────────────────────────────
     getPlaceholders: async (params: Record<string, any> = {}) => {
         const response = await httpService.get(`${BASE_URL}/placeholders/`, { params });

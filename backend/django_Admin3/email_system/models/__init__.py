@@ -1,5 +1,6 @@
 # Email system models
 from .template import EmailTemplate, EmailAttachment, EmailTemplateAttachment
+from .template_version import EmailTemplateVersion
 from .master_component import EmailMasterComponent
 from .queue import EmailQueue
 from .log import EmailLog
@@ -13,6 +14,7 @@ from .batch import EmailBatch
 
 __all__ = [
     'EmailTemplate',
+    'EmailTemplateVersion',
     'EmailAttachment',
     'EmailTemplateAttachment',
     'EmailMasterComponent',

@@ -103,10 +103,22 @@ class EmailQueueService:
                 # Try to clean the context by removing non-serializable items
                 serialized_context = self._clean_context_for_serialization(context)
 
+            # Pin the current template version so the queue item renders
+            # with the exact content that was active at enqueue time.
+            template_version = None
+            if template:
+                latest = template.versions.order_by('-version_number').first()
+                if latest:
+                    template_version = latest
+                else:
+                    # No version exists yet — create the initial snapshot
+                    template_version = template.create_version(user=user, change_note='Auto-created on first queue')
+
             # Create queue item
             with transaction.atomic():
                 queue_item = EmailQueue.objects.create(
                     template=template,
+                    template_version=template_version,
                     to_emails=to_emails,
                     cc_emails=cc_emails or [],
                     bcc_emails=bcc_emails or [],

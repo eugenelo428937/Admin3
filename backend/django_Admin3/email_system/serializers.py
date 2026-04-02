@@ -230,7 +230,7 @@ class EmailMasterComponentSerializer(serializers.ModelSerializer):
 # ---------------------------------------------------------------------------
 
 class EmailQueueSerializer(serializers.ModelSerializer):
-    """Read-only serializer for queue items."""
+    """Read-only serializer for queue items (detail view — includes heavy content fields)."""
 
     template_name = serializers.CharField(source='template.name', read_only=True, default=None)
     duplicated_from = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -251,6 +251,40 @@ class EmailQueueSerializer(serializers.ModelSerializer):
             'tags', 'duplicated_from',
         ]
         read_only_fields = fields
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            user = obj.created_by
+            full_name = f"{user.first_name} {user.last_name}".strip()
+            return full_name if full_name else user.username
+        return None
+
+
+class EmailQueueListSerializer(serializers.ModelSerializer):
+    """Lightweight list serializer — excludes html_content, text_content, email_context."""
+
+    template_name = serializers.CharField(source='template.name', read_only=True, default=None)
+    can_view_email = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmailQueue
+        fields = [
+            'id', 'queue_id', 'template', 'template_name',
+            'to_emails', 'cc_emails', 'bcc_emails',
+            'from_email', 'reply_to_email', 'subject',
+            'can_view_email',
+            'priority', 'status',
+            'scheduled_at', 'process_after', 'expires_at',
+            'attempts', 'max_attempts', 'last_attempt_at', 'next_retry_at',
+            'sent_at', 'error_message',
+            'created_at', 'updated_at', 'created_by', 'created_by_name',
+            'tags',
+        ]
+        read_only_fields = fields
+
+    def get_can_view_email(self, obj):
+        return bool(obj.html_content) or bool(obj.template_version_id)
 
     def get_created_by_name(self, obj):
         if obj.created_by:

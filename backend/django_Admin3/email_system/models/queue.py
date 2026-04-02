@@ -30,6 +30,13 @@ class EmailQueue(models.Model):
 
     # Email details
     template = models.ForeignKey(EmailTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    template_version = models.ForeignKey(
+        'email_system.EmailTemplateVersion',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='queue_items',
+        help_text="Exact template version used when this email was queued",
+    )
     to_emails = models.JSONField(help_text="List of recipient email addresses")
     cc_emails = models.JSONField(default=list, blank=True, help_text="CC email addresses")
     bcc_emails = models.JSONField(default=list, blank=True, help_text="BCC email addresses")
