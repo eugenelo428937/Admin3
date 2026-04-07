@@ -141,7 +141,16 @@ const EmailTemplateForm: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Row 3: From + Reply-To */}
+                            {/* Row 3: Subject Template */}
+                            <AdminOutlinedField label="Subject Template">
+                                <Input
+                                    value={vm.formData.subject_template || ''}
+                                    onChange={(e) => vm.handleChange('subject_template', e.target.value)}
+                                    placeholder="Supports {{placeholders}} for dynamic content"
+                                />
+                            </AdminOutlinedField>
+
+                            {/* Row 4: From + Reply-To */}
                             <div className="tw:flex tw:gap-4">
                                 <div className="tw:flex-1">
                                     <AdminOutlinedField label="From">

@@ -91,6 +91,7 @@ const EmailTemplateForm = React.lazy(() => import("./components/admin/email/temp
 const EmailQueueList = React.lazy(() => import("./components/admin/email/queue/EmailQueueList"));
 const EmailQueueDetail = React.lazy(() => import("./components/admin/email/queue/EmailQueueDetail"));
 const EmailQueueDuplicateForm = React.lazy(() => import("./components/admin/email/queue/EmailQueueDuplicateForm"));
+const EmailQueueEditForm = React.lazy(() => import("./components/admin/email/queue/EmailQueueEditForm"));
 const EmailBatchList = React.lazy(() => import("./components/admin/email/batch/EmailBatchList"));
 const EmailAttachmentList = React.lazy(() => import("./components/admin/email/attachments/EmailAttachmentList"));
 const EmailAttachmentForm = React.lazy(() => import("./components/admin/email/attachments/EmailAttachmentForm"));
@@ -305,6 +306,7 @@ function App() {
 									<Route path="/admin/email/queue" element={<EmailQueueList />} />
 									<Route path="/admin/email/queue/:id" element={<EmailQueueDetail />} />
 									<Route path="/admin/email/queue/:id/duplicate" element={<EmailQueueDuplicateForm />} />
+									<Route path="/admin/email/queue/:id/edit" element={<EmailQueueEditForm />} />
 								<Route path="/admin/email/batches" element={<EmailBatchList />} />
 
 									{/* Admin: Email Attachments (US6) */}

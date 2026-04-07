@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MoreHorizontal, Eye, Copy, RotateCcw, FileText } from 'lucide-react';
+import { MoreHorizontal, Eye, Copy, RotateCcw, FileText, Pencil } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
@@ -150,12 +150,19 @@ const EmailQueueList: React.FC = () => {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span
-                                                className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
-                                                title={item.subject}
-                                            >
-                                                {truncate(item.subject, 40)}
-                                            </span>
+                                            <div className="tw:flex tw:items-center tw:gap-1.5">
+                                                <span
+                                                    className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
+                                                    title={item.subject}
+                                                >
+                                                    {truncate(item.subject, 40)}
+                                                </span>
+                                                {item.is_edited && (
+                                                    <Badge variant="outline" className="tw:text-[10px] tw:px-1 tw:py-0 tw:border-blue-300 tw:bg-blue-50 tw:text-blue-700">
+                                                        edited
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell style={{ textAlign: 'center' }}>
                                             <Badge
@@ -191,6 +198,13 @@ const EmailQueueList: React.FC = () => {
                                                     <DropdownMenuItem onClick={() => vm.handleViewDetail(item.id)}>
                                                         <FileText className="tw:size-4" />
                                                         View Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => vm.handleEdit(item.id)}
+                                                        disabled={item.status !== 'pending' && item.status !== 'retry'}
+                                                    >
+                                                        <Pencil className="tw:size-4" />
+                                                        Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => vm.handleDuplicate(item.id)}>
                                                         <Copy className="tw:size-4" />

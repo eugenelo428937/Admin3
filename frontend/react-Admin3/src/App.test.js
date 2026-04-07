@@ -108,6 +108,7 @@ vi.mock('./components/admin/email/templates/EmailTemplateForm', () => ({ __esMod
 vi.mock('./components/admin/email/queue/EmailQueueList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue">Email Queue</div> }));
 vi.mock('./components/admin/email/queue/EmailQueueDetail', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue-detail">Email Queue Detail</div> }));
 vi.mock('./components/admin/email/queue/EmailQueueDuplicateForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue-dup">Email Queue Dup</div> }));
+vi.mock('./components/admin/email/queue/EmailQueueEditForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-queue-edit">Email Queue Edit</div> }));
 vi.mock('./components/admin/email/attachments/EmailAttachmentList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-attachments">Email Attachments</div> }));
 vi.mock('./components/admin/email/attachments/EmailAttachmentForm', () => ({ __esModule: true, default: () => <div data-testid="admin-email-attachment-form">Email Attachment Form</div> }));
 vi.mock('./components/admin/email/content-rules/EmailContentRuleList', () => ({ __esModule: true, default: () => <div data-testid="admin-email-rules">Email Rules</div> }));

@@ -8,6 +8,7 @@ import type {
     EmailTemplateAttachment,
     EmailQueue,
     EmailQueueDuplicateInput,
+    EmailQueueEditInput,
     EmailContentPlaceholder,
     EmailContentRule,
     EmailTemplateContentRule,
@@ -167,6 +168,11 @@ const emailService = {
     viewQueueItemEmail: async (id: number): Promise<string> => {
         const response = await httpService.get(`${BASE_URL}/queue/${id}/view-email/`);
         return response.data.html;
+    },
+
+    editQueueItem: async (id: number, data: EmailQueueEditInput): Promise<EmailQueue> => {
+        const response = await httpService.patch(`${BASE_URL}/queue/${id}/edit/`, data);
+        return response.data;
     },
 
     // ─── Placeholders ─────────────────────────────────────────

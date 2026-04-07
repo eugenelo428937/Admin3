@@ -19,7 +19,7 @@ from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
     EmailAttachmentSerializer, EmailTemplateAttachmentSerializer,
     EmailMasterComponentSerializer,
-    EmailQueueSerializer, EmailQueueListSerializer, EmailQueueDuplicateInputSerializer,
+    EmailQueueSerializer, EmailQueueListSerializer, EmailQueueDuplicateInputSerializer, EmailQueueEditInputSerializer,
     EmailContentPlaceholderSerializer, EmailContentRuleSerializer,
     EmailTemplateContentRuleSerializer,
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
@@ -301,31 +301,63 @@ class EmailQueueViewSet(
         serializer = self.get_serializer(item)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['patch'], url_path='edit')
+    def edit(self, request, pk=None):
+        """Edit a pending/retry queue item's content and email fields."""
+        item = self.get_object()
+        if item.status not in ('pending', 'retry'):
+            return Response(
+                {'detail': f'Cannot edit item with status "{item.status}". Only pending or retry items can be edited.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        input_ser = EmailQueueEditInputSerializer(data=request.data)
+        input_ser.is_valid(raise_exception=True)
+        for field, value in input_ser.validated_data.items():
+            setattr(item, field, value)
+        item.edited_at = timezone.now()
+        item.edited_by = request.user
+        item.save()
+
+        serializer = self.get_serializer(item)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['get'], url_path='view-email')
     def view_email(self, request, pk=None):
-        """Render the email as it was sent, using the versioned template + stored context."""
+        """Render the email using override content, versioned template, or HTML snapshot."""
         item = self.get_object()
-
-        # If we have a snapshot already, return it directly
-        if item.html_content:
-            return Response({'html': item.html_content})
-
-        # Render on-the-fly from the versioned template
-        if not item.template_version:
-            return Response(
-                {'detail': 'No template version recorded for this queue item.'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
 
         try:
             from email_system.services.email_service import EmailService
             email_service = EmailService()
-            html = email_service.render_version_to_html(
-                template_version=item.template_version,
-                context=item.email_context,
-                subject=item.subject,
+
+            # Priority 1: Per-item content override
+            if item.content_override_mjml:
+                html = email_service.render_with_override_content(
+                    template_name=item.template.name if item.template else None,
+                    override_mjml=item.content_override_mjml,
+                    context=item.email_context,
+                    email_title=item.subject,
+                    return_html=True,
+                )
+                return Response({'html': html})
+
+            # Priority 2: HTML snapshot
+            if item.html_content:
+                return Response({'html': item.html_content})
+
+            # Priority 3: Versioned template
+            if item.template_version:
+                html = email_service.render_version_to_html(
+                    template_version=item.template_version,
+                    context=item.email_context,
+                    subject=item.subject,
+                )
+                return Response({'html': html})
+
+            return Response(
+                {'detail': 'No content available to render for this queue item.'},
+                status=status.HTTP_404_NOT_FOUND,
             )
-            return Response({'html': html})
         except Exception as e:
             return Response(
                 {'detail': f'Failed to render email: {str(e)}'},

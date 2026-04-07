@@ -391,7 +391,25 @@ class EmailQueueService:
     def _send_with_master_template(self, queue_item: EmailQueue, to_email: str, attachments: List) -> Dict:
         """Send email using DB-driven master template system and return detailed response."""
         try:
-            # All templates use the same DB-driven rendering path
+            # Use per-item content override if present, otherwise standard template
+            if queue_item.content_override_mjml:
+                mjml_content = self.email_service.render_with_override_content(
+                    template_name=queue_item.template.name if queue_item.template else None,
+                    override_mjml=queue_item.content_override_mjml,
+                    context=queue_item.email_context,
+                    email_title=queue_item.subject,
+                )
+                return self.email_service._send_mjml_email_from_content(
+                    mjml_content=mjml_content,
+                    context=queue_item.email_context,
+                    to_emails=[to_email],
+                    subject=queue_item.subject,
+                    from_email=queue_item.from_email,
+                    enhance_outlook_compatibility=EmailSettings.get_enhance_outlook_compatibility(),
+                    attachments=attachments
+                )
+
+            # Standard path: render from template
             mjml_content = self.email_service._render_email_with_master_template(
                 content_template=queue_item.template.name,
                 context=queue_item.email_context,

@@ -235,6 +235,8 @@ class EmailQueueSerializer(serializers.ModelSerializer):
     template_name = serializers.CharField(source='template.name', read_only=True, default=None)
     duplicated_from = serializers.PrimaryKeyRelatedField(read_only=True)
     created_by_name = serializers.SerializerMethodField()
+    template_version_mjml = serializers.SerializerMethodField()
+    template_version_basic = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailQueue
@@ -243,11 +245,14 @@ class EmailQueueSerializer(serializers.ModelSerializer):
             'to_emails', 'cc_emails', 'bcc_emails',
             'from_email', 'reply_to_email', 'subject',
             'email_context', 'html_content', 'text_content',
+            'content_override_mjml', 'content_override_basic',
+            'template_version_mjml', 'template_version_basic',
             'priority', 'status',
             'scheduled_at', 'process_after', 'expires_at',
             'attempts', 'max_attempts', 'last_attempt_at', 'next_retry_at',
             'sent_at', 'error_message', 'error_details',
             'created_at', 'updated_at', 'created_by', 'created_by_name',
+            'edited_at', 'edited_by',
             'tags', 'duplicated_from',
         ]
         read_only_fields = fields
@@ -259,12 +264,27 @@ class EmailQueueSerializer(serializers.ModelSerializer):
             return full_name if full_name else user.username
         return None
 
+    def get_template_version_mjml(self, obj):
+        if obj.template_version:
+            return obj.template_version.mjml_content
+        if obj.template:
+            return obj.template.mjml_content
+        return ''
+
+    def get_template_version_basic(self, obj):
+        if obj.template_version:
+            return obj.template_version.basic_mode_content
+        if obj.template:
+            return obj.template.basic_mode_content
+        return ''
+
 
 class EmailQueueListSerializer(serializers.ModelSerializer):
     """Lightweight list serializer — excludes html_content, text_content, email_context."""
 
     template_name = serializers.CharField(source='template.name', read_only=True, default=None)
     can_view_email = serializers.SerializerMethodField()
+    is_edited = serializers.SerializerMethodField()
     created_by_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -273,7 +293,7 @@ class EmailQueueListSerializer(serializers.ModelSerializer):
             'id', 'queue_id', 'template', 'template_name',
             'to_emails', 'cc_emails', 'bcc_emails',
             'from_email', 'reply_to_email', 'subject',
-            'can_view_email',
+            'can_view_email', 'is_edited',
             'priority', 'status',
             'scheduled_at', 'process_after', 'expires_at',
             'attempts', 'max_attempts', 'last_attempt_at', 'next_retry_at',
@@ -284,7 +304,10 @@ class EmailQueueListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_can_view_email(self, obj):
-        return bool(obj.html_content) or bool(obj.template_version_id)
+        return bool(obj.html_content) or bool(obj.template_version_id) or bool(obj.content_override_mjml)
+
+    def get_is_edited(self, obj):
+        return bool(obj.edited_at)
 
     def get_created_by_name(self, obj):
         if obj.created_by:
@@ -300,9 +323,22 @@ class EmailQueueDuplicateInputSerializer(serializers.Serializer):
     to_emails = serializers.ListField(child=serializers.EmailField(), required=False)
     cc_emails = serializers.ListField(child=serializers.EmailField(), required=False)
     bcc_emails = serializers.ListField(child=serializers.EmailField(), required=False)
-    from_email = serializers.EmailField(required=False, allow_blank=True)
-    reply_to_email = serializers.EmailField(required=False, allow_blank=True)
+    from_email = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    reply_to_email = serializers.CharField(max_length=300, required=False, allow_blank=True)
     subject = serializers.CharField(max_length=300, required=False, allow_blank=True)
+
+
+class EmailQueueEditInputSerializer(serializers.Serializer):
+    """Write-only serializer for editing a pending/retry queue item."""
+
+    to_emails = serializers.ListField(child=serializers.EmailField(), required=False)
+    cc_emails = serializers.ListField(child=serializers.EmailField(), required=False)
+    bcc_emails = serializers.ListField(child=serializers.EmailField(), required=False)
+    from_email = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    reply_to_email = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    subject = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    content_override_mjml = serializers.CharField(required=False, allow_blank=True)
+    content_override_basic = serializers.CharField(required=False, allow_blank=True)
 
 
 # ---------------------------------------------------------------------------

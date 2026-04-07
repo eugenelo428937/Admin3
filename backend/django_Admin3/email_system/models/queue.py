@@ -51,6 +51,10 @@ class EmailQueue(models.Model):
     html_content = models.TextField(blank=True, help_text="Pre-rendered HTML content")
     text_content = models.TextField(blank=True, help_text="Plain text content")
 
+    # Per-item content overrides (empty = use template content)
+    content_override_mjml = models.TextField(blank=True, default='', help_text="MJML content override for this specific queue item")
+    content_override_basic = models.TextField(blank=True, default='', help_text="Basic mode (markdown) source for the content override")
+
     # Processing settings
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='normal')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -75,6 +79,10 @@ class EmailQueue(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Edit audit trail
+    edited_at = models.DateTimeField(null=True, blank=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_queue_items')
 
     # Tags for organization
     tags = models.JSONField(default=list, blank=True, help_text="Tags for categorization and filtering")
