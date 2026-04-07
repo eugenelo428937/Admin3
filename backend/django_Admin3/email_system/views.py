@@ -19,7 +19,7 @@ from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
     EmailAttachmentSerializer, EmailTemplateAttachmentSerializer,
     EmailMasterComponentSerializer,
-    EmailQueueSerializer, EmailQueueDuplicateInputSerializer,
+    EmailQueueSerializer, EmailQueueListSerializer, EmailQueueDuplicateInputSerializer, EmailQueueEditInputSerializer,
     EmailContentPlaceholderSerializer, EmailContentRuleSerializer,
     EmailTemplateContentRuleSerializer,
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
@@ -64,8 +64,26 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
             return EmailTemplateListSerializer
         return EmailTemplateSerializer
 
+    # Fields whose changes warrant a new template version
+    _VERSIONED_FIELDS = {'mjml_content', 'basic_mode_content', 'subject_template', 'closing_salutation'}
+
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        instance = serializer.save(created_by=self.request.user)
+        instance.create_version(user=self.request.user, change_note='Initial version')
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        # Detect content changes before saving
+        changed = any(
+            field in serializer.validated_data
+            and getattr(instance, field if field != 'closing_salutation' else 'closing_salutation_id')
+            != serializer.validated_data[field]
+            for field in self._VERSIONED_FIELDS
+            if field in serializer.validated_data
+        )
+        instance = serializer.save()
+        if changed:
+            instance.create_version(user=self.request.user)
 
     @action(detail=True, methods=['post'])
     def preview(self, request, pk=None):
@@ -222,6 +240,11 @@ class EmailQueueViewSet(
     serializer_class = EmailQueueSerializer
     permission_classes = [IsSuperUser]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return EmailQueueListSerializer
+        return EmailQueueSerializer
+
     def get_queryset(self):
         qs = super().get_queryset()
         status_filter = self.request.query_params.get('status')
@@ -264,7 +287,7 @@ class EmailQueueViewSet(
 
     @action(detail=True, methods=['post'])
     def resend(self, request, pk=None):
-        """Reset a queue item so it will be processed again."""
+        """Reset a queue item so it will be picked up by the worker."""
         item = self.get_object()
         item.status = 'pending'
         item.scheduled_at = timezone.now()
@@ -277,6 +300,69 @@ class EmailQueueViewSet(
 
         serializer = self.get_serializer(item)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='edit')
+    def edit(self, request, pk=None):
+        """Edit a pending/retry queue item's content and email fields."""
+        item = self.get_object()
+        if item.status not in ('pending', 'retry'):
+            return Response(
+                {'detail': f'Cannot edit item with status "{item.status}". Only pending or retry items can be edited.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        input_ser = EmailQueueEditInputSerializer(data=request.data)
+        input_ser.is_valid(raise_exception=True)
+        for field, value in input_ser.validated_data.items():
+            setattr(item, field, value)
+        item.edited_at = timezone.now()
+        item.edited_by = request.user
+        item.save()
+
+        serializer = self.get_serializer(item)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='view-email')
+    def view_email(self, request, pk=None):
+        """Render the email using override content, versioned template, or HTML snapshot."""
+        item = self.get_object()
+
+        try:
+            from email_system.services.email_service import EmailService
+            email_service = EmailService()
+
+            # Priority 1: Per-item content override
+            if item.content_override_mjml:
+                html = email_service.render_with_override_content(
+                    template_name=item.template.name if item.template else None,
+                    override_mjml=item.content_override_mjml,
+                    context=item.email_context,
+                    email_title=item.subject,
+                    return_html=True,
+                )
+                return Response({'html': html})
+
+            # Priority 2: HTML snapshot
+            if item.html_content:
+                return Response({'html': item.html_content})
+
+            # Priority 3: Versioned template
+            if item.template_version:
+                html = email_service.render_version_to_html(
+                    template_version=item.template_version,
+                    context=item.email_context,
+                    subject=item.subject,
+                )
+                return Response({'html': html})
+
+            return Response(
+                {'detail': 'No content available to render for this queue item.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {'detail': f'Failed to render email: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class EmailContentPlaceholderViewSet(viewsets.ModelViewSet):

@@ -184,6 +184,37 @@ class EmailTemplate(models.Model):
     def __str__(self):
         return f"{self.display_name} ({self.template_type})"
 
+    @property
+    def latest_version_number(self):
+        """Return the latest version number, or 0 if no versions exist."""
+        latest = self.versions.order_by('-version_number').values_list('version_number', flat=True).first()
+        return latest or 0
+
+    def create_version(self, user=None, change_note=''):
+        """Create an immutable snapshot of the current template content.
+
+        Call this before or after saving content changes so that queue items
+        processed later can reference the exact version that was active at
+        send time.
+        """
+        from .template_version import EmailTemplateVersion
+
+        next_version = self.latest_version_number + 1
+
+        salutation = self.closing_salutation
+        return EmailTemplateVersion.objects.create(
+            template=self,
+            version_number=next_version,
+            subject_template=self.subject_template,
+            mjml_content=self.mjml_content,
+            basic_mode_content=self.basic_mode_content,
+            closing_sign_off=salutation.sign_off_text if salutation else '',
+            closing_display_name=salutation.display_name if salutation else '',
+            closing_job_title=salutation.job_title if salutation else '',
+            created_by=user,
+            change_note=change_note,
+        )
+
 
 class EmailAttachment(models.Model):
     """Email attachment configuration and files."""

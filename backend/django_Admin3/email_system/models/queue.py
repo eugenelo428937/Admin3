@@ -30,6 +30,13 @@ class EmailQueue(models.Model):
 
     # Email details
     template = models.ForeignKey(EmailTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    template_version = models.ForeignKey(
+        'email_system.EmailTemplateVersion',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='queue_items',
+        help_text="Exact template version used when this email was queued",
+    )
     to_emails = models.JSONField(help_text="List of recipient email addresses")
     cc_emails = models.JSONField(default=list, blank=True, help_text="CC email addresses")
     bcc_emails = models.JSONField(default=list, blank=True, help_text="BCC email addresses")
@@ -43,6 +50,10 @@ class EmailQueue(models.Model):
     email_context = models.JSONField(default=dict, help_text="Template context data")
     html_content = models.TextField(blank=True, help_text="Pre-rendered HTML content")
     text_content = models.TextField(blank=True, help_text="Plain text content")
+
+    # Per-item content overrides (empty = use template content)
+    content_override_mjml = models.TextField(blank=True, default='', help_text="MJML content override for this specific queue item")
+    content_override_basic = models.TextField(blank=True, default='', help_text="Basic mode (markdown) source for the content override")
 
     # Processing settings
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='normal')
@@ -68,6 +79,10 @@ class EmailQueue(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Edit audit trail
+    edited_at = models.DateTimeField(null=True, blank=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_queue_items')
 
     # Tags for organization
     tags = models.JSONField(default=list, blank=True, help_text="Tags for categorization and filtering")

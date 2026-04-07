@@ -18,6 +18,7 @@ interface EmailQueueListVM {
     handleStatusFilter: (status: QueueStatus | 'all') => void;
     handleToFilter: (value: string) => void;
     handleViewDetail: (id: number) => void;
+    handleEdit: (id: number) => void;
     handleDuplicate: (id: number) => void;
     openResendDialog: (id: number) => void;
     closeResendDialog: () => void;
@@ -79,6 +80,10 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
         navigate(`/admin/email/queue/${id}`);
     }, [navigate]);
 
+    const handleEdit = useCallback((id: number) => {
+        navigate(`/admin/email/queue/${id}/edit`);
+    }, [navigate]);
+
     const handleDuplicate = useCallback((id: number) => {
         navigate(`/admin/email/queue/${id}/duplicate`);
     }, [navigate]);
@@ -131,6 +136,7 @@ export const useEmailQueueListVM = (): EmailQueueListVM => {
         handleStatusFilter,
         handleToFilter,
         handleViewDetail,
+        handleEdit,
         handleDuplicate,
         openResendDialog,
         closeResendDialog,

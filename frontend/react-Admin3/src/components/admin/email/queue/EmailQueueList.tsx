@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { MoreHorizontal, Eye, Copy, RotateCcw, FileText, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { MoreHorizontal, Eye, Copy, RotateCcw, FileText, Pencil } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
@@ -27,6 +27,7 @@ import {
 } from '@/components/admin/ui/dropdown-menu';
 import { useEmailQueueListVM } from './useEmailQueueListVM';
 import type { QueueStatus, EmailQueue } from '../../../../types/email';
+import emailService from '../../../../services/emailService';
 import EmailToFilter from '../shared/EmailToFilter';
 
 const STATUS_BADGE_STYLE: Record<QueueStatus, React.CSSProperties> = {
@@ -71,10 +72,20 @@ const truncate = (text: string, maxLength: number): string => {
 
 const EmailQueueList: React.FC = () => {
     const vm = useEmailQueueListVM();
-    const [previewItem, setPreviewItem] = useState<EmailQueue | null>(null);
 
-    const handlePreview = (item: EmailQueue) => {
-        setPreviewItem(previewItem?.id === item.id ? null : item);
+    const handleViewEmail = async (item: EmailQueue) => {
+        try {
+            const html = await emailService.viewQueueItemEmail(item.id);
+            if (!html) return;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const viewWindow = window.open(url, '_blank');
+            if (viewWindow) {
+                viewWindow.addEventListener('unload', () => URL.revokeObjectURL(url));
+            }
+        } catch {
+            // Silently fail — user can retry
+        }
     };
 
     useEffect(() => {
@@ -139,12 +150,19 @@ const EmailQueueList: React.FC = () => {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span
-                                                className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
-                                                title={item.subject}
-                                            >
-                                                {truncate(item.subject, 40)}
-                                            </span>
+                                            <div className="tw:flex tw:items-center tw:gap-1.5">
+                                                <span
+                                                    className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
+                                                    title={item.subject}
+                                                >
+                                                    {truncate(item.subject, 40)}
+                                                </span>
+                                                {item.is_edited && (
+                                                    <Badge variant="outline" className="tw:text-[10px] tw:px-1 tw:py-0 tw:border-blue-300 tw:bg-blue-50 tw:text-blue-700">
+                                                        edited
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell style={{ textAlign: 'center' }}>
                                             <Badge
@@ -170,13 +188,23 @@ const EmailQueueList: React.FC = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handlePreview(item)}>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleViewEmail(item)}
+                                                        disabled={!item.can_view_email}
+                                                    >
                                                         <Eye className="tw:size-4" />
-                                                        Preview Email
+                                                        View Email
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => vm.handleViewDetail(item.id)}>
                                                         <FileText className="tw:size-4" />
                                                         View Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => vm.handleEdit(item.id)}
+                                                        disabled={item.status !== 'pending' && item.status !== 'retry'}
+                                                    >
+                                                        <Pencil className="tw:size-4" />
+                                                        Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => vm.handleDuplicate(item.id)}>
                                                         <Copy className="tw:size-4" />
@@ -195,27 +223,6 @@ const EmailQueueList: React.FC = () => {
                             </TableBody>
                         </Table>
                     </div>
-
-                    {previewItem && (
-                        <div className="tw:mt-4 tw:rounded-md tw:border tw:border-admin-border tw:overflow-hidden">
-                            <div className="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-2 tw:bg-admin-bg-muted tw:border-b tw:border-admin-border">
-                                <span className="tw:text-sm tw:font-semibold">Email Preview</span>
-                                <Button variant="ghost" size="icon-xs" onClick={() => setPreviewItem(null)}>
-                                    <X className="tw:size-4" />
-                                </Button>
-                            </div>
-                            {previewItem.html_content ? (
-                                <iframe
-                                    srcDoc={previewItem.html_content}
-                                    title="Email HTML Preview"
-                                    style={{ width: '100%', minHeight: 400, border: 'none' }}
-                                    sandbox="allow-same-origin"
-                                />
-                            ) : (
-                                <div className="tw:p-4 tw:text-sm tw:text-admin-fg-muted">No HTML content available.</div>
-                            )}
-                        </div>
-                    )}
 
                     {/* Pagination */}
                     <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:py-4 tw:text-sm tw:text-admin-fg-muted">

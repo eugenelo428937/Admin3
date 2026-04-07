@@ -602,6 +602,142 @@ class EmailService:
                 'PRODUCT_SPECIFIC_CONTENT': '{{PRODUCT_SPECIFIC_CONTENT}}',
             }
 
+    def render_with_override_content(self, template_name: str, override_mjml: str, context: Dict, email_title: str = '', return_html: bool = False) -> str:
+        """Render an email using per-item MJML content override.
+
+        Uses the override MJML instead of the template's mjml_content,
+        but still injects shared components (banner, footer, styles, closing, master).
+
+        Returns assembled MJML by default (for the send pipeline).
+        Pass return_html=True to get final HTML (for the view-email endpoint).
+        """
+        from django.template import Template, Context
+
+        # Load the template for closing salutation and placeholders
+        db_template = self._get_db_template(template_name) if template_name else None
+
+        template_placeholders = self._get_template_placeholders(template_name) if template_name else {}
+        placeholder_context = {**template_placeholders, **context}
+
+        # Render override content with template variables
+        rendered_content = Template(override_mjml).render(Context(placeholder_context))
+
+        # Process dynamic content insertion
+        if template_name:
+            try:
+                from email_system.services.content_insertion import content_insertion_service
+                rendered_content = content_insertion_service.process_template_content(
+                    template_name=template_name,
+                    content=rendered_content,
+                    context=context
+                )
+            except Exception as content_error:
+                logger.warning(f"Failed to process dynamic content insertion: {str(content_error)}")
+
+        # Load shared components and build closing context
+        email_settings_context = self._get_email_settings_context()
+        closing_context = dict(email_settings_context)
+        if db_template and db_template.closing_salutation:
+            sal = db_template.closing_salutation
+            closing_context['salutation'] = sal.sign_off_text or 'Kind Regards'
+            closing_context['signature'] = sal.display_name
+            closing_context['job_title'] = sal.job_title or ''
+
+        banner_content = self._get_db_component('banner')
+        footer_content = self._get_db_component('footer')
+        styles_content = self._get_db_component('styles')
+        closing_content = self._get_db_component('closing')
+        dev_mode_banner_content = self._get_db_component('dev_mode_banner')
+
+        footer_content = Template(footer_content).render(Context(email_settings_context))
+        closing_content = Template(closing_content).render(Context(closing_context))
+
+        master_db = self._get_db_master_template()
+        if not master_db or not master_db.mjml_content:
+            raise Exception("No DB master template found or mjml_content is empty")
+
+        master_context = {
+            'email_title': email_title or 'Email from ActEd',
+            'email_preview': email_title or 'Email from ActEd',
+            'email_content': rendered_content,
+            'banner_content': banner_content,
+            'footer_content': footer_content,
+            'styles_content': styles_content,
+            'closing': closing_content,
+            'dev_mode_banner': dev_mode_banner_content,
+            **context
+        }
+
+        final_mjml = Template(master_db.mjml_content).render(Context(master_context))
+        mjml_clean = '\n'.join(line.rstrip() for line in final_mjml.splitlines())
+        if return_html:
+            return mjml2html(mjml_clean)
+        return mjml_clean
+
+    def render_version_to_html(self, template_version, context: Dict, subject: str = '') -> str:
+        """Render an EmailTemplateVersion + context to final HTML.
+
+        Uses the versioned mjml_content and closing salutation fields,
+        but still injects the current shared components (banner, footer, etc.).
+        """
+        from django.template import Template, Context
+
+        # Build closing context from the version's denormalised salutation
+        email_settings_context = self._get_email_settings_context()
+        closing_context = dict(email_settings_context)
+        closing_context['salutation'] = template_version.closing_sign_off or 'Kind Regards'
+        closing_context['signature'] = template_version.closing_display_name or ''
+        closing_context['job_title'] = template_version.closing_job_title or ''
+
+        # Get dynamic content placeholders
+        template_name = template_version.template.name
+        template_placeholders = self._get_template_placeholders(template_name)
+        placeholder_context = {**template_placeholders, **context}
+
+        # Render versioned content
+        rendered_content = Template(template_version.mjml_content).render(Context(placeholder_context))
+
+        # Process dynamic content insertion
+        try:
+            from email_system.services.content_insertion import content_insertion_service
+            rendered_content = content_insertion_service.process_template_content(
+                template_name=template_name,
+                content=rendered_content,
+                context=context
+            )
+        except Exception as content_error:
+            logger.warning(f"Failed to process dynamic content insertion: {str(content_error)}")
+
+        # Load shared components
+        banner_content = self._get_db_component('banner')
+        footer_content = self._get_db_component('footer')
+        styles_content = self._get_db_component('styles')
+        closing_content = self._get_db_component('closing')
+        dev_mode_banner_content = self._get_db_component('dev_mode_banner')
+
+        footer_content = Template(footer_content).render(Context(email_settings_context))
+        closing_content = Template(closing_content).render(Context(closing_context))
+
+        master_db = self._get_db_master_template()
+        if not master_db or not master_db.mjml_content:
+            raise Exception("No DB master template found or mjml_content is empty")
+
+        master_context = {
+            'email_title': subject or 'Email from ActEd',
+            'email_preview': subject or 'Email from ActEd',
+            'email_content': rendered_content,
+            'banner_content': banner_content,
+            'footer_content': footer_content,
+            'styles_content': styles_content,
+            'closing': closing_content,
+            'dev_mode_banner': dev_mode_banner_content,
+            **context
+        }
+
+        final_mjml = Template(master_db.mjml_content).render(Context(master_context))
+        mjml_clean = '\n'.join(line.rstrip() for line in final_mjml.splitlines())
+        return mjml2html(mjml_clean)
+
     def _render_email_with_master_template(self, content_template: str, context: Dict, email_title: str = None, email_preview: str = None) -> str:
         """
         Render email content using DB-driven master template with component injection.
