@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/admin/ui/button';
 import { Badge } from '@/components/admin/ui/badge';
 import { AdminConfirmDialog } from '@/components/admin/composed';
 import { AdminSelect } from '@/components/admin/composed';
@@ -17,14 +16,16 @@ interface EmailTemplateMjmlEditorProps {
     templateId: number;
     initialContent: string;
     initialBasicModeContent: string;
+    onContentChange?: (mjmlContent: string, basicModeContent: string) => void;
 }
 
 const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
     templateId,
     initialContent,
     initialBasicModeContent,
+    onContentChange,
 }) => {
-    const vm = useEmailTemplateMjmlEditorVM(templateId);
+    const vm = useEmailTemplateMjmlEditorVM(templateId, onContentChange);
     const editorRef = useRef<HTMLDivElement>(null);
     const editorViewRef = useRef<EditorView | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -99,37 +100,23 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
     return (
         <div className="tw:flex tw:flex-col tw:gap-4">
             {/* Toolbar */}
-            <div className="tw:flex tw:items-center tw:justify-between">
-                <div className="tw:flex tw:items-center tw:gap-3">
-                    <div className="tw:w-40">
-                        <AdminSelect
-                            options={[
-                                { value: 'basic', label: 'Basic Mode' },
-                                { value: 'advanced', label: 'Advanced Mode' },
-                            ]}
-                            value={vm.editorMode}
-                            onChange={handleModeChange}
-                        />
-                    </div>
-                    {vm.shellLoading && (
-                        <Badge variant="outline" className="tw:gap-1">
-                            <Loader2 className="tw:size-3 tw:animate-spin" />
-                            Loading preview shell...
-                        </Badge>
-                    )}
-                    {vm.isDirty && (
-                        <Badge variant="outline" className="tw:border-amber-300 tw:bg-amber-50 tw:text-amber-700">
-                            Unsaved changes
-                        </Badge>
-                    )}
+            <div className="tw:flex tw:items-center tw:gap-3">
+                <div className="tw:w-40">
+                    <AdminSelect
+                        options={[
+                            { value: 'basic', label: 'Basic Mode' },
+                            { value: 'advanced', label: 'Advanced Mode' },
+                        ]}
+                        value={vm.editorMode}
+                        onChange={handleModeChange}
+                    />
                 </div>
-                <Button
-                    size="sm"
-                    onClick={vm.handleSave}
-                    disabled={vm.isSaving || !vm.isDirty}
-                >
-                    {vm.isSaving ? 'Saving...' : 'Save'}
-                </Button>
+                {vm.shellLoading && (
+                    <Badge variant="outline" className="tw:gap-1">
+                        <Loader2 className="tw:size-3 tw:animate-spin" />
+                        Loading preview shell...
+                    </Badge>
+                )}
             </div>
 
             {vm.editorMode === 'basic' && (

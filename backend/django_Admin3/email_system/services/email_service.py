@@ -773,7 +773,7 @@ class EmailService:
             if not db_template or not db_template.mjml_content:
                 raise Exception(f"No DB template found for '{template_name}' or mjml_content is empty")
 
-            rendered_content = Template(db_template.mjml_content).render(Context(placeholder_context))
+            rendered_content = Template(db_template.get_renderable_content()).render(Context(placeholder_context))
 
             # Process dynamic content insertion for placeholders
             try:

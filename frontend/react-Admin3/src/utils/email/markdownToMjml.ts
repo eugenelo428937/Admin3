@@ -17,8 +17,8 @@ export function markdownToMjml(
 
     const content = blocks.map((block) => convertBlock(block, elementMap)).join('\n');
 
-    // Wrap in section/column so the output is valid inside <mj-wrapper>
-    return `<mj-section><mj-column>\n${content}\n</mj-column></mj-section>`;
+    // Wrap in content-section; each block element template provides its own <mj-column>
+    return `<mj-section mj-class="content-section">\n${content}\n</mj-section>`;
 }
 
 // --- Alignment ---

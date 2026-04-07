@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import emailService from '../../../../services/emailService';
 import type { EmailTemplate, ClosingSalutationList } from '../../../../types/email';
 
@@ -91,23 +92,28 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
 
             if (isEditMode && id) {
                 await emailService.updateTemplate(Number(id), formData);
+                toast.success('Template saved successfully');
             } else {
-                await emailService.createTemplate(formData);
+                const created = await emailService.createTemplate(formData);
+                toast.success('Template created successfully');
+                // Navigate to edit mode for the newly created template
+                navigate(`/admin/email/templates/${created.id}`, { replace: true });
             }
-
-            navigate('/admin/email/templates');
         } catch (err: any) {
             console.error('Error saving email template:', err);
             const detail = err?.response?.data?.detail || err?.response?.data;
             if (typeof detail === 'string') {
                 setError(detail);
+                toast.error(detail);
             } else if (typeof detail === 'object') {
                 const messages = Object.entries(detail)
                     .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
                     .join('; ');
                 setError(messages);
+                toast.error('Failed to save template');
             } else {
                 setError('Failed to save email template. Please try again.');
+                toast.error('Failed to save email template');
             }
         } finally {
             setIsSubmitting(false);

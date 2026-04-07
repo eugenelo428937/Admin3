@@ -4,9 +4,23 @@ from django.template import Template, Context
 from django.utils import timezone
 from email_system.models import EmailBatch, EmailQueue, EmailTemplate, ExternalApiKey
 from email_system.models.settings import EmailSettings
+from email_system.services.payload_validator import validate_payload
 
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+
+class PayloadValidationError(Exception):
+    """Raised when batch item payloads fail schema validation."""
+
+    def __init__(self, items, schema, total_items):
+        self.items = items  # list of {item_index, to_email, field_errors}
+        self.schema = schema
+        self.total_items = total_items
+        failed = len(items)
+        super().__init__(
+            f'Payload validation failed for {failed} of {total_items} items'
+        )
 
 
 class EmailBatchService:
@@ -33,6 +47,26 @@ class EmailBatchService:
                 max_items = int(max_items)
         if len(items) > max_items:
             raise ValueError(f'Batch size {len(items)} exceeds maximum of {max_items}.')
+
+        # Validate payloads against template schema
+        schema = template.payload_schema
+        if schema:
+            item_errors = []
+            for idx, item in enumerate(items):
+                payload = item.get('payload', {})
+                field_errors = validate_payload(payload, schema)
+                if field_errors:
+                    item_errors.append({
+                        'item_index': idx,
+                        'to_email': item.get('to_email', ''),
+                        'field_errors': field_errors,
+                    })
+            if item_errors:
+                raise PayloadValidationError(
+                    items=item_errors,
+                    schema=schema,
+                    total_items=len(items),
+                )
 
         result_items = []
 
@@ -70,7 +104,7 @@ class EmailBatchService:
                         subject = subject_override
                 else:
                     try:
-                        subject = Template(template.subject_template).render(Context(payload))
+                        subject = Template(template.get_renderable_subject()).render(Context(payload))
                     except Exception:
                         subject = template.subject_template
 
@@ -207,13 +241,22 @@ class EmailBatchService:
         if not recipients:
             return
 
+        all_items = []
         error_items = []
-        for qi in batch.queue_items.filter(status__in=('failed', 'cancelled')):
-            error_items.append({
-                'to_email': qi.to_emails[0] if qi.to_emails else '',
-                'attempts': qi.attempts,
-                'error_response': qi.error_details or {'error_message': qi.error_message or ''},
+        for qi in batch.queue_items.all().order_by('created_at'):
+            to_email = qi.to_emails[0] if qi.to_emails else ''
+            is_success = qi.status == 'sent'
+            all_items.append({
+                'to_email': to_email,
+                'status': 'Success' if is_success else 'Failed',
+                'is_success': is_success,
             })
+            if qi.status in ('failed', 'cancelled'):
+                error_items.append({
+                    'to_email': to_email,
+                    'attempts': qi.attempts,
+                    'error_response': qi.error_details or {'error_message': qi.error_message or ''},
+                })
 
         context = {
             'requested_by': batch.requested_by,
@@ -221,6 +264,7 @@ class EmailBatchService:
             'total_items': batch.total_items,
             'sent_count': batch.sent_count,
             'error_count': batch.error_count,
+            'all_items': all_items,
             'error_items': error_items,
         }
 

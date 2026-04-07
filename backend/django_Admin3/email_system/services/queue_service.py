@@ -85,7 +85,7 @@ class EmailQueueService:
                 if not subject_override and template.subject_template:
                     try:
                         from django.template import Template, Context
-                        subject_template = Template(template.subject_template)
+                        subject_template = Template(template.get_renderable_subject())
                         subject = subject_template.render(Context(context))
                     except Exception as e:
                         logger.warning(f"Failed to render template subject: {str(e)}")
