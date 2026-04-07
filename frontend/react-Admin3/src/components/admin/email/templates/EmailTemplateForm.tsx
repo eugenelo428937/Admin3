@@ -188,6 +188,10 @@ const EmailTemplateForm: React.FC = () => {
                             templateId={vm.formData.id}
                             initialContent={vm.formData.mjml_content || ''}
                             initialBasicModeContent={vm.formData.basic_mode_content || ''}
+                            onContentChange={(mjml, basic) => {
+                                vm.handleChange('mjml_content', mjml);
+                                vm.handleChange('basic_mode_content', basic);
+                            }}
                         />
                     ) : (
                         <div className="tw:rounded-lg tw:bg-[var(--muted)] tw:p-4 tw:text-sm tw:text-muted-foreground">

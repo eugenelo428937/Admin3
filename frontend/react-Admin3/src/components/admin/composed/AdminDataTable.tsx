@@ -186,65 +186,87 @@ function AdminDataTable<T extends Record<string, any>>({
   }
 
   return (
-    <div className={cn('tw:space-y-4', className)}>
-      <div className="tw:rounded-[10px] tw:bg-card tw:transition-shadow tw:duration-200 hover:tw:shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const align = (header.column.columnDef.meta as any)?.align as string | undefined;
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={align ? { textAlign: align as any } : undefined}
+     <div className={cn("tw:space-y-0", className)}>
+        <div className="tw:rounded-[10px] tw:bg-card tw:transition-shadow tw:duration-200 hover:tw:shadow-[0_2px_12px_rgba(0,0,0,0.06)] tw:py-2 tw:px-6">
+           <Table>
+              <TableHeader>
+                 {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                       {headerGroup.headers.map((header) => {
+                          const align = (header.column.columnDef.meta as any)
+                             ?.align as string | undefined;
+                          return (
+                             <TableHead
+                                key={header.id}
+                                style={
+                                   align
+                                      ? { textAlign: align as any }
+                                      : undefined
+                                }
+                             >
+                                {header.isPlaceholder
+                                   ? null
+                                   : flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                     )}
+                             </TableHead>
+                          );
+                       })}
+                    </TableRow>
+                 ))}
+              </TableHeader>
+              <TableBody>
+                 {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                       key={row.id}
+                       onClick={
+                          onRowClick
+                             ? () => onRowClick(row.original)
+                             : undefined
+                       }
+                       className={onRowClick ? "tw:cursor-pointer" : undefined}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                className={onRowClick ? 'tw:cursor-pointer' : undefined}
-              >
-                {row.getVisibleCells().map((cell) => {
-                  const align = (cell.column.columnDef.meta as any)?.align as string | undefined;
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      style={align ? { textAlign: align as any } : undefined}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                       {row.getVisibleCells().map((cell) => {
+                          const align = (cell.column.columnDef.meta as any)
+                             ?.align as string | undefined;
+                          return (
+                             <TableCell
+                                key={cell.id}
+                                style={
+                                   align
+                                      ? { textAlign: align as any }
+                                      : undefined
+                                }
+                             >
+                                {flexRender(
+                                   cell.column.columnDef.cell,
+                                   cell.getContext()
+                                )}
+                             </TableCell>
+                          );
+                       })}
+                    </TableRow>
+                 ))}
+              </TableBody>
+           </Table>
+        </div>
 
-      {pagination && (
-        <AdminPagination
-          page={pagination.page}
-          pageSize={pagination.pageSize}
-          total={pagination.total}
-          onPageChange={pagination.onPageChange}
-          onPageSizeChange={(e) =>
-            pagination.onPageSizeChange(e as unknown as React.ChangeEvent<HTMLInputElement>)
-          }
-          pageSizeOptions={pagination.pageSizeOptions}
-        />
-      )}
-    </div>
+        {pagination && (
+           <AdminPagination
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onPageChange={pagination.onPageChange}
+              onPageSizeChange={(e) =>
+                 pagination.onPageSizeChange(
+                    e as unknown as React.ChangeEvent<HTMLInputElement>
+                 )
+              }
+              pageSizeOptions={pagination.pageSizeOptions}
+           />
+        )}
+     </div>
   );
 }
 

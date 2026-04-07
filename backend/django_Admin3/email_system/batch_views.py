@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from email_system.authentication import ExternalApiKeyAuthentication
 from email_system.batch_serializers import SendBatchRequestSerializer
-from email_system.services.batch_service import email_batch_service
+from email_system.services.batch_service import email_batch_service, PayloadValidationError
 
 
 class ApiKeyIsAuthenticated(IsAuthenticated):
@@ -40,6 +40,13 @@ def send_batch(request):
             api_key=api_key,
             user=user,
         )
+    except PayloadValidationError as e:
+        return Response({
+            'error': 'payload_validation_failed',
+            'message': str(e),
+            'schema': e.schema,
+            'errors': e.items,
+        }, status=status.HTTP_400_BAD_REQUEST)
     except ValueError as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

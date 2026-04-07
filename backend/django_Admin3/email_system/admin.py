@@ -10,6 +10,7 @@ from .models import (
     EmailMasterComponent,
     EmailQueue, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
+    EmailVariable,
 )
 
 
@@ -480,4 +481,22 @@ class EmailContentPlaceholderAdmin(admin.ModelAdmin):
             'fields': ('is_active', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         })
+    )
+
+
+@admin.register(EmailVariable)
+class EmailVariableAdmin(admin.ModelAdmin):
+    list_display = ['display_name', 'variable_path', 'data_type', 'default_value', 'is_active']
+    list_filter = ['data_type', 'is_active']
+    search_fields = ['display_name', 'variable_path', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Variable Definition', {
+            'fields': ('display_name', 'variable_path', 'data_type', 'default_value', 'description')
+        }),
+        ('Metadata', {
+            'fields': ('is_active', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
     )

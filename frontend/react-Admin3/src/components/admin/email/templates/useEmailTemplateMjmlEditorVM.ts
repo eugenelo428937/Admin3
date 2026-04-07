@@ -15,26 +15,24 @@ export interface EmailTemplateMjmlEditorVM {
     mjmlContent: string;
     htmlPreview: string;
     compileError: string | null;
-    isDirty: boolean;
-    isSaving: boolean;
     shellLoading: boolean;
     editorMode: EditorMode;
     basicModeContent: string;
     elements: EmailMjmlElement[];
     handleContentChange: (content: string) => void;
     handleBasicContentChange: (content: string) => void;
-    handleSave: () => Promise<void>;
     initContent: (mjmlContent: string, basicModeContent: string) => void;
     setEditorMode: (mode: EditorMode) => void;
     refreshSignature: () => Promise<void>;
 }
 
-const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEditorVM => {
+const useEmailTemplateMjmlEditorVM = (
+    templateId: number,
+    onContentChange?: (mjmlContent: string, basicModeContent: string) => void,
+): EmailTemplateMjmlEditorVM => {
     const [mjmlContent, setMjmlContent] = useState<string>('');
     const [htmlPreview, setHtmlPreview] = useState<string>('');
     const [compileError, setCompileError] = useState<string | null>(null);
-    const [isDirty, setIsDirty] = useState<boolean>(false);
-    const [isSaving, setIsSaving] = useState<boolean>(false);
     const [shellLoading, setShellLoading] = useState<boolean>(true);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const shellRef = useRef<string | null>(null);
@@ -130,7 +128,7 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     const handleContentChange = useCallback(
         (content: string) => {
             setMjmlContent(content);
-            setIsDirty(true);
+            onContentChange?.(content, '');
 
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);
@@ -139,13 +137,12 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
                 compileMjml(content);
             }, 500);
         },
-        [compileMjml]
+        [compileMjml, onContentChange]
     );
 
     const handleBasicContentChange = useCallback(
         (content: string) => {
             setBasicModeContent(content);
-            setIsDirty(true);
 
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);
@@ -153,32 +150,12 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
             debounceTimerRef.current = setTimeout(() => {
                 const mjml = markdownToMjml(content, elementsRef.current);
                 setMjmlContent(mjml);
+                onContentChange?.(mjml, content);
                 compileMjml(mjml);
             }, 500);
         },
-        [compileMjml]
+        [compileMjml, onContentChange]
     );
-
-    const handleSave = async () => {
-        try {
-            setIsSaving(true);
-
-            const payload: Record<string, string> = { mjml_content: mjmlContent };
-            if (editorMode === 'basic') {
-                payload.basic_mode_content = basicModeContent;
-            } else {
-                payload.basic_mode_content = '';
-            }
-
-            await emailService.patchTemplate(templateId, payload);
-            setIsDirty(false);
-        } catch (err) {
-            console.error('Error saving MJML content:', err);
-            setCompileError('Failed to save MJML content. Please try again.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     const initContent = useCallback(
         (mjmlContentArg: string, basicModeContentArg: string) => {
@@ -193,7 +170,6 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
             if (mjmlContentArg) {
                 compileMjml(mjmlContentArg);
             }
-            setIsDirty(false);
         },
         [compileMjml]
     );
@@ -262,15 +238,12 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         mjmlContent,
         htmlPreview,
         compileError,
-        isDirty,
-        isSaving,
         shellLoading,
         editorMode,
         basicModeContent,
         elements,
         handleContentChange,
         handleBasicContentChange,
-        handleSave,
         initContent,
         setEditorMode,
         refreshSignature,
