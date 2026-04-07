@@ -1,32 +1,33 @@
 import { markdownToMjml } from './markdownToMjml';
 import { EmailMjmlElement } from '../../types/email/emailMjmlElement.types';
 
-// Default test elements matching the updated mj-class templates
+// Test elements matching the DB state: block elements wrapped with <mj-column>,
+// inline elements (bold, italic, link) unwrapped.
 const testElements: EmailMjmlElement[] = [
     {
         id: 1, element_type: 'heading_1', display_name: 'Heading 1', description: '',
-        mjml_template: '<mj-text mj-class="email-title">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="email-title">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 2, element_type: 'heading_2', display_name: 'Heading 2', description: '',
-        mjml_template: '<mj-text mj-class="h2">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="h2">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 3, element_type: 'heading_3', display_name: 'Heading 3', description: '',
-        mjml_template: '<mj-text mj-class="h3">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="h3">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 4, element_type: 'paragraph', display_name: 'Paragraph', description: '',
-        mjml_template: '<mj-text>{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text>{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 5, element_type: 'table', display_name: 'Table', description: '',
         mjml_template:
-            '<mj-text mj-class="table"><table style="width:100%;border-collapse:collapse;margin:0"><thead><tr>{{headers}}</tr></thead><tbody>{{rows}}</tbody></table></mj-text>',
+            '<mj-column><mj-text mj-class="table"><table style="width:100%;border-collapse:collapse;margin:0"><thead><tr>{{headers}}</tr></thead><tbody>{{rows}}</tbody></table></mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
@@ -46,37 +47,37 @@ const testElements: EmailMjmlElement[] = [
     },
     {
         id: 9, element_type: 'horizontal_divider', display_name: 'Horizontal Divider', description: '',
-        mjml_template: '<mj-divider border-color="#dee2e6" padding="16px 0" />',
+        mjml_template: '<mj-column><mj-divider border-color="#dee2e6" padding="16px 0" /></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 10, element_type: 'unordered_list', display_name: 'Unordered List', description: '',
-        mjml_template: '<mj-text mj-class="ul"><ul>{{items}}</ul></mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="ul"><ul>{{items}}</ul></mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 11, element_type: 'ordered_list', display_name: 'Ordered List', description: '',
-        mjml_template: '<mj-text mj-class="ol"><ol>{{items}}</ol></mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="ol"><ol>{{items}}</ol></mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 12, element_type: 'callout_info', display_name: 'Callout (Info)', description: '',
-        mjml_template: '<mj-text mj-class="callout-info">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="callout-info">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 13, element_type: 'callout_warning', display_name: 'Callout (Warning)', description: '',
-        mjml_template: '<mj-text mj-class="callout-warning">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="callout-warning">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 14, element_type: 'callout_success', display_name: 'Callout (Success)', description: '',
-        mjml_template: '<mj-text mj-class="callout-success">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="callout-success">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
     {
         id: 15, element_type: 'callout_error', display_name: 'Callout (Error)', description: '',
-        mjml_template: '<mj-text mj-class="callout-error">{{content}}</mj-text>',
+        mjml_template: '<mj-column><mj-text mj-class="callout-error">{{content}}</mj-text></mj-column>',
         is_active: true, updated_at: '',
     },
 ];
@@ -105,7 +106,7 @@ describe('markdownToMjml', () => {
 
     test('converts paragraph text', () => {
         const result = markdownToMjml('Hello this is a paragraph.', testElements);
-        expect(result).toContain('<mj-text>');
+        expect(result).toContain('<mj-column><mj-text>');
         expect(result).toContain('Hello this is a paragraph.');
     });
 
@@ -147,6 +148,12 @@ describe('markdownToMjml', () => {
     });
 
     // --- Multiple blocks ---
+
+    test('wraps output in content-section', () => {
+        const result = markdownToMjml('Hello', testElements);
+        expect(result).toMatch(/^<mj-section mj-class="content-section">/);
+        expect(result).toMatch(/<\/mj-section>$/);
+    });
 
     test('converts multiple blocks separated by blank lines', () => {
         const md = '# Title\n\nSome paragraph text.\n\n---\n\nAnother paragraph.';

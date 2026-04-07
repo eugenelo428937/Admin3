@@ -10,6 +10,7 @@ from .closing_salutation import ClosingSalutation
 from .email_mjml_element import EmailMjmlElement
 from .api_key import ExternalApiKey
 from .batch import EmailBatch
+from .variable import EmailVariable
 
 __all__ = [
     'EmailTemplate',
@@ -26,4 +27,5 @@ __all__ = [
     'EmailMjmlElement',
     'ExternalApiKey',
     'EmailBatch',
+    'EmailVariable',
 ]

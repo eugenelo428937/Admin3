@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { useAuth } from '../../../hooks/useAuth';
 import { DarkModeProvider } from './DarkModeProvider';
 import { AdminShell } from './AdminShell';
@@ -23,6 +24,7 @@ export default function AdminLayout() {
     <div className="admin-root tw:font-sans">
       <DarkModeProvider>
         <AdminShell />
+        <Toaster position="top-right" richColors closeButton />
       </DarkModeProvider>
     </div>
   );
