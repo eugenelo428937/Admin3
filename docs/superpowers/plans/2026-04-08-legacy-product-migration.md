@@ -48,7 +48,7 @@ backend/django_Admin3/
 │       ├── mini_invalid.csv                   [wildcards, col2=E, unknown session]
 │       └── mini_collisions.csv                [two rows same (subj, col2, col3, session), different normalized names]
 └── store/migrations/
-    └── 0004_add_remarks_to_product.py         [adds nullable TEXT field `remarks`]
+    └── 0004_add_legacy_product_name.py         [adds nullable TEXT field `legacy_product_name`]
 ```
 
 **Output artifacts (written during execution, committed to repo):**
@@ -1835,13 +1835,13 @@ git commit -m "chore(catalog): add template + PPV import from preview CSV"
 
 ---
 
-## Phase D — Schema migration for `store.Product.remarks`
+## Phase D — Schema migration for `store.Product.legacy_product_name`
 
-### Task 10: Add `remarks` field to `store.Product` model
+### Task 10: Add `legacy_product_name` field to `store.Product` model
 
 **Files:**
 - Modify: `backend/django_Admin3/store/models/product.py:46`
-- Create: `backend/django_Admin3/store/migrations/0004_add_remarks_to_product.py`
+- Create: `backend/django_Admin3/store/migrations/0004_add_legacy_product_name.py`
 
 **Context:** Add a nullable `TEXT` field to `store.Product` to preserve the original raw CSV fullname per row. The existing table is empty, so no backfill is needed.
 
@@ -1858,14 +1858,14 @@ Modify `backend/django_Admin3/store/models/product.py`. Find this section (aroun
     updated_at = models.DateTimeField(auto_now=True)
 ```
 
-Insert the `remarks` field just before `created_at`:
+Insert the `legacy_product_name` field just before `created_at`:
 
 ```python
     is_active = models.BooleanField(
         default=True,
         help_text='Whether product is available for purchase'
     )
-    remarks = models.TextField(
+    legacy_product_name = models.TextField(
         blank=True,
         null=True,
         help_text='Original CSV fullname / free-form historical notes'
@@ -1878,7 +1878,7 @@ Insert the `remarks` field just before `created_at`:
 
 Run: `python manage.py makemigrations store`
 
-Expected output mentions `0004_product_remarks` or similar. Open the generated file and verify it contains one `AddField` operation for `remarks`.
+Expected output mentions `0004_product_legacy_product_name` or similar. Open the generated file and verify it contains one `AddField` operation for `legacy_product_name`.
 
 - [ ] **Step 3: Apply the migration**
 
@@ -1893,7 +1893,7 @@ Run:
 python manage.py dbshell -- -c '\d "acted"."products"'
 ```
 
-Expected: the `remarks` column appears in the table description as `text` nullable.
+Expected: the `legacy_product_name` column appears in the table description as `text` nullable.
 
 - [ ] **Step 5: Commit**
 
@@ -1901,7 +1901,7 @@ Expected: the `remarks` column appears in the table description as `text` nullab
 cd c:/Code/Admin3
 git add backend/django_Admin3/store/models/product.py \
         backend/django_Admin3/store/migrations/0004_*.py
-git commit -m "feat(store): add remarks field to Product for legacy import history"
+git commit -m "feat(store): add legacy_product_name field to Product for legacy import history"
 ```
 
 ---
@@ -2270,7 +2270,7 @@ class Command(BaseCommand):
             product_product_variation=ppv,
             product_code='',  # generated in save()
             is_active=is_active,
-            remarks=row.raw_fullname,
+            legacy_product_name=row.raw_fullname,
         )
 
     @transaction.atomic
@@ -2330,7 +2330,7 @@ git commit -m "chore(catalog): add import_legacy_store_products Stage 3 command"
 
 ---
 
-### Task 12: Add tests for `is_active`, `remarks`, `product_code`, idempotency, and invalid row handling
+### Task 12: Add tests for `is_active`, `legacy_product_name`, `product_code`, idempotency, and invalid row handling
 
 **Files:**
 - Modify: `backend/django_Admin3/catalog/tests/test_import_legacy_store_products.py`
@@ -2353,15 +2353,15 @@ class TestImportLegacyStoreProductsBehavior(ImportLegacyStoreProductsTestBase):
         for p in products_26:
             self.assertTrue(p.is_active, f'{p.product_code} should be active')
 
-    def test_remarks_preserved_verbatim(self):
-        """Test that the RAW fullname (including ' eBook' etc) is stored in remarks."""
+    def test_legacy_product_name_preserved_verbatim(self):
+        """Test that the RAW fullname (including ' eBook' etc) is stored in legacy_product_name."""
         self.copy_fixture('mini_2026.csv')
         self.run_command()
         cm1_ebook_notes = StoreProduct.objects.get(
             exam_session_subject=self.ess_cm1_26,
             product_product_variation=self.ppv_notes_ebook,
         )
-        self.assertEqual(cm1_ebook_notes.remarks, 'Course Notes eBook')
+        self.assertEqual(cm1_ebook_notes.legacy_product_name, 'Course Notes eBook')
 
     def test_product_code_generated(self):
         self.copy_fixture('mini_2026.csv')
@@ -2560,18 +2560,18 @@ Expected:
 - Active session codes: `['26', '26S']` only
 - Active count: depends on how many subjects have rows in 2026, probably ~200–500
 
-- [ ] **Step 10: Spot-check `remarks` field**
+- [ ] **Step 10: Spot-check `legacy_product_name` field**
 
 ```bash
 python manage.py shell -c "
 from store.models.product import Product as StoreProduct
-samples = StoreProduct.objects.exclude(remarks__isnull=True).order_by('?')[:5]
+samples = StoreProduct.objects.exclude(legacy_product_name__isnull=True).order_by('?')[:5]
 for p in samples:
-    print(f'{p.product_code}: remarks={p.remarks!r}')
+    print(f'{p.product_code}: legacy_product_name={p.legacy_product_name!r}')
 "
 ```
 
-Expected: 5 random store.Products showing different raw fullnames in `remarks`.
+Expected: 5 random store.Products showing different raw fullnames in `legacy_product_name`.
 
 - [ ] **Step 11: Commit the review artifacts**
 
@@ -2610,7 +2610,7 @@ Expected: all tests across all four test modules pass.
 | **A** — Shared helpers | 1–4 | `_legacy_import_helpers.py` with `LegacyRow`, `iter_legacy_csv_rows`, `normalize_fullname`, `classify_row`, `TemplateKey`, `build_template_key` + ~35 unit tests |
 | **B** — Stage 1 command | 5–7 | `profile_legacy_products` command emitting 3 review CSVs + ~15 integration tests |
 | **C** — Stage 2 command | 8–9 | `import_legacy_templates` command writing catalog tables + ~10 tests |
-| **D** — Schema migration | 10 | `store.Product.remarks` field |
+| **D** — Schema migration | 10 | `store.Product.legacy_product_name` field |
 | **E** — Stage 3 command | 11–12 | `import_legacy_store_products` command writing store table + ~10 tests |
 | **F** — Execution | 13 | Committed review artifacts + verified counts in DB |
 
@@ -2626,7 +2626,7 @@ Expected: all tests across all four test modules pass.
 7. chore(catalog): add invalid_rows and collision detection to profile command
 8. chore(catalog): add import_legacy_templates command with variation seed
 9. chore(catalog): add template + PPV import from preview CSV
-10. feat(store): add remarks field to Product for legacy import history
+10. feat(store): add legacy_product_name field to Product for legacy import history
 11. chore(catalog): add import_legacy_store_products Stage 3 command
 12. chore(catalog): add behavior tests for Stage 3 store product import
 13. chore(catalog): commit reviewed legacy import artifacts
@@ -2649,7 +2649,7 @@ Every requirement in the [design spec](../specs/2026-04-08-legacy-product-migrat
 | §3 Decisions (template dedup) | Task 2 (normalize_fullname), Task 4 (build_template_key), Task 6 (template_preview.csv grouping) |
 | §3 Decisions (wildcard handling) | Task 3 (classify_row), Task 7 (invalid_rows.csv output) |
 | §3 Decisions (col2 mapping) | Task 3 (VALID_COL2_CODES), Task 8 (VARIATION_SEED) |
-| §3 Decisions (remarks field) | Task 10 (schema migration), Task 11 (`_build_store_product`), Task 12 (test_remarks_preserved_verbatim) |
+| §3 Decisions (legacy_product_name field) | Task 10 (schema migration), Task 11 (`_build_store_product`), Task 12 (test_legacy_product_name_preserved_verbatim) |
 | §3 Decisions (is_active policy) | Task 11 (ACTIVE_SESSIONS constant), Task 12 (test_session_26_is_active, test_old_session_is_inactive) |
 | §4 Architecture (3 stages) | Tasks 5–7 (Stage 1), Tasks 8–9 (Stage 2), Tasks 11–12 (Stage 3) |
 | §5 Normalization rules | Task 2 (all 22 test cases) |
@@ -2659,7 +2659,7 @@ Every requirement in the [design spec](../specs/2026-04-08-legacy-product-migrat
 | §6 Variation seed (P/C/M/T) | Task 8 (VARIATION_SEED constant) |
 | §6 PPV generation from preview | Task 9 (extended `handle`) |
 | §6 Empty used_variations error | Task 9 (test_empty_used_variations_raises) |
-| §7 Schema change (remarks field) | Task 10 |
+| §7 Schema change (legacy_product_name field) | Task 10 |
 | §7 Preloaded lookups | Task 11 (`_preload_lookups`) |
 | §7 Batched transactions | Task 11 (`_flush_batch`, `BATCH_SIZE=1000`) |
 | §7 Idempotent via existing_store_keys set | Task 11 (`_flush_batch`), Task 12 (test_rerun_is_idempotent) |

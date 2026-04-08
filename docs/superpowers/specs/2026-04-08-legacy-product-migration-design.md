@@ -65,9 +65,9 @@ Populate four currently-empty catalog/store tables from ~37,063 rows in four leg
 |----------|---------------|-----------|
 | **Scope** | Full historical import (all 37k rows) | Preserves audit trail; activation flag controls visibility |
 | **Template dedup key** | `(col3_code, normalized_fullname)` | Subject/session/variation-agnostic — matches store model design |
-| **Preserving raw fullnames** | Add `remarks TEXT NULL` field to `store.Product` | Per-row original text retained without polluting templates |
+| **Preserving raw fullnames** | Add `legacy_product_name TEXT NULL` field to `store.Product` | Per-row original text retained without polluting templates |
 | **Wildcard `*` subject** | Skip, write to `invalid_rows.csv` for separate workstream | Avoids fan-out inflation and semantic contortions |
-| **Col2 mapping** | `P`→Printed, `C`→eBook (all eras), `M`→Marking, `T`→Tutorial | Simplicity; CD-ROM history preserved via `remarks` |
+| **Col2 mapping** | `P`→Printed, `C`→eBook (all eras), `M`→Marking, `T`→Tutorial | Simplicity; CD-ROM history preserved via `legacy_product_name` |
 | **Col2=`E` anomaly** (1 row) | Skip, write to `invalid_rows.csv` | Data quality issue — quarantine for manual review |
 | **Unknown sessions** (`95A`, `95B`, `95C`, `OOS`) | Skip, write to `invalid_rows.csv` | Data quality issue — quarantine |
 | **Execution pattern** | 3-stage idempotent management commands with preview CSVs | Audit-friendly; decouples normalization judgment from DB writes |
@@ -109,7 +109,7 @@ Three Django management commands in `backend/django_Admin3/catalog/products/mana
 ┌─────────────────────────────────────────────────────────────────┐
 │  Stage 3: import_legacy_store_products (WRITES products table) │
 │  ───────────────────────────────────────────────────────────    │
-│  PREREQUISITE: migration adds `remarks TEXT NULL` to products   │
+│  PREREQUISITE: migration adds `legacy_product_name TEXT NULL` to products   │
 │                                                                 │
 │  IN:  raw CSVs + catalog_* state from Stage 2                   │
 │  OUT: products (~36,800 rows, minus quarantined)                │
@@ -300,11 +300,11 @@ for template_row in reviewed_template_preview_csv:
 ### Prerequisite: schema change
 
 ```python
-# store/migrations/00XX_add_remarks_to_product.py
+# store/migrations/00XX_add_legacy_product_name.py
 operations = [
     migrations.AddField(
         model_name='product',
-        name='remarks',
+        name='legacy_product_name',
         field=models.TextField(
             blank=True,
             null=True,
@@ -377,7 +377,7 @@ for csv_row in stream_all_csv_rows():
         product_product_variation=ppv,
         product_code='',           # generated in save()
         is_active=is_active,
-        remarks=raw_fullname,      # preserve original text
+        legacy_product_name=raw_fullname,      # preserve original text
     ))
 
     if len(buffer) >= BATCH_SIZE:
@@ -435,7 +435,7 @@ Naive per-row `.get()` would issue ~200k queries. Preloading into dicts reduces 
 backend/django_Admin3/
 ├── store/
 │   └── migrations/
-│       └── 00XX_add_remarks_to_product.py           [new]
+│       └── 00XX_add_legacy_product_name.py           [new]
 │
 └── catalog/products/management/commands/
     ├── profile_legacy_products.py                   [Stage 1 — new]
@@ -520,7 +520,7 @@ Nothing in this module touches the DB. Every function is a pure transformation.
   - Correct `store.Product` row count after run
   - `is_active=True` only for rows with session_code in `{'26', '26S'}`
   - `is_active=False` for 1995–2025S rows
-  - `remarks` field holds raw CSV fullname verbatim
+  - `legacy_product_name` field holds raw CSV fullname verbatim
   - Auto-generated `product_code` matches expected pattern
   - Tutorial rows get `-{pk}` suffix
   - Re-run creates zero additional rows (idempotent)
@@ -536,7 +536,7 @@ Nothing in this module touches the DB. Every function is a pure transformation.
 3.  [human] review docs/misc/review/template_preview.csv           # iterate on rules if wrong
 4.  [human] review docs/misc/review/invalid_rows.csv               # confirm quarantines
 5.  git add docs/misc/review/*.csv && git commit                   # snapshot the approved state
-6.  python manage.py makemigrations store                          # generate remarks-field migration
+6.  python manage.py makemigrations store                          # generate legacy_product_name field migration
 7.  python manage.py migrate                                       # apply it
 8.  python manage.py import_legacy_templates                       # Stage 2 — catalog tables populated
 9.  python manage.py verify_schema_placement                       # confirm rows in acted schema
@@ -553,7 +553,7 @@ Each stage is cleanly reversible:
 
 - **Stage 3 rollback:** `TRUNCATE "acted"."products" CASCADE`
 - **Stage 2 rollback:** `TRUNCATE "acted"."catalog_product_product_variations", "acted"."catalog_products", "acted"."catalog_product_variations" CASCADE`
-- **Migration rollback:** `python manage.py migrate store 00XX-1` (drops `remarks` column)
+- **Migration rollback:** `python manage.py migrate store 00XX-1` (drops `legacy_product_name` column)
 - **Stage 1 rollback:** delete `docs/misc/review/*.csv` (no DB effect)
 
 **Normalization-error recovery:** if Stage 3 reveals systemic normalization errors, truncate `products`, fix rules, re-run Stages 1-3. Stage 2 is idempotent on `(code, fullname)` natural key — if the fix doesn't affect templates, `catalog_products` can stay intact.
@@ -566,7 +566,7 @@ Conventional commits, one commit per stage:
 
 1. `chore(catalog): add legacy product CSV profiling command` — Stage 1 + tests + fixtures
 2. `chore(catalog): add legacy template import command` — Stage 2 + tests
-3. `feat(store): add remarks field to Product` — schema migration
+3. `feat(store): add legacy_product_name field to Product` — schema migration
 4. `chore(store): add legacy store product import command` — Stage 3 + tests
 5. `chore(catalog): commit reviewed legacy import artifacts` — the approved review CSVs
 
