@@ -5,7 +5,18 @@ from email_system.models import (
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation,
     EmailMjmlElement,
+    EmailVariable,
 )
+
+
+class EmailVariableTreeRowSerializer(serializers.ModelSerializer):
+    """Flat-list row for the variable picker tree endpoint."""
+
+    path = serializers.CharField(source='variable_path')
+
+    class Meta:
+        model = EmailVariable
+        fields = ['path', 'display_name', 'data_type', 'description']
 
 
 # ---------------------------------------------------------------------------

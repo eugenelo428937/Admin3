@@ -55,12 +55,30 @@ No new columns. Array element shape is encoded in the `variable_path` string via
 
 ### Validation rules (`Model.clean()`)
 
-- `[]` may appear only as a complete segment (`items[]`), never `items[]x` or bare `[]`.
-- Any path containing a `foo[]` segment requires a row at path `foo` with
-  `data_type='array'`. Missing-parent error points at the missing row.
-- Rows with `data_type` of `object` or `array` must have `default_value == ''`.
+- **Rule 1.** `[]` may appear only as a complete segment (`items[]`), never
+  `items[]x` or bare `[]`.
+- **Rule 2.** Any path containing a `foo[]` segment requires a row at *that
+  exact path prefix* (i.e. `foo[]`, including the suffix) with
+  `data_type='array'`. The array row itself lives at `foo[]` and serves both
+  as the array definition and as the drill-in node in the picker — one row
+  per array. When the row being saved *is* the required array row (its own
+  path matches), the check short-circuits.
+- **Rule 3.** Rows with `data_type` of `object` or `array` must have
+  `default_value == ''`.
+- **Rule 4.** An `array` row's `variable_path` must end in `[]`; a non-array
+  row's `variable_path` must *not* end in `[]`. This keeps the picker's
+  iteration semantics unambiguous.
 
 Validation runs in `save()` and in the admin form.
+
+### Array row consolidation (Model B)
+
+Array data is represented with **one row per array**, stored at the `foo[]`
+path with `data_type='array'`. Descendant paths use the same `foo[].child`
+prefix. The earlier draft (Session A) stored two rows — `foo` as the array
+plus `foo[]` as an element-container object — which produced duplicate
+sibling nodes in the picker. Migration 0037 consolidates existing data to
+the single-row shape.
 
 ### Migration 0031 — backfill containers
 

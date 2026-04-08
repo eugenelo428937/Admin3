@@ -21,5 +21,6 @@ router.register(r'batches', batch_admin_views.EmailBatchAdminViewSet)
 urlpatterns = [
     path('batch/send/', batch_views.send_batch, name='email-batch-send'),
     path('batch/<uuid:batch_id>/', batch_views.query_batch, name='email-batch-query'),
+    path('variables/tree/', views.EmailVariableTreeView.as_view(), name='email-variables-tree'),
     path('', include(router.urls)),
 ]
