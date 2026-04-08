@@ -115,9 +115,11 @@ class TestNormalizeFullname(SimpleTestCase):
             normalize_fullname('Mock Exam 2016'),
             'Mock Exam',
         )
+        # After year stripping, "Mock Exam 2010 Marking" → "Mock Exam Marking",
+        # which is then canonicalized by the typo map to "Mock Exam".
         self.assertEqual(
             normalize_fullname('Mock Exam 2010 Marking'),
-            'Mock Exam Marking',
+            'Mock Exam',
         )
 
     def test_strips_version_marker(self):
@@ -294,3 +296,133 @@ class TestBuildTemplateKey(SimpleTestCase):
             build_template_key(row_n),
             build_template_key(row_na),
         )
+
+
+class TestNormalizeFullnameFixes(SimpleTestCase):
+    """Fixes found during smoke test against 37,063 real CSV rows."""
+
+    # --- Issue 1: year range stripping ---
+
+    def test_strips_4digit_year_range(self):
+        self.assertEqual(
+            normalize_fullname('ASET 2014-2017 Papers'),
+            'ASET Papers',
+        )
+
+    def test_strips_4digit_year_range_with_ebook(self):
+        self.assertEqual(
+            normalize_fullname('ASET 2017-2018 Papers eBook'),
+            'ASET Papers',
+        )
+
+    def test_strips_4digit_year_range_multiple(self):
+        self.assertEqual(
+            normalize_fullname('ASET 2019-2020 Papers'),
+            'ASET Papers',
+        )
+
+    def test_single_year_still_works(self):
+        """Regression guard: the existing single-year rule must still work."""
+        self.assertEqual(
+            normalize_fullname('ASET 2019 Papers'),
+            'ASET Papers',
+        )
+        # "Mock Exam 2010 Marking": year strip → "Mock Exam Marking",
+        # then typo map alias → "Mock Exam" (final canonical form).
+        self.assertEqual(
+            normalize_fullname('Mock Exam 2010 Marking'),
+            'Mock Exam',
+        )
+
+    # --- Issue 2: parenthetical with year anywhere inside ---
+
+    def test_strips_paren_with_embedded_year(self):
+        self.assertEqual(
+            normalize_fullname('ASET (inc April 2005)'),
+            'ASET',
+        )
+
+    def test_strips_paren_with_embedded_year_no_space(self):
+        self.assertEqual(
+            normalize_fullname('ASET(inc April 2005)'),
+            'ASET',
+        )
+
+    def test_strips_paren_with_period_and_year(self):
+        self.assertEqual(
+            normalize_fullname('ASET (inc. April 2006)'),
+            'ASET',
+        )
+
+    # --- Issue 3: Series/Mock Exam marking aliases ---
+
+    def test_series_x_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Series X Marking'),
+            'Series X Assignments',
+        )
+
+    def test_series_y_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Series Y Marking'),
+            'Series Y Assignments',
+        )
+
+    def test_series_z_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Series Z Marking'),
+            'Series Z Assignments',
+        )
+
+    def test_mock_exam_plain_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam Marking'),
+            'Mock Exam',
+        )
+
+    def test_mock_exam_a_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam A Marking'),
+            'Mock Exam A',
+        )
+
+    def test_mock_exam_b_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam B Marking'),
+            'Mock Exam B',
+        )
+
+    def test_mock_exam_c_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam C Marking'),
+            'Mock Exam C',
+        )
+
+    def test_mock_exam_1_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam 1 Marking'),
+            'Mock Exam 1',
+        )
+
+    def test_mock_exam_2_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam 2 Marking'),
+            'Mock Exam 2',
+        )
+
+    def test_mock_exam_3_marking_alias(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam 3 Marking'),
+            'Mock Exam 3',
+        )
+
+    # --- Idempotency regression guards ---
+
+    def test_idempotent_year_range_case(self):
+        """Normalizing the result of a year-range case must be a no-op."""
+        canonical = normalize_fullname('ASET 2014-2017 Papers')
+        self.assertEqual(normalize_fullname(canonical), canonical)
+
+    def test_idempotent_series_marking_case(self):
+        canonical = normalize_fullname('Series X Marking')
+        self.assertEqual(normalize_fullname(canonical), canonical)

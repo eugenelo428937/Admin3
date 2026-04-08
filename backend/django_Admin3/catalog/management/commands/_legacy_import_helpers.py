@@ -65,8 +65,10 @@ _FORMAT_SUFFIX_RULES = [
 ]
 
 _YEAR_PAREN_RULES = [
-    # "(2014-2017 Papers)", "(April 2008 exams)" — any 4-digit year inside parens
-    re.compile(r'\s*\((?:19|20)\d{2}[^)]*\)'),
+    # Any parenthetical containing a 4-digit year (19xx or 20xx) anywhere
+    # inside it. Catches "(2014-2017 Papers)", "(April 2008 exams)",
+    # "(inc April 2005)", and "(inc. April 2006)".
+    re.compile(r'\s*\([^)]*(?:19|20)\d{2}[^)]*\)'),
     # "(14-17 and 19-21 Papers)" — any 2-digit year followed by dash/space
     re.compile(r'\s*\(\d{2}[-\s][^)]*\)'),
     # "(January exams)", "(April 2008 exams)" — month-prefixed parentheticals
@@ -77,10 +79,11 @@ _YEAR_PAREN_RULES = [
     ),
 ]
 
-# Matches a standalone 4-digit year anywhere in the string (preceded by space,
-# followed by word boundary). This catches "Mock Exam 2010 Marking" →
-# "Mock Exam Marking".
-_STANDALONE_YEAR_RULE = re.compile(r'\s+(?:19|20)\d{2}\b')
+# Matches a standalone 4-digit year anywhere in the string, preceded by
+# either whitespace OR a hyphen (so year ranges like "2014-2017" get
+# stripped in one pass: the first year matches " 2014", leaving "-2017",
+# and the dash case catches the trailing half).
+_STANDALONE_YEAR_RULE = re.compile(r'[\s\-](?:19|20)\d{2}\b')
 
 # "Revision Notes V2" → "Revision Notes". Only at end of string.
 _VERSION_RULE = re.compile(r'\s+V\d+\s*$', re.IGNORECASE)
@@ -92,6 +95,22 @@ _TYPO_MAP = {
     'Core REading': 'Core Reading',
     'Question & Answer Bank': 'Q&A Bank',
     'Flashcards': 'Flash Cards',
+    # Consolidate "Series X Marking" (modern CSVs, 2010+) with
+    # "Series X Assignments" (the template that older CSVs derive via
+    # the (Marking) paren strip rule).
+    'Series X Marking': 'Series X Assignments',
+    'Series Y Marking': 'Series Y Assignments',
+    'Series Z Marking': 'Series Z Assignments',
+    # Mock exam marking aliases: in modern CSVs the marking service is
+    # encoded as "<mock exam name> Marking"; in older CSVs it was the
+    # same name with "(Marking)" stripped. These entries align them.
+    'Mock Exam Marking': 'Mock Exam',
+    'Mock Exam A Marking': 'Mock Exam A',
+    'Mock Exam B Marking': 'Mock Exam B',
+    'Mock Exam C Marking': 'Mock Exam C',
+    'Mock Exam 1 Marking': 'Mock Exam 1',
+    'Mock Exam 2 Marking': 'Mock Exam 2',
+    'Mock Exam 3 Marking': 'Mock Exam 3',
 }
 
 
