@@ -244,3 +244,53 @@ class TestClassifyRow(SimpleTestCase):
     def test_empty_session_rejected(self):
         row = _make_row(session='')
         self.assertEqual(classify_row(row), 'empty_session')
+
+
+from catalog.management.commands._legacy_import_helpers import (
+    TemplateKey,
+    build_template_key,
+)
+
+
+class TestTemplateKey(SimpleTestCase):
+    def test_is_frozen(self):
+        key = TemplateKey(code='N', fullname='Course Notes')
+        with self.assertRaises(Exception):
+            key.code = 'X'  # type: ignore[misc]
+
+    def test_is_hashable(self):
+        key1 = TemplateKey(code='N', fullname='Course Notes')
+        key2 = TemplateKey(code='N', fullname='Course Notes')
+        self.assertEqual(hash(key1), hash(key2))
+        self.assertEqual({key1, key2}, {key1})
+
+
+class TestBuildTemplateKey(SimpleTestCase):
+    def test_basic(self):
+        row = _make_row(col3='N', raw_fullname='Course Notes')
+        self.assertEqual(
+            build_template_key(row),
+            TemplateKey(code='N', fullname='Course Notes'),
+        )
+
+    def test_normalizes_fullname(self):
+        row = _make_row(col3='N', raw_fullname='Course Notes eBook')
+        self.assertEqual(
+            build_template_key(row),
+            TemplateKey(code='N', fullname='Course Notes'),
+        )
+
+    def test_preserves_col3(self):
+        row = _make_row(col3='EX', raw_fullname='ASET (2014-2017 Papers) eBook')
+        self.assertEqual(
+            build_template_key(row),
+            TemplateKey(code='EX', fullname='ASET'),
+        )
+
+    def test_different_col3_different_keys(self):
+        row_n = _make_row(col3='N', raw_fullname='Course Notes')
+        row_na = _make_row(col3='NA', raw_fullname='Course Notes')
+        self.assertNotEqual(
+            build_template_key(row_n),
+            build_template_key(row_na),
+        )

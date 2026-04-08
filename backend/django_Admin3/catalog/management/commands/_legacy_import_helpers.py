@@ -151,3 +151,25 @@ def classify_row(row: LegacyRow) -> Optional[str]:
     if row.col2 not in VALID_COL2_CODES:
         return 'unknown_col2'
     return None
+
+
+@dataclass(frozen=True)
+class TemplateKey:
+    """Identity for a catalog.Product template.
+
+    Two rows share a template iff they have the same col3 code AND
+    normalize_fullname() produces the same canonical name.
+    """
+    code: str
+    fullname: str
+
+
+def build_template_key(row: LegacyRow) -> TemplateKey:
+    """Compute the template key for a legacy CSV row.
+
+    Combines col3 (unchanged) with the normalized fullname.
+    """
+    return TemplateKey(
+        code=row.col3,
+        fullname=normalize_fullname(row.raw_fullname),
+    )
