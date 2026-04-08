@@ -191,3 +191,56 @@ class TestNormalizeFullname(SimpleTestCase):
             normalize_fullname('CA2 MAP 2015 Marking Part 1'),
             'CA2 MAP Marking Part 1',
         )
+
+
+from catalog.management.commands._legacy_import_helpers import classify_row
+
+
+def _make_row(**overrides):
+    defaults = dict(
+        source_file='test.csv',
+        source_line=1,
+        subject='CM1',
+        col2='P',
+        col3='N',
+        session='26',
+        full_code='CM1/PN/26',
+        raw_fullname='Course Notes',
+        raw_shortname='Course Notes',
+    )
+    defaults.update(overrides)
+    return LegacyRow(**defaults)
+
+
+class TestClassifyRow(SimpleTestCase):
+    def test_valid_row_returns_none(self):
+        self.assertIsNone(classify_row(_make_row()))
+
+    def test_wildcard_subject_rejected(self):
+        row = _make_row(subject='*')
+        self.assertEqual(classify_row(row), 'wildcard_subject')
+
+    def test_col2_e_rejected(self):
+        row = _make_row(col2='E')
+        self.assertEqual(classify_row(row), 'unknown_col2')
+
+    def test_col2_unknown_char_rejected(self):
+        row = _make_row(col2='Z')
+        self.assertEqual(classify_row(row), 'unknown_col2')
+
+    def test_all_valid_col2_accepted(self):
+        for c in ['P', 'C', 'M', 'T']:
+            with self.subTest(col2=c):
+                self.assertIsNone(classify_row(_make_row(col2=c)))
+
+    def test_empty_subject_rejected(self):
+        row = _make_row(subject='')
+        self.assertEqual(classify_row(row), 'empty_subject')
+
+    def test_empty_col3_rejected(self):
+        row = _make_row(col3='')
+        self.assertEqual(classify_row(row), 'empty_col3')
+
+    def test_empty_session_rejected(self):
+        row = _make_row(session='')
+        self.assertEqual(classify_row(row), 'empty_session')

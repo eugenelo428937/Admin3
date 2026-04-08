@@ -128,3 +128,26 @@ def normalize_fullname(raw: str) -> str:
     name = _TYPO_MAP.get(name, name)
 
     return name
+
+
+VALID_COL2_CODES = frozenset({'P', 'C', 'M', 'T'})
+
+
+def classify_row(row: LegacyRow) -> Optional[str]:
+    """Return a reason code if the row is invalid, else None.
+
+    This function only checks things that can be determined from the CSV
+    alone. DB-dependent checks (unknown session/subject/no PPV match)
+    happen in the Stage 3 command where the preloaded lookups exist.
+    """
+    if not row.subject:
+        return 'empty_subject'
+    if row.subject == '*':
+        return 'wildcard_subject'
+    if not row.col3:
+        return 'empty_col3'
+    if not row.session:
+        return 'empty_session'
+    if row.col2 not in VALID_COL2_CODES:
+        return 'unknown_col2'
+    return None
