@@ -385,21 +385,23 @@ class TestNormalizeFullnameFixes(SimpleTestCase):
         )
 
     def test_mock_exam_1_marking_alias(self):
+        # Task 2.7: single-digit stripped first → 'Mock Exam Marking' →
+        # typo map → 'Mock Exam'. The numbered variant collapses into base.
         self.assertEqual(
             normalize_fullname('Mock Exam 1 Marking'),
-            'Mock Exam 1',
+            'Mock Exam',
         )
 
     def test_mock_exam_2_marking_alias(self):
         self.assertEqual(
             normalize_fullname('Mock Exam 2 Marking'),
-            'Mock Exam 2',
+            'Mock Exam',
         )
 
     def test_mock_exam_3_marking_alias(self):
         self.assertEqual(
             normalize_fullname('Mock Exam 3 Marking'),
-            'Mock Exam 3',
+            'Mock Exam',
         )
 
     # --- Idempotency regression guards ---
@@ -555,17 +557,11 @@ class TestNormalizeFullnameAggressive(SimpleTestCase):
             'Mock Exam',
         )
 
-    def test_preserves_single_digit(self):
-        """Single digits like 'Mock Exam 1' are NOT stripped."""
+    def test_single_digit_stripped_in_aggressive_mode(self):
+        """Task 2.7 added \\b\\d\\b stripping; single digits now collapse."""
         self.assertEqual(
             normalize_fullname('Mock Exam 1'),
-            'Mock Exam 1',
-        )
-
-    def test_preserves_single_digit_two(self):
-        self.assertEqual(
-            normalize_fullname('Mock Exam 2'),
-            'Mock Exam 2',
+            'Mock Exam',
         )
 
     def test_combined_aggressive_rules(self):
@@ -576,8 +572,127 @@ class TestNormalizeFullnameAggressive(SimpleTestCase):
         )
 
     def test_update_note_variants_collapse(self):
-        """'Update Note 1' stays as-is: single digit not stripped by \\d\\d."""
+        """Task 2.7 added single-digit stripping; 'Update Note 1' now
+        collapses to 'Update Note'."""
         self.assertEqual(
             normalize_fullname('Update Note 1'),
-            'Update Note 1',
+            'Update Note',
+        )
+
+
+class TestNormalizeFullnameSingleDigitAndUnclosedParen(SimpleTestCase):
+    """Task 2.7 — strip single-digit variants and handle unclosed parens."""
+
+    # --- Single-digit stripping ---
+
+    def test_mock_exam_1_collapses(self):
+        self.assertEqual(normalize_fullname('Mock Exam 1'), 'Mock Exam')
+
+    def test_mock_exam_2_collapses(self):
+        self.assertEqual(normalize_fullname('Mock Exam 2'), 'Mock Exam')
+
+    def test_update_note_1_collapses(self):
+        self.assertEqual(normalize_fullname('Update Note 1'), 'Update Note')
+
+    def test_update_note_2_collapses(self):
+        self.assertEqual(normalize_fullname('Update Note 2'), 'Update Note')
+
+    def test_update_note_3_collapses(self):
+        self.assertEqual(normalize_fullname('Update Note 3'), 'Update Note')
+
+    def test_single_digit_mid_string_stripped(self):
+        """'Day 3 Tutorial' → 'Day Tutorial' (standalone 3 is stripped)."""
+        self.assertEqual(
+            normalize_fullname('Day 3 Tutorial'),
+            'Day Tutorial',
+        )
+
+    def test_preserves_digit_in_subject_code_ca2(self):
+        """'CA2 MAP' must NOT have the 2 stripped ('A' and '2' are both word chars, no word boundary between them)."""
+        self.assertEqual(normalize_fullname('CA2 MAP'), 'CA2 MAP')
+
+    def test_preserves_digit_in_subject_code_sa3(self):
+        """'SA3 Core Reading' must NOT have the 3 stripped."""
+        self.assertEqual(normalize_fullname('SA3 Core Reading'), 'SA3 Core Reading')
+
+    def test_preserves_digit_in_subject_code_st7(self):
+        self.assertEqual(normalize_fullname('ST7 Notes'), 'ST7 Notes')
+
+    def test_preserves_two_digit_embedded(self):
+        """'CB12 Notes' — '12' is \\d\\d surrounded by word chars. Word
+        boundary check: 'B' to '1' no boundary, '2' to ' ' boundary.
+        \\d\\d requires no boundaries (it's not \\b-anchored), so it matches
+        '12' greedily at position 2. This strips '12' from 'CB12 Notes'."""
+        self.assertEqual(normalize_fullname('CB12 Notes'), 'CB Notes')
+
+    def test_four_digit_year_still_stripped(self):
+        """Regression: 4-digit years still fully stripped."""
+        self.assertEqual(normalize_fullname('Mock Exam 2016'), 'Mock Exam')
+
+    def test_hyphenated_year_range_still_stripped(self):
+        """Regression: hyphenated year range still fully stripped."""
+        self.assertEqual(
+            normalize_fullname('ASET 2014-2017 Papers'),
+            'ASET Papers',
+        )
+
+    # --- Unclosed parenthesis handling ---
+
+    def test_strips_unclosed_paren_at_end(self):
+        """Handles data-quality bug: 'Tutorial Course (E32, 4 Day Block'
+        (missing closing parenthesis)."""
+        self.assertEqual(
+            normalize_fullname('Tutorial Course (E32, 4 Day Block'),
+            'Tutorial Course',
+        )
+
+    def test_strips_unclosed_paren_simple(self):
+        self.assertEqual(
+            normalize_fullname('Course Notes (leftover'),
+            'Course Notes',
+        )
+
+    def test_strips_both_closed_and_unclosed_paren(self):
+        """First closed paren gets stripped by rule 1, then trailing
+        unclosed paren gets stripped by rule 2."""
+        self.assertEqual(
+            normalize_fullname('Course (v1) Notes (unclosed'),
+            'Course Notes',
+        )
+
+    def test_unclosed_paren_stripping_preserves_content_before(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam Main (extra info goes here'),
+            'Mock Exam Main',
+        )
+
+    # --- Tutorial special case still works with both rules ---
+
+    def test_tutorial_d_strips_unclosed_paren(self):
+        """Tutorial B/D path also gets the unclosed-paren fix."""
+        self.assertEqual(
+            normalize_fullname(
+                'Regular Tutorial Course (E32, 4 Day Block',
+                col2='T', col3='D',
+            ),
+            'Regular Tutorial Course',
+        )
+
+    def test_tutorial_b_strips_unclosed_paren(self):
+        self.assertEqual(
+            normalize_fullname(
+                'Tutorial Course (E1, 3 day block',
+                col2='T', col3='B',
+            ),
+            'Tutorial Course',
+        )
+
+    def test_tutorial_d_still_keeps_single_digits(self):
+        """Tutorial B/D path does NOT apply single-digit stripping."""
+        self.assertEqual(
+            normalize_fullname(
+                'Tutorial Course 1',
+                col2='T', col3='D',
+            ),
+            'Tutorial Course 1',
         )

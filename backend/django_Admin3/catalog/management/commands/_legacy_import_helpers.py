@@ -121,6 +121,7 @@ def normalize_fullname(raw: str, col2: str = '', col3: str = '') -> str:
     # Tutorial special case: only strip parenthesized content
     if col2 == 'T' and col3 in ('B', 'D'):
         name = re.sub(r'\s*\([^)]*\)', '', name)
+        name = re.sub(r'\s*\([^)]*$', '', name)  # unclosed paren (data-quality handler)
         name = re.sub(r'\s+', ' ', name).strip()
         return name
 
@@ -131,9 +132,12 @@ def normalize_fullname(raw: str, col2: str = '', col3: str = '') -> str:
     # Legacy version suffix
     name = _VERSION_RULE.sub('', name)
 
-    # Aggressive general rules (Task 2.6)
+    # Aggressive general rules (Task 2.6 + 2.7)
     # Remove ALL parenthesized content
     name = re.sub(r'\s*\([^)]*\)', '', name)
+    # Remove open paren with no closing paren (data-quality handler for
+    # strings like "Tutorial Course (E32, 4 Day Block" missing the ')').
+    name = re.sub(r'\s*\([^)]*$', '', name)
     # Remove 'paper 1|2|3'
     name = re.sub(r'\bpaper\s+[123]\b', '', name, flags=re.IGNORECASE)
     # Remove 'part 1|2|3'
@@ -146,6 +150,10 @@ def normalize_fullname(raw: str, col2: str = '', col3: str = '') -> str:
     name = name.replace('-', ' ')
     # Remove 2-digit number pairs (strips years: "2014" → "" via two matches)
     name = re.sub(r'\d\d', '', name)
+    # Remove single-digit numbers (e.g., "Mock Exam 1" → "Mock Exam").
+    # Uses word boundaries so digits embedded in identifiers like "CM2", "SA3",
+    # "ST7" are NOT stripped.
+    name = re.sub(r'\b\d\b', '', name)
 
     # Collapse whitespace
     name = re.sub(r'\s+', ' ', name).strip()
