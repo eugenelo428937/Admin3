@@ -64,32 +64,8 @@ _FORMAT_SUFFIX_RULES = [
     re.compile(r'\s+Booklet\s*$', re.IGNORECASE),
 ]
 
-_YEAR_PAREN_RULES = [
-    # Any parenthetical containing a 4-digit year (19xx or 20xx) anywhere
-    # inside it. Catches "(2014-2017 Papers)", "(April 2008 exams)",
-    # "(inc April 2005)", and "(inc. April 2006)".
-    re.compile(r'\s*\([^)]*(?:19|20)\d{2}[^)]*\)'),
-    # "(14-17 and 19-21 Papers)" — any 2-digit year followed by dash/space
-    re.compile(r'\s*\(\d{2}[-\s][^)]*\)'),
-    # "(January exams)", "(April 2008 exams)" — month-prefixed parentheticals
-    re.compile(
-        r'\s*\((?:January|February|March|April|May|June|'
-        r'July|August|September|October|November|December)[^)]*\)',
-        re.IGNORECASE,
-    ),
-]
-
-# Matches a standalone 4-digit year anywhere in the string, preceded by
-# either whitespace OR a hyphen (so year ranges like "2014-2017" get
-# stripped in one pass: the first year matches " 2014", leaving "-2017",
-# and the dash case catches the trailing half).
-_STANDALONE_YEAR_RULE = re.compile(r'[\s\-](?:19|20)\d{2}\b')
-
 # "Revision Notes V2" → "Revision Notes". Only at end of string.
 _VERSION_RULE = re.compile(r'\s+V\d+\s*$', re.IGNORECASE)
-
-# "Series X Assignments (Marking)" → "Series X Assignments"
-_MARKING_PAREN_RULE = re.compile(r'\s*\(Marking\)\s*$', re.IGNORECASE)
 
 _TYPO_MAP = {
     'Core REading': 'Core Reading',
@@ -114,36 +90,67 @@ _TYPO_MAP = {
 }
 
 
-def normalize_fullname(raw: str) -> str:
+def normalize_fullname(raw: str, col2: str = '', col3: str = '') -> str:
     """Normalize a raw CSV fullname to its canonical template name.
 
-    Rules (applied in order):
-      1. Strip format-encoding suffixes: eBook, CD-ROM, Online, Booklet
-      2. Strip year/session parenthetical annotations
-      3. Strip naked years anywhere in the string
-      4. Strip trailing version markers (V1, V2, etc.)
-      5. Strip trailing "(Marking)"
-      6. Collapse whitespace and apply pre-approved typo fixes
+    Applies an aggressive ruleset that trades semantic fidelity for
+    collision reduction: the raw fullname is preserved separately in
+    store.Product.remarks so nothing is truly lost.
 
-    Deliberately preserves: "- part 1", "- Assessment", "Retaker", "Mini",
-    subject-specific prefixes like "CA2 MAP".
+    Tutorial special case (col2='T' and col3 in {'B','D'}):
+        Only strips parenthesized content. Tutorial fullnames encode
+        instance-specific info (location, duration) inside parens;
+        stripping that gives a template name shared across instances.
+
+    General rules (all case-insensitive where applicable):
+        1. Legacy trailing-suffix rules: strip eBook, CD-ROM, Online
+           (Tutorial), Booklet, V\\d+
+        2. Remove ALL parenthesized content
+        3. Remove 'paper 1/2/3'
+        4. Remove 'part 1/2/3'
+        5. Remove standalone 'eBook' and 'Paper' (word-boundary;
+           'Papers' plural is preserved)
+        6. Replace dashes with spaces
+        7. Remove ALL 2-digit number sequences (strips 2-digit + 4-digit
+           years since \\d\\d matches twice in a 4-digit year)
+        8. Collapse whitespace
+        9. Apply curated typo map (Core REading → Core Reading, etc.)
     """
     name = raw.strip()
 
+    # Tutorial special case: only strip parenthesized content
+    if col2 == 'T' and col3 in ('B', 'D'):
+        name = re.sub(r'\s*\([^)]*\)', '', name)
+        name = re.sub(r'\s+', ' ', name).strip()
+        return name
+
+    # Legacy trailing-suffix rules (eBook, CD-ROM, Online, Booklet)
     for rule in _FORMAT_SUFFIX_RULES:
         name = rule.sub('', name)
 
-    for rule in _YEAR_PAREN_RULES:
-        name = rule.sub('', name)
-
-    name = _STANDALONE_YEAR_RULE.sub('', name)
+    # Legacy version suffix
     name = _VERSION_RULE.sub('', name)
-    name = _MARKING_PAREN_RULE.sub('', name)
 
-    # Collapse any whitespace (including runs created by year stripping)
+    # Aggressive general rules (Task 2.6)
+    # Remove ALL parenthesized content
+    name = re.sub(r'\s*\([^)]*\)', '', name)
+    # Remove 'paper 1|2|3'
+    name = re.sub(r'\bpaper\s+[123]\b', '', name, flags=re.IGNORECASE)
+    # Remove 'part 1|2|3'
+    name = re.sub(r'\bpart\s+[123]\b', '', name, flags=re.IGNORECASE)
+    # Remove 'eBook' anywhere (word-boundary)
+    name = re.sub(r'\bebook\b', '', name, flags=re.IGNORECASE)
+    # Remove standalone 'Paper' (singular only; 'Papers' has trailing s)
+    name = re.sub(r'\bpaper\b', '', name, flags=re.IGNORECASE)
+    # Replace dashes with space (preserve word boundaries)
+    name = name.replace('-', ' ')
+    # Remove 2-digit number pairs (strips years: "2014" → "" via two matches)
+    name = re.sub(r'\d\d', '', name)
+
+    # Collapse whitespace
     name = re.sub(r'\s+', ' ', name).strip()
 
-    # Apply pre-approved typo fixes
+    # Apply curated typo map
     name = _TYPO_MAP.get(name, name)
 
     return name
@@ -186,9 +193,13 @@ class TemplateKey:
 def build_template_key(row: LegacyRow) -> TemplateKey:
     """Compute the template key for a legacy CSV row.
 
-    Combines col3 (unchanged) with the normalized fullname.
+    Combines col3 (unchanged) with the normalized fullname. The
+    col2 and col3 values are passed to normalize_fullname so it
+    can apply the tutorial special case.
     """
     return TemplateKey(
         code=row.col3,
-        fullname=normalize_fullname(row.raw_fullname),
+        fullname=normalize_fullname(
+            row.raw_fullname, col2=row.col2, col3=row.col3,
+        ),
     )

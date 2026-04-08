@@ -138,27 +138,11 @@ class TestNormalizeFullname(SimpleTestCase):
             'ASET',
         )
 
-    def test_preserves_part_suffix(self):
-        """Part 1 / Part 2 are meaningful distinctions — keep them."""
-        self.assertEqual(
-            normalize_fullname('Course Notes - part 1'),
-            'Course Notes - part 1',
-        )
-        self.assertEqual(
-            normalize_fullname('Combined Materials Pack - Part 1'),
-            'Combined Materials Pack - Part 1',
-        )
-
-    def test_preserves_assessment_suffix(self):
+    def test_assessment_suffix_dash_removed(self):
+        """Dashes are now removed; 'Course Notes - Assessment' becomes 'Course Notes Assessment'."""
         self.assertEqual(
             normalize_fullname('Course Notes - Assessment'),
-            'Course Notes - Assessment',
-        )
-
-    def test_preserves_retaker(self):
-        self.assertEqual(
-            normalize_fullname('Combined Materials (Part. Retaker) eBook'),
-            'Combined Materials (Part. Retaker)',
+            'Course Notes Assessment',
         )
 
     def test_typo_fix_core_reading(self):
@@ -188,10 +172,12 @@ class TestNormalizeFullname(SimpleTestCase):
         self.assertEqual(canonical, 'ASET')
         self.assertEqual(normalize_fullname(canonical), canonical)
 
-    def test_ca2_map_year_stripping(self):
+
+    def test_ca2_map_year_and_part_stripping(self):
+        """'CA2 MAP 2015 Marking Part 1' collapses to 'CA2 MAP Marking'."""
         self.assertEqual(
             normalize_fullname('CA2 MAP 2015 Marking Part 1'),
-            'CA2 MAP Marking Part 1',
+            'CA2 MAP Marking',
         )
 
 
@@ -419,10 +405,179 @@ class TestNormalizeFullnameFixes(SimpleTestCase):
     # --- Idempotency regression guards ---
 
     def test_idempotent_year_range_case(self):
-        """Normalizing the result of a year-range case must be a no-op."""
+        """Normalizing the result of a year-range case must be idempotent."""
         canonical = normalize_fullname('ASET 2014-2017 Papers')
+        # Trace: dash→space, \d\d strips all 4 digits twice each,
+        # 'Papers' stays (not 'Paper'), collapse. Expected: 'ASET Papers'
+        self.assertEqual(canonical, 'ASET Papers')
         self.assertEqual(normalize_fullname(canonical), canonical)
 
     def test_idempotent_series_marking_case(self):
         canonical = normalize_fullname('Series X Marking')
         self.assertEqual(normalize_fullname(canonical), canonical)
+
+
+class TestNormalizeFullnameAggressive(SimpleTestCase):
+    """Tests for the aggressive normalization rules (Task 2.6).
+
+    These rules trade semantic fidelity for collision reduction. The raw
+    fullname is still preserved in store.Product.remarks.
+    """
+
+    # --- Tutorial special case (col2='T', col3 in 'B'/'D') ---
+
+    def test_tutorial_b_strips_paren(self):
+        self.assertEqual(
+            normalize_fullname(
+                'Tutorial Course (E1, 3 day block)',
+                col2='T', col3='B',
+            ),
+            'Tutorial Course',
+        )
+
+    def test_tutorial_d_strips_paren(self):
+        self.assertEqual(
+            normalize_fullname(
+                'Regular Tutorial Course (E1, 6 days)',
+                col2='T', col3='D',
+            ),
+            'Regular Tutorial Course',
+        )
+
+    def test_tutorial_d_strips_nested_info(self):
+        self.assertEqual(
+            normalize_fullname(
+                'Regular Tutorial Days (A1L3, 3 days)',
+                col2='T', col3='D',
+            ),
+            'Regular Tutorial Days',
+        )
+
+    def test_tutorial_d_does_not_apply_aggressive_rules(self):
+        """Tutorial B/D ONLY strips parens — dashes, paper, part stay."""
+        self.assertEqual(
+            normalize_fullname(
+                'Tutorial - Paper Session',
+                col2='T', col3='D',
+            ),
+            'Tutorial - Paper Session',
+        )
+
+    def test_tutorial_non_bd_falls_through_to_general_rules(self):
+        """col2='T' with col3='A' (not B or D) uses general rules."""
+        self.assertEqual(
+            normalize_fullname(
+                'Personal Tutorial - Paper',
+                col2='T', col3='A',
+            ),
+            'Personal Tutorial',
+        )
+
+    # --- Aggressive rules for non-tutorial products ---
+
+    def test_removes_all_parens(self):
+        self.assertEqual(
+            normalize_fullname('Combined Materials (Part. Retaker)'),
+            'Combined Materials',
+        )
+
+    def test_removes_parens_with_embedded_info(self):
+        self.assertEqual(
+            normalize_fullname('ASET (inc April 2005)'),
+            'ASET',
+        )
+
+    def test_removes_paper_1(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam Paper 1'),
+            'Mock Exam',
+        )
+
+    def test_removes_paper_2(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam paper 2'),
+            'Mock Exam',
+        )
+
+    def test_removes_paper_3(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam Paper 3'),
+            'Mock Exam',
+        )
+
+    def test_removes_part_1(self):
+        self.assertEqual(
+            normalize_fullname('Course Notes - part 1'),
+            'Course Notes',
+        )
+
+    def test_removes_part_2_case_insensitive(self):
+        self.assertEqual(
+            normalize_fullname('Course Notes Part 2'),
+            'Course Notes',
+        )
+
+    def test_removes_ebook_anywhere(self):
+        self.assertEqual(
+            normalize_fullname('Combined Materials eBook Upgrade'),
+            'Combined Materials Upgrade',
+        )
+
+    def test_removes_paper_standalone(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam Paper'),
+            'Mock Exam',
+        )
+
+    def test_does_not_remove_papers_plural(self):
+        """'Papers' (plural) has a trailing 's' so \\bpaper\\b won't match."""
+        self.assertEqual(
+            normalize_fullname('ASET Papers'),
+            'ASET Papers',
+        )
+
+    def test_removes_dashes_as_spaces(self):
+        self.assertEqual(
+            normalize_fullname('ASET-Paper-Set'),
+            'ASET Set',  # dash→space, then "Paper" removed, collapse
+        )
+
+    def test_removes_two_digit_numbers(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam 97-98'),
+            'Mock Exam',
+        )
+
+    def test_removes_four_digit_year_via_double_dd(self):
+        """4-digit years get matched twice by \\d\\d and fully removed."""
+        self.assertEqual(
+            normalize_fullname('Mock Exam 2016'),
+            'Mock Exam',
+        )
+
+    def test_preserves_single_digit(self):
+        """Single digits like 'Mock Exam 1' are NOT stripped."""
+        self.assertEqual(
+            normalize_fullname('Mock Exam 1'),
+            'Mock Exam 1',
+        )
+
+    def test_preserves_single_digit_two(self):
+        self.assertEqual(
+            normalize_fullname('Mock Exam 2'),
+            'Mock Exam 2',
+        )
+
+    def test_combined_aggressive_rules(self):
+        """'ASET 2014-2017 Papers eBook' end-to-end."""
+        self.assertEqual(
+            normalize_fullname('ASET 2014-2017 Papers eBook'),
+            'ASET Papers',
+        )
+
+    def test_update_note_variants_collapse(self):
+        """'Update Note 1' stays as-is: single digit not stripped by \\d\\d."""
+        self.assertEqual(
+            normalize_fullname('Update Note 1'),
+            'Update Note 1',
+        )
