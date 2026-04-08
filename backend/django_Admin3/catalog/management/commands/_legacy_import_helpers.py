@@ -6,6 +6,7 @@ staged management commands (profile, import_legacy_templates,
 import_legacy_store_products).
 """
 import csv
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator, List, Optional
@@ -54,3 +55,76 @@ def iter_legacy_csv_rows(paths: Iterable[Path]) -> Iterator[LegacyRow]:
                     raw_fullname=fields[5],
                     raw_shortname=fields[6],
                 )
+
+
+_FORMAT_SUFFIX_RULES = [
+    re.compile(r'\s+eBook\s*$', re.IGNORECASE),
+    re.compile(r'\s+CD[\s\-]?ROM\s*$', re.IGNORECASE),
+    re.compile(r'\s+Online(\s+Tutorial)?\s*$', re.IGNORECASE),
+    re.compile(r'\s+Booklet\s*$', re.IGNORECASE),
+]
+
+_YEAR_PAREN_RULES = [
+    # "(2014-2017 Papers)", "(April 2008 exams)" — any 4-digit year inside parens
+    re.compile(r'\s*\((?:19|20)\d{2}[^)]*\)'),
+    # "(14-17 and 19-21 Papers)" — any 2-digit year followed by dash/space
+    re.compile(r'\s*\(\d{2}[-\s][^)]*\)'),
+    # "(January exams)", "(April 2008 exams)" — month-prefixed parentheticals
+    re.compile(
+        r'\s*\((?:January|February|March|April|May|June|'
+        r'July|August|September|October|November|December)[^)]*\)',
+        re.IGNORECASE,
+    ),
+]
+
+# Matches a standalone 4-digit year anywhere in the string (preceded by space,
+# followed by word boundary). This catches "Mock Exam 2010 Marking" →
+# "Mock Exam Marking".
+_STANDALONE_YEAR_RULE = re.compile(r'\s+(?:19|20)\d{2}\b')
+
+# "Revision Notes V2" → "Revision Notes". Only at end of string.
+_VERSION_RULE = re.compile(r'\s+V\d+\s*$', re.IGNORECASE)
+
+# "Series X Assignments (Marking)" → "Series X Assignments"
+_MARKING_PAREN_RULE = re.compile(r'\s*\(Marking\)\s*$', re.IGNORECASE)
+
+_TYPO_MAP = {
+    'Core REading': 'Core Reading',
+    'Question & Answer Bank': 'Q&A Bank',
+    'Flashcards': 'Flash Cards',
+}
+
+
+def normalize_fullname(raw: str) -> str:
+    """Normalize a raw CSV fullname to its canonical template name.
+
+    Rules (applied in order):
+      1. Strip format-encoding suffixes: eBook, CD-ROM, Online, Booklet
+      2. Strip year/session parenthetical annotations
+      3. Strip naked years anywhere in the string
+      4. Strip trailing version markers (V1, V2, etc.)
+      5. Strip trailing "(Marking)"
+      6. Collapse whitespace and apply pre-approved typo fixes
+
+    Deliberately preserves: "- part 1", "- Assessment", "Retaker", "Mini",
+    subject-specific prefixes like "CA2 MAP".
+    """
+    name = raw.strip()
+
+    for rule in _FORMAT_SUFFIX_RULES:
+        name = rule.sub('', name)
+
+    for rule in _YEAR_PAREN_RULES:
+        name = rule.sub('', name)
+
+    name = _STANDALONE_YEAR_RULE.sub('', name)
+    name = _VERSION_RULE.sub('', name)
+    name = _MARKING_PAREN_RULE.sub('', name)
+
+    # Collapse any whitespace (including runs created by year stripping)
+    name = re.sub(r'\s+', ' ', name).strip()
+
+    # Apply pre-approved typo fixes
+    name = _TYPO_MAP.get(name, name)
+
+    return name
