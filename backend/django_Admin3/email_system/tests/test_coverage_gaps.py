@@ -23,6 +23,7 @@ from email_system.models import (
     EmailTemplate, EmailQueue, EmailLog,
     EmailContentRule, EmailContentPlaceholder,
 )
+from email_system.tests.factories import make_template
 from email_system.services.email_service import EmailService
 from email_system.services.queue_service import EmailQueueService
 from email_system.testing import EmailTester
@@ -200,7 +201,7 @@ class QueueServiceSerializationFallbackTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='cov_serial_tpl',
             display_name='Coverage Serial Template',
             subject_template='Coverage Serial Subject',
@@ -382,7 +383,7 @@ class QueueServiceRetrySchedulingTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='cov_retry_tpl',
             display_name='Coverage Retry Template',
             subject_template='Coverage Retry Subject',
@@ -473,7 +474,7 @@ class ShouldIncludeAttachmentObjectItemsTest(TestCase):
         self.service = EmailQueueService()
         from email_system.models import EmailAttachment, EmailTemplateAttachment
 
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='cov_obj_item_tpl',
             display_name='Coverage Object Item Template',
             subject_template='Coverage Object Item Subject',
@@ -522,7 +523,7 @@ class RegenerateEmailContentSuccessTest(TestCase):
     """
 
     def setUp(self):
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='order_confirmation',
             display_name='Regen Template',
             subject_template='Regen Subject',
@@ -558,10 +559,13 @@ class RegenerateEmailContentSuccessTest(TestCase):
     @patch('email_system.services.email_service.EmailService')
     def test_regenerate_regular_template_success(self, mock_service_cls, mock_mjml):
         """Test regenerate_email_content success with regular template via DB MJML content."""
-        # Make template NOT use master template but has MJML content in DB
+        # Make template NOT use master template but have MJML content on its current version.
         self.template.use_master_template = False
-        self.template.mjml_content = '<mjml><mj-body><mj-section><mj-column><mj-text>Hello</mj-text></mj-column></mj-section></mj-body></mjml>'
-        self.template.save()
+        self.template.save(update_fields=['use_master_template'])
+        self.template.create_version(
+            subject_template='Regen Subject',
+            mjml_content='<mjml><mj-body><mj-section><mj-column><mj-text>Hello</mj-text></mj-column></mj-section></mj-body></mjml>',
+        )
 
         mock_service = MagicMock()
         mock_service._html_to_text.return_value = 'plain text from regular'

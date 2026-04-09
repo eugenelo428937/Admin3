@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from email_system.models import EmailTemplate, EmailQueue
 from email_system.management.commands.process_email_queue import Command
+from email_system.tests.factories import make_template
 
 
 class ProcessEmailQueueCommandArgumentsTest(TestCase):
@@ -326,7 +327,7 @@ class GetPendingCountTest(TestCase):
 
     def setUp(self):
         self.cmd = Command()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='peq_count_tpl',
             display_name='PEQ Count Template',
             subject_template='PEQ Count Subject',

@@ -58,6 +58,11 @@ const emailService = {
         return parsePaginatedResponse(response.data);
     },
 
+    getTemplateTypes: async (): Promise<{ value: string; label: string }[]> => {
+        const response = await httpService.get(`${BASE_URL}/templates/template-types/`);
+        return response.data;
+    },
+
     getTemplateById: async (id: number): Promise<EmailTemplate> => {
         const response = await httpService.get(`${BASE_URL}/templates/${id}/`);
         return response.data;
@@ -80,6 +85,11 @@ const emailService = {
 
     deleteTemplate: async (id: number): Promise<void> => {
         await httpService.delete(`${BASE_URL}/templates/${id}/`);
+    },
+
+    getTemplateVersions: async (id: number): Promise<import('../types/email').EmailTemplateVersion[]> => {
+        const response = await httpService.get(`${BASE_URL}/templates/${id}/versions/`);
+        return response.data;
     },
 
     previewMjml: async (id: number, mjmlContent: string): Promise<MjmlPreviewResponse> => {

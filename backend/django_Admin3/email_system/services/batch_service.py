@@ -48,8 +48,10 @@ class EmailBatchService:
         if len(items) > max_items:
             raise ValueError(f'Batch size {len(items)} exceeds maximum of {max_items}.')
 
-        # Validate payloads against template schema
-        schema = template.payload_schema
+        # Pin the current version so every queue item in this batch renders
+        # against the snapshot captured at enqueue time, not the latest edit.
+        current_version = template.current_version
+        schema = current_version.payload_schema if current_version else {}
         if schema:
             item_errors = []
             for idx, item in enumerate(items):
@@ -96,7 +98,8 @@ class EmailBatchService:
                     })
                     continue
 
-                # Resolve subject
+                # Resolve subject (from the pinned version)
+                version_subject = current_version.subject_template if current_version else ''
                 if subject_override:
                     try:
                         subject = Template(subject_override).render(Context(payload))
@@ -104,11 +107,14 @@ class EmailBatchService:
                         subject = subject_override
                 else:
                     try:
-                        subject = Template(template.get_renderable_subject()).render(Context(payload))
+                        subject = Template(
+                            current_version.get_renderable_subject() if current_version else ''
+                        ).render(Context(payload))
                     except Exception:
-                        subject = template.subject_template
+                        subject = version_subject
 
-                # Create queue entry
+                # Create queue entry — pin the template_version so process_queue
+                # renders from the exact snapshot captured at enqueue time.
                 queue_item = EmailQueue.objects.create(
                     to_emails=[to_email],
                     cc_emails=cc_email if cc_email else [],
@@ -117,6 +123,7 @@ class EmailBatchService:
                     subject=subject,
                     email_context=payload,
                     template=template,
+                    template_version=current_version,
                     batch=batch,
                     priority=template.default_priority or 'normal',
                     created_by=user,

@@ -22,6 +22,7 @@ from email_system.models import (
     EmailContentRule, EmailTemplateContentRule,
     EmailContentPlaceholder,
 )
+from email_system.tests.factories import make_template
 
 
 class AdminTestBase(TestCase):
@@ -33,7 +34,7 @@ class AdminTestBase(TestCase):
         self.admin_user = User.objects.create_superuser(
             username='admin', password='adminpass', email='admin@test.com'
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject',

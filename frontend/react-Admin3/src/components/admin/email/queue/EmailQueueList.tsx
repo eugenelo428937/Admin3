@@ -1,30 +1,15 @@
 import React, { useEffect } from 'react';
-import { MoreHorizontal, Eye, Copy, RotateCcw, FileText, Pencil } from 'lucide-react';
+import { Eye, Copy, RotateCcw, FileText, Pencil } from 'lucide-react';
 import {
     AdminPage,
     AdminPageHeader,
     AdminErrorAlert,
-    AdminLoadingState,
+    AdminDataTable,
     AdminConfirmDialog,
     AdminToggleGroup,
 } from '@/components/admin/composed';
+import type { SimpleColumn } from '@/components/admin/composed';
 import { Badge } from '@/components/admin/ui/badge';
-import { Button } from '@/components/admin/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/admin/ui/table';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/admin/ui/dropdown-menu';
 import { useEmailQueueListVM } from './useEmailQueueListVM';
 import type { QueueStatus, EmailQueue } from '../../../../types/email';
 import emailService from '../../../../services/emailService';
@@ -92,6 +77,69 @@ const EmailQueueList: React.FC = () => {
         vm.fetchQueue();
     }, [vm.fetchQueue]);
 
+    const columns: SimpleColumn<any>[] = [
+        {
+            key: 'template_name',
+            header: 'Template',
+            render: (value: string) => value || '-',
+        },
+        {
+            key: 'to_emails',
+            header: 'To',
+            render: (value: string[]) => (
+                <span
+                    className="tw:block tw:max-w-[180px] tw:truncate"
+                    title={value.join(', ')}
+                >
+                    {value.length > 0
+                        ? `${value[0]}${value.length > 1 ? ` +${value.length - 1}` : ''}`
+                        : '-'}
+                </span>
+            ),
+        },
+        {
+            key: 'subject',
+            header: 'Subject',
+            render: (value: string, row: any) => (
+                <div className="tw:flex tw:items-center tw:gap-1.5">
+                    <span
+                        className="tw:block tw:max-w-[240px] tw:truncate"
+                        title={value}
+                    >
+                        {truncate(value, 40)}
+                    </span>
+                    {row.is_edited && (
+                        <Badge variant="outline" className="tw:text-[10px] tw:px-1 tw:py-0 tw:border-blue-300 tw:bg-blue-50 tw:text-blue-700">
+                            edited
+                        </Badge>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            align: 'center',
+            render: (value: QueueStatus) => (
+                <Badge variant="outline" style={STATUS_BADGE_STYLE[value]}>
+                    {value}
+                </Badge>
+            ),
+        },
+        {
+            key: 'sent_at',
+            header: 'Sent',
+            align: 'center',
+            render: (value: string | null) => (
+                <span
+                    title={value ? new Date(value).toLocaleString() : ''}
+                >
+                    {formatRelativeTime(value)}
+                </span>
+            ),
+        },
+    ];
+
     return (
         <AdminPage>
             <AdminPageHeader title="Email Queue" />
@@ -100,7 +148,7 @@ const EmailQueueList: React.FC = () => {
                 options={STATUS_OPTIONS.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))}
                 value={vm.statusFilter}
                 onChange={vm.handleStatusFilter}
-                className="tw:mb-4"
+                
             />
 
             <div className="tw:mb-4 tw:max-w-sm">
@@ -113,157 +161,49 @@ const EmailQueueList: React.FC = () => {
 
             <AdminErrorAlert message={vm.error} />
 
-            {vm.loading ? (
-                <AdminLoadingState rows={5} columns={7} />
-            ) : vm.queueItems.length === 0 && !vm.error ? (
-                <div role="alert" className="tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-800">
-                    No queue items found.
-                </div>
-            ) : (
-                <>
-                    <div className="tw:rounded-md tw:border tw:border-admin-border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Template</TableHead>
-                                    <TableHead>To</TableHead>
-                                    <TableHead>Subject</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Status</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Sent</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {vm.queueItems.map((item) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell>
-                                            {item.template_name || '-'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span
-                                                className="tw:block tw:max-w-[180px] tw:truncate tw:text-sm"
-                                                title={item.to_emails.join(', ')}
-                                            >
-                                                {item.to_emails.length > 0
-                                                    ? `${item.to_emails[0]}${item.to_emails.length > 1 ? ` +${item.to_emails.length - 1}` : ''}`
-                                                    : '-'}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="tw:flex tw:items-center tw:gap-1.5">
-                                                <span
-                                                    className="tw:block tw:max-w-[240px] tw:truncate tw:text-sm"
-                                                    title={item.subject}
-                                                >
-                                                    {truncate(item.subject, 40)}
-                                                </span>
-                                                {item.is_edited && (
-                                                    <Badge variant="outline" className="tw:text-[10px] tw:px-1 tw:py-0 tw:border-blue-300 tw:bg-blue-50 tw:text-blue-700">
-                                                        edited
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell style={{ textAlign: 'center' }}>
-                                            <Badge
-                                                variant="outline"
-                                                style={STATUS_BADGE_STYLE[item.status]}
-                                            >
-                                                {item.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell style={{ textAlign: 'center' }}>
-                                            <span
-                                                className="tw:text-sm"
-                                                title={item.sent_at ? new Date(item.sent_at).toLocaleString() : ''}
-                                            >
-                                                {formatRelativeTime(item.sent_at)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell style={{ textAlign: 'center' }}>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon-xs">
-                                                        <MoreHorizontal className="tw:size-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleViewEmail(item)}
-                                                        disabled={!item.can_view_email}
-                                                    >
-                                                        <Eye className="tw:size-4" />
-                                                        View Email
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => vm.handleViewDetail(item.id)}>
-                                                        <FileText className="tw:size-4" />
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => vm.handleEdit(item.id)}
-                                                        disabled={item.status !== 'pending' && item.status !== 'retry'}
-                                                    >
-                                                        <Pencil className="tw:size-4" />
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => vm.handleDuplicate(item.id)}>
-                                                        <Copy className="tw:size-4" />
-                                                        Duplicate
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => vm.openResendDialog(item.id)}>
-                                                        <RotateCcw className="tw:size-4" />
-                                                        Resend
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination */}
-                    <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:py-4 tw:text-sm tw:text-admin-fg-muted">
-                        <span>
-                            Showing {vm.page * vm.rowsPerPage + 1}&ndash;{Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
-                        </span>
-                        <div className="tw:flex tw:items-center tw:gap-4">
-                            <div className="tw:flex tw:items-center tw:gap-2">
-                                <span>Rows per page</span>
-                                <select
-                                    className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
-                                    value={vm.rowsPerPage}
-                                    onChange={(e) => vm.handleChangeRowsPerPage(e as any)}
-                                >
-                                    {[10, 25, 50, 100].map((size) => (
-                                        <option key={size} value={size}>{size}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="tw:flex tw:items-center tw:gap-1">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={vm.page === 0}
-                                    onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
-                                    onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
+            <AdminDataTable
+                columns={columns}
+                data={vm.queueItems}
+                loading={vm.loading}
+                emptyMessage="No queue items found."
+                actions={(row: EmailQueue) => [
+                    {
+                        label: 'View Email',
+                        icon: Eye,
+                        disabled: !row.can_view_email,
+                        onClick: () => handleViewEmail(row),
+                    },
+                    {
+                        label: 'View Details',
+                        icon: FileText,
+                        onClick: () => vm.handleViewDetail(row.id),
+                    },
+                    {
+                        label: 'Edit',
+                        icon: Pencil,
+                        disabled: row.status !== 'pending' && row.status !== 'retry',
+                        onClick: () => vm.handleEdit(row.id),
+                    },
+                    {
+                        label: 'Duplicate',
+                        icon: Copy,
+                        onClick: () => vm.handleDuplicate(row.id),
+                    },
+                    {
+                        label: 'Resend',
+                        icon: RotateCcw,
+                        onClick: () => vm.openResendDialog(row.id),
+                    },
+                ]}
+                pagination={vm.totalCount > vm.rowsPerPage ? {
+                    page: vm.page,
+                    pageSize: vm.rowsPerPage,
+                    total: vm.totalCount,
+                    onPageChange: vm.handleChangePage,
+                    onPageSizeChange: vm.handleChangeRowsPerPage as any,
+                    pageSizeOptions: [10, 25, 50, 100],
+                } : undefined}
+            />
 
             {/* Resend Confirmation Dialog */}
             <AdminConfirmDialog

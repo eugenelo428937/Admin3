@@ -1,7 +1,14 @@
-"""Tests for EmailVariable model and EmailTemplate schema auto-generation."""
+"""Tests for EmailVariable model and EmailTemplate schema auto-generation.
+
+After the versioning refactor, ``payload_schema`` and ``get_renderable_*``
+helpers live on ``EmailTemplateVersion``. These tests drive content through
+``make_template`` (which creates a template + an initial version) and then
+read ``t.current_version.payload_schema`` etc.
+"""
 from django.test import TestCase
 from django.contrib.auth.models import User
 from email_system.models import EmailTemplate, EmailVariable
+from email_system.tests.factories import make_template
 
 
 class EmailVariableModelTest(TestCase):
@@ -51,23 +58,27 @@ class TemplateSchemaGenerationTest(TestCase):
             data_type='float',
         )
 
+    _seq = 0
+
     def _create_template(self, **kwargs):
+        # Unique name per call so repeated runs in the same test class don't collide
+        TemplateSchemaGenerationTest._seq += 1
         defaults = {
-            'name': 'test-template',
+            'name': f'test-template-{TemplateSchemaGenerationTest._seq}',
             'display_name': 'Test Template',
             'subject_template': 'Hello',
             'created_by': self.user,
         }
         defaults.update(kwargs)
-        return EmailTemplate.objects.create(**defaults)
+        return make_template(**defaults)
 
     def test_no_variables_empty_schema(self):
         t = self._create_template(mjml_content='<p>No variables here</p>')
-        self.assertEqual(t.payload_schema, {})
+        self.assertEqual(t.current_version.payload_schema, {})
 
     def test_simple_variable_in_content(self):
         t = self._create_template(mjml_content='Hello {{user.first_name}}!')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertIn('user', schema)
         self.assertIn('first_name', schema['user'])
         self.assertEqual(schema['user']['first_name']['type'], 'string')
@@ -75,24 +86,24 @@ class TemplateSchemaGenerationTest(TestCase):
 
     def test_mandatory_variable(self):
         t = self._create_template(mjml_content='Hello {{!user.first_name}}!')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertTrue(schema['user']['first_name']['required'])
 
     def test_template_default_overrides_catalog(self):
         t = self._create_template(
             mjml_content='{{!user.first_name|default:"custom_default"}}'
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertEqual(schema['user']['first_name']['default'], 'custom_default')
 
     def test_catalog_default_used_when_no_template_default(self):
         t = self._create_template(mjml_content='{{user.first_name}}')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertEqual(schema['user']['first_name']['default'], 'student')
 
     def test_flat_variable(self):
         t = self._create_template(mjml_content='Total: {{pay_amount}}')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertIn('pay_amount', schema)
         self.assertEqual(schema['pay_amount']['type'], 'float')
 
@@ -101,7 +112,7 @@ class TemplateSchemaGenerationTest(TestCase):
             subject_template='Order for {{!user.first_name}}',
             mjml_content='<p>Body</p>',
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertTrue(schema['user']['first_name']['required'])
 
     def test_variables_merged_across_fields(self):
@@ -111,39 +122,38 @@ class TemplateSchemaGenerationTest(TestCase):
             subject_template='Hi {{user.first_name}}',
             mjml_content='Dear {{!user.first_name}},',
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertTrue(schema['user']['first_name']['required'])
 
     def test_unknown_variable_defaults_to_string(self):
         t = self._create_template(mjml_content='{{unknown.field}}')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertEqual(schema['unknown']['field']['type'], 'string')
 
     def test_multiple_variables_nested(self):
         t = self._create_template(
             mjml_content='{{!user.first_name}} {{user.last_name}} owes {{pay_amount}}'
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertIn('user', schema)
         self.assertIn('first_name', schema['user'])
         self.assertIn('last_name', schema['user'])
         self.assertIn('pay_amount', schema)
 
     def test_schema_rebuilt_on_update(self):
+        """A fresh version rebuilds payload_schema from its own content."""
         t = self._create_template(mjml_content='{{user.first_name}}')
-        self.assertIn('user', t.payload_schema)
+        self.assertIn('user', t.current_version.payload_schema)
 
-        t.mjml_content = '<p>No variables now</p>'
-        t.save()
-        t.refresh_from_db()
-        self.assertEqual(t.payload_schema, {})
+        t.create_version(mjml_content='<p>No variables now</p>')
+        self.assertEqual(t.current_version.payload_schema, {})
 
     def test_basic_mode_content_parsed(self):
         t = self._create_template(
             mjml_content='',
             basic_mode_content='Hello {{!user.first_name}}!',
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertTrue(schema['user']['first_name']['required'])
 
     def test_whitespace_tolerant_syntax(self):
@@ -151,14 +161,14 @@ class TemplateSchemaGenerationTest(TestCase):
         t = self._create_template(
             mjml_content='{{ !user.first_name | default:"Marker " }}'
         )
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertIn('user', schema)
         self.assertTrue(schema['user']['first_name']['required'])
         self.assertEqual(schema['user']['first_name']['default'], 'Marker ')
 
     def test_whitespace_optional_variable(self):
         t = self._create_template(mjml_content='{{ user.last_name }}')
-        schema = t.payload_schema
+        schema = t.current_version.payload_schema
         self.assertIn('user', schema)
         self.assertFalse(schema['user']['last_name']['required'])
 
@@ -167,21 +177,21 @@ class TemplateSchemaGenerationTest(TestCase):
         t = self._create_template(
             mjml_content='Hello {{ !user.first_name | default:"Marker" }}!'
         )
-        renderable = t.get_renderable_content()
+        renderable = t.current_version.get_renderable_content()
         self.assertNotIn('{{!', renderable)
         self.assertNotIn('{{ !', renderable)
         self.assertIn('{{ user.first_name', renderable)
 
     def test_get_renderable_content_leaves_optional_unchanged(self):
         t = self._create_template(mjml_content='Hello {{user.first_name}}!')
-        renderable = t.get_renderable_content()
+        renderable = t.current_version.get_renderable_content()
         self.assertIn('{{user.first_name}}', renderable)
 
     def test_get_renderable_subject_strips_required_marker(self):
         t = self._create_template(
             subject_template='Order for {{!user.first_name}}',
         )
-        renderable = t.get_renderable_subject()
+        renderable = t.current_version.get_renderable_subject()
         self.assertNotIn('{{!', renderable)
         self.assertIn('{{ user.first_name', renderable)
 
@@ -191,7 +201,7 @@ class TemplateSchemaGenerationTest(TestCase):
         t = self._create_template(
             mjml_content='Hello {{ !user.first_name | default:"Marker" }}, you owe {{pay_amount}}!'
         )
-        renderable = t.get_renderable_content()
+        renderable = t.current_version.get_renderable_content()
         # Should not raise
         rendered = Template(renderable).render(Context({
             'user': {'first_name': 'Alice'},

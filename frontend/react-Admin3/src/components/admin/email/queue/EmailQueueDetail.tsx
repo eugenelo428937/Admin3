@@ -16,6 +16,7 @@ import {
     DialogFooter,
 } from '@/components/admin/ui/dialog';
 import { useEmailQueueDetailVM } from './useEmailQueueDetailVM';
+import emailService from '../../../../services/emailService';
 import type { QueueStatus, QueuePriority } from '../../../../types/email';
 
 const STATUS_BADGE_STYLE: Record<QueueStatus, React.CSSProperties> = {
@@ -44,7 +45,6 @@ const EmailQueueDetail: React.FC = () => {
     const vm = useEmailQueueDetailVM();
 
     const [showCcBcc, setShowCcBcc] = useState(false);
-    const [showHtmlPreview, setShowHtmlPreview] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [showContextDialog, setShowContextDialog] = useState(false);
 
@@ -197,28 +197,30 @@ const EmailQueueDetail: React.FC = () => {
                         Context
                     </Button>
                 </div>
-                {/* Line 2: Preview button */}
+                {/* Line 2: Preview button — opens rendered email in a new window */}
                 <div className="tw:mt-3">
-                    <Button variant="outline" size="sm" onClick={() => setShowHtmlPreview(!showHtmlPreview)} style={{ fontSize: '12px' }}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!item.can_view_email}
+                        onClick={async () => {
+                            try {
+                                const html = await emailService.viewQueueItemEmail(item.id);
+                                if (!html) return;
+                                const blob = new Blob([html], { type: 'text/html' });
+                                const url = URL.createObjectURL(blob);
+                                const w = window.open(url, '_blank');
+                                if (w) w.addEventListener('unload', () => URL.revokeObjectURL(url));
+                            } catch {
+                                // user can retry
+                            }
+                        }}
+                        style={{ fontSize: '12px' }}
+                    >
                         <Eye className="tw:size-3.5" />
-                        {showHtmlPreview ? 'Hide Preview' : 'Preview Email'}
+                        Preview Email
                     </Button>
                 </div>
-                {/* Preview iframe */}
-                {showHtmlPreview && (
-                    <div className="tw:mt-3 tw:overflow-hidden tw:rounded-md tw:border tw:border-admin-border">
-                        {item.html_content ? (
-                            <iframe
-                                srcDoc={item.html_content}
-                                title="Email HTML Preview"
-                                style={{ width: '100%', minHeight: 400, border: 'none' }}
-                                sandbox="allow-same-origin"
-                            />
-                        ) : (
-                            <p className="tw:p-4 tw:text-sm tw:text-admin-fg-muted">No HTML content available.</p>
-                        )}
-                    </div>
-                )}
             </div>
 
             {/* Duplicated From Link */}

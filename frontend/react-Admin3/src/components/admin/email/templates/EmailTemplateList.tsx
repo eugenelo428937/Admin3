@@ -12,19 +12,6 @@ import {
 } from '@/components/admin/composed';
 import type { SimpleColumn } from '@/components/admin/composed';
 import useEmailTemplateListVM from './useEmailTemplateListVM';
-import type { TemplateType } from '../../../../types/email';
-const TEMPLATE_TYPE_OPTIONS: { value: TemplateType | 'all'; label: string }[] = [
-    { value: 'all', label: 'All Types' },
-    { value: 'order_confirmation', label: 'Order Confirmation' },
-    { value: 'password_reset', label: 'Password Reset' },
-    { value: 'password_reset_completed', label: 'Password Reset Completed' },
-    { value: 'account_activation', label: 'Account Activation' },
-    { value: 'email_verification', label: 'Email Verification' },
-    { value: 'materials', label: 'Materials' },
-    { value: 'marking', label: 'Marking' },
-    { value: 'tutorials', label: 'Tutorials' },
-    { value: 'apprentice', label: 'Apprentice' },
-];
 
 const EmailTemplateList: React.FC = () => {
     const vm = useEmailTemplateListVM();
@@ -69,10 +56,10 @@ const EmailTemplateList: React.FC = () => {
 
             <AdminToggleGroup
                 label="Type"
-                options={TEMPLATE_TYPE_OPTIONS}
+                options={vm.templateTypeOptions}
                 value={vm.filterTemplateType}
                 onChange={vm.setFilterTemplateType}
-                className="tw:mb-4"
+                
             />
 
             <AdminDataTable

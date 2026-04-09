@@ -4,19 +4,11 @@ import {
     AdminPage,
     AdminPageHeader,
     AdminErrorAlert,
-    AdminLoadingState,
+    AdminDataTable,
     AdminConfirmDialog,
     AdminToggleGroup,
 } from '@/components/admin/composed';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/admin/ui/table';
-import { Button } from '@/components/admin/ui/button';
+import type { SimpleColumn } from '@/components/admin/composed';
 import { useEmailBatchListVM } from './useEmailBatchListVM';
 import EmailBatchDrawer from './EmailBatchDrawer';
 import type { BatchStatus } from '../../../../types/email';
@@ -63,18 +55,55 @@ const getProgressStatusLabel = (batch: { status: BatchStatus; error_count: numbe
     return { text: '', color: '#64748b' };
 };
 
-const getRetryIconColor = (batch: { status: BatchStatus; error_count: number }): string => {
-    if (batch.status === 'failed') return '#dc2626';
-    if (batch.error_count > 0) return '#d97706';
-    return '#64748b';
-};
-
 const EmailBatchList: React.FC = () => {
     const vm = useEmailBatchListVM();
 
     useEffect(() => {
         vm.fetchBatches();
     }, [vm.fetchBatches]);
+
+    const columns: SimpleColumn<any>[] = [
+        {
+            key: 'template_name',
+            header: 'Template',
+            render: (value: string) => value || '-',
+        },
+        {
+            key: 'sent_count',
+            header: 'Progress',
+            align: 'center',
+            render: (_value: number, row: any) => {
+                const progressStatus = getProgressStatusLabel(row);
+                return (
+                    <div>
+                        <div>
+                            <span className="tw:font-semibold">
+                                {row.sent_count}/{row.total_items}
+                            </span>
+                        </div>
+                        <div style={{ color: progressStatus.color }}>
+                            {progressStatus.text}
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            key: 'created_at',
+            header: 'Created',
+            align: 'center',
+            render: (value: string | null, row: any) => (
+                <div>
+                    <div>{row.requested_by}</div>
+                    <div className="tw:text-admin-fg-muted tw:text-xs">
+                        <span title={value ? new Date(value).toLocaleString() : ''}>
+                            {formatRelativeTime(value)}
+                        </span>
+                    </div>
+                </div>
+            ),
+        },
+    ];
 
     return (
         <AdminPage>
@@ -87,121 +116,34 @@ const EmailBatchList: React.FC = () => {
                 }))}
                 value={vm.statusFilter}
                 onChange={vm.handleStatusFilter}
-                className="tw:mb-4"
+                
             />
 
             <AdminErrorAlert message={vm.error} />
 
-            {vm.loading ? (
-                <AdminLoadingState rows={5} columns={5} />
-            ) : vm.batches.length === 0 && !vm.error ? (
-                <div role="alert" className="tw:rounded-md tw:border tw:border-blue-200 tw:bg-blue-50 tw:p-4 tw:text-sm tw:text-blue-800">
-                    No batches found.
-                </div>
-            ) : (
-                <>
-                    <div className="tw:rounded-md tw:border tw:border-admin-border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Template</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Progress</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Created</TableHead>
-                                    <TableHead style={{ textAlign: 'center' }}>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {vm.batches.map((batch) => {
-                                    const progressStatus = getProgressStatusLabel(batch);
-                                    const hasErrors = batch.error_count > 0;
-                                    const retryColor = getRetryIconColor(batch);
-
-                                    return (
-                                        <TableRow
-                                            key={batch.batch_id}
-                                            className={`tw:cursor-pointer ${vm.selectedBatchId === batch.batch_id ? 'tw:bg-blue-50' : ''}`}
-                                            onClick={() => vm.handleSelectBatch(batch.batch_id)}
-                                        >
-                                            <TableCell>{batch.template_name || '-'}</TableCell>
-                                            <TableCell style={{ textAlign: 'center' }}>
-                                                <div>
-                                                    <span className="tw:font-semibold">
-                                                        {batch.sent_count}/{batch.total_items}
-                                                    </span>
-                                                </div>
-                                                <div style={{ color: progressStatus.color }}>
-                                                    {progressStatus.text}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell style={{ textAlign: 'center' }}>
-                                                <div>{batch.requested_by}</div>
-                                                <div className="tw:text-admin-fg-muted tw:text-xs">
-                                                    <span title={batch.created_at ? new Date(batch.created_at).toLocaleString() : ''}>
-                                                        {formatRelativeTime(batch.created_at)}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell style={{ textAlign: 'center' }}>
-                                                <button
-                                                    title="Resend failed emails"
-                                                    disabled={!hasErrors}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        vm.openRetryDialog(batch.batch_id);
-                                                    }}
-                                                    className="tw:inline-flex tw:items-center tw:justify-center tw:rounded-md tw:p-1.5 tw:transition-colors hover:tw:bg-gray-100"
-                                                    style={{ opacity: hasErrors ? 1 : 0.4, cursor: hasErrors ? 'pointer' : 'default' }}
-                                                >
-                                                    <RotateCcw size={16} style={{ color: retryColor }} />
-                                                </button>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination */}
-                    <div className="tw:flex tw:items-center tw:justify-between tw:px-2 tw:py-4 tw:text-sm tw:text-admin-fg-muted">
-                        <span>
-                            Showing {vm.page * vm.rowsPerPage + 1}&ndash;{Math.min((vm.page + 1) * vm.rowsPerPage, vm.totalCount)} of {vm.totalCount}
-                        </span>
-                        <div className="tw:flex tw:items-center tw:gap-4">
-                            <div className="tw:flex tw:items-center tw:gap-2">
-                                <span>Rows per page</span>
-                                <select
-                                    className="tw:h-8 tw:rounded-md tw:border tw:border-admin-border tw:bg-transparent tw:px-2 tw:text-sm"
-                                    value={vm.rowsPerPage}
-                                    onChange={(e) => vm.handleChangeRowsPerPage(e as any)}
-                                >
-                                    {[10, 25, 50, 100].map((size) => (
-                                        <option key={size} value={size}>{size}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="tw:flex tw:items-center tw:gap-1">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={vm.page === 0}
-                                    onClick={(e) => vm.handleChangePage(e, vm.page - 1)}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={(vm.page + 1) * vm.rowsPerPage >= vm.totalCount}
-                                    onClick={(e) => vm.handleChangePage(e, vm.page + 1)}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
+            <AdminDataTable
+                columns={columns}
+                data={vm.batches}
+                loading={vm.loading}
+                emptyMessage="No batches found."
+                onRowClick={(row: any) => vm.handleSelectBatch(row.batch_id)}
+                actions={(row: any) => [
+                    {
+                        label: 'Resend failed emails',
+                        icon: RotateCcw,
+                        disabled: row.error_count === 0,
+                        onClick: () => vm.openRetryDialog(row.batch_id),
+                    },
+                ]}
+                pagination={vm.totalCount > vm.rowsPerPage ? {
+                    page: vm.page,
+                    pageSize: vm.rowsPerPage,
+                    total: vm.totalCount,
+                    onPageChange: vm.handleChangePage,
+                    onPageSizeChange: vm.handleChangeRowsPerPage as any,
+                    pageSizeOptions: [10, 25, 50, 100],
+                } : undefined}
+            />
 
             {/* Batch Detail Drawer */}
             <EmailBatchDrawer

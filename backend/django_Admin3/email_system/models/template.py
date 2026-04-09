@@ -1,5 +1,4 @@
 import logging
-import re
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -7,21 +6,27 @@ from django.contrib.auth.models import User
 logger = logging.getLogger(__name__)
 
 
-class EmailTemplate(models.Model):
-    """Email template configuration and settings."""
+EMAIL_TEMPLATE_TYPES = [
+    ('ORDER', 'Order'),
+    ('USER', 'User'),
+    ('MATERIALS', 'Materials'),
+    ('MARKING', 'Marking'),
+    ('TUTORIALS', 'Tutorials'),
+    ('APPRENTICE', 'Apprentice'),
+    ('STUDYPLUS', 'Study Plus'),
+    ('SYSTEM', 'System'),
+]
 
-    TEMPLATE_TYPES = [
-        ('order_confirmation', 'Order Confirmation'),
-        ('password_reset', 'Password Reset'),
-        ('password_reset_completed', 'Password Reset Completed'),
-        ('account_activation', 'Account Activation'),
-        ('email_verification', 'Email Verification'),
-        ('batch_completion_report', 'Batch Completion Report'),
-        ('materials', 'Materials'),
-        ('marking', 'Marking'),
-        ('tutorials', 'Tutorials'),
-        ('apprentice', 'Apprentice'),
-    ]
+
+class EmailTemplate(models.Model):
+    """Email template identity + non-versioned delivery config.
+
+    All versioned content (subject_template, mjml_content, basic_mode_content,
+    closing_salutation, payload_schema) lives on ``EmailTemplateVersion``.
+    Access the current content via ``template.current_version``.
+    """
+
+    TEMPLATE_TYPES = EMAIL_TEMPLATE_TYPES
 
     PRIORITY_LEVELS = [
         ('low', 'Low'),
@@ -31,15 +36,12 @@ class EmailTemplate(models.Model):
     ]
 
     name = models.CharField(max_length=100, unique=True, help_text="Template identifier")
-    template_type = models.CharField(max_length=50, choices=TEMPLATE_TYPES, default='custom')
+    template_type = models.CharField(max_length=50, choices=TEMPLATE_TYPES, default='SYSTEM')
     display_name = models.CharField(max_length=200, help_text="Human-readable template name")
     description = models.TextField(blank=True, help_text="Template description and purpose")
 
-    # Template configuration
-    subject_template = models.CharField(max_length=300, help_text="Email subject template with variables")
+    # Non-versioned template configuration
     use_master_template = models.BooleanField(default=True, help_text="Use master template system")
-
-    # Email settings
     from_email = models.EmailField(blank=True, help_text="Override default from email")
     reply_to_email = models.EmailField(blank=True, help_text="Reply-to email address")
     default_priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='normal')
@@ -48,171 +50,66 @@ class EmailTemplate(models.Model):
     enable_tracking = models.BooleanField(default=True, help_text="Enable open/click tracking")
     enable_queue = models.BooleanField(default=True, help_text="Queue emails instead of immediate send")
 
-    closing_salutation = models.ForeignKey(
-        'email_system.ClosingSalutation',
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='templates',
-        help_text="Closing salutation block for this template",
-    )
-
-    # MJML content storage (for admin editor)
-    mjml_content = models.TextField(blank=True, default='', help_text="MJML source content for the template editor")
-    basic_mode_content = models.TextField(
-        blank=True,
-        default='',
-        help_text='Markdown source for Basic Mode editing. Empty = Advanced Mode only.'
-    )
-
-    # Auto-generated payload schema from template variables
-    payload_schema = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Auto-generated schema from template variables. Used for batch send payload validation.",
-    )
-
     # Metadata
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_email_templates')
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_email_templates',
+    )
 
     class Meta:
         db_table = 'utils_email_template'
         ordering = ['template_type', 'name']
         verbose_name = 'Email Template'
         verbose_name_plural = 'Email Templates'
-
-    # Regex: matches {{ !variable.path | default:"value" }} with flexible whitespace
-    VARIABLE_PATTERN = re.compile(
-        r'\{\{\s*(!?)\s*([\w.]+)\s*(?:\|\s*default:"([^"]*)")?\s*\}\}'
-    )
-    # Regex for stripping the ! marker so Django's template engine can render the content
-    _STRIP_REQUIRED_MARKER = re.compile(
-        r'\{\{\s*!\s*([\w.]+)'
-    )
-
-    def get_renderable_content(self) -> str:
-        """Return mjml_content with ! required markers stripped for Django template rendering."""
-        if not self.mjml_content:
-            return ''
-        return self._STRIP_REQUIRED_MARKER.sub(r'{{ \1', self.mjml_content)
-
-    def get_renderable_subject(self) -> str:
-        """Return subject_template with ! required markers stripped for Django template rendering."""
-        if not self.subject_template:
-            return ''
-        return self._STRIP_REQUIRED_MARKER.sub(r'{{ \1', self.subject_template)
-
-    def save(self, *args, **kwargs):
-        update_fields = kwargs.get('update_fields')
-        if update_fields is None or 'mjml_content' in update_fields or 'basic_mode_content' in update_fields or 'subject_template' in update_fields:
-            self._rebuild_payload_schema()
-            if update_fields is not None and 'payload_schema' not in update_fields:
-                kwargs['update_fields'] = list(update_fields) + ['payload_schema']
-        super().save(*args, **kwargs)
-
-    def _rebuild_payload_schema(self):
-        """Parse all content fields for variable references and build payload_schema."""
-        from email_system.models.variable import EmailVariable
-
-        # Collect variable references from all content fields
-        var_refs = {}  # variable_path -> {required: bool, default: str|None}
-        for content in [self.subject_template, self.mjml_content, self.basic_mode_content]:
-            if not content:
-                continue
-            for match in self.VARIABLE_PATTERN.finditer(content):
-                mandatory_marker, var_path, template_default = match.groups()
-                is_required = mandatory_marker == '!'
-                existing = var_refs.get(var_path)
-                if existing:
-                    # Mandatory wins if seen in any field
-                    if is_required:
-                        existing['required'] = True
-                    # Last non-empty template default wins
-                    if template_default:
-                        existing['default'] = template_default
-                else:
-                    var_refs[var_path] = {
-                        'required': is_required,
-                        'default': template_default or None,
-                    }
-
-        if not var_refs:
-            self.payload_schema = {}
-            return
-
-        # Look up catalog entries for type and default info
-        catalog = {
-            v.variable_path: v
-            for v in EmailVariable.objects.filter(
-                variable_path__in=list(var_refs.keys()),
-                is_active=True,
-            )
-        }
-
-        # Build nested schema
-        schema = {}
-        for var_path, ref in var_refs.items():
-            catalog_entry = catalog.get(var_path)
-            data_type = catalog_entry.data_type if catalog_entry else 'string'
-            # Template default overrides catalog default
-            default = ref['default']
-            if default is None and catalog_entry and catalog_entry.default_value:
-                default = catalog_entry.default_value
-
-            if not catalog_entry:
-                logger.warning(
-                    "Variable '%s' used in template '%s' not found in EmailVariable catalog. "
-                    "Defaulting to type 'string'.",
-                    var_path, self.name,
-                )
-
-            node = {'type': data_type, 'required': ref['required']}
-            if default is not None:
-                node['default'] = default
-
-            # Convert dot-path to nested dict: "user.first_name" -> {"user": {"first_name": {...}}}
-            parts = var_path.split('.')
-            current = schema
-            for part in parts[:-1]:
-                current = current.setdefault(part, {})
-            current[parts[-1]] = node
-
-        self.payload_schema = schema
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(template_type__in=[code for code, _ in EMAIL_TEMPLATE_TYPES]),
+                name='email_template_type_valid',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.display_name} ({self.template_type})"
 
+    # ------------------------------------------------------------------
+    # Versioning
+    # ------------------------------------------------------------------
+
+    @property
+    def current_version(self):
+        """Return the latest EmailTemplateVersion for this template, or None."""
+        return self.versions.order_by('-version_number').first()
+
     @property
     def latest_version_number(self):
-        """Return the latest version number, or 0 if no versions exist."""
         latest = self.versions.order_by('-version_number').values_list('version_number', flat=True).first()
         return latest or 0
 
-    def create_version(self, user=None, change_note=''):
-        """Create an immutable snapshot of the current template content.
-
-        Call this before or after saving content changes so that queue items
-        processed later can reference the exact version that was active at
-        send time.
-        """
+    def create_version(
+        self,
+        *,
+        subject_template: str = '',
+        mjml_content: str = '',
+        basic_mode_content: str = '',
+        closing_salutation=None,
+        user=None,
+        change_note: str = '',
+    ):
+        """Create a new EmailTemplateVersion snapshot from the given content."""
         from .template_version import EmailTemplateVersion
 
-        next_version = self.latest_version_number + 1
-
-        salutation = self.closing_salutation
         return EmailTemplateVersion.objects.create(
             template=self,
-            version_number=next_version,
-            subject_template=self.subject_template,
-            mjml_content=self.mjml_content,
-            basic_mode_content=self.basic_mode_content,
-            closing_sign_off=salutation.sign_off_text if salutation else '',
-            closing_display_name=salutation.display_name if salutation else '',
-            closing_job_title=salutation.job_title if salutation else '',
+            version_number=self.latest_version_number + 1,
+            subject_template=subject_template or '',
+            mjml_content=mjml_content or '',
+            basic_mode_content=basic_mode_content or '',
+            closing_salutation=closing_salutation,
             created_by=user,
-            change_note=change_note,
+            change_note=change_note or '',
         )
 
 
