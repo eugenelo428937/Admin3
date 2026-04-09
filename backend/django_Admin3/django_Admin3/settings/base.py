@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     'catalog.products.bundle.apps.BundleConfig',    # label='catalog_products_bundles'
     'catalog.products.recommendation.apps.RecommendationConfig',  # label='catalog_products_recommendations'
     'store.apps.StoreConfig',  # Purchasable items (depends on catalog)
+    'legacy.apps.LegacyConfig',  # Legacy product archive (legacy schema)
     'administrate.apps.AdministrateConfig',  # Administrate API data (adm schema)
     'users',
     'userprofile',
