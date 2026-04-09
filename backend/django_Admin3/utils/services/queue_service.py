@@ -310,7 +310,8 @@ class EmailQueueService:
                     )
                 else:
                     # Use MJML content from database
-                    mjml = queue_item.template.mjml_content if queue_item.template else ''
+                    v = queue_item.template.current_version if queue_item.template else None
+                    mjml = v.mjml_content if v else ''
                     response_data = self.email_service._send_mjml_email_from_content(
                         mjml_content=mjml,
                         context=queue_item.email_context,
@@ -423,7 +424,9 @@ class EmailQueueService:
             else:
                 # Use MJML content from database
                 return self.email_service._send_mjml_email_from_content(
-                    mjml_content=queue_item.template.mjml_content,
+                    mjml_content=(queue_item.template.current_version.mjml_content
+                                  if queue_item.template and queue_item.template.current_version
+                                  else ''),
                     context=queue_item.email_context,
                     to_emails=[to_email],
                     subject=queue_item.subject,

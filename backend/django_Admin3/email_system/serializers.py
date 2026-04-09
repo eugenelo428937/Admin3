@@ -359,14 +359,16 @@ class EmailQueueSerializer(serializers.ModelSerializer):
         if obj.template_version:
             return obj.template_version.mjml_content
         if obj.template:
-            return obj.template.mjml_content
+            v = _current_version(obj.template)
+            return v.mjml_content if v else ''
         return ''
 
     def get_template_version_basic(self, obj):
         if obj.template_version:
             return obj.template_version.basic_mode_content
         if obj.template:
-            return obj.template.basic_mode_content
+            v = _current_version(obj.template)
+            return v.basic_mode_content if v else ''
         return ''
 
 
