@@ -2,19 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import emailService from '../../../../services/emailService';
-import type { EmailTemplate, ClosingSalutationList } from '../../../../types/email';
+import type { EmailTemplate, ClosingSalutationList, EmailTemplateVersion } from '../../../../types/email';
 
 export type FormTab = 'general' | 'editor' | 'attachments' | 'content-rules';
 
 export interface EmailTemplateFormVM {
     formData: Partial<EmailTemplate>;
     salutations: ClosingSalutationList[];
+    versions: EmailTemplateVersion[];
     loading: boolean;
     error: string | null;
     isSubmitting: boolean;
     activeTab: FormTab;
     isEditMode: boolean;
     fetchTemplate: () => Promise<void>;
+    fetchVersions: () => Promise<void>;
     handleChange: (field: keyof EmailTemplate, value: any) => void;
     handleSubmit: () => Promise<void>;
     setActiveTab: (tab: FormTab) => void;
@@ -47,6 +49,17 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<FormTab>('general');
     const [salutations, setSalutations] = useState<ClosingSalutationList[]>([]);
+    const [versions, setVersions] = useState<EmailTemplateVersion[]>([]);
+
+    const fetchVersions = useCallback(async () => {
+        if (!isEditMode || !id) return;
+        try {
+            const results = await emailService.getTemplateVersions(Number(id));
+            setVersions(results);
+        } catch (err) {
+            console.error('Error fetching template versions:', err);
+        }
+    }, [id, isEditMode]);
 
     const fetchTemplate = useCallback(async () => {
         if (!isEditMode || !id) return;
@@ -66,8 +79,9 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
     useEffect(() => {
         if (isEditMode) {
             fetchTemplate();
+            fetchVersions();
         }
-    }, [isEditMode, fetchTemplate]);
+    }, [isEditMode, fetchTemplate, fetchVersions]);
 
     useEffect(() => {
         const fetchSalutations = async () => {
@@ -93,6 +107,9 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
             if (isEditMode && id) {
                 await emailService.updateTemplate(Number(id), formData);
                 toast.success('Template saved successfully');
+                // Refresh version list and clear change_note after save
+                await fetchVersions();
+                setFormData((prev) => ({ ...prev, change_note: '' }));
             } else {
                 const created = await emailService.createTemplate(formData);
                 toast.success('Template created successfully');
@@ -123,12 +140,14 @@ const useEmailTemplateFormVM = (): EmailTemplateFormVM => {
     return {
         formData,
         salutations,
+        versions,
         loading,
         error,
         isSubmitting,
         activeTab,
         isEditMode,
         fetchTemplate,
+        fetchVersions,
         handleChange,
         handleSubmit,
         setActiveTab,

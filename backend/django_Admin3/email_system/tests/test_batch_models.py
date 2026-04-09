@@ -11,6 +11,7 @@ from email_system.models import (
     EmailQueue,
     EmailTemplate,
 )
+from email_system.tests.factories import make_template
 
 
 class ExternalApiKeyModelTest(TestCase):
@@ -100,7 +101,7 @@ class EmailBatchModelTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='batch_template',
             template_type='order_confirmation',
             display_name='Batch Template',
@@ -208,7 +209,7 @@ class EmailQueueBatchFKTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='queue_template',
             template_type='order_confirmation',
             display_name='Queue Template',
@@ -287,7 +288,7 @@ class EmailTemplateTypeTest(TestCase):
 
     def test_create_template_with_batch_completion_report_type(self):
         """Test creating a template with batch_completion_report type."""
-        template = EmailTemplate.objects.create(
+        template = make_template(
             name='batch_report',
             template_type='batch_completion_report',
             display_name='Batch Completion Report',

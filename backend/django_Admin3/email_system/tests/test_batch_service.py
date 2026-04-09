@@ -13,6 +13,7 @@ from email_system.models import (
     EmailTemplate,
 )
 from email_system.services.batch_service import EmailBatchService, email_batch_service
+from email_system.tests.factories import make_template
 
 
 class EmailBatchServiceGlobalInstanceTest(TestCase):
@@ -28,7 +29,7 @@ class SendBatchTest(TestCase):
 
     def setUp(self):
         self.service = EmailBatchService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='test_batch_tmpl',
             template_type='order_confirmation',
             display_name='Test Batch Template',
@@ -241,7 +242,7 @@ class QueryBatchTest(TestCase):
 
     def setUp(self):
         self.service = EmailBatchService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='query_batch_tmpl',
             template_type='order_confirmation',
             display_name='Query Batch Template',
@@ -359,7 +360,7 @@ class BatchCompletionTest(TestCase):
 
     def setUp(self):
         self.service = EmailBatchService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='completion_test_template',
             display_name='Completion Test',
             subject_template='Test',
@@ -440,7 +441,7 @@ class NotificationRecipientsTest(TestCase):
 
     def setUp(self):
         self.service = EmailBatchService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='notif_test_template',
             display_name='Notification Test',
             subject_template='Test',

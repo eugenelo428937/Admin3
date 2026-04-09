@@ -302,7 +302,9 @@
    so they don't inherit the admin CSS variables. Force explicit
    background/foreground on dropdown content rendered in portals. */
 [data-slot="dropdown-menu-content"],
-[data-slot="select-content"] {
+[data-slot="select-content"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"] {
   background-color: oklch(0.985 0.002 90) !important;
   color: oklch(0.145 0 0) !important;
   border-color: rgba(0,0,0,0.10);

@@ -186,8 +186,50 @@ const EmailTemplateForm: React.FC = () => {
                                     onChange={(v) => vm.handleChange('closing_salutation', v === '__none__' ? null : Number(v))}
                                 />
                             </OutlinedLabel>
+
+                            {/* Row 5: Change note — applied to the version created on save */}
+                            <AdminOutlinedField label="Change Note (for this save)">
+                                <Input
+                                    value={vm.formData.change_note || ''}
+                                    onChange={(e) => vm.handleChange('change_note', e.target.value)}
+                                    placeholder="Describe what changed in this version (optional)"
+                                />
+                            </AdminOutlinedField>
                         </div>
                     </AdminFormSection>
+
+                    {/* Version History panel */}
+                    {vm.isEditMode && (
+                        <AdminFormSection
+                            label="Version History"
+                            description="Every save creates a new immutable snapshot. Queue items rendered before the latest save continue to use their pinned version."
+                        >
+                            {vm.versions.length === 0 ? (
+                                <p className="tw:text-sm tw:text-muted-foreground">No versions yet.</p>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Version</TableHead>
+                                            <TableHead>Created</TableHead>
+                                            <TableHead>Author</TableHead>
+                                            <TableHead>Change Note</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {vm.versions.map((v) => (
+                                            <TableRow key={v.id}>
+                                                <TableCell>v{v.version_number}</TableCell>
+                                                <TableCell>{new Date(v.created_at).toLocaleString()}</TableCell>
+                                                <TableCell>{v.created_by || '—'}</TableCell>
+                                                <TableCell>{v.change_note || '—'}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </AdminFormSection>
+                    )}
                 </TabsContent>
 
                 {/* MJML Editor Tab */}

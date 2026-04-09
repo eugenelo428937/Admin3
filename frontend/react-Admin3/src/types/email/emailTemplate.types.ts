@@ -25,8 +25,30 @@ export interface EmailTemplate {
   created_by: number | null;
   closing_salutation: number | null;
   closing_salutation_detail?: ClosingSalutationList | null;
+  payload_schema?: Record<string, any>;
+  change_note?: string;
+  current_version_number?: number;
+  latest_version?: EmailTemplateVersion | null;
   attachments?: EmailTemplateAttachmentDetail[];
   template_content_rules?: EmailTemplateContentRuleDetail[];
+}
+
+export interface EmailTemplateVersion {
+  id: number;
+  template: number;
+  version_number: number;
+  change_note: string;
+  subject_template: string;
+  mjml_content: string;
+  basic_mode_content: string;
+  closing_salutation: number | null;
+  closing_salutation_detail?: ClosingSalutationList | null;
+  closing_sign_off: string;
+  closing_display_name: string;
+  closing_job_title: string;
+  payload_schema: Record<string, any>;
+  created_at: string;
+  created_by: string | null;
 }
 
 export interface EmailTemplateAttachmentDetail {

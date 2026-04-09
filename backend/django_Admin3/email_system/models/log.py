@@ -190,13 +190,14 @@ class EmailLog(models.Model):
                         'mjml_content': mjml_content
                     }
 
-            # Fallback: render MJML content from database
+            # Fallback: render MJML content from the template's current version
             try:
-                if self.template.mjml_content:
+                current_version = self.template.current_version if self.template else None
+                if current_version and current_version.mjml_content:
                     from django.template import Template, Context
                     from mjml import mjml2html
 
-                    rendered_mjml = Template(self.template.mjml_content).render(Context(self.email_context))
+                    rendered_mjml = Template(current_version.mjml_content).render(Context(self.email_context))
                     html_content = mjml2html(rendered_mjml)
                     text_content = email_service._html_to_text(html_content)
 

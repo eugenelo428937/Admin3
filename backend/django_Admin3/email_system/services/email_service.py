@@ -327,6 +327,7 @@ class EmailService:
 
                 if send_result > 0:
                     # Email sent successfully
+                    response_data['html_content'] = html_content
                     response_data.update({
                         'success': True,
                         'response_code': '250',  # Standard SMTP success code
@@ -637,8 +638,9 @@ class EmailService:
         # Load shared components and build closing context
         email_settings_context = self._get_email_settings_context()
         closing_context = dict(email_settings_context)
-        if db_template and db_template.closing_salutation:
-            sal = db_template.closing_salutation
+        current_version = db_template.current_version if db_template else None
+        if current_version and current_version.closing_salutation:
+            sal = current_version.closing_salutation
             closing_context['salutation'] = sal.sign_off_text or 'Kind Regards'
             closing_context['signature'] = sal.display_name
             closing_context['job_title'] = sal.job_title or ''
@@ -674,7 +676,7 @@ class EmailService:
             return mjml2html(mjml_clean)
         return mjml_clean
 
-    def render_version_to_html(self, template_version, context: Dict, subject: str = '') -> str:
+    def render_version_to_html(self, template_version, context: Dict, subject: str = '', return_html: bool = True) -> str:
         """Render an EmailTemplateVersion + context to final HTML.
 
         Uses the versioned mjml_content and closing salutation fields,
@@ -736,6 +738,8 @@ class EmailService:
 
         final_mjml = Template(master_db.mjml_content).render(Context(master_context))
         mjml_clean = '\n'.join(line.rstrip() for line in final_mjml.splitlines())
+        if not return_html:
+            return mjml_clean
         return mjml2html(mjml_clean)
 
     def _render_email_with_master_template(self, content_template: str, context: Dict, email_title: str = None, email_preview: str = None) -> str:
@@ -768,12 +772,15 @@ class EmailService:
                 **context
             }
 
-            # 1. Load and render the content template from DB
+            # 1. Load template and its current version from DB
             db_template = self._get_db_template(template_name)
-            if not db_template or not db_template.mjml_content:
-                raise Exception(f"No DB template found for '{template_name}' or mjml_content is empty")
+            current_version = db_template.current_version if db_template else None
+            if not db_template or not current_version or not current_version.mjml_content:
+                raise Exception(
+                    f"No DB template found for '{template_name}' or current version has empty mjml_content"
+                )
 
-            rendered_content = Template(db_template.get_renderable_content()).render(Context(placeholder_context))
+            rendered_content = Template(current_version.get_renderable_content()).render(Context(placeholder_context))
 
             # Process dynamic content insertion for placeholders
             try:
@@ -801,8 +808,8 @@ class EmailService:
 
             # 5. Build closing context: salutation fields from template FK + company info from settings
             closing_context = dict(email_settings_context)
-            if db_template.closing_salutation:
-                sal = db_template.closing_salutation
+            if current_version.closing_salutation:
+                sal = current_version.closing_salutation
                 closing_context['salutation'] = sal.sign_off_text or 'Kind Regards'
                 closing_context['signature'] = sal.display_name
                 closing_context['job_title'] = sal.job_title or ''
@@ -1218,17 +1225,21 @@ class EmailService:
         try:
             from email_system.models import EmailTemplate, EmailContentPlaceholder
 
-            # Get or create template
+            # Get or create template (versioned content lives on EmailTemplateVersion)
             template, created = EmailTemplate.objects.get_or_create(
                 name=template_name,
                 defaults={
                     'display_name': template_name.replace('_', ' ').title(),
                     'description': f'Email template for {template_name}',
-                    'subject_template': f'{template_name.replace("_", " ").title()} - ActEd',
                     'use_master_template': True,
-                    'is_active': True
+                    'is_active': True,
                 }
             )
+            if created:
+                template.create_version(
+                    subject_template=f'{template_name.replace("_", " ").title()} - ActEd',
+                    change_note='Auto-created via add_placeholder_to_template',
+                )
 
             # Get or create placeholder
             placeholder, created = EmailContentPlaceholder.objects.get_or_create(

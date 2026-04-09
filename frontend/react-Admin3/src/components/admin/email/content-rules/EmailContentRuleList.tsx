@@ -55,7 +55,7 @@ const EmailContentRuleList: React.FC = () => {
             key: 'placeholder_name',
             header: 'Placeholder',
             render: (value: string, row: any) => (
-                <span className="tw:font-mono tw:text-sm">
+                <span className="tw:font-mono">
                     {value || `#${row.placeholder}`}
                 </span>
             ),
