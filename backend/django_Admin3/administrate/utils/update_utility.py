@@ -10,6 +10,7 @@ import logging
 import json
 import environ
 from dotenv import load_dotenv
+from django.db import connections
 
 from enum import Enum
 sys.path.insert(0, os.path.abspath(
@@ -41,6 +42,30 @@ def get_events(api_service, title, first=100, offset=0):
     query = load_graphql_query('get_events_by_title')
     variables = {"title": title, "first": first, "offset": offset}
     result = api_service.execute_query(query, variables)       
+    return result
+
+
+def set_event_web_sale(api_service, event_id, websaleCFK, isWebSale="True"):
+    """
+    Set the web sale status of an event
+    
+    Args:
+        api_service: AdministrateAPIService instance
+        event_id: Event ID to update
+        websale: Web sale status (True/False)
+    
+    Returns:
+        dict: Result of the update operation
+    """
+
+    query = load_graphql_mutation('set_event_websale')
+    variables = {
+        "eventId": event_id,
+        "websale": isWebSale,
+        "websaleCFKey": websaleCFK
+    }
+    result = api_service.execute_query(query, variables)
+
     return result
 
 def set_event_active(api_service, event_id, lifecycleState):
@@ -108,41 +133,113 @@ def set_session_active(api_service, session_id, lifecycleState):
     result = api_service.execute_query(query, variables)
 
     return result
+
+def get_custom_field_keys_by_entity_type(api_service, entity_type):
+    """
+    Get the definition keys for custom fields needed for event creation
+    
+    Returns:
+        dict: Dictionary mapping field labels to their definition keys
+    """
+    
+
+    custom_field_keys = {}
+
+    try:
+        custom_fields = CustomField.objects.filter(
+            entity_type=entity_type
+        )
+
+        for cf in custom_fields:
+            custom_field_keys[cf.label] = cf.external_id
+
+        return custom_field_keys
+
+    except Exception as e:
+        logger.error(f"Error retrieving custom field keys: {str(e)}")
+        return {}
+
 def main():
     eventids=[]
+    old_eventids = []
     sessionids=[]
     api_service = AdministrateAPIService()
     first = 100
     offset = 0
-    title = "26A"            
-
-    eventLifecycleState = LifecycleState.PUBLISHED.value
+    title = "26S"            
+    event_custom_field_keys = {}
+    event_custom_field_keys = get_custom_field_keys_by_entity_type(api_service, "Event")
+    
+    eventLifecycleState = LifecycleState.DRAFT.value
     sessionLifecycleState = LifecycleState.DRAFT.value
 
-    while True:                      
-        result = get_drafted_sessions_by_sitting(
-            api_service, title, eventLifecycleState, sessionLifecycleState, first, offset)
-        offset += first   
-        if (result 
-            and 'data' in result 
-            and 'events' in result['data'] 
+    # while True:                      
+    #     result = get_drafted_sessions_by_sitting(
+    #         api_service, title, eventLifecycleState, sessionLifecycleState, first, offset)
+    #     offset += first   
+    #     if (result 
+    #         and 'data' in result 
+    #         and 'events' in result['data'] 
+    #         and 'edges' in result['data']['events']):
+    #         for event in result['data']['events']['edges']:
+    #             for session in event['node']['sessions']['edges']:
+    #                 sessionids.append(session['node']['id'])
+
+    #     if not result['data']['events']['pageInfo']['hasNextPage']:
+    #         break
+
+    # count = 0       
+    # for e in sessionids:
+
+    #     count += 1
+    #     set_session_active(
+    #         api_service, e, LifecycleState.PUBLISHED.value)
+    #     # set_event_soldout(api_service, e, isSoldOut=True)
+    #     # set_event_active(api_service, e, EventLifecycleState.PUBLISHED.value)
+    
+    first = 100
+    offset = 0
+    while True:
+        result = get_events(
+            api_service, title, first, offset)
+        offset += first
+        if (result
+            and 'data' in result
+            and 'events' in result['data']
             and 'edges' in result['data']['events']):
-            for event in result['data']['events']['edges']:
-                for session in event['node']['sessions']['edges']:
-                    sessionids.append(session['node']['id'])
+            for event in result['data']['events']['edges']:                
+                eventids.append(event['node']['id'])
 
         if not result['data']['events']['pageInfo']['hasNextPage']:
             break
-
-    count = 0       
-    for e in sessionids:
-
+    
+    count = 0
+    for e in eventids:
         count += 1
-        set_session_active(
-            api_service, e, LifecycleState.PUBLISHED.value)
-        # set_event_soldout(api_service, e, isSoldOut=True)
-        # set_event_active(api_service, e, EventLifecycleState.PUBLISHED.value)
+        #set_event_soldout(api_service, e, isSoldOut=False)
+        set_event_web_sale(api_service, e, event_custom_field_keys['Web sale'], "True")
+        # set_event_active(api_service, e, LifecycleState.PUBLISHED.value)
 
+    # title = "26A"
+    # while True:
+    #     result = get_events(
+    #         api_service, title, first, offset)
+    #     offset += first
+    #     if (result
+    #         and 'data' in result
+    #         and 'events' in result['data']
+    #             and 'edges' in result['data']['events']):
+    #         for event in result['data']['events']['edges']:
+    #             old_eventids.append(event['node']['id'])
+
+    #     if not result['data']['events']['pageInfo']['hasNextPage']:
+    #         break
+        
+    # count = 0
+    # for e in old_eventids:
+    #     count += 1
+    #     set_event_soldout(api_service, e, isSoldOut=True)
+        
     # with open(file_path, newline='') as csvfile:
     #     r = csv.reader(csvfile)
     #     for row in r:

@@ -1,0 +1,11 @@
+mutation deleteDraftSession($sessionids: [ID]!) {
+   session {
+      delete(input: { sessionIds: $sessionids }) {
+         errors {
+            label
+            message
+            value
+         }
+      }
+   }
+}

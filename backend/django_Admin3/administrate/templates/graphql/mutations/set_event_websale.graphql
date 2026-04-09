@@ -1,8 +1,7 @@
-mutation setEventWebsale($eventId: ID!, $websale: String!, $websaleCFKey: ID!,$lifecycleState: EventLifecycleState!) {
+mutation setEventWebsale($eventId: ID!, $websale: String!, $websaleCFKey: ID!) {
 	event {
 		update(eventId: $eventId, 
-			input: { 
-				lifecycleState: $lifecycleState,
+			input: { 				
 				customFieldValues: [{ definitionKey: $websaleCFKey, value: $websale }] 
 			}) {
 			errors {
