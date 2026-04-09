@@ -30,7 +30,7 @@ class TemplateCreateVersionTest(TestCase):
 
     def setUp(self):
         self.template = EmailTemplate.objects.create(
-            name='t_cv', display_name='T', template_type='order_confirmation',
+            name='t_cv', display_name='T', template_type='ORDER',
         )
 
     def test_creates_version_with_explicit_content(self):
@@ -73,7 +73,7 @@ class MakeTemplateFactoryTest(TestCase):
 
     def test_make_template_creates_initial_version(self):
         t = make_template(
-            name='mt1', display_name='MT1', template_type='order_confirmation',
+            name='mt1', display_name='MT1', template_type='ORDER',
             subject_template='Hi', mjml_content='<mjml>hi</mjml>',
             basic_mode_content='hi',
         )
@@ -85,7 +85,7 @@ class MakeTemplateFactoryTest(TestCase):
 
     def test_make_template_forwards_config_kwargs(self):
         t = make_template(
-            name='mt2', display_name='MT2', template_type='order_confirmation',
+            name='mt2', display_name='MT2', template_type='ORDER',
             from_email='from@example.com', reply_to_email='reply@example.com',
             default_priority='high', enable_tracking=False,
         )
@@ -101,7 +101,7 @@ class UpdateTemplateContentHelperTest(TestCase):
 
     def test_new_version_inherits_unchanged_fields(self):
         t = make_template(
-            name='up1', display_name='Up1', template_type='order_confirmation',
+            name='up1', display_name='Up1', template_type='ORDER',
             subject_template='Subject', mjml_content='BODY',
         )
         self.assertEqual(t.versions.count(), 1)
@@ -115,7 +115,7 @@ class UpdateTemplateContentHelperTest(TestCase):
     def test_create_version_directly_does_not_inherit(self):
         """create_version on the model is explicit — missing kwargs become ''."""
         t = make_template(
-            name='up2', display_name='Up2', template_type='order_confirmation',
+            name='up2', display_name='Up2', template_type='ORDER',
             subject_template='Keep Me', mjml_content='BODY',
         )
         t.create_version(mjml_content='NEW BODY')  # subject omitted
@@ -130,7 +130,7 @@ class QueueServicePinsVersionTest(TestCase):
     def setUp(self):
         self.service = EmailQueueService()
         self.template = make_template(
-            name='qs_pin', display_name='QSP', template_type='order_confirmation',
+            name='qs_pin', display_name='QSP', template_type='ORDER',
             subject_template='S', mjml_content='V1',
         )
 
@@ -174,7 +174,7 @@ class BatchServicePinsVersionTest(TestCase):
             key_hash='b' * 64, key_prefix='batchver', name='BV', user=self.user,
         )
         self.template = make_template(
-            name='batch_pin', display_name='BP', template_type='order_confirmation',
+            name='batch_pin', display_name='BP', template_type='ORDER',
             subject_template='S', mjml_content='BODY_V1',
         )
 
@@ -228,7 +228,7 @@ class ProcessQueueRendersFromPinnedVersionTest(TestCase):
     def setUp(self):
         self.service = EmailQueueService()
         self.template = make_template(
-            name='proc_pin', display_name='PP', template_type='order_confirmation',
+            name='proc_pin', display_name='PP', template_type='ORDER',
             subject_template='S', mjml_content='ORIGINAL_BODY',
         )
 
@@ -274,7 +274,7 @@ class TemplateVersionsEndpointTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.admin)
         self.template = make_template(
-            name='ep_ver', display_name='Ep Ver', template_type='order_confirmation',
+            name='ep_ver', display_name='Ep Ver', template_type='ORDER',
             mjml_content='v1',
         )
         update_template_content(self.template, mjml_content='v2')

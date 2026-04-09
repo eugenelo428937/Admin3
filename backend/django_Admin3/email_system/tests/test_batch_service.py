@@ -31,7 +31,7 @@ class SendBatchTest(TestCase):
         self.service = EmailBatchService()
         self.template = make_template(
             name='test_batch_tmpl',
-            template_type='order_confirmation',
+            template_type='ORDER',
             display_name='Test Batch Template',
             subject_template='Order for {{ product_name }}',
             default_priority='normal',
@@ -244,7 +244,7 @@ class QueryBatchTest(TestCase):
         self.service = EmailBatchService()
         self.template = make_template(
             name='query_batch_tmpl',
-            template_type='order_confirmation',
+            template_type='ORDER',
             display_name='Query Batch Template',
             subject_template='Subject',
             default_priority='normal',

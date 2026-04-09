@@ -12,7 +12,7 @@ def make_template(
     *,
     name='tpl',
     display_name=None,
-    template_type='order_confirmation',
+    template_type='ORDER',
     subject_template='',
     mjml_content='',
     basic_mode_content='',

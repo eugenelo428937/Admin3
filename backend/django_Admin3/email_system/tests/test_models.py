@@ -26,7 +26,7 @@ class EmailTemplateModelTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.template = make_template(
             name='order_confirmation',
-            template_type='order_confirmation',
+            template_type='ORDER',
             display_name='Order Confirmation',
             description='Test template',
             subject_template='Order #{{ order_number }}',
@@ -41,13 +41,13 @@ class EmailTemplateModelTest(TestCase):
         )
 
     def test_str_representation(self):
-        self.assertEqual(str(self.template), 'Order Confirmation (order_confirmation)')
+        self.assertEqual(str(self.template), 'Order Confirmation (ORDER)')
 
     def test_template_type_choices(self):
         valid_types = [c[0] for c in EmailTemplate.TEMPLATE_TYPES]
-        self.assertIn('order_confirmation', valid_types)
-        self.assertIn('password_reset', valid_types)
-        self.assertIn('email_verification', valid_types)
+        self.assertIn('ORDER', valid_types)
+        self.assertIn('USER', valid_types)
+        self.assertIn('SYSTEM', valid_types)
 
     def test_priority_choices(self):
         valid_priorities = [c[0] for c in EmailTemplate.PRIORITY_LEVELS]

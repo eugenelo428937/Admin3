@@ -70,7 +70,7 @@ class QueueEmailTest(TestCase):
         self.template = make_template(
             name='eqs_order_confirm',
             display_name='EQS Order Confirmation',
-            template_type='order_confirmation',
+            template_type='ORDER',
             subject_template='Order #{{ order_number }} Confirmed',
             from_email='eqs_orders@example.com',
             reply_to_email='eqs_reply@example.com',

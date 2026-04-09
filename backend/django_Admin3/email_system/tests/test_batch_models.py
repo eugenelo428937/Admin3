@@ -103,7 +103,7 @@ class EmailBatchModelTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.template = make_template(
             name='batch_template',
-            template_type='order_confirmation',
+            template_type='ORDER',
             display_name='Batch Template',
             subject_template='Batch subject',
         )
@@ -211,7 +211,7 @@ class EmailQueueBatchFKTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.template = make_template(
             name='queue_template',
-            template_type='order_confirmation',
+            template_type='ORDER',
             display_name='Queue Template',
             subject_template='Queue subject',
         )
