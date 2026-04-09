@@ -22,7 +22,8 @@ class PostgreSQLTestRunner(DiscoverRunner):
     """
 
     def setup_databases(self, **kwargs):
-        self._force_drop_test_dbs()
+        if not self.keepdb:
+            self._force_drop_test_dbs()
         return super().setup_databases(**kwargs)
 
     def teardown_databases(self, old_config, **kwargs):
