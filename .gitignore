@@ -80,3 +80,4 @@ pacts/*
 #Ignore cursor AI rules
 .cursor\rules\codacy.mdc
 *.code-workspace
+docs/misc/*
