@@ -8,12 +8,14 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from catalog.permissions import IsSuperUser
 
+from rest_framework.views import APIView
 from email_system.models import (
     EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
     EmailMasterComponent,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation,
     EmailMjmlElement,
+    EmailVariable,
 )
 from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
@@ -24,7 +26,24 @@ from email_system.serializers import (
     EmailTemplateContentRuleSerializer,
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
     EmailMjmlElementSerializer,
+    EmailVariableTreeRowSerializer,
 )
+
+
+class EmailVariableTreeView(APIView):
+    """Return the flat list of registered email variables for the picker tree.
+
+    The frontend builds the column-view tree client-side from this flat list.
+    Filtered to ``is_active=True`` and ordered by ``variable_path`` so the
+    parent-before-child order is stable for the tree builder.
+    """
+
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        rows = EmailVariable.objects.filter(is_active=True).order_by('variable_path')
+        serializer = EmailVariableTreeRowSerializer(rows, many=True)
+        return Response({'variables': serializer.data})
 
 
 class EmailSettingsViewSet(viewsets.ModelViewSet):

@@ -22,7 +22,21 @@ import {
     Columns3,
     SquareIcon,
     Info,
+    Braces,
 } from 'lucide-react';
+import pluralize from 'pluralize';
+import VariablePicker, { type PickResult } from '../variables/VariablePicker';
+import { findEnclosingLoop } from '../variables/loopContext';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogAction,
+    AlertDialogCancel,
+} from '@/components/admin/ui/alert-dialog';
 import { Button } from '@/components/admin/ui/button';
 import { Separator } from '@/components/admin/ui/separator';
 import {
@@ -380,7 +394,45 @@ const CALLOUT_VARIANTS = [
 
 const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disabled }) => {
     const [inTable, setInTable] = useState(false);
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const [pendingArrayPick, setPendingArrayPick] = useState<{
+        arrayPath: string;
+        fieldPath: string;
+    } | null>(null);
     let lastGroup = '';
+
+    const handlePick = useCallback((result: PickResult) => {
+        const view = editorViewRef.current;
+        if (!view) return;
+        if (result.kind === 'scalar') {
+            insertAtCursor(view, `{{ ${result.path} }}`);
+            setPickerOpen(false);
+            return;
+        }
+        // array-element
+        const docText = view.state.doc.toString();
+        const cursor = view.state.selection.main.from;
+        const loop = findEnclosingLoop(docText, cursor, result.arrayPath);
+        if (loop) {
+            insertAtCursor(view, `{{ ${loop.loopVar}.${result.fieldPath} }}`);
+            setPickerOpen(false);
+        } else {
+            setPickerOpen(false);
+            setPendingArrayPick({ arrayPath: result.arrayPath, fieldPath: result.fieldPath });
+        }
+    }, [editorViewRef]);
+
+    const handleInsertAsLoop = useCallback(() => {
+        const view = editorViewRef.current;
+        if (!view || !pendingArrayPick) return;
+        const { arrayPath, fieldPath } = pendingArrayPick;
+        const lastSeg = arrayPath.split('.').pop() || arrayPath;
+        const cleanSeg = lastSeg.replace(/\[\]$/, '');
+        const loopVar = pluralize.singular(cleanSeg);
+        const block = `{% for ${loopVar} in ${arrayPath} %}\n  {{ ${loopVar}.${fieldPath} }}\n{% endfor %}`;
+        insertAtCursor(view, block);
+        setPendingArrayPick(null);
+    }, [editorViewRef, pendingArrayPick]);
 
     // Track cursor position to enable/disable table-aware controls
     useEffect(() => {
@@ -575,6 +627,47 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disa
                     ))}
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Variables */}
+            <Separator orientation="vertical" className="tw:mx-1 tw:h-5" />
+            <Button
+                variant="ghost"
+                size="icon-xs"
+                title="Insert Variable"
+                onClick={() => setPickerOpen(true)}
+            >
+                <Braces className="tw:size-4" />
+            </Button>
+
+            <VariablePicker
+                open={pickerOpen}
+                onOpenChange={setPickerOpen}
+                onPick={handlePick}
+            />
+
+            <AlertDialog
+                open={pendingArrayPick !== null}
+                onOpenChange={(o) => { if (!o) setPendingArrayPick(null); }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingArrayPick ? `"${pendingArrayPick.arrayPath}" is an array` : ''}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This variable only makes sense inside a loop.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setPendingArrayPick(null)}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleInsertAsLoop}>
+                            Insert as loop
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
