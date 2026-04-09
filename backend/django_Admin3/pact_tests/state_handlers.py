@@ -622,13 +622,17 @@ def setup_email_template():
     template = EmailTemplate.objects.create(
         id=1,
         name='order_confirmation',
-        template_type='order_confirmation',
+        template_type='ORDER',
         display_name='Order Confirmation',
         description='Sent after a successful order',
-        subject_template='Your Order #{{order_id}}',
         use_master_template=True,
         default_priority='normal',
         is_active=True,
+    )
+    # subject_template now lives on EmailTemplateVersion
+    template.create_version(
+        subject_template='Your Order #{{order_id}}',
+        change_note='pact setup',
     )
     return template
 
