@@ -1,7 +1,7 @@
 # Legacy Product Data Migration — Design
 
-**Status:** Approved
-**Date:** 2026-04-08
+**Status:** Superseded (see Addendum at bottom)
+**Date:** 2026-04-08 (original), 2026-04-09 (addendum)
 **Author:** Brainstorming session (Claude + eugenelo428937)
 **Scope:** Import historical ActEd product catalog (1995–2026) from four legacy CSVs into `catalog_products`, `catalog_product_variations`, `catalog_product_product_variations`, and `store.products`.
 
@@ -571,3 +571,53 @@ Conventional commits, one commit per stage:
 5. `chore(catalog): commit reviewed legacy import artifacts` — the approved review CSVs
 
 Each commit: builds, tests pass, migration is functional at that point.
+
+---
+
+## Addendum: Architectural Pivot to Flat Legacy Schema (2026-04-09)
+
+### Why the original design was superseded
+
+During Phase A implementation (Tasks 1-4, normalization helpers), a smoke test
+against the real 37k CSV rows revealed 377 irresolvable collision tuples where
+multiple distinct products share the same `(subject, col2, col3, session)` key.
+These represent genuinely different products (e.g., "Tutorial Block" vs
+"Tutorial Course", distinct CPD topics) that cannot be merged by normalization.
+
+The user proposed storing all legacy CSV data in a separate `legacy` PostgreSQL
+schema instead of the `acted` schema. This eliminates the collision problem
+entirely because legacy products don't need the `store.Product` uniqueness
+constraints required for cart/checkout.
+
+### New architecture: flat denormalized table
+
+A single `legacy.products` table holds all 37k CSV rows directly:
+- No `unique_together` or `product_code` uniqueness constraints
+- No FK relationships to `acted.*` catalog/store tables
+- `normalized_name` column (powered by `normalize_fullname()`) enables search
+- `legacy_product_name` column preserves the raw CSV fullname
+
+### What was preserved from the original design
+
+- **Phase A helpers** (Tasks 1-4 + 2.5-2.7): `normalize_fullname`, `classify_row`,
+  `iter_legacy_csv_rows`, `LegacyRow`, `TemplateKey`, `build_template_key` — all
+  98 tests still pass and are reused by the new import command
+- **3-stage concept simplified to 1 stage**: the import command reads CSVs, validates,
+  normalizes, and `bulk_create`s rows in a single pass
+
+### What was eliminated
+
+- Sections 5-7 (Stage 1 profiling, template preview, collision detection) — unnecessary
+  since the flat table accepts all rows
+- Sections 6 (Stage 2 template import, variation seed, PPV generation) — no catalog
+  template tables needed
+- Section 7 (Stage 3 store product import) — replaced by simpler flat import
+- The `remarks` / `legacy_product_name` field on `store.Product` — replaced by a
+  native column on `legacy.LegacyProduct`
+
+### New implementation
+
+- `legacy` Django app with `LegacyProduct` model in `legacy.products` table
+- `import_legacy_products` management command with `bulk_create` batching
+- `GET /api/legacy/products/` search endpoint with text search + exact filters
+- 31 tests (16 import + 15 search)
