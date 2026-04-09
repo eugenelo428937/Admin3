@@ -279,19 +279,19 @@ class EmailQueueBatchFKTest(TestCase):
 
 
 class EmailTemplateTypeTest(TestCase):
-    """Tests for batch_completion_report template type."""
+    """Tests for template type enum values."""
 
-    def test_batch_completion_report_in_template_types(self):
-        """Test that batch_completion_report is a valid template type."""
+    def test_system_type_in_template_types(self):
+        """Test that SYSTEM is a valid template type (used for batch reports)."""
         valid_types = [c[0] for c in EmailTemplate.TEMPLATE_TYPES]
-        self.assertIn('batch_completion_report', valid_types)
+        self.assertIn('SYSTEM', valid_types)
 
-    def test_create_template_with_batch_completion_report_type(self):
-        """Test creating a template with batch_completion_report type."""
+    def test_create_template_with_system_type(self):
+        """Test creating a template with SYSTEM type."""
         template = make_template(
             name='batch_report',
-            template_type='batch_completion_report',
+            template_type='SYSTEM',
             display_name='Batch Completion Report',
             subject_template='Batch {{ batch_id }} completed',
         )
-        self.assertEqual(template.template_type, 'batch_completion_report')
+        self.assertEqual(template.template_type, 'SYSTEM')

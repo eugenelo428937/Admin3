@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from email_system.models import (
-    EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
+    EmailSettings, EmailTemplate, EmailTemplateVersion, EmailAttachment, EmailTemplateAttachment,
     EmailMasterComponent,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation,
@@ -17,6 +17,24 @@ class EmailVariableTreeRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailVariable
         fields = ['path', 'display_name', 'data_type', 'description']
+
+
+class EmailTemplateVersionSerializer(serializers.ModelSerializer):
+    """Serializer for template version history entries."""
+
+    created_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = EmailTemplateVersion
+        fields = [
+            'id', 'template', 'version_number', 'change_note',
+            'subject_template', 'mjml_content', 'basic_mode_content',
+            'closing_salutation',
+            'closing_sign_off', 'closing_display_name', 'closing_job_title',
+            'payload_schema',
+            'created_at', 'created_by',
+        ]
+        read_only_fields = fields
 
 
 # ---------------------------------------------------------------------------
