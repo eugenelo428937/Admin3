@@ -1,0 +1,21 @@
+mutation updateCourseTemplateApprovedInstructors(
+   $courseTemplateId: ID!
+   $approvedInstructorIds: [ID!]!
+) {
+   courseTemplate {
+      update(
+         courseTemplateId: $courseTemplateId
+         input: { approvedInstructors: $approvedInstructorIds }
+      ) {
+         courseTemplate {
+            id
+            lifecycleState
+         }
+         errors {
+            label
+            message
+            value
+         }
+      }
+   }
+}
