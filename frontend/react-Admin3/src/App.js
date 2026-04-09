@@ -102,6 +102,9 @@ const EmailPlaceholderForm = React.lazy(() => import("./components/admin/email/p
 const ClosingSalutationList = React.lazy(() => import("./components/admin/email/closing-salutations/ClosingSalutationList"));
 const ClosingSalutationForm = React.lazy(() => import("./components/admin/email/closing-salutations/ClosingSalutationForm"));
 
+// Legacy Product Archive
+const LegacyProductList = React.lazy(() => import("./components/admin/legacy-products/LegacyProductList"));
+
 const system = createSystem(defaultConfig);
 
 const LazyFallback = () => (
@@ -328,6 +331,9 @@ function App() {
 									<Route path="/admin/email/closing-salutations" element={<ClosingSalutationList />} />
 									<Route path="/admin/email/closing-salutations/new" element={<ClosingSalutationForm />} />
 									<Route path="/admin/email/closing-salutations/:id/edit" element={<ClosingSalutationForm />} />
+
+									{/* Admin: Legacy Product Archive */}
+									<Route path="/admin/legacy-products" element={<LegacyProductList />} />
 										</Route>{/* end AdminLayout wrapper */}
 
 									{/* Public routes */}
