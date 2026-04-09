@@ -80,3 +80,10 @@ pacts/*
 #Ignore cursor AI rules
 .cursor\rules\codacy.mdc
 *.code-workspace
+docs/misc/machinetoken.txt
+docs/misc/raw_prods01-09.csv
+docs/misc/raw_prods11-19.csv
+docs/misc/raw_prods20-26.csv
+docs/misc/raw_prods95-00.csv
+docs/misc/review/
+.superpowers/
