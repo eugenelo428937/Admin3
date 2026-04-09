@@ -304,6 +304,8 @@
    renders correctly. */
 [data-slot="dropdown-menu-content"],
 [data-slot="select-content"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
 [data-slot="popover-content"] {
   /* Surface */
   --popover: oklch(0.985 0.002 90);

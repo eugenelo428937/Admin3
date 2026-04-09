@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 
 from email_system.models import EmailTemplate, EmailContentPlaceholder
 from email_system.services.email_service import EmailService
+from email_system.tests.factories import make_template
 
 
 class EmailServiceInitTest(TestCase):
@@ -90,7 +91,7 @@ class ShouldUseQueueTest(TestCase):
 
     def setUp(self):
         self.service = EmailService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='test_template',
             display_name='Test Template',
             subject_template='Test',
@@ -627,7 +628,7 @@ class GetTemplatePlaceholdersTest(TestCase):
 
     def setUp(self):
         self.service = EmailService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='test_template',
             display_name='Test Template',
             subject_template='Test',
@@ -660,9 +661,14 @@ class RenderEmailWithMasterTemplateTest(TestCase):
     @patch.object(EmailService, '_get_db_component', return_value='<mj-section>component</mj-section>')
     @patch.object(EmailService, '_get_template_placeholders', return_value={})
     def test_successful_render(self, mock_placeholders, mock_component):
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, PropertyMock
+        # Content now lives on current_version, not on the template itself.
+        mock_version = MagicMock()
+        mock_version.mjml_content = '<mj-section><mj-column><mj-text>content</mj-text></mj-column></mj-section>'
+        mock_version.get_renderable_content.return_value = mock_version.mjml_content
+        mock_version.closing_salutation = None
         mock_template = MagicMock()
-        mock_template.mjml_content = '<mj-section><mj-column><mj-text>content</mj-text></mj-column></mj-section>'
+        type(mock_template).current_version = PropertyMock(return_value=mock_version)
         mock_master = MagicMock()
         mock_master.mjml_content = '<mjml><mj-body>{{ email_content|safe }}</mj-body></mjml>'
 

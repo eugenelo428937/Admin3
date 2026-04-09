@@ -42,6 +42,7 @@ interface RowAction<T> {
   label: string;
   icon?: LucideIcon;
   variant?: 'default' | 'destructive';
+  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -97,7 +98,7 @@ function AdminDataTable<T extends Record<string, any>>({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {col.header}
-            <ArrowUpDown className="tw:ml-1 tw:size-3.5" />
+            <ArrowUpDown className="tw:ml-1 tw:size-5" />
           </Button>
         );
       },
@@ -140,6 +141,7 @@ function AdminDataTable<T extends Record<string, any>>({
                       <DropdownMenuItem
                         key={action.label}
                         variant={action.variant === 'destructive' ? 'destructive' : 'default'}
+                        disabled={action.disabled}
                         onClick={(e) => {
                           e.stopPropagation();
                           action.onClick();

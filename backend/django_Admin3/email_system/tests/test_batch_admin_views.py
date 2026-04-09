@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 from email_system.models import ExternalApiKey, EmailBatch, EmailTemplate, EmailQueue
+from email_system.tests.factories import make_template
 
 
 class EmailBatchAdminSerializerTest(TestCase):
@@ -15,7 +16,7 @@ class EmailBatchAdminSerializerTest(TestCase):
             key_prefix='test0001',
             name='Test System',
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject {{name}}',
@@ -77,7 +78,7 @@ class EmailBatchAdminViewSetTest(TestCase):
             key_prefix='test0002',
             name='Test System 2',
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='viewset_template',
             display_name='ViewSet Template',
             subject_template='Subject',
@@ -170,7 +171,7 @@ class EmailQueueToFilterTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.admin)
 
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='queue_filter_template',
             display_name='Queue Filter',
             subject_template='Subject',

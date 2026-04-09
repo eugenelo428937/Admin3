@@ -10,6 +10,7 @@ from email_system.models import (
     EmailContentPlaceholder,
 )
 from email_system.services.content_insertion import EmailContentInsertionService
+from email_system.tests.factories import make_template
 
 
 class EmailContentInsertionServiceTest(TestCase):
@@ -17,7 +18,7 @@ class EmailContentInsertionServiceTest(TestCase):
 
     def setUp(self):
         self.service = EmailContentInsertionService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='order_confirmation',
             display_name='Order Confirmation',
             subject_template='Order Confirmation',

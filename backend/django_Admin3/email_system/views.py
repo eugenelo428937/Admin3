@@ -27,6 +27,7 @@ from email_system.serializers import (
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
     EmailMjmlElementSerializer,
     EmailVariableTreeRowSerializer,
+    EmailTemplateVersionSerializer,
 )
 
 
@@ -176,10 +177,11 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='signature-mjml')
     def signature_mjml(self, request, pk=None):
-        """Return the closing salutation fields for this template."""
+        """Return the closing salutation fields for this template's current version."""
         instance = self.get_object()
-        if instance.closing_salutation:
-            sal = instance.closing_salutation
+        version = instance.current_version
+        if version and version.closing_salutation:
+            sal = version.closing_salutation
             lines = f'{sal.sign_off_text},<br/>{sal.display_name}'
             if sal.job_title:
                 lines += f'<br/>{sal.job_title}'
@@ -195,6 +197,14 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
                 'job_title': sal.job_title,
             })
         return Response({'signature_mjml': '', 'sign_off_text': '', 'display_name': '', 'job_title': ''})
+
+    @action(detail=True, methods=['get'], url_path='versions')
+    def versions(self, request, pk=None):
+        """Return version history for this template, newest first."""
+        instance = self.get_object()
+        qs = instance.versions.order_by('-version_number')
+        serializer = EmailTemplateVersionSerializer(qs, many=True)
+        return Response(serializer.data)
 
 
 

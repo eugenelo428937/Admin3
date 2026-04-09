@@ -12,6 +12,7 @@ from rest_framework.test import APIClient
 
 from email_system.models import ExternalApiKey, EmailTemplate, EmailBatch, EmailQueue
 from email_system.services.batch_service import email_batch_service
+from email_system.tests.factories import make_template
 
 
 class BatchLifecycleIntegrationTest(TestCase):
@@ -28,7 +29,7 @@ class BatchLifecycleIntegrationTest(TestCase):
             name='Integration Test System',
             user=self.user,
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='integration_template',
             display_name='Integration Test',
             subject_template='Hello {{ firstname }}',

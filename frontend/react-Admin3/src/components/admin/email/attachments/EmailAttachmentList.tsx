@@ -51,7 +51,7 @@ const EmailAttachmentList: React.FC = () => {
                     {
                         key: 'name',
                         header: 'Name',
-                        render: (val) => <span className="tw:font-mono tw:text-sm">{val}</span>,
+                        render: (val) => <span className="tw:font-mono">{val}</span>,
                     },
                     { key: 'display_name', header: 'Display Name' },
                     {

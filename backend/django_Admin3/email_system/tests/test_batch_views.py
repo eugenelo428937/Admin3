@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 from email_system.models import ExternalApiKey, EmailTemplate, EmailBatch, EmailQueue
+from email_system.tests.factories import make_template
 
 
 class SendBatchViewTest(TestCase):
@@ -20,7 +21,7 @@ class SendBatchViewTest(TestCase):
             name='Test System',
             user=self.user,
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='view_test_template',
             display_name='View Test',
             subject_template='Test Subject',
@@ -164,7 +165,7 @@ class QueryBatchViewTest(TestCase):
             name='Test System',
             user=self.user,
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='query_view_template',
             display_name='Query View Test',
             subject_template='Test',

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from email_system.models import (
-    EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
+    EmailSettings, EmailTemplate, EmailTemplateVersion, EmailAttachment, EmailTemplateAttachment,
     EmailMasterComponent,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation,
@@ -17,6 +17,24 @@ class EmailVariableTreeRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailVariable
         fields = ['path', 'display_name', 'data_type', 'description']
+
+
+class EmailTemplateVersionSerializer(serializers.ModelSerializer):
+    """Serializer for template version history entries."""
+
+    created_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = EmailTemplateVersion
+        fields = [
+            'id', 'template', 'version_number', 'change_note',
+            'subject_template', 'mjml_content', 'basic_mode_content',
+            'closing_salutation',
+            'closing_sign_off', 'closing_display_name', 'closing_job_title',
+            'payload_schema',
+            'created_at', 'created_by',
+        ]
+        read_only_fields = fields
 
 
 # ---------------------------------------------------------------------------
@@ -180,8 +198,18 @@ class EmailMjmlElementSerializer(serializers.ModelSerializer):
 # EmailTemplate (list / detail)
 # ---------------------------------------------------------------------------
 
+def _current_version(template):
+    """Return the latest EmailTemplateVersion for a template, or None."""
+    return template.versions.order_by('-version_number').first()
+
+
 class EmailTemplateListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for template list views."""
+    """Lightweight serializer for template list views (reads content from current version)."""
+
+    subject_template = serializers.SerializerMethodField()
+    basic_mode_content = serializers.SerializerMethodField()
+    closing_salutation = serializers.SerializerMethodField()
+    current_version_number = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailTemplate
@@ -189,19 +217,44 @@ class EmailTemplateListSerializer(serializers.ModelSerializer):
             'id', 'name', 'template_type', 'display_name',
             'subject_template', 'default_priority',
             'closing_salutation', 'basic_mode_content',
+            'current_version_number',
             'is_active', 'created_at', 'updated_at',
         ]
 
+    def get_subject_template(self, obj):
+        v = _current_version(obj)
+        return v.subject_template if v else ''
+
+    def get_basic_mode_content(self, obj):
+        v = _current_version(obj)
+        return v.basic_mode_content if v else ''
+
+    def get_closing_salutation(self, obj):
+        v = _current_version(obj)
+        return v.closing_salutation_id if v else None
+
+    def get_current_version_number(self, obj):
+        v = _current_version(obj)
+        return v.version_number if v else 0
+
 
 class EmailTemplateSerializer(serializers.ModelSerializer):
-    """Full serializer for template detail, create, and update views."""
+    """Full serializer for template detail, create, and update views.
+
+    Versioned content fields are read from the current version.
+    """
 
     created_by = serializers.StringRelatedField(read_only=True)
     attachments = EmailTemplateAttachmentSerializer(many=True, read_only=True)
     template_content_rules = EmailTemplateContentRuleSerializer(many=True, read_only=True)
-    closing_salutation_detail = ClosingSalutationListSerializer(
-        source='closing_salutation', read_only=True
-    )
+
+    # Versioned fields — read from current_version
+    subject_template = serializers.SerializerMethodField()
+    mjml_content = serializers.SerializerMethodField()
+    basic_mode_content = serializers.SerializerMethodField()
+    closing_salutation = serializers.SerializerMethodField()
+    closing_salutation_detail = serializers.SerializerMethodField()
+    current_version_number = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailTemplate
@@ -212,10 +265,37 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
             'enable_tracking', 'enable_queue',
             'mjml_content', 'basic_mode_content',
             'closing_salutation', 'closing_salutation_detail',
+            'current_version_number',
             'is_active', 'created_at', 'updated_at', 'created_by',
             'attachments', 'template_content_rules',
         ]
         read_only_fields = ['created_at', 'updated_at', 'created_by']
+
+    def get_subject_template(self, obj):
+        v = _current_version(obj)
+        return v.subject_template if v else ''
+
+    def get_mjml_content(self, obj):
+        v = _current_version(obj)
+        return v.mjml_content if v else ''
+
+    def get_basic_mode_content(self, obj):
+        v = _current_version(obj)
+        return v.basic_mode_content if v else ''
+
+    def get_closing_salutation(self, obj):
+        v = _current_version(obj)
+        return v.closing_salutation_id if v else None
+
+    def get_closing_salutation_detail(self, obj):
+        v = _current_version(obj)
+        if v and v.closing_salutation:
+            return ClosingSalutationListSerializer(v.closing_salutation).data
+        return None
+
+    def get_current_version_number(self, obj):
+        v = _current_version(obj)
+        return v.version_number if v else 0
 
 
 # ---------------------------------------------------------------------------
@@ -279,14 +359,16 @@ class EmailQueueSerializer(serializers.ModelSerializer):
         if obj.template_version:
             return obj.template_version.mjml_content
         if obj.template:
-            return obj.template.mjml_content
+            v = _current_version(obj.template)
+            return v.mjml_content if v else ''
         return ''
 
     def get_template_version_basic(self, obj):
         if obj.template_version:
             return obj.template_version.basic_mode_content
         if obj.template:
-            return obj.template.basic_mode_content
+            v = _current_version(obj.template)
+            return v.basic_mode_content if v else ''
         return ''
 
 

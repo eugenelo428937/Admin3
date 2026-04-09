@@ -81,15 +81,16 @@ class EmailQueueService:
                 from_email = from_email or template.from_email
                 reply_to_email = reply_to_email or template.reply_to_email
 
-                # Use template subject if no override provided
-                if not subject_override and template.subject_template:
+                current_version = template.current_version
+                version_subject = current_version.subject_template if current_version else ''
+                if not subject_override and version_subject:
                     try:
                         from django.template import Template, Context
-                        subject_template = Template(template.get_renderable_subject())
-                        subject = subject_template.render(Context(context))
+                        subject_template_obj = Template(current_version.get_renderable_subject())
+                        subject = subject_template_obj.render(Context(context))
                     except Exception as e:
                         logger.warning(f"Failed to render template subject: {str(e)}")
-                        subject = template.subject_template
+                        subject = version_subject
                 else:
                     subject = subject_override or f"Email from {template_name}"
             else:
@@ -335,6 +336,13 @@ class EmailQueueService:
                     # Update log with detailed ESP response
                     email_log.esp_response = esp_response
                     email_log.save()
+
+                    # Persist rendered HTML back to the queue item so the
+                    # View Email action works for sent items.
+                    rendered_html = response_data.get('html_content')
+                    if rendered_html and not queue_item.html_content:
+                        queue_item.html_content = rendered_html
+                        queue_item.save(update_fields=['html_content'])
                 else:
                     email_log.status = 'failed'
                     email_log.error_message = response_message
@@ -409,13 +417,22 @@ class EmailQueueService:
                     attachments=attachments
                 )
 
-            # Standard path: render from template
-            mjml_content = self.email_service._render_email_with_master_template(
-                content_template=queue_item.template.name,
-                context=queue_item.email_context,
-                email_title=queue_item.subject,
-                email_preview=f"Email from {queue_item.template.display_name}"
-            )
+            # Pinned-version path: render from the snapshot captured at enqueue time
+            if queue_item.template_version:
+                mjml_content = self.email_service.render_version_to_html(
+                    template_version=queue_item.template_version,
+                    context=queue_item.email_context,
+                    subject=queue_item.subject,
+                    return_html=False,
+                )
+            else:
+                # Fallback: render from current live template
+                mjml_content = self.email_service._render_email_with_master_template(
+                    content_template=queue_item.template.name,
+                    context=queue_item.email_context,
+                    email_title=queue_item.subject,
+                    email_preview=f"Email from {queue_item.template.display_name}"
+                )
 
             return self.email_service._send_mjml_email_from_content(
                 mjml_content=mjml_content,

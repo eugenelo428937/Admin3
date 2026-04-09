@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import emailService from '../../../../services/emailService';
 import type { EmailTemplate, TemplateType } from '../../../../types/email';
 
+export interface TemplateTypeOption {
+    value: TemplateType | 'all';
+    label: string;
+}
+
 export interface EmailTemplateListVM {
     templates: EmailTemplate[];
     loading: boolean;
@@ -11,6 +16,7 @@ export interface EmailTemplateListVM {
     rowsPerPage: number;
     totalCount: number;
     filterTemplateType: TemplateType | 'all';
+    templateTypeOptions: TemplateTypeOption[];
     fetchTemplates: () => Promise<void>;
     handleEdit: (id: number) => void;
     handleDelete: (id: number) => Promise<void>;
@@ -28,6 +34,28 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(25);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [filterTemplateType, setFilterTemplateType] = useState<TemplateType | 'all'>('all');
+    const [templateTypeOptions, setTemplateTypeOptions] = useState<TemplateTypeOption[]>([
+        { value: 'all', label: 'All Types' },
+    ]);
+
+    useEffect(() => {
+        let cancelled = false;
+        emailService
+            .getTemplateTypes()
+            .then((choices) => {
+                if (cancelled) return;
+                setTemplateTypeOptions([
+                    { value: 'all', label: 'All Types' },
+                    ...choices.map((c) => ({ value: c.value as TemplateType, label: c.label })),
+                ]);
+            })
+            .catch((err) => {
+                console.error('Error fetching template types:', err);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const fetchTemplates = useCallback(async () => {
         try {
@@ -90,6 +118,7 @@ const useEmailTemplateListVM = (): EmailTemplateListVM => {
         rowsPerPage,
         totalCount,
         filterTemplateType,
+        templateTypeOptions,
         fetchTemplates,
         handleEdit,
         handleDelete,

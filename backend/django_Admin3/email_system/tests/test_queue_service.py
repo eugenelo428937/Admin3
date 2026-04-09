@@ -17,6 +17,7 @@ from email_system.models import (
 from email_system.services.queue_service import (
     EmailQueueService, datetime_serializer, email_queue_service,
 )
+from email_system.tests.factories import make_template
 
 
 class DatetimeSerializerTest(TestCase):
@@ -66,10 +67,10 @@ class QueueEmailTest(TestCase):
         self.user = User.objects.create_user(
             username='eqs_queue_user', password='testpass123'
         )
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_order_confirm',
             display_name='EQS Order Confirmation',
-            template_type='order_confirmation',
+            template_type='ORDER',
             subject_template='Order #{{ order_number }} Confirmed',
             from_email='eqs_orders@example.com',
             reply_to_email='eqs_reply@example.com',
@@ -143,8 +144,7 @@ class QueueEmailTest(TestCase):
 
     def test_queue_email_subject_render_failure_fallback(self):
         """Test fallback when subject template rendering fails."""
-        self.template.subject_template = '{% invalid_tag %}'
-        self.template.save()
+        self.template.create_version(subject_template='{% invalid_tag %}')
 
         queue_item = self.service.queue_email(
             template_name='eqs_order_confirm',
@@ -321,7 +321,7 @@ class ProcessQueueItemTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_process_tpl',
             display_name='EQS Process Template',
             subject_template='EQS Process Test',
@@ -509,7 +509,7 @@ class SendSingleEmailTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_send_single_tpl',
             display_name='EQS Send Single Template',
             subject_template='EQS Send Single Test',
@@ -640,7 +640,7 @@ class SendWithMasterTemplateTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='order_confirmation',
             display_name='EQS OC Master',
             subject_template='Order Confirmed',
@@ -681,8 +681,10 @@ class SendWithMasterTemplateTest(TestCase):
     def test_send_with_unknown_master_template(self, mock_attach):
         """Test sending with an unknown template name uses DB-driven rendering."""
         self.template.name = 'eqs_custom_unknown_tpl'
-        self.template.mjml_content = '<mj-section><mj-column><mj-text>test</mj-text></mj-column></mj-section>'
-        self.template.save()
+        self.template.save(update_fields=['name'])
+        self.template.create_version(
+            mjml_content='<mj-section><mj-column><mj-text>test</mj-text></mj-column></mj-section>'
+        )
 
         mock_response = {
             'success': True, 'response_code': '250',
@@ -750,7 +752,7 @@ class CreateEmailLogTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_log_tpl',
             display_name='EQS Log Template',
             subject_template='EQS Log Test',
@@ -797,7 +799,7 @@ class GetTemplateAttachmentsTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_attach_tpl',
             display_name='EQS Attach Template',
             subject_template='EQS Attach Test',
@@ -865,7 +867,7 @@ class ShouldIncludeAttachmentTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_incl_tpl',
             display_name='EQS Include Template',
             subject_template='EQS Include Test',
@@ -1079,7 +1081,7 @@ class ProcessPendingQueueTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_pending_tpl',
             display_name='EQS Pending Template',
             subject_template='EQS Pending Test',
@@ -1183,7 +1185,7 @@ class GetQueueStatsTest(TestCase):
 
     def setUp(self):
         self.service = EmailQueueService()
-        self.template = EmailTemplate.objects.create(
+        self.template = make_template(
             name='eqs_stats_tpl',
             display_name='EQS Stats Template',
             subject_template='EQS Stats Test',

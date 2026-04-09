@@ -64,7 +64,8 @@ class ClosingSalutationViewSetTest(TestCase):
         self.assertEqual(self.salutation.job_title, 'Senior Tutor')
 
     def test_signature_mjml_endpoint(self):
-        template = EmailTemplate.objects.create(
+        from email_system.tests.factories import make_template
+        template = make_template(
             name='test_tmpl',
             display_name='Test Template',
             subject_template='Test',
@@ -79,7 +80,8 @@ class ClosingSalutationViewSetTest(TestCase):
         self.assertEqual(response.data['display_name'], 'The ActEd Team')
 
     def test_signature_mjml_returns_empty_when_no_salutation(self):
-        template = EmailTemplate.objects.create(
+        from email_system.tests.factories import make_template
+        template = make_template(
             name='no_sal_tmpl',
             display_name='No Salutation',
             subject_template='Test',
