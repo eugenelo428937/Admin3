@@ -10,7 +10,37 @@ from email_system.models import (
     EmailQueue, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
     ExternalApiKey, EmailBatch,
+    EmailVariable,
 )
+
+
+@admin.register(EmailVariable)
+class EmailVariableAdmin(admin.ModelAdmin):
+    list_display = ['display_name', 'variable_path', 'data_type', 'default_value', 'is_active']
+    list_filter = ['data_type', 'is_active']
+    search_fields = ['display_name', 'variable_path', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Variable Definition', {
+            'fields': ('display_name', 'variable_path', 'data_type', 'default_value', 'description')
+        }),
+        ('Metadata', {
+            'fields': ('is_active', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        """Auto-create missing ancestor ``object`` rows before saving.
+
+        Strict-mode validation on the leaf requires every ancestor path to
+        exist. Creating them in dependency order by hand is hostile UX, so
+        the admin walks ancestors and fills in the blanks first.
+        """
+        from email_system.models.variable import ensure_ancestor_rows
+        ensure_ancestor_rows(EmailVariable, obj.variable_path or '')
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(EmailTemplate)

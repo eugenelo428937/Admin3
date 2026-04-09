@@ -22,6 +22,7 @@ import {
   BadgeCheck,
   SlidersHorizontal,
   Mail,
+  Archive,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -83,6 +84,16 @@ const navGroups = [
             icon: Code,
          },
          { label: "Settings", path: "/admin/email/settings", icon: Settings },
+      ],
+   },
+   {
+      label: "Archive",
+      items: [
+         {
+            label: "Legacy Products",
+            path: "/admin/legacy-products",
+            icon: Archive,
+         },
       ],
    },
   //  {

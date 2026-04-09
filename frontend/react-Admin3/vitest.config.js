@@ -74,6 +74,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupPolyfills.js', './src/setupTests.js'],
+    exclude: ['e2e/**', 'node_modules/**'],
     pool: 'threads',
     poolOptions: {
       threads: {

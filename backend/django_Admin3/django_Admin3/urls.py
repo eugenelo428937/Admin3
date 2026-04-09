@@ -45,4 +45,6 @@ urlpatterns = [
     path('api/store/', include('store.urls')),
     # Email system API - email admin panel (20260220-email-system-admin)
     path('api/email/', include('email_system.urls')),
+    # Legacy product archive - search historical products (20260408-legacy-product-migration)
+    path('api/legacy/', include('legacy.urls')),
 ]

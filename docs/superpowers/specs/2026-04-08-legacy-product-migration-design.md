@@ -1,7 +1,7 @@
 # Legacy Product Data Migration — Design
 
-**Status:** Approved
-**Date:** 2026-04-08
+**Status:** Superseded (see Addendum at bottom)
+**Date:** 2026-04-08 (original), 2026-04-09 (addendum)
 **Author:** Brainstorming session (Claude + eugenelo428937)
 **Scope:** Import historical ActEd product catalog (1995–2026) from four legacy CSVs into `catalog_products`, `catalog_product_variations`, `catalog_product_product_variations`, and `store.products`.
 
@@ -65,9 +65,9 @@ Populate four currently-empty catalog/store tables from ~37,063 rows in four leg
 |----------|---------------|-----------|
 | **Scope** | Full historical import (all 37k rows) | Preserves audit trail; activation flag controls visibility |
 | **Template dedup key** | `(col3_code, normalized_fullname)` | Subject/session/variation-agnostic — matches store model design |
-| **Preserving raw fullnames** | Add `remarks TEXT NULL` field to `store.Product` | Per-row original text retained without polluting templates |
+| **Preserving raw fullnames** | Add `legacy_product_name TEXT NULL` field to `store.Product` | Per-row original text retained without polluting templates |
 | **Wildcard `*` subject** | Skip, write to `invalid_rows.csv` for separate workstream | Avoids fan-out inflation and semantic contortions |
-| **Col2 mapping** | `P`→Printed, `C`→eBook (all eras), `M`→Marking, `T`→Tutorial | Simplicity; CD-ROM history preserved via `remarks` |
+| **Col2 mapping** | `P`→Printed, `C`→eBook (all eras), `M`→Marking, `T`→Tutorial | Simplicity; CD-ROM history preserved via `legacy_product_name` |
 | **Col2=`E` anomaly** (1 row) | Skip, write to `invalid_rows.csv` | Data quality issue — quarantine for manual review |
 | **Unknown sessions** (`95A`, `95B`, `95C`, `OOS`) | Skip, write to `invalid_rows.csv` | Data quality issue — quarantine |
 | **Execution pattern** | 3-stage idempotent management commands with preview CSVs | Audit-friendly; decouples normalization judgment from DB writes |
@@ -109,7 +109,7 @@ Three Django management commands in `backend/django_Admin3/catalog/products/mana
 ┌─────────────────────────────────────────────────────────────────┐
 │  Stage 3: import_legacy_store_products (WRITES products table) │
 │  ───────────────────────────────────────────────────────────    │
-│  PREREQUISITE: migration adds `remarks TEXT NULL` to products   │
+│  PREREQUISITE: migration adds `legacy_product_name TEXT NULL` to products   │
 │                                                                 │
 │  IN:  raw CSVs + catalog_* state from Stage 2                   │
 │  OUT: products (~36,800 rows, minus quarantined)                │
@@ -300,11 +300,11 @@ for template_row in reviewed_template_preview_csv:
 ### Prerequisite: schema change
 
 ```python
-# store/migrations/00XX_add_remarks_to_product.py
+# store/migrations/00XX_add_legacy_product_name.py
 operations = [
     migrations.AddField(
         model_name='product',
-        name='remarks',
+        name='legacy_product_name',
         field=models.TextField(
             blank=True,
             null=True,
@@ -377,7 +377,7 @@ for csv_row in stream_all_csv_rows():
         product_product_variation=ppv,
         product_code='',           # generated in save()
         is_active=is_active,
-        remarks=raw_fullname,      # preserve original text
+        legacy_product_name=raw_fullname,      # preserve original text
     ))
 
     if len(buffer) >= BATCH_SIZE:
@@ -435,7 +435,7 @@ Naive per-row `.get()` would issue ~200k queries. Preloading into dicts reduces 
 backend/django_Admin3/
 ├── store/
 │   └── migrations/
-│       └── 00XX_add_remarks_to_product.py           [new]
+│       └── 00XX_add_legacy_product_name.py           [new]
 │
 └── catalog/products/management/commands/
     ├── profile_legacy_products.py                   [Stage 1 — new]
@@ -520,7 +520,7 @@ Nothing in this module touches the DB. Every function is a pure transformation.
   - Correct `store.Product` row count after run
   - `is_active=True` only for rows with session_code in `{'26', '26S'}`
   - `is_active=False` for 1995–2025S rows
-  - `remarks` field holds raw CSV fullname verbatim
+  - `legacy_product_name` field holds raw CSV fullname verbatim
   - Auto-generated `product_code` matches expected pattern
   - Tutorial rows get `-{pk}` suffix
   - Re-run creates zero additional rows (idempotent)
@@ -536,7 +536,7 @@ Nothing in this module touches the DB. Every function is a pure transformation.
 3.  [human] review docs/misc/review/template_preview.csv           # iterate on rules if wrong
 4.  [human] review docs/misc/review/invalid_rows.csv               # confirm quarantines
 5.  git add docs/misc/review/*.csv && git commit                   # snapshot the approved state
-6.  python manage.py makemigrations store                          # generate remarks-field migration
+6.  python manage.py makemigrations store                          # generate legacy_product_name field migration
 7.  python manage.py migrate                                       # apply it
 8.  python manage.py import_legacy_templates                       # Stage 2 — catalog tables populated
 9.  python manage.py verify_schema_placement                       # confirm rows in acted schema
@@ -553,7 +553,7 @@ Each stage is cleanly reversible:
 
 - **Stage 3 rollback:** `TRUNCATE "acted"."products" CASCADE`
 - **Stage 2 rollback:** `TRUNCATE "acted"."catalog_product_product_variations", "acted"."catalog_products", "acted"."catalog_product_variations" CASCADE`
-- **Migration rollback:** `python manage.py migrate store 00XX-1` (drops `remarks` column)
+- **Migration rollback:** `python manage.py migrate store 00XX-1` (drops `legacy_product_name` column)
 - **Stage 1 rollback:** delete `docs/misc/review/*.csv` (no DB effect)
 
 **Normalization-error recovery:** if Stage 3 reveals systemic normalization errors, truncate `products`, fix rules, re-run Stages 1-3. Stage 2 is idempotent on `(code, fullname)` natural key — if the fix doesn't affect templates, `catalog_products` can stay intact.
@@ -566,8 +566,58 @@ Conventional commits, one commit per stage:
 
 1. `chore(catalog): add legacy product CSV profiling command` — Stage 1 + tests + fixtures
 2. `chore(catalog): add legacy template import command` — Stage 2 + tests
-3. `feat(store): add remarks field to Product` — schema migration
+3. `feat(store): add legacy_product_name field to Product` — schema migration
 4. `chore(store): add legacy store product import command` — Stage 3 + tests
 5. `chore(catalog): commit reviewed legacy import artifacts` — the approved review CSVs
 
 Each commit: builds, tests pass, migration is functional at that point.
+
+---
+
+## Addendum: Architectural Pivot to Flat Legacy Schema (2026-04-09)
+
+### Why the original design was superseded
+
+During Phase A implementation (Tasks 1-4, normalization helpers), a smoke test
+against the real 37k CSV rows revealed 377 irresolvable collision tuples where
+multiple distinct products share the same `(subject, col2, col3, session)` key.
+These represent genuinely different products (e.g., "Tutorial Block" vs
+"Tutorial Course", distinct CPD topics) that cannot be merged by normalization.
+
+The user proposed storing all legacy CSV data in a separate `legacy` PostgreSQL
+schema instead of the `acted` schema. This eliminates the collision problem
+entirely because legacy products don't need the `store.Product` uniqueness
+constraints required for cart/checkout.
+
+### New architecture: flat denormalized table
+
+A single `legacy.products` table holds all 37k CSV rows directly:
+- No `unique_together` or `product_code` uniqueness constraints
+- No FK relationships to `acted.*` catalog/store tables
+- `normalized_name` column (powered by `normalize_fullname()`) enables search
+- `legacy_product_name` column preserves the raw CSV fullname
+
+### What was preserved from the original design
+
+- **Phase A helpers** (Tasks 1-4 + 2.5-2.7): `normalize_fullname`, `classify_row`,
+  `iter_legacy_csv_rows`, `LegacyRow`, `TemplateKey`, `build_template_key` — all
+  98 tests still pass and are reused by the new import command
+- **3-stage concept simplified to 1 stage**: the import command reads CSVs, validates,
+  normalizes, and `bulk_create`s rows in a single pass
+
+### What was eliminated
+
+- Sections 5-7 (Stage 1 profiling, template preview, collision detection) — unnecessary
+  since the flat table accepts all rows
+- Sections 6 (Stage 2 template import, variation seed, PPV generation) — no catalog
+  template tables needed
+- Section 7 (Stage 3 store product import) — replaced by simpler flat import
+- The `remarks` / `legacy_product_name` field on `store.Product` — replaced by a
+  native column on `legacy.LegacyProduct`
+
+### New implementation
+
+- `legacy` Django app with `LegacyProduct` model in `legacy.products` table
+- `import_legacy_products` management command with `bulk_create` batching
+- `GET /api/legacy/products/` search endpoint with text search + exact filters
+- 31 tests (16 import + 15 search)
