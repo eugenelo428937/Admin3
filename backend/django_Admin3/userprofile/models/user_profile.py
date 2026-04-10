@@ -7,6 +7,8 @@ class UserProfile(models.Model):
     send_invoices_to = models.CharField(max_length=8, choices=[('HOME', 'Home'), ('WORK', 'Work')], default='HOME')
     send_study_material_to = models.CharField(max_length=8, choices=[('HOME', 'Home'), ('WORK', 'Work')], default='HOME')
     remarks = models.TextField(max_length=500, blank=True, null=True)
+    first_name_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    last_name_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
 
     def __str__(self):
         return self.user.username

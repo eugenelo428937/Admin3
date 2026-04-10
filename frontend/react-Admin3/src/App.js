@@ -84,6 +84,9 @@ const AdminUserProfileForm = React.lazy(() => import("./components/admin/user-pr
 const AdminStaffList = React.lazy(() => import("./components/admin/staff/StaffList.tsx"));
 const AdminStaffForm = React.lazy(() => import("./components/admin/staff/StaffForm.tsx"));
 
+// Admin: Students
+const AdminStudentList = React.lazy(() => import("./components/admin/students/StudentList.tsx"));
+
 // Admin: Email System (US6)
 const EmailSettingsList = React.lazy(() => import("./components/admin/email/settings/EmailSettingsList"));
 const EmailTemplateList = React.lazy(() => import("./components/admin/email/templates/EmailTemplateList"));
@@ -292,6 +295,9 @@ function App() {
 										<Route path="/admin/staff" element={<AdminStaffList />} />
 										<Route path="/admin/staff/new" element={<AdminStaffForm />} />
 										<Route path="/admin/staff/:id/edit" element={<AdminStaffForm />} />
+
+										{/* Admin: Students */}
+										<Route path="/admin/students" element={<AdminStudentList />} />
 
 										{/* Admin: New Session Setup Wizard */}
 										<Route path="/admin/new-session-setup" element={<NewSessionSetup />} />
