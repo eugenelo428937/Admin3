@@ -1,0 +1,15 @@
+CM1,P,N,26,CM1/PN/26,Course Notes,Course Notes
+CM1,C,N,26,CM1/CN/26,Course Notes eBook,Course Notes eBook
+CM1,P,C,26,CM1/PC/26,Combined Materials Pack,CMP
+CM1,C,C,26,CM1/CC/26,Combined Materials Pack eBook,CMP eBook
+CM1,M,M,26,CM1/MM/26,Mock Exam Marking,Mock Marking
+CM1,M,M,26,CM1/MM/26,Mock Exam 2 Marking,Mock 2 Marking
+CM1,M,M,26,CM1/MM/26,Mock Exam 3 Marking,Mock 3 Marking
+CB1,P,N,26,CB1/PN/26,Course Notes,Course Notes
+CB1,C,N,26,CB1/CN/26,Course Notes eBook,Course Notes eBook
+CB1,P,EX,26,CB1/PEX/26,ASET (2014-2017 Papers),ASET
+CB1,M,X,26,CB1/MX/26,Series X Assignments (Marking),X Marking
+CB1,C,X,26,CB1/CX/26,Series X Assignments eBook,X eBook
+CB1,P,X,26,CB1/PX/26,Series X Assignments,X Assign
+*,C,AF,26,*/CAF/26,Additional Charge,Additional Charge
+*,P,BIN,26,*/PBIN/26,ActEd Binder,Binder
