@@ -10,6 +10,7 @@ class UserProfileContactNumber(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='contact_numbers')
     contact_type = models.CharField(max_length=8, choices=CONTACT_TYPE_CHOICES)
     number = models.CharField(max_length=32)
+    number_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
     country_code = models.CharField(max_length=2, blank=True, default='', help_text="ISO 3166-1 alpha-2 country code (e.g., 'HK', 'GB')")
 
     class Meta:

@@ -55,6 +55,7 @@ const navGroups = [
       items: [
          // { label: 'User Profiles', path: '/admin/user-profiles', icon: Users },
          { label: "Staff", path: "/admin/staff", icon: BadgeCheck },
+         { label: "Students", path: "/admin/students", icon: GraduationCap },
       ],
    },
    {
