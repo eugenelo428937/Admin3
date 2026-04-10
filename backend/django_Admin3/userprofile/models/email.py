@@ -9,6 +9,7 @@ class UserProfileEmail(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='emails')
     email_type = models.CharField(max_length=16, choices=EMAIL_TYPE_CHOICES)
     email = models.EmailField(max_length=128)
+    email_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
 
     class Meta:
         db_table = '"acted"."user_profile_email"'

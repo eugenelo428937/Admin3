@@ -19,15 +19,15 @@
 -- =============================================================================
 
 -- Enable output
-\set ON_ERROR_STOP on
-\timing on
+-- set ON_ERROR_STOP on
+-- timing on
 
 DO $$
 DECLARE
     -- =========================================================================
     -- CONFIGURATION: Set ONE of these values
     -- =========================================================================
-    p_user_id INTEGER := NULL;          -- Set user ID here, e.g., 123
+    p_user_id INTEGER := 124;          -- Set user ID here, e.g., 123
     p_user_email TEXT := NULL;          -- OR set email here, e.g., 'user@example.com'
 
     -- =========================================================================
@@ -71,7 +71,7 @@ BEGIN
 
     -- Get user profile ID
     SELECT id INTO v_user_profile_id
-    FROM acted_user_profile
+    FROM "acted"."user_profile"
     WHERE user_id = v_user_id;
 
     RAISE NOTICE '=========================================================================';
@@ -89,45 +89,45 @@ BEGIN
     RAISE NOTICE '--- Deleting ORDER-related records ---';
 
     -- Delete order user acknowledgments
-    DELETE FROM acted_order_user_acknowledgments
-    WHERE order_id IN (SELECT id FROM acted_orders WHERE user_id = v_user_id);
+    DELETE FROM "acted".order_user_acknowledgments
+    WHERE order_id IN (SELECT id FROM "acted"."orders" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_order_user_acknowledgments', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."order_user_acknowledgments"', v_deleted_count;
 
     -- Delete order user preferences
-    DELETE FROM acted_order_user_preferences
-    WHERE order_id IN (SELECT id FROM acted_orders WHERE user_id = v_user_id);
+    DELETE FROM "acted"."order_user_preferences"
+    WHERE order_id IN (SELECT id FROM "acted"."orders" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_order_user_preferences', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."order_user_preferences"', v_deleted_count;
 
     -- Delete order user contact
-    DELETE FROM acted_order_user_contact
-    WHERE order_id IN (SELECT id FROM acted_orders WHERE user_id = v_user_id);
+    DELETE FROM "acted"."order_user_contact"
+    WHERE order_id IN (SELECT id FROM "acted"."orders" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_order_user_contact', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."order_user_contact"', v_deleted_count;
 
     -- Delete order items
-    DELETE FROM acted_order_items
-    WHERE order_id IN (SELECT id FROM acted_orders WHERE user_id = v_user_id);
+    DELETE FROM "acted"."order_items"
+    WHERE order_id IN (SELECT id FROM "acted"."orders" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_order_items', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."order_items"', v_deleted_count;
 
     -- Delete order payments
-    DELETE FROM acted_order_payments
-    WHERE order_id IN (SELECT id FROM acted_orders WHERE user_id = v_user_id);
+    DELETE FROM "acted"."order_payments"
+    WHERE order_id IN (SELECT id FROM "acted"."orders" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_order_payments', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."order_payments"', v_deleted_count;
 
     -- Delete orders
-    DELETE FROM acted_orders WHERE user_id = v_user_id;
+    DELETE FROM "acted"."orders" WHERE user_id = v_user_id;
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_orders', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."orders"', v_deleted_count;
 
     -- =========================================================================
     -- Step 3: Delete Cart-related records (children first)
@@ -136,24 +136,24 @@ BEGIN
     RAISE NOTICE '--- Deleting CART-related records ---';
 
     -- Delete cart fees
-    DELETE FROM acted_cart_fees
-    WHERE cart_id IN (SELECT id FROM acted_carts WHERE user_id = v_user_id);
+    DELETE FROM "acted"."cart_fees"
+    WHERE cart_id IN (SELECT id FROM "acted"."carts" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_cart_fees', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."cart_fees"', v_deleted_count;
 
     -- Delete cart items
-    DELETE FROM acted_cart_items
-    WHERE cart_id IN (SELECT id FROM acted_carts WHERE user_id = v_user_id);
+    DELETE FROM "acted"."cart_items"
+    WHERE cart_id IN (SELECT id FROM "acted"."carts" WHERE user_id = v_user_id);
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_cart_items', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."cart_items"', v_deleted_count;
 
     -- Delete carts
-    DELETE FROM acted_carts WHERE user_id = v_user_id;
+    DELETE FROM "acted"."carts" WHERE user_id = v_user_id;
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_carts', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."carts"', v_deleted_count;
 
     -- =========================================================================
     -- Step 4: Delete User Profile-related records (children first)
@@ -163,28 +163,28 @@ BEGIN
 
     IF v_user_profile_id IS NOT NULL THEN
         -- Delete user profile addresses
-        DELETE FROM acted_user_profile_address WHERE user_profile_id = v_user_profile_id;
+        DELETE FROM "acted"."user_profile_address" WHERE user_profile_id = v_user_profile_id;
         GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
         v_total_deleted := v_total_deleted + v_deleted_count;
-        RAISE NOTICE 'Deleted % records from acted_user_profile_address', v_deleted_count;
+        RAISE NOTICE 'Deleted % records from "acted"."user_profile_address"', v_deleted_count;
 
         -- Delete user profile contact numbers
-        DELETE FROM acted_user_profile_contact_number WHERE user_profile_id = v_user_profile_id;
+        DELETE FROM "acted"."user_profile_contact_number" WHERE user_profile_id = v_user_profile_id;
         GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
         v_total_deleted := v_total_deleted + v_deleted_count;
-        RAISE NOTICE 'Deleted % records from acted_user_profile_contact_number', v_deleted_count;
+        RAISE NOTICE 'Deleted % records from "acted"."user_profile_contact_number"', v_deleted_count;
 
         -- Delete user profile emails
-        DELETE FROM acted_user_profile_email WHERE user_profile_id = v_user_profile_id;
+        DELETE FROM "acted"."user_profile_email" WHERE user_profile_id = v_user_profile_id;
         GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
         v_total_deleted := v_total_deleted + v_deleted_count;
-        RAISE NOTICE 'Deleted % records from acted_user_profile_email', v_deleted_count;
+        RAISE NOTICE 'Deleted % records from "acted"."user_profile_email"', v_deleted_count;
 
         -- Delete user profile
-        DELETE FROM acted_user_profile WHERE id = v_user_profile_id;
+        DELETE FROM "acted"."user_profile" WHERE id = v_user_profile_id;
         GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
         v_total_deleted := v_total_deleted + v_deleted_count;
-        RAISE NOTICE 'Deleted % records from acted_user_profile', v_deleted_count;
+        RAISE NOTICE 'Deleted % records from "acted"."user_profile"', v_deleted_count;
     ELSE
         RAISE NOTICE 'No user profile found for this user';
     END IF;
@@ -222,10 +222,10 @@ BEGIN
     RAISE NOTICE '';
     RAISE NOTICE '--- Deleting STUDENT record ---';
 
-    DELETE FROM acted_students WHERE user_id = v_user_id;
+    DELETE FROM "acted"."students" WHERE user_id = v_user_id;
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     v_total_deleted := v_total_deleted + v_deleted_count;
-    RAISE NOTICE 'Deleted % records from acted_students', v_deleted_count;
+    RAISE NOTICE 'Deleted % records from "acted"."students"', v_deleted_count;
 
     -- =========================================================================
     -- Step 7: Delete the user from auth_user
