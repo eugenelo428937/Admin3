@@ -51,12 +51,10 @@ class AdministrateAuthService:
         """Initial token setup using OAuth 2.0 client credentials flow"""
         token_time = datetime.datetime.utcnow()
         
-        # Get credentials from settings if not in token_data
-        client_id = token_data.get(
-            'client_id') or settings.ADMINISTRATE_API_KEY
-        client_secret = token_data.get(
-            'client_secret') or settings.ADMINISTRATE_API_SECRET
-        auth_user = token_data.get('auth_user') or settings.ADMINISTRATE_AUTH_USER
+        # Settings credentials always take priority over cached values
+        client_id = settings.ADMINISTRATE_API_KEY or token_data.get('client_id')
+        client_secret = settings.ADMINISTRATE_API_SECRET or token_data.get('client_secret')
+        auth_user = settings.ADMINISTRATE_AUTH_USER or token_data.get('auth_user')
 
         if not all([client_id, client_secret, auth_user]):
             raise AdministrateAuthError("Missing required credentials in settings")

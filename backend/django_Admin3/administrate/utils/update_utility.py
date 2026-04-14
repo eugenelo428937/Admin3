@@ -170,33 +170,9 @@ def main():
     event_custom_field_keys = {}
     event_custom_field_keys = get_custom_field_keys_by_entity_type(api_service, "Event")
     
-    eventLifecycleState = LifecycleState.DRAFT.value
+    eventLifecycleState = LifecycleState.PUBLISHED.value
     sessionLifecycleState = LifecycleState.DRAFT.value
 
-    # while True:                      
-    #     result = get_drafted_sessions_by_sitting(
-    #         api_service, title, eventLifecycleState, sessionLifecycleState, first, offset)
-    #     offset += first   
-    #     if (result 
-    #         and 'data' in result 
-    #         and 'events' in result['data'] 
-    #         and 'edges' in result['data']['events']):
-    #         for event in result['data']['events']['edges']:
-    #             for session in event['node']['sessions']['edges']:
-    #                 sessionids.append(session['node']['id'])
-
-    #     if not result['data']['events']['pageInfo']['hasNextPage']:
-    #         break
-
-    # count = 0       
-    # for e in sessionids:
-
-    #     count += 1
-    #     set_session_active(
-    #         api_service, e, LifecycleState.PUBLISHED.value)
-    #     # set_event_soldout(api_service, e, isSoldOut=True)
-    #     # set_event_active(api_service, e, EventLifecycleState.PUBLISHED.value)
-    
     first = 100
     offset = 0
     while True:
@@ -207,18 +183,62 @@ def main():
             and 'data' in result
             and 'events' in result['data']
             and 'edges' in result['data']['events']):
-            for event in result['data']['events']['edges']:                
+            for event in result['data']['events']['edges']:
                 eventids.append(event['node']['id'])
 
         if not result['data']['events']['pageInfo']['hasNextPage']:
             break
-    
+
     count = 0
     for e in eventids:
         count += 1
-        #set_event_soldout(api_service, e, isSoldOut=False)
+        # set_event_soldout(api_service, e, isSoldOut=True)
         set_event_web_sale(api_service, e, event_custom_field_keys['Web sale'], "True")
         # set_event_active(api_service, e, LifecycleState.PUBLISHED.value)
+
+    # while True:
+    #     result = get_drafted_sessions_by_sitting(
+    #         api_service, title, eventLifecycleState, sessionLifecycleState, first, offset)
+    #     offset += first
+    #     if (result
+    #         and 'data' in result
+    #         and 'events' in result['data']
+    #         and 'edges' in result['data']['events']):
+    #         for event in result['data']['events']['edges']:
+    #             event_code = event['node'].get('code', 'unknown')
+    #             sessions = event['node']['sessions']['edges']
+    #             print(f"  Event {event_code}: {len(sessions)} draft session(s) found")
+    #             for session in sessions:
+    #                 sessionids.append(session['node']['id'])
+
+    #     total = result['data']['events']['pageInfo']['totalRecords']
+    #     if not result['data']['events']['pageInfo']['hasNextPage']:
+    #         break
+
+    # print(f"\nQuery: title='{title}', eventState='{eventLifecycleState}', sessionState='{sessionLifecycleState}'")
+    # print(f"Total events matched: {total}")
+    # print(f"Total draft sessions found: {len(sessionids)}")
+
+    # if not sessionids:
+    #     print("No draft sessions found — nothing to publish.")
+    #     return
+
+    # count = 0
+    # errors = 0
+    # for e in sessionids:
+    #     count += 1
+    #     result = set_session_active(
+    #         api_service, e, LifecycleState.PUBLISHED.value)
+    #     mutation_errors = result.get('data', {}).get('session', {}).get('update', {}).get('errors')
+    #     if mutation_errors:
+    #         errors += 1
+    #         print(f"  ERROR publishing session {e}: {mutation_errors}")
+    #     elif count % 25 == 0 or count == len(sessionids):
+    #         print(f"  Published {count}/{len(sessionids)} sessions...")
+
+    # print(f"\nDone: {count - errors}/{count} sessions published successfully, {errors} errors.")
+    #     # set_event_soldout(api_service, e, isSoldOut=True)
+    #     # set_event_active(api_service, e, EventLifecycleState.PUBLISHED.value)
 
     # title = "26A"
     # while True:

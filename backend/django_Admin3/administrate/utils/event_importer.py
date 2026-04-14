@@ -35,7 +35,7 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\TEMP\EventSessionImportTemplate2026SV1.xlsx"
+file_path = r"C:\TEMP\EventSessionImportTemplate2026SV2-elo.xlsx"
 queryFilePath = r"C:\Administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 resultFilePath = r"C:\Administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 ValidationFilePath = r"C:\Administrate/log/" + datetime.now().strftime("%Y%m%d")+".txt"
