@@ -51,7 +51,7 @@ class Command(BaseCommand):
         if clear and existing_count > 0:
             # Truncate is faster than DELETE for large tables
             with connection.cursor() as cursor:
-                cursor.execute('TRUNCATE "legacy"."products" RESTART IDENTITY')
+                cursor.execute('TRUNCATE "legacy"."products" RESTART IDENTITY CASCADE')
             self.stdout.write(
                 self.style.WARNING(
                     f'  Truncated {existing_count} existing rows'
