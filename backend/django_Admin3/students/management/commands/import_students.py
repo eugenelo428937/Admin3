@@ -81,6 +81,11 @@ class Command(BaseCommand):
             "--output",
             help="Output path for anonymized CSV (default: <input>_anonymized.csv)",
         )
+        parser.add_argument(
+            "--no-header",
+            action="store_true",
+            help="CSV has no header row; use standard column names",
+        )
 
     def handle(self, *args, **options):
         csv_path = options["csv"]
@@ -91,6 +96,7 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
             return
 
+        no_header = options["no_header"]
         do_anonymize = options["anonymize"] or options["anonymize_only"]
 
         # Phase 1: Anonymize (if requested)
@@ -101,7 +107,7 @@ class Command(BaseCommand):
                 output_path = str(p.parent / f"{p.stem}_anonymized{p.suffix}")
 
             self.stdout.write(f"Phase 1: Anonymizing {csv_path} ...")
-            raw_rows = self._read_csv(csv_path)
+            raw_rows = self._read_csv(csv_path, no_header=no_header)
             anon_rows = self._anonymize(raw_rows)
             self._write_csv(output_path, anon_rows)
             self.stdout.write(
@@ -118,7 +124,7 @@ class Command(BaseCommand):
             raw_rows_for_hash = raw_rows
         else:
             # Import directly from the CSV (assumed pre-anonymized, no hashing)
-            import_rows = self._read_csv(csv_path)
+            import_rows = self._read_csv(csv_path, no_header=no_header)
             raw_rows_for_hash = None
 
         # Phase 2: Import
@@ -133,15 +139,33 @@ class Command(BaseCommand):
 
     # ── CSV I/O ──────────────────────────────────────────────────────
 
-    def _read_csv(self, path):
-        """Read CSV with latin-1 encoding, normalize column names."""
+    STANDARD_FIELDNAMES = [
+        "ref", "title", "firstname", "lastname", "email",
+        "address building", "address street", "address district",
+        "address town", "address county", "address postcode",
+        "address country", "home phone", "work phone", "mobile",
+        "delivery preference", "invoice preference",
+    ]
+
+    def _read_csv(self, path, no_header=False):
+        """Read CSV with latin-1 encoding, normalize column names.
+
+        Args:
+            no_header: If True, use STANDARD_FIELDNAMES instead of
+                       reading column names from the first row.
+        """
         rows = []
         with open(path, "r", encoding="latin-1") as f:
-            reader = csv.DictReader(f)
+            if no_header:
+                reader = csv.DictReader(f, fieldnames=self.STANDARD_FIELDNAMES)
+            else:
+                reader = csv.DictReader(f)
             for row in reader:
                 # Normalize keys: strip whitespace, lowercase
                 normalized = {}
                 for k, v in row.items():
+                    if k is None:
+                        continue  # Extra columns beyond fieldnames
                     clean_key = " ".join(k.strip().lower().split())
                     normalized[clean_key] = (v or "").strip()
                 rows.append(normalized)
@@ -423,9 +447,15 @@ class Command(BaseCommand):
         if not email:
             email = f"student_{ref}@example.com"
 
-        # Skip if user with this email already exists
+        # If anonymized email collides with existing user, use fallback
         if User.objects.filter(username=email.lower()).exists():
-            return "skipped"
+            fallback = f"student_{ref}@example.com"
+            if fallback.lower() == email.lower():
+                # Fallback itself collides — truly a duplicate ref
+                return "skipped"
+            email = fallback
+            if User.objects.filter(username=email.lower()).exists():
+                return "skipped"
 
         # 1. Create auth_user (with anonymised names)
         user = User.objects.create_user(

@@ -1,15 +1,13 @@
-"""Legacy product archive.
+"""Legacy archive models.
 
-Flat denormalized table holding all historical ActEd product rows
-imported from the legacy CSV exports (1995-2026). Each CSV row becomes
-one row here — no uniqueness constraints, no FK relationships to the
-modern acted.* catalog/store tables.
+Flat denormalized tables holding historical ActEd data imported from
+legacy CSV exports. No FK relationships to the modern acted.* tables —
+joins are via indexed code/ref fields.
 
-The normalized_name column is populated by the normalize_fullname()
-helper from catalog.management.commands._legacy_import_helpers and
-powers the legacy product search endpoint.
-
-Table: legacy.products
+Tables:
+  legacy.products     — product catalog rows (1995-2026)
+  legacy.orders       — order headers grouped by student + date + delivery
+  legacy.order_items  — individual order line items
 """
 from django.db import models
 
@@ -77,3 +75,120 @@ class LegacyProduct(models.Model):
 
     def __str__(self):
         return f'{self.full_code} — {self.legacy_product_name}'
+
+
+class LegacyOrder(models.Model):
+    """Order header grouped by student_ref + order_date + delivery_pref.
+
+    Mixed-delivery orders (items split across Home and Work) are stored
+    as separate LegacyOrder rows with the same student_ref and order_date.
+
+    Table: legacy.orders
+    """
+
+    student_ref = models.IntegerField(
+        db_index=True,
+        help_text='Student reference (joins to acted.students.student_ref)',
+    )
+    order_date = models.DateField(
+        help_text='Order date from CSV',
+    )
+    delivery_pref = models.CharField(
+        max_length=1,
+        help_text='Delivery preference: H=Home, W=Work',
+    )
+
+    class Meta:
+        db_table = '"legacy"."orders"'
+        verbose_name = 'Legacy Order'
+        verbose_name_plural = 'Legacy Orders'
+        indexes = [
+            models.Index(
+                fields=['student_ref', 'order_date'],
+                name='legacy_ord_ref_date_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return f'Order ref={self.student_ref} date={self.order_date} dlv={self.delivery_pref}'
+
+
+class LegacyOrderItem(models.Model):
+    """Individual order line item from the legacy CSV.
+
+    Table: legacy.order_items
+    """
+
+    order = models.ForeignKey(
+        LegacyOrder,
+        on_delete=models.CASCADE,
+        related_name='items',
+    )
+    order_no = models.IntegerField(
+        db_index=True,
+        help_text='Legacy order line number (column 7 in CSV, not unique)',
+    )
+    product_code = models.CharField(
+        max_length=64,
+        db_index=True,
+        help_text='Full product code (joins to legacy.products.full_code or store.Product.product_code)',
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text='Price paid',
+    )
+    quantity = models.IntegerField(
+        help_text='Quantity ordered',
+    )
+    free_of_charge = models.BooleanField(
+        default=False,
+        help_text='Item was free of charge',
+    )
+    is_retaker = models.BooleanField(
+        default=False,
+        help_text='Retaker pricing applied',
+    )
+    is_reduced = models.BooleanField(
+        default=False,
+        help_text='Reduced pricing applied',
+    )
+    is_additional = models.BooleanField(
+        default=False,
+        help_text='Additional copy',
+    )
+    is_reduced_rate = models.BooleanField(
+        default=False,
+        help_text='Reduced rate applied',
+    )
+    session_code = models.CharField(
+        max_length=10,
+        db_index=True,
+        help_text='Exam session code extracted from product_code',
+    )
+    subject_code = models.CharField(
+        max_length=10,
+        db_index=True,
+        help_text='Subject code extracted from product_code',
+    )
+    source_line = models.PositiveIntegerField(
+        help_text='Line number in the source CSV (provenance)',
+    )
+
+    class Meta:
+        db_table = '"legacy"."order_items"'
+        verbose_name = 'Legacy Order Item'
+        verbose_name_plural = 'Legacy Order Items'
+        indexes = [
+            models.Index(
+                fields=['session_code', 'subject_code'],
+                name='legacy_oi_sess_subj_idx',
+            ),
+            models.Index(
+                fields=['product_code'],
+                name='legacy_oi_prod_code_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.product_code} qty={self.quantity} £{self.price}'
