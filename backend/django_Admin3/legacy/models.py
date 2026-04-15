@@ -35,7 +35,7 @@ class LegacyProduct(models.Model):
     )
     full_code = models.CharField(
         max_length=64,
-        db_index=True,
+        unique=True,
         help_text='Full product code from CSV col5 (e.g., CM2/PC/20)',
     )
     legacy_product_name = models.TextField(
@@ -128,10 +128,13 @@ class LegacyOrderItem(models.Model):
         db_index=True,
         help_text='Legacy order line number (column 7 in CSV, not unique)',
     )
-    product_code = models.CharField(
-        max_length=64,
-        db_index=True,
-        help_text='Full product code (joins to legacy.products.full_code or store.Product.product_code)',
+    product = models.ForeignKey(
+        LegacyProduct,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='order_items',
+        help_text='FK to legacy.products (null for session 26 items)',
     )
     price = models.DecimalField(
         max_digits=10,
@@ -161,16 +164,6 @@ class LegacyOrderItem(models.Model):
         default=False,
         help_text='Reduced rate applied',
     )
-    session_code = models.CharField(
-        max_length=10,
-        db_index=True,
-        help_text='Exam session code extracted from product_code',
-    )
-    subject_code = models.CharField(
-        max_length=10,
-        db_index=True,
-        help_text='Subject code extracted from product_code',
-    )
     source_line = models.PositiveIntegerField(
         help_text='Line number in the source CSV (provenance)',
     )
@@ -179,16 +172,7 @@ class LegacyOrderItem(models.Model):
         db_table = '"legacy"."order_items"'
         verbose_name = 'Legacy Order Item'
         verbose_name_plural = 'Legacy Order Items'
-        indexes = [
-            models.Index(
-                fields=['session_code', 'subject_code'],
-                name='legacy_oi_sess_subj_idx',
-            ),
-            models.Index(
-                fields=['product_code'],
-                name='legacy_oi_prod_code_idx',
-            ),
-        ]
 
     def __str__(self):
-        return f'{self.product_code} qty={self.quantity} £{self.price}'
+        code = self.product.full_code if self.product else '(no product)'
+        return f'{code} qty={self.quantity} £{self.price}'

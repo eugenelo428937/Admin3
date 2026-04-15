@@ -22,7 +22,7 @@ from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from legacy.models import LegacyOrder, LegacyOrderItem
+from legacy.models import LegacyOrder, LegacyOrderItem, LegacyProduct
 
 
 class Command(BaseCommand):
@@ -125,9 +125,18 @@ class Command(BaseCommand):
 
     def _import_orders(self, orders, batch_size):
         """Import orders in batched transactions."""
+        # Build product code -> LegacyProduct lookup
+        code_to_product = dict(
+            LegacyProduct.objects.values_list("full_code", "id")
+        )
+        self.stdout.write(
+            f"  Product lookup: {len(code_to_product)} codes"
+        )
+
         total = len(orders)
         created_orders = 0
         created_items = 0
+        unlinked = 0
 
         for batch_start in range(0, total, batch_size):
             batch = orders[batch_start: batch_start + batch_size]
@@ -147,14 +156,14 @@ class Command(BaseCommand):
                     item_objects = []
                     for line_no, row in items:
                         code = row[1]
-                        parts = code.split("/")
-                        subject = parts[0] if len(parts) >= 1 else ""
-                        session = parts[-1] if len(parts) >= 2 else ""
+                        product_id = code_to_product.get(code)
+                        if not product_id:
+                            unlinked += 1
 
                         item_objects.append(LegacyOrderItem(
                             order=order,
                             order_no=int(row[6]),
-                            product_code=code,
+                            product_id=product_id,
                             price=Decimal(row[2]),
                             quantity=int(row[3]),
                             free_of_charge=row[7].strip() == "T",
@@ -162,8 +171,6 @@ class Command(BaseCommand):
                             is_reduced=row[9].strip() == "Y",
                             is_additional=row[10].strip() == "Y",
                             is_reduced_rate=row[11].strip() == "Y",
-                            session_code=session,
-                            subject_code=subject,
                             source_line=line_no,
                         ))
 
@@ -180,3 +187,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Import complete:"))
         self.stdout.write(f"  Orders created: {created_orders}")
         self.stdout.write(f"  Items created: {created_items}")
+        self.stdout.write(f"  Items with no product link (session 26): {unlinked}")
