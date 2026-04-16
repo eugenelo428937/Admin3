@@ -107,6 +107,7 @@ const ClosingSalutationForm = React.lazy(() => import("./components/admin/email/
 
 // Legacy Product Archive
 const LegacyProductList = React.lazy(() => import("./components/admin/legacy-products/LegacyProductList"));
+const LegacyOrderList = React.lazy(() => import("./components/admin/legacy-orders/LegacyOrderList"));
 
 const system = createSystem(defaultConfig);
 
@@ -340,6 +341,7 @@ function App() {
 
 									{/* Admin: Legacy Product Archive */}
 									<Route path="/admin/legacy-products" element={<LegacyProductList />} />
+									<Route path="/admin/legacy-orders" element={<LegacyOrderList />} />
 										</Route>{/* end AdminLayout wrapper */}
 
 									{/* Public routes */}

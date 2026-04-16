@@ -23,6 +23,7 @@ import {
   SlidersHorizontal,
   Mail,
   Archive,
+  ScrollText,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -94,6 +95,11 @@ const navGroups = [
             label: "Legacy Products",
             path: "/admin/legacy-products",
             icon: Archive,
+         },
+         {
+            label: "Legacy Orders",
+            path: "/admin/legacy-orders",
+            icon: ScrollText,
          },
       ],
    },
