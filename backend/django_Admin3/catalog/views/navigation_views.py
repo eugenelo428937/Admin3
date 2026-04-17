@@ -138,8 +138,9 @@ def navigation_data(request):
         # Location products
         if tutorial_group:
             location_products = list(Product.objects.filter(
-                is_active=True, groups=tutorial_group
-            ).order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
+                is_active=True,
+                productproductvariation__product_groups__product_group=tutorial_group,
+            ).distinct().order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
         else:
             location_products = []
         mid_point = (len(location_products) + 1) // 2
@@ -166,7 +167,7 @@ def navigation_data(request):
         # Online Classroom variations
         if online_classroom_group:
             online_classroom_data = list(ProductVariation.objects.filter(
-                products__groups=online_classroom_group
+                productproductvariation__product_groups__product_group=online_classroom_group
             ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description'))
         else:
             online_classroom_data = []

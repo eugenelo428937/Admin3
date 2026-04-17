@@ -61,9 +61,16 @@ class TestBundleFiltering(TestCase):
         self.material_group = create_filter_group('Material', code='MATERIAL')
         self.core_group = create_filter_group('Core Study Materials', code='CORE')
         self.revision_group = create_filter_group('Revision Materials', code='REVISION')
+        self.printed_group = create_filter_group('Printed', code='PRINTED')
+        self.ebook_group = create_filter_group('eBook', code='EBOOK')
         assign_group_to_config(self.categories_config, self.material_group)
         assign_group_to_config(self.product_types_config, self.core_group)
         assign_group_to_config(self.product_types_config, self.revision_group)
+        self.modes_config = create_filter_config(
+            'Modes', 'modes_of_delivery', 'filter_group', display_order=3
+        )
+        assign_group_to_config(self.modes_config, self.printed_group)
+        assign_group_to_config(self.modes_config, self.ebook_group)
 
         # Variations
         self.printed = create_product_variation('Printed', 'Standard Printed', code='P')
@@ -86,6 +93,7 @@ class TestBundleFiltering(TestCase):
         )
         assign_product_to_group(self.cm2_core_catalog, self.material_group)
         assign_product_to_group(self.cm2_core_catalog, self.core_group)
+        assign_product_to_group(self.cm2_core_catalog, self.printed_group)
 
         # CM2 Revision ebook product
         self.cm2_rev_catalog = create_catalog_product(
@@ -97,6 +105,7 @@ class TestBundleFiltering(TestCase):
         )
         assign_product_to_group(self.cm2_rev_catalog, self.material_group)
         assign_product_to_group(self.cm2_rev_catalog, self.revision_group)
+        assign_product_to_group(self.cm2_rev_catalog, self.ebook_group)
 
         # CM2 bundle (full) — contains BOTH core and revision
         self.bundle_cm2_full, _ = create_bundle_with_products(
@@ -125,6 +134,7 @@ class TestBundleFiltering(TestCase):
         )
         assign_product_to_group(self.sa1_core_catalog, self.material_group)
         assign_product_to_group(self.sa1_core_catalog, self.core_group)
+        assign_product_to_group(self.sa1_core_catalog, self.printed_group)
 
         # SA1 bundle — contains only SA1 core product
         self.bundle_sa1, _ = create_bundle_with_products(
