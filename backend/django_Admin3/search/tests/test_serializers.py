@@ -146,34 +146,49 @@ class TestStoreProductListSerializerGetProductType(TestCase):
         self.marking_group = create_filter_group('Marking Services', code='MARK')
         self.material_group = create_filter_group('Material', code='MAT')
 
+    def _make_ppv(self, catalog_product):
+        """Create a PPV for the given catalog product."""
+        from catalog.models import ProductVariation, ProductProductVariation
+        variation, _ = ProductVariation.objects.get_or_create(
+            variation_type='eBook', name='Default eBook',
+            defaults={'code': 'DFLT', 'description': 'test'},
+        )
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=catalog_product, product_variation=variation,
+        )
+        return ppv
+
     def test_tutorial_group(self):
-        """Products in a tutorial group return 'Tutorial'."""
+        """PPV in a tutorial group returns 'Tutorial'."""
         catalog_product = create_catalog_product(
             fullname='CM2 Online Tutorial', shortname='CM2 Tut', code='TCMA'
         )
-        assign_product_to_group(catalog_product, self.tutorial_group)
+        ppv = self._make_ppv(catalog_product)
+        assign_product_to_group(ppv, self.tutorial_group)
 
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Tutorial')
 
     def test_marking_group(self):
-        """Products in a marking group return 'Markings'."""
+        """PPV in a marking group returns 'Markings'."""
         catalog_product = create_catalog_product(
             fullname='CM2 Marking Service', shortname='CM2 Mark', code='MCM2'
         )
-        assign_product_to_group(catalog_product, self.marking_group)
+        ppv = self._make_ppv(catalog_product)
+        assign_product_to_group(ppv, self.marking_group)
 
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Markings')
 
     def test_default_materials(self):
-        """Products in non-tutorial/non-marking groups return 'Materials'."""
+        """PPV in non-tutorial/non-marking groups returns 'Materials'."""
         catalog_product = create_catalog_product(
             fullname='CM2 Study Materials', shortname='CM2 Mat', code='PCSM'
         )
-        assign_product_to_group(catalog_product, self.material_group)
+        ppv = self._make_ppv(catalog_product)
+        assign_product_to_group(ppv, self.material_group)
 
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Materials')
 
     def test_fallback_tutorial_by_name(self):
@@ -181,8 +196,9 @@ class TestStoreProductListSerializerGetProductType(TestCase):
         catalog_product = create_catalog_product(
             fullname='CB1 Tutorial Bundle', shortname='CB1 Tut', code='TCB1'
         )
+        ppv = self._make_ppv(catalog_product)
         # No group assigned
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Tutorial')
 
     def test_fallback_marking_by_name(self):
@@ -190,7 +206,8 @@ class TestStoreProductListSerializerGetProductType(TestCase):
         catalog_product = create_catalog_product(
             fullname='CB1 Marking Pack', shortname='CB1 Mark', code='MCB1'
         )
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        ppv = self._make_ppv(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Markings')
 
     def test_fallback_materials(self):
@@ -198,15 +215,17 @@ class TestStoreProductListSerializerGetProductType(TestCase):
         catalog_product = create_catalog_product(
             fullname='CB1 Core Study', shortname='CB1 Core', code='PCB1'
         )
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        ppv = self._make_ppv(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Materials')
 
     def test_no_fullname_returns_materials(self):
-        """Product with None fullname returns 'Materials'."""
+        """PPV with empty product fullname returns 'Materials'."""
         catalog_product = create_catalog_product(
             fullname='', shortname='CB1', code='PCB1X'
         )
-        result = StoreProductListSerializer._get_product_type(catalog_product)
+        ppv = self._make_ppv(catalog_product)
+        result = StoreProductListSerializer._get_product_type(ppv)
         self.assertEqual(result, 'Materials')
 
 
@@ -388,13 +407,12 @@ class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
         catalog_product = create_catalog_product(
             fullname='CB1 Tutorial London', shortname='CB1 Tut', code='TCB1L'
         )
-        assign_product_to_group(catalog_product, tutorial_group)
-
         tutorial_var = create_product_variation('Tutorial', 'Face to Face', code='F')
         sp = create_store_product(
             ess, catalog_product, tutorial_var,
             product_code='CB1/FTCB1L/2025-04',
         )
+        assign_product_to_group(catalog_product, tutorial_group)
 
         # Mock tutorial_events on the store product
         mock_event = MagicMock()

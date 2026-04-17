@@ -257,17 +257,10 @@ def assign_product_to_group(catalog_product_or_ppv, filter_group):
     catalog_product = catalog_product_or_ppv
     ppvs = list(ProductProductVariation.objects.filter(product=catalog_product))
     if not ppvs:
-        # No PPV exists yet — create a default one
-        from catalog.models import ProductVariation
-        variation, _ = ProductVariation.objects.get_or_create(
-            variation_type='eBook',
-            name='Default eBook',
-            defaults={'code': 'DFLT', 'description': 'Auto-created for test'},
+        raise ValueError(
+            f"No ProductProductVariation exists for {catalog_product}. "
+            f"Call create_store_product() before assign_product_to_group()."
         )
-        ppv = ProductProductVariation.objects.create(
-            product=catalog_product, product_variation=variation,
-        )
-        ppvs = [ppv]
 
     result = None
     for ppv in ppvs:

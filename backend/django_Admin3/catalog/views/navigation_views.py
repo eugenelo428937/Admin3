@@ -449,7 +449,9 @@ def advanced_product_search(request):
     if group_ids:
         try:
             group_ids_int = [int(gid) for gid in group_ids]
-            queryset = queryset.filter(groups__id__in=group_ids_int).distinct()
+            queryset = queryset.filter(
+                productproductvariation__product_groups__product_group__id__in=group_ids_int
+            ).distinct()
         except (ValueError, TypeError):
             pass
 
