@@ -44,8 +44,8 @@ class StoreProductListSerializer:
             ess = first.exam_session_subject
             catalog_product = first.product_product_variation.product
 
-            # Determine product type
-            product_type = cls._get_product_type(catalog_product)
+            # Determine product type from first PPV's filter groups
+            product_type = cls._get_product_type(first.product_product_variation)
 
             # Build variations array
             variations_data = []
@@ -108,11 +108,11 @@ class StoreProductListSerializer:
         return results
 
     @classmethod
-    def _get_product_type(cls, catalog_product):
-        """Determine product type from catalog.Product."""
-        # Check product groups first
-        if hasattr(catalog_product, 'groups'):
-            for group in catalog_product.groups.all():
+    def _get_product_type(cls, product_product_variation):
+        """Determine product type from ProductProductVariation groups."""
+        if hasattr(product_product_variation, 'product_groups'):
+            for pg in product_product_variation.product_groups.all():
+                group = pg.product_group
                 group_name = group.name.lower()
                 if 'tutorial' in group_name:
                     return 'Tutorial'
@@ -120,6 +120,7 @@ class StoreProductListSerializer:
                     return 'Markings'
 
         # Fallback to product name
+        catalog_product = product_product_variation.product
         product_name = (catalog_product.fullname or '').lower()
         if 'tutorial' in product_name:
             return 'Tutorial'

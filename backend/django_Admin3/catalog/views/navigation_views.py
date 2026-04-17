@@ -305,7 +305,7 @@ def fuzzy_search(request):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
             Prefetch(
                 'product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(

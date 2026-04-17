@@ -72,22 +72,3 @@ class ProductGroupFilterSerializer(serializers.ModelSerializer):
         return [{'id': child.id, 'name': child.name} for child in children]
 
 
-class FilterGroupWithProductsSerializer(serializers.ModelSerializer):
-    """Serializer for filter groups with their products."""
-    products = serializers.SerializerMethodField()
-
-    class Meta:
-        model = FilterGroup
-        fields = ['id', 'name', 'products']
-
-    def get_products(self, obj):
-        products = obj.catalog_products.filter(is_active=True).order_by('shortname')
-        return [
-            {
-                'id': product.id,
-                'shortname': product.shortname,
-                'fullname': product.fullname,
-                'code': product.code,
-            }
-            for product in products
-        ]

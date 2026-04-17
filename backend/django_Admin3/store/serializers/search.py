@@ -107,8 +107,9 @@ def group_store_products_for_search(store_products):
         catalog_product = info['catalog_product']
         ess = info['ess']
 
-        # Compute type from product groups
-        group_names = [g.name for g in catalog_product.groups.all()]
+        # Compute type from PPV filter groups
+        first_ppv = store_prods[0].product_product_variation
+        group_names = [pg.product_group.name for pg in first_ppv.product_groups.select_related('product_group')]
         if 'Tutorial' in group_names:
             product_type = 'Tutorial'
         elif 'Marking' in group_names:

@@ -3,48 +3,46 @@ from typing import Dict, List, Any, Optional, Union
 from django.db.models import Q, QuerySet, Prefetch
 from django.core.cache import cache
 from django.utils import timezone
-from abc import ABC, abstractmethod
 
 from filtering.models import (
     FilterConfiguration,
     FilterGroup,
     FilterConfigurationGroup,
-    FilterUsageAnalytics
 )
-# Note: ExamSessionSubjectProduct import removed as part of T087 cleanup (unused)
 
 logger = logging.getLogger(__name__)
 
 
-class FilterStrategy(ABC):
-    """Abstract base class for filter strategies"""
-    
+class FilterOptionProvider:
+    """Provides filter options for frontend filter configuration.
+
+    Each instance wraps a FilterConfiguration row and returns the
+    available options (filter groups, subjects, variations, or bundles)
+    for that configuration.  Used by ProductFilterService.get_filter_configuration()
+    to build the dynamic filter panel data sent to the frontend.
+    """
+
     def __init__(self, filter_config: FilterConfiguration):
         self.filter_config = filter_config
-    
-    @abstractmethod
-    def apply(self, queryset: QuerySet, filter_values: List[Any]) -> QuerySet:
-        """Apply the filter to the queryset"""
-        pass
-    
+
     def get_options(self) -> List[Dict[str, Any]]:
-        """Get available filter options"""
+        """Get available filter options based on filter type."""
         if self.filter_config.filter_type == 'filter_group':
             return self._get_filter_group_options()
         elif self.filter_config.filter_type == 'subject':
             return self._get_subject_options()
         elif self.filter_config.filter_type == 'product_variation':
             return self._get_variation_options()
-        else:
-            return []
-    
+        elif self.filter_config.filter_type == 'bundle':
+            return self._get_bundle_options()
+        return []
+
     def _get_filter_group_options(self) -> List[Dict[str, Any]]:
-        """Get options from associated filter groups"""
+        """Get options from associated filter groups."""
         groups = self.filter_config.filter_groups.all().select_related('parent')
-        
+
         options = []
         for group in groups:
-            # Include children if configured
             if self.filter_config.get_ui_config().get('include_children', False):
                 descendants = group.get_descendants(include_self=True)
                 for desc in descendants:
@@ -67,16 +65,15 @@ class FilterStrategy(ABC):
                     'path': group.get_full_path(),
                     'parent_id': group.parent_id,
                 })
-        
-        # Sort by hierarchy and name
+
         options.sort(key=lambda x: (x['level'], x['label']))
         return options
-    
+
     def _get_subject_options(self) -> List[Dict[str, Any]]:
-        """Get subject options"""
+        """Get subject options."""
         from catalog.models import Subject
         subjects = Subject.objects.filter(active=True).order_by('code')
-        
+
         return [
             {
                 'id': subject.id,
@@ -87,12 +84,12 @@ class FilterStrategy(ABC):
             }
             for subject in subjects
         ]
-    
+
     def _get_variation_options(self) -> List[Dict[str, Any]]:
-        """Get product variation options"""
+        """Get product variation options."""
         from catalog.models import ProductVariation
         variations = ProductVariation.objects.all().order_by('variation_type', 'name')
-        
+
         return [
             {
                 'id': variation.id,
@@ -104,177 +101,9 @@ class FilterStrategy(ABC):
             }
             for variation in variations
         ]
-    
-    def get_cache_key(self) -> str:
-        """Get cache key for this filter type"""
-        return f"filter_options_{self.filter_config.name}"
-    
-    def track_usage(self, filter_values: List[Any], user=None, session_id=None):
-        """Track filter usage for analytics"""
-        for value in filter_values:
-            analytics, created = FilterUsageAnalytics.objects.get_or_create(
-                filter_configuration=self.filter_config,
-                filter_value=str(value),
-                defaults={
-                    'user': user,
-                    'session_id': session_id or 'anonymous',
-                    'usage_count': 0
-                }
-            )
-            analytics.usage_count += 1
-            analytics.user = user or analytics.user
-            analytics.session_id = session_id or analytics.session_id or 'anonymous'
-            analytics.save(update_fields=['usage_count', 'last_used', 'user', 'session_id'])
 
-
-class FilterGroupStrategy(FilterStrategy):
-    """Strategy for filter group based filters (replaces ProductGroupFilterStrategy)"""
-    
-    def apply(self, queryset: QuerySet, filter_values: List[Union[int, str]]) -> QuerySet:
-        """Apply filter group filter"""
-        if not filter_values:
-            return queryset
-        
-        # Track usage
-        self.track_usage(filter_values)
-        
-        # Convert codes to IDs for database queries
-        group_ids = []
-        for value in filter_values:
-            try:
-                if isinstance(value, str):
-                    if value.isdigit():
-                        # Legacy numeric ID support
-                        group_ids.append(int(value))
-                    else:
-                        # Code-based filtering - convert code to ID
-                        group = FilterGroup.objects.filter(code=value).first()
-                        if group:
-                            group_ids.append(group.id)
-                        else:
-                            logger.warning(f"FilterGroup with code '{value}' not found")
-                elif isinstance(value, int):
-                    group_ids.append(value)
-            except (ValueError, TypeError):
-                logger.warning(f"Invalid filter group value: {value}")
-                continue
-        
-        if not group_ids:
-            return queryset
-        
-        # Apply hierarchical filtering if configured
-        if self.filter_config.get_ui_config().get('include_children', False):
-            # Include child groups in filtering
-            all_group_ids = self._get_all_descendant_ids(group_ids)
-            return queryset.filter(product__groups__id__in=all_group_ids).distinct()
-        else:
-            return queryset.filter(product__groups__id__in=group_ids).distinct()
-    
-    def _get_all_descendant_ids(self, parent_ids: List[int]) -> List[int]:
-        """Get all descendant group IDs including parents"""
-        all_ids = list(parent_ids)
-        
-        def get_children(parent_id):
-            children = FilterGroup.objects.filter(parent_id=parent_id)
-            for child in children:
-                all_ids.append(child.id)
-                get_children(child.id)
-        
-        for parent_id in parent_ids:
-            get_children(parent_id)
-        
-        return list(set(all_ids))
-
-
-class SubjectFilterStrategy(FilterStrategy):
-    """Strategy for subject based filters"""
-    
-    def apply(self, queryset: QuerySet, filter_values: List[Union[int, str]]) -> QuerySet:
-        """Apply subject filter - supports both IDs and codes"""
-        if not filter_values:
-            return queryset
-        
-        # Track usage
-        self.track_usage(filter_values)
-        
-        # Separate IDs and codes
-        ids = [v for v in filter_values if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
-        codes = [v for v in filter_values if isinstance(v, str) and not v.isdigit()]
-        
-        q_filter = Q()
-        if ids:
-            q_filter |= Q(exam_session_subject__subject__id__in=ids)
-        if codes:
-            q_filter |= Q(exam_session_subject__subject__code__in=codes)
-        
-        return queryset.filter(q_filter) if q_filter else queryset
-
-
-class ProductVariationFilterStrategy(FilterStrategy):
-    """Strategy for product variation filters"""
-    
-    def apply(self, queryset: QuerySet, filter_values: List[int]) -> QuerySet:
-        """Apply product variation filter"""
-        if not filter_values:
-            return queryset
-        
-        # Track usage
-        self.track_usage(filter_values)
-        
-        return queryset.filter(product__product_variations__id__in=filter_values).distinct()
-
-
-class TutorialFormatFilterStrategy(FilterStrategy):
-    """Strategy for tutorial format filters"""
-    
-    def apply(self, queryset: QuerySet, filter_values: List[str]) -> QuerySet:
-        """Apply tutorial format filter"""
-        if not filter_values:
-            return queryset
-        
-        # Track usage
-        self.track_usage(filter_values)
-        
-        # Get format mapping from configuration
-        format_mapping = self.filter_config.get_ui_config().get('format_mapping', {
-            'face_to_face': 'Face-to-face',
-            'live_online': 'Live Online',
-            'online_classroom': 'Online Classroom'
-        })
-        
-        tutorial_filters = []
-        for format_value in filter_values:
-            group_name = format_mapping.get(format_value, format_value)
-            tutorial_filters.append(Q(product__groups__name=group_name))
-        
-        if tutorial_filters:
-            combined_filter = tutorial_filters[0]
-            for filter_q in tutorial_filters[1:]:
-                combined_filter |= filter_q
-            return queryset.filter(combined_filter).distinct()
-        
-        return queryset
-
-
-class BundleFilterStrategy(FilterStrategy):
-    """Strategy for bundle filters"""
-    
-    def apply(self, queryset: QuerySet, filter_values: List[str]) -> QuerySet:
-        """Apply bundle filter"""
-        if not filter_values:
-            return queryset
-        
-        # Track usage
-        self.track_usage(filter_values)
-        
-        # The bundle filter is a special case that affects both products and bundles
-        # This filter will be handled differently in the views layer
-        # For now, we'll just return the queryset as-is since bundle filtering 
-        # requires special handling for both products and bundles
-        return queryset
-    
-    def get_options(self) -> List[Dict[str, Any]]:
-        """Get bundle filter options"""
+    def _get_bundle_options(self) -> List[Dict[str, Any]]:
+        """Get bundle filter options."""
         return [
             {
                 'id': 'bundle',
@@ -284,6 +113,10 @@ class BundleFilterStrategy(FilterStrategy):
             }
         ]
 
+    def get_cache_key(self) -> str:
+        """Get cache key for this filter type."""
+        return f"filter_options_{self.filter_config.name}"
+
 
 class ProductFilterService:
     """
@@ -291,65 +124,40 @@ class ProductFilterService:
     """
     
     def __init__(self):
-        self.strategies = {}
+        self.option_providers = {}
         self._load_filter_configurations()
     
     def _load_filter_configurations(self):
-        """Load filter configurations from database"""
+        """Load filter configurations from database."""
         configs = FilterConfiguration.objects.filter(is_active=True).prefetch_related(
             Prefetch('filter_groups', queryset=FilterGroup.objects.select_related('parent'))
         )
-        
+
         for config in configs:
-            if config.filter_type == 'subject':
-                self.strategies[config.name] = SubjectFilterStrategy(config)
-            elif config.filter_type == 'filter_group':
-                self.strategies[config.name] = FilterGroupStrategy(config)
-            elif config.filter_type == 'product_variation':
-                self.strategies[config.name] = ProductVariationFilterStrategy(config)
-            elif config.filter_type == 'tutorial_format':
-                self.strategies[config.name] = TutorialFormatFilterStrategy(config)
-            elif config.filter_type == 'bundle':
-                self.strategies[config.name] = BundleFilterStrategy(config)
-    
-    def apply_filters(self, queryset: QuerySet, filters: Dict[str, List[Any]], user=None, session_id=None) -> QuerySet:
-        """Apply multiple filters to a queryset"""
-        for filter_name, filter_values in filters.items():
-            if filter_name in self.strategies and filter_values:
-                strategy = self.strategies[filter_name]
-                
-                # Set user context for analytics
-                if hasattr(strategy, 'track_usage'):
-                    strategy.user = user
-                    strategy.session_id = session_id
-                
-                queryset = strategy.apply(queryset, filter_values)
-        
-        return queryset
-    
+            self.option_providers[config.name] = FilterOptionProvider(config)
+
     def get_filter_options(self, filter_names: Optional[List[str]] = None) -> Dict[str, List[Dict[str, Any]]]:
-        """Get filter options for specified filters"""
+        """Get filter options for specified filters."""
         if filter_names is None:
-            filter_names = list(self.strategies.keys())
-        
+            filter_names = list(self.option_providers.keys())
+
         options = {}
         for filter_name in filter_names:
-            if filter_name in self.strategies:
+            if filter_name in self.option_providers:
                 try:
-                    cache_key = self.strategies[filter_name].get_cache_key()
+                    cache_key = self.option_providers[filter_name].get_cache_key()
                     cached_options = cache.get(cache_key)
-                    
+
                     if cached_options is None:
-                        options[filter_name] = self.strategies[filter_name].get_options()
-                        # Cache for 15 minutes
+                        options[filter_name] = self.option_providers[filter_name].get_options()
                         cache.set(cache_key, options[filter_name], 900)
                     else:
                         options[filter_name] = cached_options
-                        
+
                 except Exception as e:
                     logger.error(f"Error getting options for {filter_name}: {e}")
                     options[filter_name] = []
-        
+
         return options
     
     def get_filter_configuration(self) -> Dict[str, Dict[str, Any]]:
@@ -396,101 +204,126 @@ class ProductFilterService:
         return result
     
     def get_main_category_filter(self) -> Optional[Dict[str, Any]]:
-        """Get the main category filter specifically"""
+        """Get the main category filter specifically."""
         try:
             config = FilterConfiguration.objects.get(filter_key='main_category', is_active=True)
-            strategy = self.strategies.get('main_category')
-            
-            if strategy:
+            provider = self.option_providers.get('main_category')
+
+            if provider:
                 return {
                     'id': config.id,
                     'name': config.name,
                     'label': config.display_label,
-                    'options': strategy.get_options(),
+                    'options': provider.get_options(),
                     'ui_config': config.get_ui_config(),
                 }
         except FilterConfiguration.DoesNotExist:
             logger.warning("Main category filter not found")
-        
+
         return None
-    
+
     def validate_filters(self, filters: Dict[str, List[Any]]) -> Dict[str, List[str]]:
-        """Validate filter values against configuration"""
+        """Validate filter values against configuration."""
         errors = {}
-        
+
         for filter_name, filter_values in filters.items():
-            if filter_name not in self.strategies:
+            if filter_name not in self.option_providers:
                 errors[filter_name] = [f"Unknown filter: {filter_name}"]
                 continue
-            
-            strategy = self.strategies[filter_name]
-            config = strategy.filter_config
-            
-            # Check if required
+
+            provider = self.option_providers[filter_name]
+            config = provider.filter_config
+
             if config.is_required and not filter_values:
                 errors[filter_name] = ["This filter is required"]
                 continue
-            
-            # Check multiple values
+
             if not config.allow_multiple and len(filter_values) > 1:
                 errors[filter_name] = ["Multiple values not allowed for this filter"]
                 continue
-        
+
         return errors
-    
+
     def invalidate_cache(self, filter_names: Optional[List[str]] = None):
-        """Invalidate cache for specified filters"""
+        """Invalidate cache for specified filters."""
         if filter_names is None:
-            filter_names = list(self.strategies.keys())
-        
+            filter_names = list(self.option_providers.keys())
+
         for filter_name in filter_names:
-            if filter_name in self.strategies:
-                cache_key = self.strategies[filter_name].get_cache_key()
+            if filter_name in self.option_providers:
+                cache_key = self.option_providers[filter_name].get_cache_key()
                 cache.delete(cache_key)
     
     # ── store.Product filter methods (US2) ──────────────────────────
 
     @staticmethod
-    def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None):
-        """Resolve group names to IDs, expanding each group to include descendants.
+    def _build_descendant_map():
+        """Load the full FilterGroup tree and build a parent→descendants map.
 
-        Uses FilterGroup.get_descendants() to expand parent selections
-        to include all child group IDs.
+        Loads all groups in a single query, then walks parent→children
+        edges in Python. Returns a dict mapping each group ID to the set
+        of IDs that includes itself and all its descendants.
+        """
+        all_groups = list(FilterGroup.objects.values_list('id', 'parent_id'))
+
+        # Build adjacency list: parent_id → [child_ids]
+        children_of = {}
+        for gid, parent_id in all_groups:
+            children_of.setdefault(parent_id, []).append(gid)
+
+        # Compute descendants for a given group ID
+        def _collect(gid):
+            result = {gid}
+            for child_id in children_of.get(gid, []):
+                result |= _collect(child_id)
+            return result
+
+        return {gid: _collect(gid) for gid, _ in all_groups}
+
+    @staticmethod
+    def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None,
+                                          descendant_map=None):
+        """Resolve group names to IDs, expanding each to include descendants.
 
         Args:
             group_names: List of group names to resolve.
             exclude_names: Optional list of names to skip (e.g., ['Bundle']).
+            descendant_map: Pre-built map from _build_descendant_map().
+                If None, builds one on the fly.
 
         Returns:
             Set of FilterGroup IDs (including descendants).
         """
         exclude_names = set(exclude_names or [])
-        resolved_ids = set()
+        if descendant_map is None:
+            descendant_map = ProductFilterService._build_descendant_map()
 
+        resolved_ids = set()
         for name in group_names:
             if name in exclude_names:
                 continue
             try:
                 group = FilterGroup.objects.get(name__iexact=name)
-                descendants = group.get_descendants(include_self=True)
-                resolved_ids.update(g.id for g in descendants)
+                resolved_ids |= descendant_map.get(group.id, {group.id})
             except FilterGroup.DoesNotExist:
                 continue
 
         return resolved_ids
 
-    def apply_store_product_filters(self, queryset, filters):
+    def apply_store_product_filters(self, queryset, filters, descendant_map=None):
         """Apply filters to a store.Product queryset.
 
-        Uses store.Product-specific field paths (R3):
+        Uses store.Product-specific field paths:
         - subjects: exam_session_subject__subject__id / __code
-        - categories: product_product_variation__product__groups__id__in
-        - product_types: product_product_variation__product__groups__id__in
-        - modes_of_delivery: product_product_variation__product_variation__name__in
+        - categories: product_product_variation__product_groups__product_group__id__in
+        - product_types: product_product_variation__product_groups__product_group__id__in
+        - modes_of_delivery: product_product_variation__product_groups__product_group__id__in
 
         Args:
             queryset: Base queryset of store.Product instances.
             filters: Dict with filter dimensions.
+            descendant_map: Optional pre-built hierarchy map to avoid
+                rebuilding it on every call.
 
         Returns:
             Filtered and distinct queryset.
@@ -528,45 +361,52 @@ class ProductFilterService:
         if filters.get('essp_ids'):
             q_filter &= Q(id__in=filters['essp_ids'])
 
-        # Mode of delivery filter
-        if filters.get('modes_of_delivery'):
-            mode_q = Q()
-            for mode in filters['modes_of_delivery']:
-                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
-                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
-            q_filter &= mode_q
-
         if q_filter:
             queryset = queryset.filter(q_filter)
 
-        # M2M group filters — separate .filter() calls for independent JOINs
+        # M2M group filters — separate .filter() calls for independent JOINs.
+        # All three dimensions (categories, product_types, modes_of_delivery)
+        # use the same mechanism: resolve group names to IDs via the
+        # FilterGroup hierarchy, then filter through filter_product_product_groups.
         if filters.get('categories'):
             category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle']
+                filters['categories'], exclude_names=['Bundle'],
+                descendant_map=descendant_map,
             )
             if category_group_ids:
                 queryset = queryset.filter(
-                    product_product_variation__product__groups__id__in=category_group_ids
+                    product_product_variation__product_groups__product_group__id__in=category_group_ids
                 )
 
         if filters.get('product_types'):
             type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types']
+                filters['product_types'], descendant_map=descendant_map,
             )
             if type_group_ids:
                 queryset = queryset.filter(
-                    product_product_variation__product__groups__id__in=type_group_ids
+                    product_product_variation__product_groups__product_group__id__in=type_group_ids
+                )
+
+        if filters.get('modes_of_delivery'):
+            mode_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['modes_of_delivery'], descendant_map=descendant_map,
+            )
+            if mode_group_ids:
+                queryset = queryset.filter(
+                    product_product_variation__product_groups__product_group__id__in=mode_group_ids
                 )
 
         return queryset.distinct()
 
-    def _apply_filters_excluding(self, queryset, filters, exclude_dimension):
+    def _apply_filters_excluding(self, queryset, filters, exclude_dimension,
+                                  descendant_map=None):
         """Apply all filters EXCEPT the excluded dimension (for disjunctive faceting).
 
         Args:
             queryset: Base queryset to filter.
             filters: Dict of all active filters.
             exclude_dimension: The filter key to exclude.
+            descendant_map: Optional pre-built hierarchy map.
 
         Returns:
             Filtered queryset with the excluded dimension removed.
@@ -578,7 +418,8 @@ class ProductFilterService:
         if not reduced_filters:
             return queryset
 
-        return self.apply_store_product_filters(queryset, reduced_filters)
+        return self.apply_store_product_filters(queryset, reduced_filters,
+                                                descendant_map=descendant_map)
 
     def generate_filter_counts(self, base_queryset, filters=None):
         """Generate disjunctive facet counts for all filter dimensions.
@@ -604,8 +445,13 @@ class ProductFilterService:
             'modes_of_delivery': {},
         }
 
+        # Build hierarchy map once for the entire method
+        descendant_map = self._build_descendant_map()
+
         # Subject counts — exclude subjects filter
-        subjects_qs = self._apply_filters_excluding(base_queryset, filters, 'subjects')
+        subjects_qs = self._apply_filters_excluding(
+            base_queryset, filters, 'subjects', descendant_map=descendant_map
+        )
         subject_counts = subjects_qs.values(
             'exam_session_subject__subject__code'
         ).annotate(count=Count('id')).order_by('-count')
@@ -616,8 +462,9 @@ class ProductFilterService:
             if code and count > 0:
                 filter_counts['subjects'][code] = {'count': count, 'name': code}
 
-        # Group counts partitioned by FilterConfigurationGroup assignments
-        for filter_key in ('categories', 'product_types'):
+        # Group counts partitioned by FilterConfigurationGroup assignments.
+        # All three group-based dimensions use the same mechanism.
+        for filter_key in ('categories', 'product_types', 'modes_of_delivery'):
             assigned_groups = list(
                 FilterConfigurationGroup.objects.filter(
                     filter_configuration__filter_key=filter_key,
@@ -639,33 +486,27 @@ class ProductFilterService:
                         'count': 0, 'name': group_name
                     }
 
-            dimension_qs = self._apply_filters_excluding(base_queryset, filters, filter_key)
-
-            # Hierarchy-aware counts
-            group_to_descendant_ids = {}
-            for group_id in assigned_group_ids:
-                try:
-                    group = FilterGroup.objects.get(id=group_id)
-                    descendants = group.get_descendants(include_self=True)
-                    group_to_descendant_ids[group_id] = {g.id for g in descendants}
-                except FilterGroup.DoesNotExist:
-                    group_to_descendant_ids[group_id] = {group_id}
+            dimension_qs = self._apply_filters_excluding(
+                base_queryset, filters, filter_key, descendant_map=descendant_map
+            )
 
             # Roll up counts per assigned group
             for group_id in assigned_group_ids:
                 group_name = assigned_group_names.get(group_id)
                 if not group_name:
                     continue
-                desc_ids = group_to_descendant_ids.get(group_id, {group_id})
+                desc_ids = descendant_map.get(group_id, {group_id})
                 rollup_count = dimension_qs.filter(
-                    product_product_variation__product__groups__id__in=desc_ids
+                    product_product_variation__product_groups__product_group__id__in=desc_ids
                 ).distinct().count()
                 filter_counts[filter_key][group_name] = {
                     'count': rollup_count, 'name': group_name
                 }
 
         # Product counts — exclude products filter
-        products_qs = self._apply_filters_excluding(base_queryset, filters, 'products')
+        products_qs = self._apply_filters_excluding(
+            base_queryset, filters, 'products', descendant_map=descendant_map
+        )
         product_counts = products_qs.values(
             'product_product_variation__product__id',
             'product_product_variation__product__shortname',
@@ -684,56 +525,14 @@ class ProductFilterService:
                     'display_name': shortname or fullname or f'Product {product_id}'
                 }
 
-        # Modes of delivery — exclude modes_of_delivery filter
-        modes_qs = self._apply_filters_excluding(base_queryset, filters, 'modes_of_delivery')
-        mode_counts = modes_qs.values(
-            'product_product_variation__product_variation__variation_type',
-            'product_product_variation__product_variation__name'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
-
-        for item in mode_counts:
-            variation_type = item['product_product_variation__product_variation__variation_type']
-            variation_name = item['product_product_variation__product_variation__name']
-            count = item['count']
-            if variation_type and count > 0:
-                filter_counts['modes_of_delivery'][variation_type] = {
-                    'count': count,
-                    'name': variation_name or variation_type,
-                    'display_name': variation_name or variation_type
-                }
-
         return filter_counts
 
     def reload_configurations(self):
-        """Reload filter configurations from database"""
-        self.strategies.clear()
+        """Reload filter configurations from database."""
+        self.option_providers.clear()
         self._load_filter_configurations()
 
 
-# Convenience functions
 def get_filter_service() -> ProductFilterService:
-    """Get a ProductFilterService instance"""
+    """Get a ProductFilterService instance."""
     return ProductFilterService()
-
-
-def get_product_filter_service() -> ProductFilterService:
-    """Get a ProductFilterService instance (backward compatibility)"""
-    return ProductFilterService()
-
-
-def apply_filters(queryset: QuerySet, filters: Dict[str, List[Any]], user=None, session_id=None) -> QuerySet:
-    """Apply filters to a product queryset - convenience function"""
-    service = get_filter_service()
-    return service.apply_filters(queryset, filters, user, session_id)
-
-
-def setup_main_category_filter():
-    """
-    Set up the MAIN_CATEGORY filter using the filter system.
-
-    NOTE: This function was used for initial data migration during model consolidation.
-    The migration helpers (migrate_old_product_groups, setup_main_category_filter) have
-    been removed as part of moving filter models to the filtering app.
-    """
-    logger.info("setup_main_category_filter called - migration complete, no action needed")
-    return None

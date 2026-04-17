@@ -439,7 +439,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings(record=True) as w:
@@ -461,7 +461,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings():
@@ -509,7 +509,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -537,7 +537,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -571,7 +571,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():

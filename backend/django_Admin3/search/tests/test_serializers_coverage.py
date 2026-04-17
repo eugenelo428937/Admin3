@@ -85,7 +85,7 @@ class TestSerializeGroupedProductsRecommendationIntegration(TestCase):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
             Prefetch(
                 'product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
@@ -112,30 +112,28 @@ class TestSerializeGroupedProductsRecommendationIntegration(TestCase):
 class TestGetProductTypeEdgeCases(TestCase):
     """Test _get_product_type additional edge cases."""
 
-    def test_product_without_groups_attribute(self):
-        """Product without groups attribute falls back to name check."""
-        mock_product = MagicMock()
-        mock_product.fullname = 'Some Marking Product'
-        # hasattr check for 'groups' should work via mock
-        del mock_product.groups
-        result = StoreProductListSerializer._get_product_type(mock_product)
+    def test_ppv_without_product_groups_attribute(self):
+        """PPV without product_groups attribute falls back to product name check."""
+        mock_ppv = MagicMock()
+        mock_ppv.product.fullname = 'Some Marking Product'
+        del mock_ppv.product_groups
+        result = StoreProductListSerializer._get_product_type(mock_ppv)
         self.assertEqual(result, 'Markings')
 
-    def test_product_with_empty_groups(self):
-        """Product with no group assignments falls back to name."""
-        catalog = create_catalog_product(
-            'SRCH_GPT Tutorial Sessions', 'SRCH_GPT Tut', 'SGPTTUT'
-        )
-        # No groups assigned
-        result = StoreProductListSerializer._get_product_type(catalog)
+    def test_ppv_with_empty_groups(self):
+        """PPV with no group assignments falls back to product name."""
+        mock_ppv = MagicMock()
+        mock_ppv.product_groups.all.return_value = []
+        mock_ppv.product.fullname = 'SRCH_GPT Tutorial Sessions'
+        result = StoreProductListSerializer._get_product_type(mock_ppv)
         self.assertEqual(result, 'Tutorial')
 
-    def test_product_with_none_fullname(self):
-        """Product with None fullname returns Materials."""
-        catalog = create_catalog_product(
-            fullname='', shortname='Short', code='SGPTNONE'
-        )
-        result = StoreProductListSerializer._get_product_type(catalog)
+    def test_ppv_with_none_fullname(self):
+        """PPV with empty product fullname returns Materials."""
+        mock_ppv = MagicMock()
+        mock_ppv.product_groups.all.return_value = []
+        mock_ppv.product.fullname = ''
+        result = StoreProductListSerializer._get_product_type(mock_ppv)
         self.assertEqual(result, 'Materials')
 
 
