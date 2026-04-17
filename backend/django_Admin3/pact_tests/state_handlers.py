@@ -270,12 +270,15 @@ def state_catalog_data_exists(params=None):
 
     Navigation data needs subjects, filter groups with products.
     """
-    subject, _es, _ess, catalog_product, _var, _ppv = setup_catalog_foundation()
+    subject, _es, _ess, catalog_product, _var, ppv = setup_catalog_foundation()
     groups = setup_filter_groups()
 
-    # Associate catalog product with each filter group so navigation returns products
+    # Associate PPV with each filter group so navigation returns products
+    from filtering.models import ProductProductGroup
     for group in groups.values():
-        group.catalog_products.add(catalog_product)
+        ProductProductGroup.objects.get_or_create(
+            product_product_variation=ppv, product_group=group,
+        )
 
 
 def state_product_groups_exist(params=None):
@@ -386,12 +389,15 @@ def state_exam_session_bundles_exist(params=None):
     subject, _es, ess, _cp, _var, _ppv = setup_catalog_foundation()
     store_product, _price = setup_store_product()
 
-    # Associate catalog product with a filter group for dimension filtering
+    # Associate PPV with a filter group for dimension filtering
+    from filtering.models import ProductProductGroup
     core_group, _ = FilterGroup.objects.get_or_create(
         name='Core Study Materials',
         defaults={'is_active': True, 'display_order': 0},
     )
-    _cp.groups.add(core_group)
+    ProductProductGroup.objects.get_or_create(
+        product_product_variation=_ppv, product_group=core_group,
+    )
 
     bundle_template, _ = ProductBundle.objects.get_or_create(
         subject=subject,

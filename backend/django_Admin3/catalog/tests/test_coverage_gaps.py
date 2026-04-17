@@ -330,22 +330,29 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
             is_active=True,
         )
 
+        # Create a PPV for the tutorial product (not in CatalogTestDataMixin)
+        from catalog.models import ProductProductVariation
+        self.ppv_tutorial = ProductProductVariation.objects.get_or_create(
+            product=self.product_tutorial,
+            product_variation=self.variation_hub,
+        )[0]
+
         # Add product to tutorial group
         from filtering.models import ProductProductGroup
         ProductProductGroup.objects.create(
-            product=self.product_tutorial,
+            product_product_variation=self.ppv_tutorial,
             product_group=self.tutorial_group,
         )
 
         # Add product to CSM group
         ProductProductGroup.objects.create(
-            product=self.product_core,
+            product_product_variation=self.ppv_core_ebook,
             product_group=self.csm_group,
         )
 
         # Add variation to OCR group through a product
         ProductProductGroup.objects.create(
-            product=self.product_core,
+            product_product_variation=self.ppv_core_printed,
             product_group=self.ocr_group,
         )
 
@@ -497,7 +504,7 @@ class TestAdvancedSearchFilters(CatalogAPITestCase):
             is_active=True,
         )
         ProductProductGroup.objects.create(
-            product=self.product_core,
+            product_product_variation=self.ppv_core_ebook,
             product_group=self.filter_group,
         )
 
@@ -602,7 +609,7 @@ class TestProductViewSetFilters(CatalogAPITestCase):
             is_active=True,
         )
         ProductProductGroup.objects.create(
-            product=self.product_core,
+            product_product_variation=self.ppv_core_ebook,
             product_group=self.filter_group,
         )
 
@@ -1008,13 +1015,18 @@ class TestProductSerializerTypeField(CatalogTestDataMixin, TestCase):
     def test_product_type_tutorial(self):
         """Product in Tutorial group should have type='Tutorial'."""
         from catalog.serializers import ProductSerializer
+        from catalog.models import ProductProductVariation
         from filtering.models import FilterGroup, ProductProductGroup
 
         tutorial_group = FilterGroup.objects.create(
             name='Tutorial', code='TUTORIAL_TYPE', is_active=True,
         )
+        ppv_tutorial = ProductProductVariation.objects.get_or_create(
+            product=self.product_tutorial,
+            product_variation=self.variation_hub,
+        )[0]
         ProductProductGroup.objects.create(
-            product=self.product_tutorial, product_group=tutorial_group,
+            product_product_variation=ppv_tutorial, product_group=tutorial_group,
         )
 
         serializer = ProductSerializer(self.product_tutorial)
@@ -1030,7 +1042,7 @@ class TestProductSerializerTypeField(CatalogTestDataMixin, TestCase):
             name='Marking', code='MARKING_TYPE', is_active=True,
         )
         ProductProductGroup.objects.create(
-            product=self.product_marking, product_group=marking_group,
+            product_product_variation=self.ppv_marking_hub, product_group=marking_group,
         )
 
         serializer = ProductSerializer(self.product_marking)

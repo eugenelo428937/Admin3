@@ -524,9 +524,9 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         from store.models import Product
         from filtering.models import ProductProductGroup
 
-        # Assign tutorial group to catalog product
+        # Assign tutorial group to PPV
         ProductProductGroup.objects.create(
-            product=self.catalog_product,
+            product_product_variation=self.ppv_printed,
             product_group=self.tutorial_group
         )
 
@@ -548,7 +548,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
 
         # Clean up
         ProductProductGroup.objects.filter(
-            product=self.catalog_product,
+            product_product_variation=self.ppv_printed,
             product_group=self.tutorial_group
         ).delete()
 
@@ -558,9 +558,9 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         from store.models import Product
         from filtering.models import ProductProductGroup
 
-        # Assign marking group to catalog product
+        # Assign marking group to PPV
         ProductProductGroup.objects.create(
-            product=self.catalog_product,
+            product_product_variation=self.ppv_printed,
             product_group=self.marking_group
         )
 
@@ -582,7 +582,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
 
         # Clean up
         ProductProductGroup.objects.filter(
-            product=self.catalog_product,
+            product_product_variation=self.ppv_printed,
             product_group=self.marking_group
         ).delete()
 

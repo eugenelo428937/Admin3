@@ -101,7 +101,9 @@ def navigation_data(request):
                             'fullname': p.fullname,
                             'code': p.code
                         }
-                        for p in group.catalog_products.all()
+                        for p in Product.objects.filter(
+                                productproductvariation__product_groups__product_group=group
+                            ).distinct()
                     ]
                 })
             else:
@@ -123,7 +125,9 @@ def navigation_data(request):
                             'fullname': p.fullname,
                             'code': p.code
                         }
-                        for p in group.catalog_products.all()
+                        for p in Product.objects.filter(
+                                productproductvariation__product_groups__product_group=group
+                            ).distinct()
                     ]
                 })
             else:

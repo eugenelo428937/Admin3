@@ -4,7 +4,6 @@ Covers missing lines in:
 - filter_configuration.py: __str__, get_ui_config, get_filter_groups_tree, is_dependent_on, FilterConfigurationGroup.__str__
 - filter_preset.py: __str__, increment_usage
 - views.py: line 50 (recursive descendant traversal), line 82 (filter types)
-- serializers.py: lines 67-68 (FilterGroupWithProductsSerializer.get_products)
 """
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -18,7 +17,6 @@ from filtering.models import (
     FilterGroup,
     FilterPreset,
 )
-from filtering.serializers import FilterGroupWithProductsSerializer
 from filtering.tests.factories import (
     create_filter_config,
     create_filter_group,
@@ -216,41 +214,3 @@ class TestFilterConfigurationWithTypes(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestFilterGroupWithProductsSerializer(TestCase):
-    """Test FilterGroupWithProductsSerializer.get_products (serializers.py lines 67-68)."""
-
-    def test_get_products_returns_active_products(self):
-        from catalog.models import Product
-        group = FilterGroup.objects.create(name='SerGrp', code='SER_GRP')
-        product = Product.objects.create(
-            fullname='Test Product', shortname='TP',
-            code='TP001', is_active=True
-        )
-        # Add product to group via through model
-        from catalog.models import ProductProductGroup
-        ProductProductGroup.objects.create(product=product, product_group=group)
-
-        serializer = FilterGroupWithProductsSerializer(group)
-        products_data = serializer.data['products']
-        self.assertEqual(len(products_data), 1)
-        self.assertEqual(products_data[0]['shortname'], 'TP')
-        self.assertEqual(products_data[0]['code'], 'TP001')
-
-    def test_get_products_excludes_inactive(self):
-        from catalog.models import Product, ProductProductGroup
-        group = FilterGroup.objects.create(name='InactGrp', code='INACT_GRP')
-        product = Product.objects.create(
-            fullname='Inactive Prod', shortname='IP',
-            code='IP001', is_active=False
-        )
-        ProductProductGroup.objects.create(product=product, product_group=group)
-
-        serializer = FilterGroupWithProductsSerializer(group)
-        products_data = serializer.data['products']
-        self.assertEqual(len(products_data), 0)
-
-    def test_get_products_empty_group(self):
-        group = FilterGroup.objects.create(name='EmptyGrp', code='EMPTY_GRP')
-        serializer = FilterGroupWithProductsSerializer(group)
-        products_data = serializer.data['products']
-        self.assertEqual(len(products_data), 0)

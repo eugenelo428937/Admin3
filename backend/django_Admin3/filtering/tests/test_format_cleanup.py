@@ -2,10 +2,10 @@
 
 Format-level groups (eBook, Printed, Hub) must NOT appear in
 category or product_type filter configurations. Modes of delivery
-are determined by product_variation.variation_type exclusively.
+are determined by FilterGroup taxonomy (same as other dimensions).
 
 T059: Data migration removes format groups from category/product_type
-T060: modes_of_delivery counts use variation_type, not filter groups
+T060: modes_of_delivery counts use FilterGroup taxonomy
 T061: Format groups absent from category/product_type after cleanup
 """
 from django.test import TestCase
@@ -34,10 +34,9 @@ class TestFormatCleanup(TestCase):
         self.product_types_config = create_filter_config(
             'Product Types', 'product_types', 'filter_group', display_order=2
         )
-        # Modes of delivery config (format groups belong here conceptually,
-        # but modes_of_delivery uses variation_type, not groups)
+        # Modes of delivery config (uses FilterGroup taxonomy like other dimensions)
         self.modes_config = create_filter_config(
-            'Modes of Delivery', 'modes_of_delivery', 'product_variation',
+            'Modes of Delivery', 'modes_of_delivery', 'filter_group',
             display_order=3
         )
 
@@ -125,12 +124,12 @@ class TestFormatCleanup(TestCase):
         self.assertEqual(removed_count, 3,
                          "Should remove exactly 3 format group assignments")
 
-    def test_modes_uses_variation_type(self):
-        """T060: modes_of_delivery counts use variation_type, not filter groups.
+    def test_modes_uses_filter_groups(self):
+        """T060: modes_of_delivery counts use FilterGroup taxonomy.
 
-        The SearchService._generate_filter_counts() for modes_of_delivery
-        must query product_product_variation__product_variation__variation_type,
-        NOT filter groups. This test verifies the count generation path.
+        The FilterService.generate_filter_counts() for modes_of_delivery
+        uses FilterConfigurationGroup assignments, same as categories and
+        product_types. This test verifies the count generation path.
         """
         from search.tests.factories import (
             create_subject,
@@ -140,10 +139,11 @@ class TestFormatCleanup(TestCase):
             create_product_variation,
             create_store_product,
         )
-        from search.services.search_service import SearchService
+        from filtering.models import FilterGroup, ProductProductGroup
+        from catalog.models import ProductProductVariation
         from store.models import Product as StoreProduct
 
-        # Create products with different variation types
+        # Create store products with different variation types
         session = create_exam_session('2025-04')
         cm2 = create_subject('CM2')
         ess = create_exam_session_subject(session, cm2)
@@ -153,19 +153,37 @@ class TestFormatCleanup(TestCase):
 
         cat_product = create_catalog_product('CM2 Core', 'CM2 Core', 'PCM2C')
 
-        create_store_product(ess, cat_product, printed_var, product_code='CM2/PCM2C/P/2025-04')
-        create_store_product(ess, cat_product, ebook_var, product_code='CM2/PCM2C/E/2025-04')
+        sp_printed = create_store_product(ess, cat_product, printed_var, product_code='CM2/PCM2C/P/2025-04')
+        sp_ebook = create_store_product(ess, cat_product, ebook_var, product_code='CM2/PCM2C/E/2025-04')
 
-        service = SearchService()
+        # Create modes_of_delivery filter groups and assign them via
+        # FilterConfigurationGroup (modes_config created in setUp)
+        printed_group = create_filter_group('Printed', code='MODE_PRINTED')
+        ebook_group = create_filter_group('eBook', code='MODE_EBOOK')
+        assign_group_to_config(self.modes_config, printed_group, display_order=0)
+        assign_group_to_config(self.modes_config, ebook_group, display_order=1)
+
+        # Link PPVs to the mode groups via ProductProductGroup
+        ppv_printed = sp_printed.product_product_variation
+        ppv_ebook = sp_ebook.product_product_variation
+        ProductProductGroup.objects.create(
+            product_product_variation=ppv_printed, product_group=printed_group,
+        )
+        ProductProductGroup.objects.create(
+            product_product_variation=ppv_ebook, product_group=ebook_group,
+        )
+
+        from filtering.services.filter_service import get_filter_service
+        service = get_filter_service()
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = service.filter_service.generate_filter_counts(base_qs, filters={})
+        counts = service.generate_filter_counts(base_qs, filters={})
 
-        # modes_of_delivery should have entries keyed by variation_type
+        # modes_of_delivery should have entries keyed by group name
         modes = counts.get('modes_of_delivery', {})
         self.assertIn('Printed', modes,
-                       "modes_of_delivery should include 'Printed' from variation_type")
+                       "modes_of_delivery should include 'Printed' from group membership")
         self.assertIn('eBook', modes,
-                       "modes_of_delivery should include 'eBook' from variation_type")
+                       "modes_of_delivery should include 'eBook' from group membership")
 
         # Verify counts are correct
         self.assertEqual(modes['Printed']['count'], 1)
