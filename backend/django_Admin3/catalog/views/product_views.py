@@ -59,12 +59,19 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         Superusers see all products; other users see active only.
         """
+        # Superusers can optionally filter by is_active; others see active only
+        is_active_param = self.request.query_params.get('is_active')
         if self.request.user.is_superuser:
-            queryset = Product.objects.all()
+            if is_active_param is not None:
+                queryset = Product.objects.filter(
+                    is_active=is_active_param.lower() == 'true'
+                )
+            else:
+                queryset = Product.objects.all()
         else:
             queryset = Product.objects.filter(is_active=True)
 
-        # Filter by product group
+        # Filter by product group(s) — comma-separated IDs, AND logic
         group_id = self.request.query_params.get('group')
         if group_id:
             queryset = queryset.filter(
@@ -91,7 +98,17 @@ class ProductViewSet(viewsets.ModelViewSet):
             elif distance_learning.lower() == 'false':
                 queryset = queryset.filter(is_distance_learning=False)
 
-        return queryset.distinct().order_by('shortname')
+        # Text search across code and names
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(code__icontains=search) |
+                Q(fullname__icontains=search) |
+                Q(shortname__icontains=search)
+            )
+
+        return queryset.distinct().order_by('-is_active', 'shortname')
 
     def get_permissions(self):
         """
@@ -100,7 +117,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         Read operations use AllowAny.
         Write operations require IsSuperUser.
         """
-        read_actions = ['list', 'retrieve', 'get_bundle_contents', 'get_bundles']
+        read_actions = ['list', 'retrieve',
+                        'get_bundle_contents', 'get_bundles']
         if self.action in read_actions:
             permission_classes = [AllowAny]
         else:
@@ -258,7 +276,8 @@ class ProductViewSet(viewsets.ModelViewSet):
             subject_code = request.query_params.get('subject')
             exam_session = request.query_params.get('exam_session')
             bundle_type = request.query_params.get('type', 'all')
-            featured_only = request.query_params.get('featured', 'false').lower() == 'true'
+            featured_only = request.query_params.get(
+                'featured', 'false').lower() == 'true'
 
             bundles_data = []
 
@@ -267,7 +286,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 master_bundles = ProductBundle.objects.filter(is_active=True)
 
                 if subject_code:
-                    master_bundles = master_bundles.filter(subject__code=subject_code)
+                    master_bundles = master_bundles.filter(
+                        subject__code=subject_code)
 
                 if featured_only:
                     master_bundles = master_bundles.filter(is_featured=True)
@@ -278,7 +298,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 ).order_by('display_order', 'bundle_name')
 
                 for bundle in master_bundles:
-                    serializer = ProductBundleSerializer(bundle, context={'request': request})
+                    serializer = ProductBundleSerializer(
+                        bundle, context={'request': request})
                     bundle_data = serializer.data
                     bundle_data['bundle_type'] = 'master'
                     bundle_data['exam_session_code'] = None
@@ -299,7 +320,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                     )
 
                 if featured_only:
-                    store_bundles = store_bundles.filter(bundle_template__is_featured=True)
+                    store_bundles = store_bundles.filter(
+                        bundle_template__is_featured=True)
 
                 store_bundles = store_bundles.select_related(
                     'bundle_template__subject',
@@ -311,7 +333,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 ).order_by('display_order', 'bundle_template__bundle_name')
 
                 for bundle in store_bundles:
-                    serializer = StoreBundleSerializer(bundle, context={'request': request})
+                    serializer = StoreBundleSerializer(
+                        bundle, context={'request': request})
                     bundle_data = serializer.data
                     bundle_data['bundle_type'] = 'exam_session'
                     bundles_data.append(bundle_data)

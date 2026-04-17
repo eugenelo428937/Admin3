@@ -52,7 +52,33 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
             qs = qs.filter(
                 exam_session_subject__exam_session_id=exam_session_id
             )
-        return qs.order_by('product_code')
+        # Filter by active status
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() == 'true')
+        # Filter by subject code
+        subject_code = self.request.query_params.get('subject_code')
+        if subject_code:
+            qs = qs.filter(
+                exam_session_subject__subject__code=subject_code
+            )
+        # Filter by session code
+        session_code = self.request.query_params.get('session_code')
+        if session_code:
+            qs = qs.filter(
+                exam_session_subject__exam_session__session_code=session_code
+            )
+        # Filter by product group(s) — comma-separated IDs, AND logic
+        group_param = self.request.query_params.get('group')
+        if group_param:
+            for gid in group_param.split(','):
+                gid = gid.strip()
+                if gid:
+                    qs = qs.filter(
+                        product_product_variation__product__groups__id=gid
+                    )
+        # Order: active first, then by product_code
+        return qs.order_by('-is_active', 'product_code')
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

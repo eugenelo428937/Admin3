@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import catalogProductService from '../../../services/catalogProductService';
+import { useAdminProductFilters } from '../../../hooks/useAdminProductFilters';
+import type { ActiveFilter, FilterConfigEntry } from '../../../hooks/useAdminProductFilters';
 import type { Product } from '../../../types/product';
 
 export interface ProductListVM {
@@ -12,6 +14,13 @@ export interface ProductListVM {
     page: number;
     rowsPerPage: number;
     totalCount: number;
+    // Filters
+    activeFilter: ActiveFilter;
+    groupFilters: Record<string, string>;
+    filterConfigs: FilterConfigEntry[];
+    filtersLoading: boolean;
+    handleActiveFilter: (value: ActiveFilter) => void;
+    handleGroupFilter: (configName: string, value: string) => void;
     fetchProducts: () => Promise<void>;
     handleDelete: (id: number | string) => Promise<void>;
     handleChangePage: (event: unknown, newPage: number) => void;
@@ -28,13 +37,37 @@ const useProductListVM = (): ProductListVM => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(50);
     const [totalCount, setTotalCount] = useState<number>(0);
 
+    // Filter state
+    const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
+    const [groupFilters, setGroupFilters] = useState<Record<string, string>>({});
+    const { filterConfigs, filtersLoading } = useAdminProductFilters();
+
+    const handleActiveFilter = useCallback((value: ActiveFilter) => {
+        setActiveFilter(value);
+        setPage(0);
+    }, []);
+
+    const handleGroupFilter = useCallback((configName: string, value: string) => {
+        setGroupFilters(prev => ({ ...prev, [configName]: value }));
+        setPage(0);
+    }, []);
+
     const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
-            const { results, count } = await catalogProductService.list({
+            const params: Record<string, any> = {
                 page: page + 1,
                 page_size: rowsPerPage,
-            });
+            };
+            if (activeFilter !== 'all') {
+                params.is_active = activeFilter === 'active' ? 'true' : 'false';
+            }
+            // Collect selected group IDs across all filter configs
+            const selectedGroupIds = Object.values(groupFilters).filter(v => v !== 'all');
+            if (selectedGroupIds.length > 0) {
+                params.group = selectedGroupIds.join(',');
+            }
+            const { results, count } = await catalogProductService.list(params);
             setProducts(results as Product[]);
             setTotalCount(count);
             setError(null);
@@ -44,7 +77,7 @@ const useProductListVM = (): ProductListVM => {
         } finally {
             setLoading(false);
         }
-    }, [page, rowsPerPage]);
+    }, [page, rowsPerPage, activeFilter, groupFilters]);
 
     useEffect(() => {
         fetchProducts();
@@ -74,6 +107,9 @@ const useProductListVM = (): ProductListVM => {
         isSuperuser,
         products, loading, error,
         page, rowsPerPage, totalCount,
+        activeFilter, groupFilters,
+        filterConfigs, filtersLoading,
+        handleActiveFilter, handleGroupFilter,
         fetchProducts, handleDelete,
         handleChangePage, handleChangeRowsPerPage,
     };

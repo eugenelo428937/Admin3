@@ -16,13 +16,16 @@ import MainNavActions from './MainNavActions.tsx';
 import AuthModal from './AuthModal.tsx';
 import CartPanel from '../Ordering/CartPanel.tsx';
 import useMainNavBarVM from './useMainNavBarVM.ts';
+import { isStorefrontPreview } from '../../utils/storefrontPreview';
 
 const MainNavBar: React.FC = () => {
    const vm = useMainNavBarVM();
    const theme = useTheme() as any;
 
-   // Hide entire navbar in internal mode — admin shell provides its own top bar
-   if (vm.isInternal) return null;
+   // Hide entire navbar in internal mode — admin shell provides its own top bar.
+   // Exception: when an admin is previewing the storefront, show the navbar
+   // so they can QA the real customer-facing navigation.
+   if (vm.isInternal && !isStorefrontPreview()) return null;
 
    return (
       <div className="sticky-top">

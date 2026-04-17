@@ -585,6 +585,8 @@ def site_config(request):
     from django.conf import settings
     return JsonResponse({
         'internal': getattr(settings, 'INTERNAL', False),
+        'storefront_url': getattr(settings, 'STOREFRONT_URL', ''),
+        'storefront_port': getattr(settings, 'STOREFRONT_PORT', ''),
     })
 
 
