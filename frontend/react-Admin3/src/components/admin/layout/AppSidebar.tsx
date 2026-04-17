@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   GraduationCap,
   CalendarDays,
+  Ellipsis,
   Package,
   Link as LinkIcon,
   Layers,
@@ -52,11 +53,38 @@ const navGroups = [
       ],
    },
    {
+      label: "Current Products",
+      items: [
+         {
+            label: "Products",
+            path: "/admin/store-products",
+            icon: Store,
+         },
+         //  { label: "Prices", path: "/admin/prices", icon: DollarSign },
+         {
+            label: "Bundles",
+            path: "/admin/store-bundles",
+            icon: BoxesIcon,
+         },
+         //  {
+         //     label: "Recommendations",
+         //     path: "/admin/recommendations",
+         //     icon: Star,
+         //  },
+      ],
+   },
+   {
       label: "Users",
       items: [
          // { label: 'User Profiles', path: '/admin/user-profiles', icon: Users },
-         { label: "Staff", path: "/admin/staff", icon: BadgeCheck },
+         //
          { label: "Students", path: "/admin/students", icon: GraduationCap },
+         //  { label: "Markers", path: "/admin/students", icon: GraduationCap },
+         //  {
+         //     label: "Apprentice & StudyPlus",
+         //     path: "/admin/students",
+         //     icon: GraduationCap,
+         //  },
       ],
    },
    {
@@ -65,27 +93,55 @@ const navGroups = [
          { label: "Batches", path: "/admin/email/batches", icon: Mail },
          { label: "Queue", path: "/admin/email/queue", icon: ListOrdered },
          { label: "Templates", path: "/admin/email/templates", icon: FileText },
+         { label: "More", path: "/admin/email/", icon: Ellipsis },
+         //  {
+         //     label: "Salutations",
+         //     path: "/admin/email/closing-salutations",
+         //     icon: PenLine,
+         //  },
+         //  {
+         //     label: "Attachments",
+         //     path: "/admin/email/attachments",
+         //     icon: Paperclip,
+         //  },
+         //  {
+         //     label: "Content Rules",
+         //     path: "/admin/email/content-rules",
+         //     icon: Scale,
+         //  },
+         //  {
+         //     label: "Placeholders",
+         //     path: "/admin/email/placeholders",
+         //     icon: Code,
+         //  },
+         //  { label: "Settings", path: "/admin/email/settings", icon: Settings },
+      ],
+   },
+   {
+      label: "Catalog",
+      items: [
          {
-            label: "Salutations",
-            path: "/admin/email/closing-salutations",
-            icon: PenLine,
+            label: "Exam Sessions",
+            path: "/admin/exam-sessions",
+            icon: CalendarDays,
          },
+         { label: "Subjects", path: "/admin/subjects", icon: GraduationCap },
+         { label: "Products", path: "/admin/products", icon: Package },
+         //  {
+         //     label: "ESS Links",
+         //     path: "/admin/exam-session-subjects",
+         //     icon: LinkIcon,
+         //  },
          {
-            label: "Attachments",
-            path: "/admin/email/attachments",
-            icon: Paperclip,
+            label: "Variations",
+            path: "/admin/product-variations",
+            icon: Layers,
          },
-         {
-            label: "Content Rules",
-            path: "/admin/email/content-rules",
-            icon: Scale,
-         },
-         {
-            label: "Placeholders",
-            path: "/admin/email/placeholders",
-            icon: Code,
-         },
-         { label: "Settings", path: "/admin/email/settings", icon: Settings },
+         //  {
+         //     label: "Product Bundles",
+         //     path: "/admin/product-bundles",
+         //     icon: Gift,
+         //  },
       ],
    },
    {
@@ -103,65 +159,18 @@ const navGroups = [
          },
       ],
    },
-  //  {
-  //     label: "Catalog",
-  //     items: [
-  //        { label: "Subjects", path: "/admin/subjects", icon: GraduationCap },
-  //        {
-  //           label: "Exam Sessions",
-  //           path: "/admin/exam-sessions",
-  //           icon: CalendarDays,
-  //        },
-        //  { label: "Products", path: "/admin/products", icon: Package },
-        //  {
-        //     label: "ESS Links",
-        //     path: "/admin/exam-session-subjects",
-        //     icon: LinkIcon,
-        //  },
-        //  {
-        //     label: "Variations",
-        //     path: "/admin/product-variations",
-        //     icon: Layers,
-        //  },
-        //  {
-        //     label: "Product Bundles",
-        //     path: "/admin/product-bundles",
-        //     icon: Gift,
-        //  },
-  //     ],
-  //  },
-  //  {
-  //     label: "Store",
-  //     items: [
-  //        {
-  //           label: "Store Products",
-  //           path: "/admin/store-products",
-  //           icon: Store,
-  //        },
-  //        { label: "Prices", path: "/admin/prices", icon: DollarSign },
-  //        {
-  //           label: "Store Bundles",
-  //           path: "/admin/store-bundles",
-  //           icon: BoxesIcon,
-  //        },
-  //        {
-  //           label: "Recommendations",
-  //           path: "/admin/recommendations",
-  //           icon: Star,
-  //        },
-  //     ],
-  //  },
-
-  //  {
-  //     label: "Setup",
-  //     items: [
-  //        {
-  //           label: "New Session Setup",
-  //           path: "/admin/new-session-setup",
-  //           icon: SlidersHorizontal,
-  //        },
-  //     ],
-  //  },
+   {
+      label: "Staff and Teams",
+      items: [
+         { label: "Staff", path: "/admin/staff", icon: BadgeCheck },
+         { label: "Teams", path: "/admin/staff", icon: BadgeCheck },
+         //  {
+         //     label: "New Session Setup",
+         //     path: "/admin/new-session-setup",
+         //     icon: SlidersHorizontal,
+         //  },
+      ],
+   },
 ];
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

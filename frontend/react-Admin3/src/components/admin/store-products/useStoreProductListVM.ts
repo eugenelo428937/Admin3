@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../hooks/useAuth.tsx';
 import storeProductService from '../../../services/storeProductService';
+import { useAdminProductFilters } from '../../../hooks/useAdminProductFilters';
+import type { ActiveFilter, FilterConfigEntry } from '../../../hooks/useAdminProductFilters';
 import type { StoreProduct, GroupedStoreProduct, GroupedStoreData } from '../../../types/storeProduct';
 
 /**
@@ -57,6 +59,13 @@ export interface StoreProductListVM {
     expandedSessions: Record<string, boolean>;
     expandedSubjects: Record<string, boolean>;
     expandedProduct: string | null;
+    // Filters
+    activeFilter: ActiveFilter;
+    groupFilters: Record<string, string>;
+    filterConfigs: FilterConfigEntry[];
+    filtersLoading: boolean;
+    handleActiveFilter: (value: ActiveFilter) => void;
+    handleGroupFilter: (configName: string, value: string) => void;
     toggleSession: (session: string) => void;
     toggleSubject: (key: string) => void;
     toggleProduct: (key: string) => void;
@@ -75,6 +84,21 @@ const useStoreProductListVM = (): StoreProductListVM => {
     const [page, setPage] = useState<number>(0);
     const [rowsPerPage, setRowsPerPage] = useState<number>(400);
     const [totalCount, setTotalCount] = useState<number>(0);
+
+    // Filter state
+    const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
+    const [groupFilters, setGroupFilters] = useState<Record<string, string>>({});
+    const { filterConfigs, filtersLoading } = useAdminProductFilters();
+
+    const handleActiveFilter = useCallback((value: ActiveFilter) => {
+        setActiveFilter(value);
+        setPage(0);
+    }, []);
+
+    const handleGroupFilter = useCallback((configName: string, value: string) => {
+        setGroupFilters(prev => ({ ...prev, [configName]: value }));
+        setPage(0);
+    }, []);
 
     const [expandedSessions, setExpandedSessions] = useState<Record<string, boolean>>({});
     const [expandedSubjects, setExpandedSubjects] = useState<Record<string, boolean>>({});
@@ -95,10 +119,19 @@ const useStoreProductListVM = (): StoreProductListVM => {
     const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
-            const { results, count } = await storeProductService.adminList({
+            const params: Record<string, any> = {
                 page: page + 1,
                 page_size: rowsPerPage,
-            });
+            };
+            if (activeFilter !== 'all') {
+                params.is_active = activeFilter === 'active' ? 'true' : 'false';
+            }
+            // Collect selected group IDs across all filter configs
+            const selectedGroupIds = Object.values(groupFilters).filter(v => v !== 'all');
+            if (selectedGroupIds.length > 0) {
+                params.group = selectedGroupIds.join(',');
+            }
+            const { results, count } = await storeProductService.adminList(params);
             setPageProducts(results as StoreProduct[]);
             setTotalCount(count);
             setError(null);
@@ -109,7 +142,7 @@ const useStoreProductListVM = (): StoreProductListVM => {
         } finally {
             setLoading(false);
         }
-    }, [page, rowsPerPage]);
+    }, [page, rowsPerPage, activeFilter, groupFilters]);
 
     useEffect(() => {
         fetchProducts();
@@ -139,6 +172,9 @@ const useStoreProductListVM = (): StoreProductListVM => {
         page, rowsPerPage, totalCount,
         groupedData, sortedSessions,
         expandedSessions, expandedSubjects, expandedProduct,
+        activeFilter, groupFilters,
+        filterConfigs, filtersLoading,
+        handleActiveFilter, handleGroupFilter,
         toggleSession, toggleSubject, toggleProduct,
         fetchProducts,
         handleChangePage, handleChangeRowsPerPage,

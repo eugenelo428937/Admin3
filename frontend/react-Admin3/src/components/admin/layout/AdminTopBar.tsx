@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { PanelLeft, Search, Sun, Moon, Settings, LogIn, LogOut } from 'lucide-react';
+import { PanelLeft, Search, Sun, Moon, Settings, LogIn, LogOut, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/contexts/ConfigContext';
 import { useDarkMode } from './DarkModeProvider';
 import { useSidebar } from '@/components/admin/ui/sidebar';
 import { Button } from '@/components/admin/ui/button';
@@ -9,6 +10,7 @@ import { Separator } from '@/components/admin/ui/separator';
 
 export function AdminTopBar() {
   const { toggleSidebar } = useSidebar();
+  const { isInternal, storefrontUrl } = useConfig();
   const { mode, toggleMode } = useDarkMode();
   const { user, isAuthenticated, logout } = useAuth() as any;
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -44,6 +46,17 @@ export function AdminTopBar() {
           <PanelLeft className="tw:h-4 tw:w-4" />
         </Button>
         <Separator orientation="vertical" className="tw:h-4" />
+        {isInternal && (
+          <a
+            href={`${storefrontUrl}${storefrontUrl.includes('?') ? '&' : '?'}preview=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tw:flex tw:items-center tw:gap-1.5 tw:rounded-md tw:px-2.5 tw:py-1.5 tw:text-xs tw:font-medium tw:text-muted-foreground hover:tw:text-foreground hover:tw:bg-accent tw:transition-colors tw:no-underline"
+          >
+            <ExternalLink className="tw:h-3.5 tw:w-3.5" />
+            View Store
+          </a>
+        )}
       </div>
 
       {/* Right: search, dark mode, settings, avatar */}
