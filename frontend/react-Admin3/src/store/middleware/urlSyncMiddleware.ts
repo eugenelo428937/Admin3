@@ -139,6 +139,22 @@ const FILTER_ACTION_TYPES: string[] = [
 // Pages where URL sync should be active
 const URL_SYNC_PAGES: string[] = ['/products', '/home', '/'];
 
+// Patterns matching all query params owned by the filter system.
+// Any param NOT matching these is preserved across URL sync updates
+// (e.g., ?preview=1 for admin storefront preview, ?utm_source=... for analytics).
+const FILTER_PARAM_PATTERNS: RegExp[] = [
+  /^subject_code$/, /^subject_\d+$/,
+  /^category_code$/, /^category_\d+$/,
+  /^group$/,
+  /^product$/,
+  /^mode_of_delivery$/,
+  /^search_query$/,
+  /^page$/, /^page_size$/,
+];
+
+const isFilterParam = (key: string): boolean =>
+  FILTER_PARAM_PATTERNS.some(pattern => pattern.test(key));
+
 /**
  * Check if current page should have URL sync enabled
  * Only sync on product-related pages to avoid stripping query params on other pages
@@ -172,6 +188,16 @@ urlSyncMiddleware.startListening({
 
     // Build URL parameters from current state
     const params = buildUrlFromFilters(filters);
+
+    // Preserve non-filter params from current URL (e.g., preview=1, utm_source).
+    // Without this, the middleware would strip any foreign query param on every update.
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.forEach((value, key) => {
+      if (!isFilterParam(key) && !params.has(key)) {
+        params.set(key, value);
+      }
+    });
+
     const urlString = params.toString();
 
     // Loop prevention: Skip if URL hasn't changed
