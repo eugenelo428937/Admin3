@@ -228,18 +228,51 @@ def create_catalog_dependencies(subject_code='CM2', session_code='2025-04'):
     }
 
 
-def assign_product_to_group(catalog_product, filter_group):
-    """Assign a catalog product to a filter group via the junction table.
+def assign_product_to_group(catalog_product_or_ppv, filter_group):
+    """Assign a product-variation to a filter group via the junction table.
+
+    Accepts either a catalog.Product (auto-resolves to its first PPV)
+    or a ProductProductVariation directly. When a catalog.Product is
+    passed, all its PPVs receive the group assignment.
 
     Args:
-        catalog_product: catalog.Product instance.
+        catalog_product_or_ppv: catalog.Product or ProductProductVariation.
         filter_group: FilterGroup instance.
 
     Returns:
-        ProductProductGroup instance.
+        ProductProductGroup instance (the last one created).
     """
     from filtering.models import ProductProductGroup
-    return ProductProductGroup.objects.create(
-        product=catalog_product,
-        product_group=filter_group,
-    )
+    from catalog.models import ProductProductVariation
+
+    if isinstance(catalog_product_or_ppv, ProductProductVariation):
+        ppv = catalog_product_or_ppv
+        obj, _ = ProductProductGroup.objects.get_or_create(
+            product_product_variation=ppv,
+            product_group=filter_group,
+        )
+        return obj
+
+    # catalog.Product — assign group to ALL its PPVs
+    catalog_product = catalog_product_or_ppv
+    ppvs = list(ProductProductVariation.objects.filter(product=catalog_product))
+    if not ppvs:
+        # No PPV exists yet — create a default one
+        from catalog.models import ProductVariation
+        variation, _ = ProductVariation.objects.get_or_create(
+            variation_type='eBook',
+            name='Default eBook',
+            defaults={'code': 'DFLT', 'description': 'Auto-created for test'},
+        )
+        ppv = ProductProductVariation.objects.create(
+            product=catalog_product, product_variation=variation,
+        )
+        ppvs = [ppv]
+
+    result = None
+    for ppv in ppvs:
+        result, _ = ProductProductGroup.objects.get_or_create(
+            product_product_variation=ppv,
+            product_group=filter_group,
+        )
+    return result

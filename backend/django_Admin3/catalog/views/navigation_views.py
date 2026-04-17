@@ -80,9 +80,7 @@ def navigation_data(request):
         all_group_names = [
             'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom Recording'
         ]
-        groups = FilterGroup.objects.filter(name__in=all_group_names).prefetch_related(
-            Prefetch('catalog_products', queryset=Product.objects.filter(is_active=True).order_by('shortname'))
-        )
+        groups = FilterGroup.objects.filter(name__in=all_group_names)
         groups_dict = {g.name: g for g in groups}
 
         # === NAVBAR PRODUCT GROUPS ===
