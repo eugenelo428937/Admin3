@@ -80,9 +80,7 @@ def navigation_data(request):
         all_group_names = [
             'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom Recording'
         ]
-        groups = FilterGroup.objects.filter(name__in=all_group_names).prefetch_related(
-            Prefetch('catalog_products', queryset=Product.objects.filter(is_active=True).order_by('shortname'))
-        )
+        groups = FilterGroup.objects.filter(name__in=all_group_names)
         groups_dict = {g.name: g for g in groups}
 
         # === NAVBAR PRODUCT GROUPS ===
@@ -101,7 +99,9 @@ def navigation_data(request):
                             'fullname': p.fullname,
                             'code': p.code
                         }
-                        for p in group.catalog_products.all()
+                        for p in Product.objects.filter(
+                                productproductvariation__product_groups__product_group=group
+                            ).distinct()
                     ]
                 })
             else:
@@ -123,7 +123,9 @@ def navigation_data(request):
                             'fullname': p.fullname,
                             'code': p.code
                         }
-                        for p in group.catalog_products.all()
+                        for p in Product.objects.filter(
+                                productproductvariation__product_groups__product_group=group
+                            ).distinct()
                     ]
                 })
             else:
@@ -136,8 +138,9 @@ def navigation_data(request):
         # Location products
         if tutorial_group:
             location_products = list(Product.objects.filter(
-                is_active=True, groups=tutorial_group
-            ).order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
+                is_active=True,
+                productproductvariation__product_groups__product_group=tutorial_group,
+            ).distinct().order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
         else:
             location_products = []
         mid_point = (len(location_products) + 1) // 2
@@ -164,7 +167,7 @@ def navigation_data(request):
         # Online Classroom variations
         if online_classroom_group:
             online_classroom_data = list(ProductVariation.objects.filter(
-                products__groups=online_classroom_group
+                productproductvariation__product_groups__product_group=online_classroom_group
             ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description'))
         else:
             online_classroom_data = []
@@ -305,7 +308,7 @@ def fuzzy_search(request):
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
             Prefetch(
                 'product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
@@ -447,7 +450,9 @@ def advanced_product_search(request):
     if group_ids:
         try:
             group_ids_int = [int(gid) for gid in group_ids]
-            queryset = queryset.filter(groups__id__in=group_ids_int).distinct()
+            queryset = queryset.filter(
+                productproductvariation__product_groups__product_group__id__in=group_ids_int
+            ).distinct()
         except (ValueError, TypeError):
             pass
 

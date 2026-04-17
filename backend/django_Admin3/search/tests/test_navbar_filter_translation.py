@@ -96,10 +96,10 @@ class NavbarFilterConsistencyTest(TestCase):
         self.printed_var = create_product_variation('Printed', 'Standard Printed', code='P')
 
         self.cat_prod = create_catalog_product('CS2 Course Notes', 'CS2 Course Notes', 'CN01')
-        assign_product_to_group(self.cat_prod, self.printed_group)
         self.sp = create_store_product(
             self.ess, self.cat_prod, self.printed_var, product_code='CS2/PCN01/2025-04',
         )
+        assign_product_to_group(self.cat_prod, self.printed_group)
 
     def test_navbar_matches_panel_selection(self):
         """SC-005: Navbar group=PRINTED matches panel categories=['PRINTED']."""

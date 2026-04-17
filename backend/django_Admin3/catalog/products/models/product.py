@@ -50,13 +50,6 @@ class Product(models.Model):
         help_text="Unique product code"
     )
 
-    # M2M relationships - use string references to avoid circular imports
-    groups = models.ManyToManyField(
-        'filtering.FilterGroup',
-        related_name='catalog_products',
-        through='filtering.ProductProductGroup',
-        help_text="Filter groups this product belongs to"
-    )
     product_variations = models.ManyToManyField(
         'catalog_products.ProductVariation',
         through='catalog_products.ProductProductVariation',

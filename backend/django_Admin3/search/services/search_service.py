@@ -188,7 +188,7 @@ class SearchService:
             'product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product__groups',
+            'product_product_variation__product_groups__product_group',
             'tutorial_events__sessions',
             Prefetch(
                 'product_product_variation__recommendation',
@@ -473,8 +473,8 @@ class SearchService:
         one of its component products matches ALL active filter conditions
         simultaneously.
 
-        M2M group filters (categories, product_types) use separate .filter()
-        calls so Django creates independent JOINs — same fix as _apply_filters.
+        M2M group filters (categories, product_types, modes_of_delivery) use
+        separate .filter() calls so Django creates independent JOINs.
 
         Args:
             filters: Dict of active filters.
@@ -506,37 +506,26 @@ class SearchService:
             if int_product_ids:
                 q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
 
-        # Mode of delivery filter (variation type)
-        if filters.get('modes_of_delivery'):
-            mode_q = Q()
-            for mode in filters['modes_of_delivery']:
-                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
-                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
-            q_filter &= mode_q
-
         if q_filter:
             product_qs = product_qs.filter(q_filter)
 
-        # M2M group filters — separate .filter() calls for independent JOINs
-        # Category filter (via groups with hierarchy)
-        if filters.get('categories'):
-            category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle']
-            )
-            if category_group_ids:
-                product_qs = product_qs.filter(
-                    product_product_variation__product__groups__id__in=category_group_ids
+        # M2M group filters — separate .filter() calls for independent JOINs.
+        # All three group-based dimensions use the same mechanism.
+        from filtering.services.filter_service import ProductFilterService
+        for filter_key, exclude in [
+            ('categories', ['Bundle']),
+            ('product_types', None),
+            ('modes_of_delivery', None),
+        ]:
+            if filters.get(filter_key):
+                group_ids = ProductFilterService._resolve_group_ids_with_hierarchy(
+                    filters[filter_key],
+                    exclude_names=exclude,
                 )
-
-        # Product type filter (via groups with hierarchy)
-        if filters.get('product_types'):
-            type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types']
-            )
-            if type_group_ids:
-                product_qs = product_qs.filter(
-                    product_product_variation__product__groups__id__in=type_group_ids
-                )
+                if group_ids:
+                    product_qs = product_qs.filter(
+                        product_product_variation__product_groups__product_group__id__in=group_ids
+                    )
 
         return set(product_qs.distinct().values_list('id', flat=True))
 
@@ -644,7 +633,7 @@ class SearchService:
 
         if category_ids:
             base_queryset = base_queryset.filter(
-                product_product_variation__product__groups__id__in=category_ids
+                product_product_variation__product_groups__product_group__id__in=category_ids
             ).distinct()
 
         if not query or len(query.strip()) < 2:

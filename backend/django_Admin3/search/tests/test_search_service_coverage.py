@@ -218,8 +218,17 @@ class TestApplyFilters(TestCase):
         )
         self.material_group = create_filter_group('SC Material', code='SC_MAT')
         self.tutorial_group = create_filter_group('SC Tutorial', code='SC_TUT')
+        self.ebook_group = create_filter_group('eBook', code='SC_EBOOK')
+        self.printed_group = create_filter_group('Printed', code='SC_PRINTED')
         assign_group_to_config(self.categories_config, self.material_group)
         assign_group_to_config(self.product_types_config, self.tutorial_group)
+
+        # Create modes_of_delivery config so eBook/Printed groups are recognized
+        self.modes_config = create_filter_config(
+            'SC Modes', 'modes_of_delivery', 'filter_group', display_order=3
+        )
+        assign_group_to_config(self.modes_config, self.ebook_group)
+        assign_group_to_config(self.modes_config, self.printed_group)
 
         self.session = create_exam_session('2025-04')
         self.cm2 = create_subject('SAF1')
@@ -231,17 +240,19 @@ class TestApplyFilters(TestCase):
         self.ebook = create_product_variation('eBook', 'Std eBook', code='AFE')
 
         self.cm2_catalog = create_catalog_product('SAF1 Mat', 'SAF1', 'SAF1P')
-        assign_product_to_group(self.cm2_catalog, self.material_group)
         self.cm2_sp = create_store_product(
             self.cm2_ess, self.cm2_catalog, self.printed,
             product_code='SAF1/AFP/2025-04'
         )
+        assign_product_to_group(self.cm2_catalog, self.material_group)
+        assign_product_to_group(self.cm2_catalog, self.printed_group)
 
         self.sa1_catalog = create_catalog_product('SAF2 Mat', 'SAF2', 'SAF2P')
         self.sa1_sp = create_store_product(
             self.sa1_ess, self.sa1_catalog, self.ebook,
             product_code='SAF2/AFE/2025-04'
         )
+        assign_product_to_group(self.sa1_catalog, self.ebook_group)
 
     def test_filter_by_subject_code(self):
         qs = StoreProduct.objects.filter(is_active=True)
@@ -326,12 +337,12 @@ class TestApplyNavbarFilters(TestCase):
         self.group = create_filter_group('SNB Mat', code='SNB_MAT')
         self.format_group = create_filter_group('SNB F2F', code='SNB_F2F')
         self.catalog = create_catalog_product('SNB1 Mat', 'SNB1', 'SNB1P')
-        assign_product_to_group(self.catalog, self.group)
         self.variation = create_product_variation('Printed', 'Std Print', code='NBP')
         self.sp = create_store_product(
             self.ess, self.catalog, self.variation,
             product_code='SNB1/NBP/2025-04'
         )
+        assign_product_to_group(self.catalog, self.group)
 
     def _apply_translated_navbar_filters(self, qs, navbar_filters):
         """Helper: translate navbar filters then apply to queryset."""
@@ -399,12 +410,12 @@ class TestApplyNavbarFilters(TestCase):
     def test_distance_learning_filter(self):
         material_group = create_filter_group('Material', code='SNB_DL')
         catalog2 = create_catalog_product('SNB DL Mat', 'SNB DL', 'SNBDLP')
-        assign_product_to_group(catalog2, material_group)
         variation2 = create_product_variation('eBook', 'eBook', code='NBDL')
         sp2 = create_store_product(
             self.ess, catalog2, variation2,
             product_code='SNB1/NBDL/2025-04'
         )
+        assign_product_to_group(catalog2, material_group)
         qs = StoreProduct.objects.filter(is_active=True)
         result = self._apply_translated_navbar_filters(qs, {'distance_learning': 'true'})
         self.assertIn(sp2, list(result))
@@ -511,7 +522,14 @@ class TestGetBundleMatchingProductIds(TestCase):
             'SBM Cat', 'categories', 'filter_group', display_order=1
         )
         self.material_group = create_filter_group('SBM Mat', code='SBM_MAT')
+        self.printed_group = create_filter_group('Printed', code='SBM_PRINTED')
+        self.ebook_group = create_filter_group('eBook', code='SBM_EBOOK')
         assign_group_to_config(self.categories_config, self.material_group)
+        self.modes_config = create_filter_config(
+            'SBM Modes', 'modes_of_delivery', 'filter_group', display_order=2
+        )
+        assign_group_to_config(self.modes_config, self.printed_group)
+        assign_group_to_config(self.modes_config, self.ebook_group)
 
         self.session = create_exam_session('2025-04')
         self.subject = create_subject('SBMP')
@@ -519,7 +537,6 @@ class TestGetBundleMatchingProductIds(TestCase):
         self.printed = create_product_variation('Printed', 'Print', code='BMPP')
         self.ebook = create_product_variation('eBook', 'eBook', code='BMPE')
         self.catalog = create_catalog_product('SBM Mat', 'SBM', 'SBMP1')
-        assign_product_to_group(self.catalog, self.material_group)
         self.sp_printed = create_store_product(
             self.ess, self.catalog, self.printed,
             product_code='SBMP/BMPP/2025-04'
@@ -528,6 +545,18 @@ class TestGetBundleMatchingProductIds(TestCase):
             self.ess, self.catalog, self.ebook,
             product_code='SBMP/BMPE/2025-04'
         )
+        # Assign groups AFTER both store products exist
+        assign_product_to_group(self.catalog, self.material_group)
+        # Assign mode groups to specific PPVs
+        from catalog.models import ProductProductVariation
+        ppv_printed = ProductProductVariation.objects.get(
+            product=self.catalog, product_variation=self.printed
+        )
+        ppv_ebook = ProductProductVariation.objects.get(
+            product=self.catalog, product_variation=self.ebook
+        )
+        assign_product_to_group(ppv_printed, self.printed_group)
+        assign_product_to_group(ppv_ebook, self.ebook_group)
 
     def test_no_non_subject_filters_returns_none(self):
         result = self.service._get_bundle_matching_product_ids({'subjects': ['SBMP']})
@@ -756,11 +785,11 @@ class TestUnifiedSearch(TestCase):
         self.ess = create_exam_session_subject(self.session, self.subject)
         self.printed = create_product_variation('Printed', 'Print', code='USP')
         self.catalog = create_catalog_product('SUS1 Mat', 'SUS1', 'SUS1P')
-        assign_product_to_group(self.catalog, self.material_group)
         self.sp = create_store_product(
             self.ess, self.catalog, self.printed,
             product_code='SUS1/USP/2025-04'
         )
+        assign_product_to_group(self.catalog, self.material_group)
 
     def test_basic_search_returns_structure(self):
         result = self.service.unified_search()
@@ -821,8 +850,8 @@ class TestUnifiedSearch(TestCase):
         for i in range(3):
             cat = create_catalog_product(f'SUS{i} E', f'SUS{i}', f'SUSE{i}')
             var = create_product_variation('Printed', f'P {i}', code=f'UE{i}')
-            assign_product_to_group(cat, self.material_group)
             create_store_product(self.ess, cat, var, product_code=f'SUS1/UE{i}/2025-04')
+            assign_product_to_group(cat, self.material_group)
         result = self.service.unified_search(pagination={'page': 1, 'page_size': 1})
         if result['pagination']['total_count'] > 1:
             self.assertTrue(result['pagination']['has_next'])
@@ -915,12 +944,12 @@ class TestAdvancedFuzzySearch(TestCase):
         self.ess = create_exam_session_subject(self.session, self.subject)
         self.group = create_filter_group('SAFS Grp', code='SAFS_GRP')
         self.catalog = create_catalog_product('SAFS Mat', 'SAFS', 'SAFSP')
-        assign_product_to_group(self.catalog, self.group)
         self.variation = create_product_variation('Printed', 'Print', code='AFSP')
         self.sp = create_store_product(
             self.ess, self.catalog, self.variation,
             product_code='SAFS/AFSP/2025-04'
         )
+        assign_product_to_group(self.catalog, self.group)
 
     def test_no_query_no_filters(self):
         result = self.service.advanced_fuzzy_search()
@@ -1067,8 +1096,15 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         )
         self.material = create_filter_group('SFC Mat', code='SFC_MAT')
         self.core = create_filter_group('SFC Core', parent=self.material, code='SFC_CORE')
+        self.printed_group = create_filter_group('Printed', code='SFC_PRINTED')
+        self.ebook_group = create_filter_group('eBook', code='SFC_EBOOK')
         assign_group_to_config(self.categories_config, self.material)
         assign_group_to_config(self.product_types_config, self.core)
+        self.modes_config = create_filter_config(
+            'SFC Modes', 'modes_of_delivery', 'filter_group', display_order=3
+        )
+        assign_group_to_config(self.modes_config, self.printed_group)
+        assign_group_to_config(self.modes_config, self.ebook_group)
 
         self.session = create_exam_session('2025-04')
         self.subject = create_subject('SFC1')
@@ -1076,8 +1112,6 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         self.printed = create_product_variation('Printed', 'Std Print', code='FCP')
         self.ebook = create_product_variation('eBook', 'Std eBook', code='FCE')
         self.catalog = create_catalog_product('SFC1 Core', 'SFC1 C', 'SFC1P')
-        assign_product_to_group(self.catalog, self.material)
-        assign_product_to_group(self.catalog, self.core)
         self.sp_printed = create_store_product(
             self.ess, self.catalog, self.printed,
             product_code='SFC1/FCP/2025-04'
@@ -1086,6 +1120,19 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
             self.ess, self.catalog, self.ebook,
             product_code='SFC1/FCE/2025-04'
         )
+        # Assign category/type groups to all PPVs
+        assign_product_to_group(self.catalog, self.material)
+        assign_product_to_group(self.catalog, self.core)
+        # Assign mode groups to specific PPVs
+        from catalog.models import ProductProductVariation
+        ppv_printed = ProductProductVariation.objects.get(
+            product=self.catalog, product_variation=self.printed
+        )
+        ppv_ebook = ProductProductVariation.objects.get(
+            product=self.catalog, product_variation=self.ebook
+        )
+        assign_product_to_group(ppv_printed, self.printed_group)
+        assign_product_to_group(ppv_ebook, self.ebook_group)
 
     def test_subject_counts(self):
         base_qs = StoreProduct.objects.filter(is_active=True)

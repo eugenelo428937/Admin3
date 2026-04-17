@@ -203,7 +203,7 @@ class TestJunctionModels(TestCase):
         """Test ProductProductGroup has unique_together constraint."""
         from catalog.models import ProductProductGroup
         constraints = ProductProductGroup._meta.unique_together
-        self.assertIn(('product', 'product_group'), constraints)
+        self.assertIn(('product_product_variation', 'product_group'), constraints)
 
     def test_product_bundle_product_unique_together(self):
         """Test ProductBundleProduct has unique_together constraint."""

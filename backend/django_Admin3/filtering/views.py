@@ -6,8 +6,7 @@ Filter system views for product group trees and dynamic filter configuration.
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-
-from catalog.models import Product
+from catalog.models import ProductProductVariation
 from .models import FilterGroup
 from .serializers import (
     FilterGroupSerializer,
@@ -43,7 +42,7 @@ def product_group_three_level_tree(request):
 @permission_classes([AllowAny])
 def products_by_group(request, group_id):
     """
-    Returns all products in the given group and all its descendants.
+    Returns all product-variations in the given group and all its descendants.
     """
     def get_descendant_ids(group):
         ids = [group.id]
@@ -57,10 +56,21 @@ def products_by_group(request, group_id):
         return Response({'error': 'Group not found'}, status=404)
 
     group_ids = get_descendant_ids(group)
-    products = Product.objects.filter(groups__in=group_ids).distinct()
-    from catalog.serializers import ProductSerializer
-    serializer = ProductSerializer(products, many=True)
-    return Response({'results': serializer.data})
+    ppvs = ProductProductVariation.objects.filter(
+        product_groups__product_group__id__in=group_ids
+    ).select_related('product', 'product_variation').distinct()
+    results = [
+        {
+            'id': ppv.id,
+            'product_shortname': ppv.product.shortname,
+            'product_fullname': ppv.product.fullname,
+            'product_code': ppv.product.code,
+            'variation_name': ppv.product_variation.name,
+            'variation_type': ppv.product_variation.variation_type,
+        }
+        for ppv in ppvs
+    ]
+    return Response({'results': results})
 
 
 @api_view(['GET'])

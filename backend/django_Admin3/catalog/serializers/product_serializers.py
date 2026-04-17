@@ -204,20 +204,28 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_type(self, obj):
         """
-        Determine product type based on product groups.
+        Determine product type based on filter groups assigned to this
+        product's ProductProductVariation records.
 
         Returns:
-            str: "Tutorial" if product is in Tutorial group,
-                 "Markings" if product is in Marking group,
+            str: "Tutorial" if any PPV is in Tutorial group,
+                 "Markings" if any PPV is in Marking group,
                  "Material" otherwise (default)
         """
-        group_names = [group.name for group in obj.groups.all()]
-
-        if 'Tutorial' in group_names:
-            return 'Tutorial'
-        elif 'Marking' in group_names:
-            return 'Markings'
-        return 'Material'  # Default type
+        from catalog.models import ProductProductVariation
+        from filtering.models import ProductProductGroup
+        ppv_ids = ProductProductVariation.objects.filter(
+            product=obj
+        ).values_list('id', flat=True)
+        group_names = ProductProductGroup.objects.filter(
+            product_product_variation_id__in=ppv_ids
+        ).values_list('product_group__name', flat=True).distinct()
+        for name in group_names:
+            if name == 'Tutorial':
+                return 'Tutorial'
+            elif name == 'Marking':
+                return 'Markings'
+        return 'Material'
 
     def get_variations(self, obj):
         """

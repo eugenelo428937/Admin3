@@ -40,10 +40,10 @@ class SearchBrowseConsistencyTest(TestCase):
         self.printed = create_product_variation('Printed', 'Standard Printed', code='P')
 
         self.cat_prod = create_catalog_product('CS2 Course Notes', 'CS2 Course Notes', 'CN01')
-        assign_product_to_group(self.cat_prod, self.material)
         self.sp = create_store_product(
             self.ess, self.cat_prod, self.printed, product_code='CS2/PCN01/2025-04',
         )
+        assign_product_to_group(self.cat_prod, self.material)
 
     def test_same_filters_same_results(self):
         """SC-003: Identical filters through search and browse produce identical product sets."""

@@ -49,12 +49,11 @@ class GenerateFilterCountsContractTest(TestCase):
         self.printed = create_product_variation('Printed', 'Standard Printed', code='P')
 
         self.cat_prod = create_catalog_product('CS2 Course Notes', 'CS2 Course Notes', 'CN01')
-        assign_product_to_group(self.cat_prod, self.material)
-        assign_product_to_group(self.cat_prod, self.core)
-
         self.sp = create_store_product(
             self.ess, self.cat_prod, self.printed, product_code='CS2/PCN01/2025-04',
         )
+        assign_product_to_group(self.cat_prod, self.material)
+        assign_product_to_group(self.cat_prod, self.core)
 
     def test_returns_dict_with_5_dimensions(self):
         """generate_filter_counts() returns dict with 5 dimensions."""
@@ -95,8 +94,8 @@ class GenerateFilterCountsContractTest(TestCase):
         subject_cm2 = create_subject('CM2')
         ess_cm2 = create_exam_session_subject(self.exam_session, subject_cm2)
         cat_prod2 = create_catalog_product('CM2 Study Text', 'CM2 Study Text', 'ST01')
-        assign_product_to_group(cat_prod2, self.material)
         create_store_product(ess_cm2, cat_prod2, self.printed, product_code='CM2/PST01/2025-04')
+        assign_product_to_group(cat_prod2, self.material)
 
         base_qs = StoreProduct.objects.filter(is_active=True)
 

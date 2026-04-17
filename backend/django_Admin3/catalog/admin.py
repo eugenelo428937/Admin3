@@ -78,11 +78,14 @@ class ProductProductVariationAdmin(admin.ModelAdmin):
 
 @admin.register(ProductProductGroup)
 class ProductProductGroupAdmin(admin.ModelAdmin):
-    """Admin interface for Product-FilterGroup junction."""
-    list_display = ('id', 'product', 'product_group')
+    """Admin interface for ProductProductVariation-FilterGroup junction."""
+    list_display = ('id', 'product_product_variation', 'product_group')
     list_filter = ('product_group',)
-    search_fields = ('product__shortname', 'product_group__name')
-    autocomplete_fields = ('product',)
+    search_fields = (
+        'product_product_variation__product__shortname',
+        'product_group__name',
+    )
+    autocomplete_fields = ('product_product_variation',)
 
 
 @admin.register(ProductBundle)

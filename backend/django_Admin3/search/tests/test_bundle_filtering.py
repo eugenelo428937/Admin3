@@ -61,9 +61,16 @@ class TestBundleFiltering(TestCase):
         self.material_group = create_filter_group('Material', code='MATERIAL')
         self.core_group = create_filter_group('Core Study Materials', code='CORE')
         self.revision_group = create_filter_group('Revision Materials', code='REVISION')
+        self.printed_group = create_filter_group('Printed', code='PRINTED')
+        self.ebook_group = create_filter_group('eBook', code='EBOOK')
         assign_group_to_config(self.categories_config, self.material_group)
         assign_group_to_config(self.product_types_config, self.core_group)
         assign_group_to_config(self.product_types_config, self.revision_group)
+        self.modes_config = create_filter_config(
+            'Modes', 'modes_of_delivery', 'filter_group', display_order=3
+        )
+        assign_group_to_config(self.modes_config, self.printed_group)
+        assign_group_to_config(self.modes_config, self.ebook_group)
 
         # Variations
         self.printed = create_product_variation('Printed', 'Standard Printed', code='P')
@@ -80,23 +87,25 @@ class TestBundleFiltering(TestCase):
         self.cm2_core_catalog = create_catalog_product(
             'CM2 Core Materials', 'CM2 Core', 'PCM2C'
         )
-        assign_product_to_group(self.cm2_core_catalog, self.material_group)
-        assign_product_to_group(self.cm2_core_catalog, self.core_group)
         self.cm2_core_printed = create_store_product(
             self.cm2_ess, self.cm2_core_catalog, self.printed,
             product_code='CM2/PCM2C/P/2025-04'
         )
+        assign_product_to_group(self.cm2_core_catalog, self.material_group)
+        assign_product_to_group(self.cm2_core_catalog, self.core_group)
+        assign_product_to_group(self.cm2_core_catalog, self.printed_group)
 
         # CM2 Revision ebook product
         self.cm2_rev_catalog = create_catalog_product(
             'CM2 Revision Kit', 'CM2 Rev', 'RCM2'
         )
-        assign_product_to_group(self.cm2_rev_catalog, self.material_group)
-        assign_product_to_group(self.cm2_rev_catalog, self.revision_group)
         self.cm2_revision_ebook = create_store_product(
             self.cm2_ess, self.cm2_rev_catalog, self.ebook,
             product_code='CM2/ERCM2/2025-04'
         )
+        assign_product_to_group(self.cm2_rev_catalog, self.material_group)
+        assign_product_to_group(self.cm2_rev_catalog, self.revision_group)
+        assign_product_to_group(self.cm2_rev_catalog, self.ebook_group)
 
         # CM2 bundle (full) — contains BOTH core and revision
         self.bundle_cm2_full, _ = create_bundle_with_products(
@@ -119,12 +128,13 @@ class TestBundleFiltering(TestCase):
         self.sa1_core_catalog = create_catalog_product(
             'SA1 Core Materials', 'SA1 Core', 'PSA1C'
         )
-        assign_product_to_group(self.sa1_core_catalog, self.material_group)
-        assign_product_to_group(self.sa1_core_catalog, self.core_group)
         self.sa1_core_printed = create_store_product(
             self.sa1_ess, self.sa1_core_catalog, self.printed,
             product_code='SA1/PSA1C/P/2025-04'
         )
+        assign_product_to_group(self.sa1_core_catalog, self.material_group)
+        assign_product_to_group(self.sa1_core_catalog, self.core_group)
+        assign_product_to_group(self.sa1_core_catalog, self.printed_group)
 
         # SA1 bundle — contains only SA1 core product
         self.bundle_sa1, _ = create_bundle_with_products(

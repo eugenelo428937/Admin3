@@ -67,7 +67,9 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Filter by product group
         group_id = self.request.query_params.get('group')
         if group_id:
-            queryset = queryset.filter(groups__id=group_id)
+            queryset = queryset.filter(
+                productproductvariation__product_groups__product_group__id=group_id
+            )
 
         # Filter by variation type
         variation = self.request.query_params.get('variation')
