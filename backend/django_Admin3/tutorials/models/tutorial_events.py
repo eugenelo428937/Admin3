@@ -7,7 +7,6 @@ to store.Product as part of T087 legacy app cleanup.
 from django.db import models
 from store.models import Product as StoreProduct
 
-
 class TutorialEvents(models.Model):
     """
     Simplified Tutorial Event model.
@@ -34,6 +33,13 @@ class TutorialEvents(models.Model):
     remain_space = models.IntegerField(default=0)
     start_date = models.DateField()
     end_date = models.DateField()
+    main_instructor = models.ForeignKey(
+        'tutorials.TutorialInstructor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tutorial_events',
+    )
     store_product = models.ForeignKey(
         StoreProduct,
         on_delete=models.CASCADE,

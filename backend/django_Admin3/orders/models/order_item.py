@@ -32,7 +32,8 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     price_type = models.CharField(max_length=20, default="standard")
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
+    is_cancelled = models.BooleanField(
+        default=False, help_text="Whether this item is cancelled")
     # VAT information per item
     net_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Amount before VAT")
     vat_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="VAT amount for this item")
@@ -44,7 +45,7 @@ class OrderItem(models.Model):
 
     class Meta:
         db_table = '"acted"."order_items"'
-        managed = False
+        managed = True
         verbose_name = 'Order Item'
         verbose_name_plural = 'Order Items'
         constraints = [
