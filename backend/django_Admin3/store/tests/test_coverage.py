@@ -438,7 +438,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            'prices',
+            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
             'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
@@ -460,7 +460,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            'prices',
+            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
             'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
@@ -508,7 +508,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            'prices',
+            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
@@ -536,7 +536,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            'prices',
+            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
@@ -570,7 +570,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            'prices',
+            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 

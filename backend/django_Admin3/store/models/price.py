@@ -34,8 +34,16 @@ class Price(models.Model):
     product = models.ForeignKey(
         'store.Product',
         on_delete=models.CASCADE,
+        related_name='+',  # disable reverse accessor during transition
+        null=True, blank=True,
+        help_text='DEPRECATED - use purchasable. Removed in Release B.'
+    )
+    purchasable = models.ForeignKey(
+        'store.Purchasable',
+        on_delete=models.CASCADE,
         related_name='prices',
-        help_text='The product this price applies to'
+        null=True, blank=True,
+        help_text='The purchasable this price applies to.'
     )
     price_type = models.CharField(
         max_length=20,
@@ -62,9 +70,13 @@ class Price(models.Model):
 
     class Meta:
         db_table = '"acted"."prices"'
-        unique_together = ('product', 'price_type')
+        # unique_together dropped during dual-write (Tasks 3-11).
+        # Restored as ('purchasable', 'price_type') in Task 11 after backfill.
         verbose_name = 'Price'
         verbose_name_plural = 'Prices'
 
     def __str__(self):
-        return f"{self.product.product_code} - {self.price_type}: {self.amount} {self.currency}"
+        label = self.purchasable.code if self.purchasable_id else (
+            self.product.product_code if self.product_id else '?'
+        )
+        return f"{label} - {self.price_type}: {self.amount} {self.currency}"

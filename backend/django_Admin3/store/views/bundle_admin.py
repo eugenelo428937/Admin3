@@ -58,11 +58,12 @@ class StoreBundleAdminViewSet(viewsets.ModelViewSet):
     def products(self, request, pk=None):
         """Get all products in a bundle with full nested data."""
         bundle = self.get_object()
+        # NOTE: prefetch_related('product__prices') removed during Tasks 3-10
+        # (related_name='+' on Price.product disables the reverse accessor).
+        # Restored in Task 7 when Product becomes an MTI subclass of Purchasable.
         bundle_products = bundle.bundle_products.select_related(
             'product__product_product_variation__product',
             'product__product_product_variation__product_variation',
-        ).prefetch_related(
-            'product__prices'
         ).order_by('sort_order')
         return Response(
             BundleComponentSerializer(bundle_products, many=True).data

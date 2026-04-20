@@ -479,7 +479,7 @@ Update `__str__`:
         return f"{label} - {self.price_type}: {self.amount} {self.currency}"
 ```
 
-**Reverse-accessor collision warning:** both `Product` and `Purchasable` now expose `.prices`. Because `Product` becomes a subclass of `Purchasable` in Task 10, they will share the same reverse accessor after MTI — no collision at steady state. During Tasks 3–10, only one of the two FKs is populated per row, so both accessors are usable. Suppress the `related_name` clash warning by using `related_query_name='price'` on the Purchasable FK or temporarily set `related_name='+'` on the `product` FK. Simpler: use `related_name='+'` on `product`:
+**Reverse-accessor collision warning:** both `Product` and `Purchasable` expose `.prices` reverse accessors with the same name. To resolve the collision during Tasks 3–10 while keeping existing `product.prices` callers working, set `related_name='+'` on the legacy `product` FK (disabling its reverse accessor) AND add a transitional `prices` property on `Product` that returns `Price.objects.filter(product=self)`. The property is removed in Task 7 when Product becomes an MTI subclass of Purchasable — at that point `product.prices` is inherited from the parent naturally.
 
 ```python
     product = models.ForeignKey(

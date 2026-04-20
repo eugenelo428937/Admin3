@@ -145,3 +145,18 @@ class Product(models.Model):
         # Return a queryset containing just this product
         # This maintains compatibility with code that called .first() or iterated
         return Product.objects.filter(pk=self.pk)
+
+    @property
+    def prices(self):
+        """Transitional shim (Tasks 3-6).
+
+        During the dual-write phase, `related_name='+'` on `Price.product`
+        disables the default reverse accessor. This property restores
+        `product.prices.filter(...)` / `.all()` semantics for existing callers.
+
+        Removed in Task 7 when Product becomes an MTI subclass of Purchasable —
+        at that point the `prices` reverse accessor is inherited from the
+        parent and this property can be deleted.
+        """
+        from store.models.price import Price
+        return Price.objects.filter(product=self)
