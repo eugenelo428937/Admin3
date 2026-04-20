@@ -1,4 +1,5 @@
 """Tests for store.Purchasable — the unified catalog parent."""
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from store.models import Purchasable
@@ -23,7 +24,7 @@ class PurchasableModelTests(TestCase):
 
     def test_kind_choices_enforced(self):
         obj = Purchasable(kind='banana', code='X', name='X')
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             obj.full_clean()
 
     def test_dynamic_pricing_default_false(self):

@@ -15,14 +15,13 @@ class Purchasable(models.Model):
     reporting branch without joining to subclass tables.
     """
 
-    KIND_CHOICES = [
-        ('product', 'Store Product (ESS-based)'),
-        ('marking_voucher', 'Marking Voucher'),
-        ('document_binder', 'Document Binder'),
-        ('additional_charge', 'Additional Charge'),
-    ]
+    class Kind(models.TextChoices):
+        PRODUCT = 'product', 'Store Product (ESS-based)'
+        MARKING_VOUCHER = 'marking_voucher', 'Marking Voucher'
+        DOCUMENT_BINDER = 'document_binder', 'Document Binder'
+        ADDITIONAL_CHARGE = 'additional_charge', 'Additional Charge'
 
-    kind = models.CharField(max_length=32, choices=KIND_CHOICES)
+    kind = models.CharField(max_length=32, choices=Kind.choices)
     code = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
