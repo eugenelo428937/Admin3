@@ -28,6 +28,20 @@ class OrderItem(models.Model):
         blank=True
     )
 
+    # Dual-write phase (Task 10): new unified FK alongside legacy product / marking_voucher FKs.
+    # Becomes NOT NULL in Release B (Task 23) once backfill completes.
+    # NOTE: reverse accessor is 'order_items_by_purchasable' to avoid clashing with the
+    # legacy product FK's 'order_items' accessor — Product is an MTI subclass of Purchasable,
+    # so both FKs ultimately reach the purchasables table. After Release B drops the
+    # legacy FK, this can be renamed to 'order_items'.
+    purchasable = models.ForeignKey(
+        'store.Purchasable',
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name='order_items_by_purchasable',
+        help_text='The catalog entity being purchased. Non-null in Release B.'
+    )
+
     item_type = models.CharField(max_length=20, choices=ITEM_TYPE_CHOICES, default='product')
     quantity = models.PositiveIntegerField(default=1)
     price_type = models.CharField(max_length=20, default="standard")
@@ -52,6 +66,7 @@ class OrderItem(models.Model):
                 condition=(
                     models.Q(product__isnull=False) |
                     models.Q(marking_voucher__isnull=False) |
+                    models.Q(purchasable__isnull=False) |
                     models.Q(item_type='fee')
                 ),
                 name='order_item_has_product_or_voucher_or_is_fee'
