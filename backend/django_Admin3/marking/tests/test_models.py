@@ -580,4 +580,5 @@ class MarkingPaperSubmissionTestCase(TestCase):
             marking_paper=self.paper,
             submission_date=timezone.now(),
         )
-        self.assertIn('P1', str(sub))
+        expected = f'{self.student} \u2014 {self.paper.name}'
+        self.assertEqual(str(sub), expected)
