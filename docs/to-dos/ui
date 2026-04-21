@@ -1,0 +1,4 @@
+ui 
+
+- list tables will have a filter combobox on the top left.
+- Show column "active" as a outline circle green tick icon if true, outline cross red icon if false
