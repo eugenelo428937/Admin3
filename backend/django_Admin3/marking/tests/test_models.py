@@ -473,4 +473,5 @@ class MarkerModelTestCase(TestCase):
     def test_marker_str(self):
         from marking.models import Marker
         marker = Marker.objects.create(user=self.user, initial='ELO')
-        self.assertIn('ELO', str(marker))
+        expected = f'ELO ({self.user.username})'
+        self.assertEqual(str(marker), expected)
