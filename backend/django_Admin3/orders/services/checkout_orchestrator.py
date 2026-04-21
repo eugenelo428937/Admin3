@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 
 from orders.models import OrderAcknowledgment, OrderPreference, OrderContact, OrderDelivery
+from orders.services.confirmation import confirm_order
 from orders.services.order_builder import OrderBuilder
 from orders.services.order_notification import send_order_confirmation
 from orders.services.payment_gateway import get_payment_gateway, PaymentResult
@@ -61,6 +62,14 @@ class CheckoutOrchestrator:
             raise PaymentFailedError(
                 payment_result.error_message,
                 payment_result.error_code,
+            )
+
+        # Step 8b: Run order-confirmation side-effects (issue vouchers, etc.)
+        try:
+            confirm_order(order)
+        except Exception as e:
+            logger.exception(
+                f"confirm_order failed for order {order.id}: {str(e)}"
             )
 
         # Step 9: Send notification
