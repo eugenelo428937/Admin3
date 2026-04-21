@@ -103,7 +103,7 @@ class MarkingPaperFeedbackAdminViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         qs = (
             MarkingPaperFeedback.objects
-            .select_related('grading__submission__student__user')
+            .select_related('grading')
             .order_by('-submission_date')
         )
         params = self.request.query_params

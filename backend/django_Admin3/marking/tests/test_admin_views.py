@@ -147,6 +147,26 @@ class MarkingAdminViewsTestCase(APITestCase):
     # Filtering (smoke)
 
     def test_gradings_filter_by_marker(self):
+        # Seed a second marker+submission+grading — filter must exclude it.
+        other_marker_user = User.objects.create_user(
+            username='mkr2', email='m2@example.com', password='pw',
+        )
+        other_marker = Marker.objects.create(
+            user=other_marker_user, initial='OTH',
+        )
+        other_student_user = User.objects.create_user(
+            username='stu3', email='s3@example.com', password='pw',
+        )
+        other_student = Student.objects.create(user=other_student_user)
+        other_submission = MarkingPaperSubmission.objects.create(
+            student=other_student, marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        MarkingPaperGrading.objects.create(
+            submission=other_submission, marker=other_marker,
+            allocate_date=timezone.now(), allocate_by=self.staff,
+        )
+
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.get(
             f'/api/markings/admin-gradings/?marker={self.marker.id}'
@@ -154,10 +174,20 @@ class MarkingAdminViewsTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         results = data.get('results', data)
-        for r in results:
-            self.assertEqual(r['marker'], self.marker.id)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['marker'], self.marker.id)
 
     def test_submissions_filter_by_student(self):
+        # Seed a second student with a submission — filter must exclude it.
+        other_user = User.objects.create_user(
+            username='stu2', email='s2@example.com', password='pw',
+        )
+        other_student = Student.objects.create(user=other_user)
+        MarkingPaperSubmission.objects.create(
+            student=other_student, marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.get(
             f'/api/markings/admin-submissions/?student={self.student.pk}'
@@ -165,5 +195,5 @@ class MarkingAdminViewsTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         results = data.get('results', data)
-        for r in results:
-            self.assertEqual(r['student'], self.student.pk)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['student'], self.student.pk)
