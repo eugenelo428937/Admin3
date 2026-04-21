@@ -658,12 +658,16 @@ class MarkingPaperGradingTestCase(TestCase):
 
     def test_grading_submission_is_one_to_one(self):
         from marking.models import MarkingPaperGrading
-        MarkingPaperGrading.objects.create(
+        grading = MarkingPaperGrading.objects.create(
             submission=self.submission,
             marker=self.marker,
             allocate_date=timezone.now(),
             allocate_by=self.staff,
         )
+        # Reverse accessor is a descriptor returning the related instance,
+        # not a queryset — proves this is OneToOne, not a regular FK.
+        self.assertEqual(self.submission.grading, grading)
+        # Second grading for the same submission must fail.
         with self.assertRaises(IntegrityError):
             MarkingPaperGrading.objects.create(
                 submission=self.submission,
@@ -697,7 +701,7 @@ class MarkingPaperGradingTestCase(TestCase):
         with self.assertRaises(ProtectedError):
             self.marker.delete()
 
-    def test_grading_score_nullable(self):
+    def test_grading_score_can_be_set(self):
         from marking.models import MarkingPaperGrading
         grading = MarkingPaperGrading.objects.create(
             submission=self.submission,
@@ -707,6 +711,18 @@ class MarkingPaperGradingTestCase(TestCase):
             score=85,
         )
         self.assertEqual(grading.score, 85)
+
+    def test_grading_score_is_nullable_in_db(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+            score=None,
+        )
+        refetched = MarkingPaperGrading.objects.get(pk=grading.pk)
+        self.assertIsNone(refetched.score)
 
     def test_grading_str(self):
         from marking.models import MarkingPaperGrading
