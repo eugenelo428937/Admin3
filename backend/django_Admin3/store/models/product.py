@@ -1,17 +1,19 @@
-"""Product model for the store app.
+"""Product — MTI subclass of Purchasable for ESS-based store items.
 
-A purchasable item available for sale in a specific exam session.
-Links directly to catalog.ExamSessionSubject and catalog.ProductProductVariation,
-eliminating the redundant ESSP intermediate table.
+A purchasable linking an exam session subject to a product variation.
+Shares a PK with its parent Purchasable row (via MTI).
 
 Table: acted.products
 """
+import uuid
+
 from django.db import models
 
+from store.models.purchasable import Purchasable
 
-class Product(models.Model):
-    """
-    A purchasable product available in the store.
+
+class Product(Purchasable):
+    """ESS-based store product (existing structure, now an MTI subclass).
 
     Links an exam session subject directly to a product variation,
     replacing the old 4-table chain (ESSP → ESSPV) with a direct 2-join structure.
@@ -19,7 +21,7 @@ class Product(models.Model):
     **Usage Example**::
 
         product = Product.objects.get(product_code='CM2/PCSM01P/2025-04')
-        prices = product.prices.all()
+        prices = product.prices.all()     # inherited reverse accessor
         ess = product.exam_session_subject
     """
 
@@ -40,12 +42,6 @@ class Product(models.Model):
         unique=True,
         help_text='Unique auto-generated product code'
     )
-    is_active = models.BooleanField(
-        default=True,
-        help_text='Whether product is available for purchase'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = '"acted"."products"'
@@ -54,20 +50,32 @@ class Product(models.Model):
         verbose_name_plural = 'Store Products'
 
     def save(self, *args, **kwargs):
-        """Auto-generate product_code if not provided."""
+        """Auto-generate product_code if not provided; mirror to Purchasable.code."""
+        # Ensure Purchasable.kind is populated for MTI parent on insert.
+        if not self.kind:
+            self.kind = Purchasable.Kind.PRODUCT
+        # Code generation path — material/marking codes don't need PK, so we
+        # can compute pre-save; tutorial/other codes include the PK, so we
+        # must save once to get the PK, then regenerate and update.
         if not self.product_code:
             variation_type = self.product_product_variation.product_variation.variation_type
             if variation_type in ('eBook', 'Printed', 'Marking'):
-                # Material/Marking codes don't need PK, generate before save
                 self.product_code = self._generate_product_code()
+                self.code = self.product_code
                 super().save(*args, **kwargs)
             else:
-                # Tutorial/Other codes include PK for uniqueness;
-                # save first to get PK, then generate and update
+                # Tutorial/other codes include PK; save first with a unique
+                # placeholder to satisfy Purchasable.code's UNIQUE constraint,
+                # then regenerate with real product_code once PK is known.
+                if not self.code:
+                    self.code = f'pending-{uuid.uuid4().hex}'
                 super().save(*args, **kwargs)
                 self.product_code = self._generate_product_code()
-                super().save(update_fields=['product_code'])
+                self.code = self.product_code
+                super().save(update_fields=['product_code', 'code'])
         else:
+            # product_code already set — mirror it to Purchasable.code
+            self.code = self.product_code
             super().save(*args, **kwargs)
 
     def _generate_product_code(self):
@@ -145,18 +153,3 @@ class Product(models.Model):
         # Return a queryset containing just this product
         # This maintains compatibility with code that called .first() or iterated
         return Product.objects.filter(pk=self.pk)
-
-    @property
-    def prices(self):
-        """Transitional shim (Tasks 3-6).
-
-        During the dual-write phase, `related_name='+'` on `Price.product`
-        disables the default reverse accessor. This property restores
-        `product.prices.filter(...)` / `.all()` semantics for existing callers.
-
-        Removed in Task 7 when Product becomes an MTI subclass of Purchasable —
-        at that point the `prices` reverse accessor is inherited from the
-        parent and this property can be deleted.
-        """
-        from store.models.price import Price
-        return Price.objects.filter(product=self)

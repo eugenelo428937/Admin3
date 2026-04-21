@@ -6,6 +6,7 @@ from store.models import Product, Price, Bundle, BundleProduct
 class PriceInline(admin.TabularInline):
     """Inline admin for prices within a product."""
     model = Price
+    fk_name = 'product'
     extra = 0
     fields = ['price_type', 'amount', 'currency']
 

@@ -139,21 +139,24 @@ class StoreAPITestCase(APITestCase):
             is_active=True  # Active store product, but catalog template is inactive
         )
 
-        # Create prices
+        # Create prices (dual-write: product + purchasable, see Tasks 3-10)
         cls.price_retail = Price.objects.create(
             product=cls.store_product_1,
+            purchasable=cls.store_product_1,
             price_type='retail',
             amount=Decimal('199.99'),
             currency='GBP'
         )
         cls.price_student = Price.objects.create(
             product=cls.store_product_1,
+            purchasable=cls.store_product_1,
             price_type='student',
             amount=Decimal('149.99'),
             currency='GBP'
         )
         cls.price_ebook = Price.objects.create(
             product=cls.store_product_2,
+            purchasable=cls.store_product_2,
             price_type='retail',
             amount=Decimal('99.99'),
             currency='GBP'

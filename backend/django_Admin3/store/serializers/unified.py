@@ -4,9 +4,8 @@ These serializers provide a consistent format for displaying both
 individual products and bundles in the store product listing, with
 an `is_bundle` flag to distinguish between them.
 """
-from django.db.models import Prefetch
 from rest_framework import serializers
-from store.models import Product, Bundle, Price
+from store.models import Product, Bundle
 
 
 class UnifiedProductSerializer(serializers.ModelSerializer):
@@ -215,14 +214,12 @@ class UnifiedBundleSerializer(serializers.ModelSerializer):
 
     def get_components(self, obj):
         """Get the products included in this bundle."""
-        # NOTE: Can't use prefetch_related('product__prices') during Tasks 3-10
-        # because related_name='+' on Price.product disables the reverse accessor.
-        # The `prices` on store.Product is a property shim. Remove this workaround
-        # in Task 7 when Product becomes an MTI subclass of Purchasable.
         bundle_products = obj.bundle_products.filter(
             is_active=True
         ).select_related(
             'product__product_product_variation__product',
             'product__product_product_variation__product_variation',
+        ).prefetch_related(
+            'product__prices',  # Prefetch prices to avoid N+1 queries
         ).order_by('sort_order')
         return BundleComponentSerializer(bundle_products, many=True).data

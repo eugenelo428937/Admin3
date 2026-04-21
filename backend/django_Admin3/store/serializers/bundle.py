@@ -185,14 +185,13 @@ class BundleSerializer(serializers.ModelSerializer):
 
     def get_components(self, obj):
         """Get active bundle products as components with full nested data."""
-        # NOTE: prefetch_related('product__prices') removed during Tasks 3-10
-        # (related_name='+' on Price.product disables the reverse accessor).
-        # Restored in Task 7 when Product becomes an MTI subclass of Purchasable.
         active_products = obj.bundle_products.filter(
             is_active=True
         ).select_related(
             'product__product_product_variation__product',
             'product__product_product_variation__product_variation',
+        ).prefetch_related(
+            'product__prices'
         ).order_by('sort_order')
 
         return BundleComponentSerializer(active_products, many=True).data

@@ -121,21 +121,24 @@ class StoreCoverageTestDataMixin:
             is_active=True
         )
 
-        # Create prices
+        # Create prices (dual-write: product + purchasable, see Tasks 3-10)
         cls.price_standard = Price.objects.create(
             product=cls.store_product_printed,
+            purchasable=cls.store_product_printed,
             price_type='standard',
             amount=Decimal('149.99'),
             currency='GBP'
         )
         cls.price_retaker = Price.objects.create(
             product=cls.store_product_printed,
+            purchasable=cls.store_product_printed,
             price_type='retaker',
             amount=Decimal('99.99'),
             currency='GBP'
         )
         cls.price_ebook = Price.objects.create(
             product=cls.store_product_ebook,
+            purchasable=cls.store_product_ebook,
             price_type='standard',
             amount=Decimal('79.99'),
             currency='GBP'
@@ -438,7 +441,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
+            'prices',
             'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
@@ -460,7 +463,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
+            'prices',
             'product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
@@ -508,7 +511,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
+            'prices',
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
@@ -536,7 +539,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
+            'prices',
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
@@ -570,7 +573,7 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
             'product_product_variation__product',
             'product_product_variation__product_variation',
         ).prefetch_related(
-            # 'prices' removed during Tasks 3-10 (related_name='+' on Price.product)
+            'prices',
             'product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 

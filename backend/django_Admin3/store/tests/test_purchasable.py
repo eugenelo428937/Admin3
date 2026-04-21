@@ -54,8 +54,15 @@ class PurchasablePricingTests(TestCase):
 
     def test_price_still_linked_to_product_legacy_path(self):
         """Guards the dual-write contract — the legacy product FK must
-        remain functional during Tasks 3-10 before Task 11 backfills and
-        Release B removes it."""
+        remain writable during Tasks 3-10 before Task 11 backfills and
+        Release B removes it.
+
+        Post-Task-7: Product is now an MTI subclass of Purchasable, so the
+        inherited ``prices`` reverse accessor resolves via Price.purchasable.
+        This test verifies both: the legacy ``Price.product`` FK is still
+        writable, AND the MTI reverse accessor works when Price.purchasable
+        is set to the Product (which IS a Purchasable).
+        """
         from django.utils import timezone
         from catalog.models import (
             Subject, ExamSession, ExamSessionSubject,
@@ -84,9 +91,17 @@ class PurchasablePricingTests(TestCase):
             exam_session_subject=ess,
             product_product_variation=ppv,
         )
-        Price.objects.create(
+        # Legacy product FK still writable (dual-write contract)
+        legacy_price = Price.objects.create(
             product=product, price_type='standard', amount=Decimal('25.00')
         )
-        # Legacy reverse accessor via transitional shim property
+        self.assertEqual(legacy_price.product_id, product.pk)
+
+        # Post-MTI: product.prices resolves via inherited Purchasable.prices
+        # (Price.purchasable reverse accessor). Setting purchasable=product
+        # exercises the MTI parent relationship.
+        Price.objects.create(
+            purchasable=product, price_type='retaker', amount=Decimal('20.00')
+        )
         self.assertEqual(product.prices.count(), 1)
-        self.assertEqual(product.prices.first().amount, Decimal('25.00'))
+        self.assertEqual(product.prices.first().amount, Decimal('20.00'))

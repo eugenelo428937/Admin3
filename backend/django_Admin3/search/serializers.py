@@ -172,13 +172,10 @@ class StoreProductListSerializer:
             rec_ppv = recommendation.recommended_product_product_variation
 
             # Find the store.Product for this recommendation in same exam session
-            # NOTE: prefetch_related('prices') removed during Tasks 3-10
-            # (related_name='+' on Price.product disables the reverse accessor).
-            # Restored in Task 7 when Product becomes an MTI subclass of Purchasable.
             rec_store_product = StoreProduct.objects.filter(
                 product_product_variation=rec_ppv,
                 exam_session_subject=exam_session_subject
-            ).first()
+            ).prefetch_related('prices').first()
 
             if rec_store_product:
                 return {
