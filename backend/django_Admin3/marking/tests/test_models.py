@@ -7,9 +7,11 @@ relationships, and model behavior.
 
 from django.test import TestCase
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from datetime import timedelta
 
 from marking.models import MarkingPaper
+from marking.tests.fixtures import MarkingChainTestCase
 from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
@@ -441,3 +443,353 @@ class MarkingModelsModuleTestCase(TestCase):
         # The models/ package __init__.py should be what's loaded,
         # not the dead top-level models.py file
         self.assertTrue(models_pkg.__file__.endswith('__init__.py'))
+
+
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.db.models import ProtectedError
+from marking_vouchers.models import MarkingVoucher
+from staff.models import Staff
+
+
+class MarkerModelTestCase(TestCase):
+    """Tests for Marker model."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='marker1', email='m1@example.com', password='pw'
+        )
+
+    def test_marker_creation(self):
+        from marking.models import Marker
+        marker = Marker.objects.create(user=self.user, initial='ELO')
+        self.assertEqual(marker.user, self.user)
+        self.assertEqual(marker.initial, 'ELO')
+        self.assertIsNotNone(marker.created_at)
+        self.assertIsNotNone(marker.updated_at)
+
+    def test_marker_user_is_one_to_one(self):
+        from marking.models import Marker
+        Marker.objects.create(user=self.user, initial='ELO')
+        # Second Marker for same user must fail
+        with self.assertRaises(IntegrityError):
+            Marker.objects.create(user=self.user, initial='XYZ')
+
+    def test_marker_str(self):
+        from marking.models import Marker
+        marker = Marker.objects.create(user=self.user, initial='ELO')
+        expected = f'ELO ({self.user.username})'
+        self.assertEqual(str(marker), expected)
+
+    def test_marker_str_with_full_name(self):
+        from marking.models import Marker
+        self.user.first_name = 'Alice'
+        self.user.last_name = 'Smith'
+        self.user.save()
+        marker = Marker.objects.create(user=self.user, initial='AS')
+        self.assertEqual(str(marker), 'AS (Alice Smith)')
+
+
+class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
+    """Tests for MarkingPaperSubmission model."""
+
+    def test_submission_creation_required_fields_only(self):
+        from marking.models import MarkingPaperSubmission
+        sub = MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(sub.student, self.student)
+        self.assertEqual(sub.marking_paper, self.paper)
+        self.assertIsNone(sub.marking_voucher)
+        self.assertIsNone(sub.order_item)
+        self.assertIsNone(sub.hub_download_date)
+
+    def test_submission_with_marking_voucher(self):
+        from marking.models import MarkingPaperSubmission
+        voucher = MarkingVoucher.objects.create(
+            code='V1', name='Voucher 1', price=50,
+        )
+        sub = MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            marking_voucher=voucher,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(sub.marking_voucher, voucher)
+
+    def test_submission_unique_student_paper(self):
+        from marking.models import MarkingPaperSubmission
+        MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        with self.assertRaises(IntegrityError):
+            MarkingPaperSubmission.objects.create(
+                student=self.student,
+                marking_paper=self.paper,
+                submission_date=timezone.now(),
+            )
+
+    def test_submission_protect_on_student_delete(self):
+        from marking.models import MarkingPaperSubmission
+        MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        with self.assertRaises(ProtectedError):
+            self.student.delete()
+
+    def test_submission_str(self):
+        from marking.models import MarkingPaperSubmission
+        sub = MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        expected = f'{self.student} \u2014 {self.paper.name}'
+        self.assertEqual(str(sub), expected)
+
+
+class MarkingPaperGradingTestCase(MarkingChainTestCase):
+    """Tests for MarkingPaperGrading model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        from marking.models import Marker, MarkingPaperSubmission
+
+        cls.marker_user = User.objects.create_user(
+            username='fixture_marker_grading',
+            email='fixture_marker_grading@example.com',
+            password='pw',
+        )
+        cls.marker = Marker.objects.create(user=cls.marker_user, initial='MKR')
+
+        cls.staff_user = User.objects.create_user(
+            username='fixture_staff_grading',
+            email='fixture_staff_grading@example.com',
+            password='pw',
+            is_staff=True,
+        )
+        cls.staff = Staff.objects.create(user=cls.staff_user)
+
+        cls.submission = MarkingPaperSubmission.objects.create(
+            student=cls.student,
+            marking_paper=cls.paper,
+            submission_date=timezone.now(),
+        )
+
+    def test_grading_creation(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        self.assertEqual(grading.submission, self.submission)
+        self.assertEqual(grading.marker, self.marker)
+        self.assertEqual(grading.allocate_by, self.staff)
+        self.assertIsNone(grading.score)
+        self.assertIsNone(grading.hub_download_date)
+
+    def test_grading_submission_is_one_to_one(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        # Reverse accessor is a descriptor returning the related instance,
+        # not a queryset — proves this is OneToOne, not a regular FK.
+        self.assertEqual(self.submission.grading, grading)
+        # Second grading for the same submission must fail.
+        with self.assertRaises(IntegrityError):
+            MarkingPaperGrading.objects.create(
+                submission=self.submission,
+                marker=self.marker,
+                allocate_date=timezone.now(),
+                allocate_by=self.staff,
+            )
+
+    def test_grading_cascades_when_submission_deleted(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        grading_id = grading.id
+        self.submission.delete()
+        self.assertFalse(
+            MarkingPaperGrading.objects.filter(id=grading_id).exists()
+        )
+
+    def test_grading_protect_on_marker_delete(self):
+        from marking.models import MarkingPaperGrading
+        MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        with self.assertRaises(ProtectedError):
+            self.marker.delete()
+
+    def test_grading_score_can_be_set(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+            score=85,
+        )
+        self.assertEqual(grading.score, 85)
+
+    def test_grading_score_is_nullable_in_db(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+            score=None,
+        )
+        refetched = MarkingPaperGrading.objects.get(pk=grading.pk)
+        self.assertIsNone(refetched.score)
+
+    def test_grading_str(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        expected = f'Grading({self.submission.id}) by MKR'
+        self.assertEqual(str(grading), expected)
+
+
+class MarkingPaperFeedbackTestCase(MarkingChainTestCase):
+    """Tests for MarkingPaperFeedback model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        from marking.models import (
+            Marker,
+            MarkingPaperSubmission,
+            MarkingPaperGrading,
+        )
+
+        cls.marker_user = User.objects.create_user(
+            username='fixture_marker_feedback',
+            email='fixture_marker_feedback@example.com',
+            password='pw',
+        )
+        cls.marker = Marker.objects.create(user=cls.marker_user, initial='F')
+
+        cls.staff_user = User.objects.create_user(
+            username='fixture_staff_feedback',
+            email='fixture_staff_feedback@example.com',
+            password='pw',
+            is_staff=True,
+        )
+        cls.staff = Staff.objects.create(user=cls.staff_user)
+
+        cls.submission = MarkingPaperSubmission.objects.create(
+            student=cls.student,
+            marking_paper=cls.paper,
+            submission_date=timezone.now(),
+        )
+        cls.grading = MarkingPaperGrading.objects.create(
+            submission=cls.submission,
+            marker=cls.marker,
+            allocate_date=timezone.now(),
+            allocate_by=cls.staff,
+        )
+
+    def test_feedback_creation(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(fb.grading, self.grading)
+        self.assertIsNone(fb.grade)
+        self.assertEqual(fb.comments, '')
+
+    def test_feedback_grade_choices_valid(self):
+        from marking.models import MarkingPaperFeedback
+        for g in ['E', 'G', 'A', 'P']:
+            MarkingPaperFeedback.objects.filter(grading=self.grading).delete()
+            fb = MarkingPaperFeedback(
+                grading=self.grading,
+                grade=g,
+                submission_date=timezone.now(),
+            )
+            fb.full_clean()
+            fb.save()
+
+    def test_feedback_grade_choices_invalid(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback(
+            grading=self.grading,
+            grade='X',
+            submission_date=timezone.now(),
+        )
+        with self.assertRaises(ValidationError):
+            fb.full_clean()
+
+    def test_feedback_cascades_when_grading_deleted(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        fb_id = fb.id
+        self.grading.delete()
+        self.assertFalse(
+            MarkingPaperFeedback.objects.filter(id=fb_id).exists()
+        )
+
+    def test_feedback_grading_is_one_to_one(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        # Reverse descriptor returns the instance, proving OneToOne (not FK)
+        self.assertEqual(self.grading.feedback, fb)
+        with self.assertRaises(IntegrityError):
+            MarkingPaperFeedback.objects.create(
+                grading=self.grading,
+                submission_date=timezone.now(),
+            )
+
+    def test_feedback_derives_student_via_chain(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(fb.grading.submission.student, self.student)
+
+    def test_feedback_str(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            grade='G',
+            submission_date=timezone.now(),
+        )
+        expected = f'Feedback({self.grading.id}) grade=G'
+        self.assertEqual(str(fb), expected)
