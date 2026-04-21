@@ -46,7 +46,16 @@ def reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [('store', '0006_price_add_purchasable_fk')]
+    dependencies = [
+        ('store', '0006_price_add_purchasable_fk'),
+        # Required: catalog_products.0002_initial introduces the
+        # ProductProductVariation.product FK via SeparateDatabaseAndState.
+        # Without this explicit dep, Django's test-DB build can order
+        # catalog_products.0002 after this migration, and the
+        # select_related('product_product_variation__product') call below
+        # fails with FieldError.
+        ('catalog_products', '0002_initial'),
+    ]
     operations = [
         migrations.RunPython(backfill_purchasables_from_products, reverse),
     ]
