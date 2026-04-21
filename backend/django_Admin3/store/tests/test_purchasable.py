@@ -96,12 +96,21 @@ class PurchasablePricingTests(TestCase):
             product=product, price_type='standard', amount=Decimal('25.00')
         )
         self.assertEqual(legacy_price.product_id, product.pk)
+        # Price.save() auto-populates purchasable from product, so the legacy
+        # row is also reachable via the MTI reverse accessor. This is the
+        # Release A invariant: setting only product= means purchasable= is
+        # set automatically so callers migrating to product.prices never see
+        # a gap.
+        self.assertEqual(legacy_price.purchasable_id, product.pk)
 
-        # Post-MTI: product.prices resolves via inherited Purchasable.prices
-        # (Price.purchasable reverse accessor). Setting purchasable=product
-        # exercises the MTI parent relationship.
+        # Explicit purchasable= also works — exercises the MTI parent
+        # relationship directly.
         Price.objects.create(
             purchasable=product, price_type='retaker', amount=Decimal('20.00')
         )
-        self.assertEqual(product.prices.count(), 1)
-        self.assertEqual(product.prices.first().amount, Decimal('20.00'))
+        # Both prices are visible via product.prices (MTI-inherited reverse
+        # accessor) — the legacy-FK one via the auto-populate shim, the new
+        # one directly.
+        self.assertEqual(product.prices.count(), 2)
+        amounts = set(product.prices.values_list('amount', flat=True))
+        self.assertEqual(amounts, {Decimal('25.00'), Decimal('20.00')})
