@@ -4,7 +4,7 @@
 **Source branch:** `feat/20260421-marking-submission-grading`
 **Severity:** Low (maintenance)
 **Effort estimate:** 1–2 hours
-**Status:** Deferred — not blocking the marking-submission-grading feature
+**Status:** Done — completed on branch `refactor/20260421-marking-tests-fixtures`
 
 ## Problem
 

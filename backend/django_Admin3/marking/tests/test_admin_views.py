@@ -1,94 +1,67 @@
 """Tests for marking admin-panel API endpoints."""
-from datetime import timedelta
-
 from django.contrib.auth.models import User
 from django.utils import timezone
-from rest_framework.test import APITestCase
 
-from catalog.models import (
-    ExamSession, ExamSessionSubject, Subject,
-    Product as CatalogProduct,
-    ProductVariation, ProductProductVariation,
-)
 from marking.models import (
-    Marker, MarkingPaper, MarkingPaperFeedback,
+    Marker, MarkingPaperFeedback,
     MarkingPaperGrading, MarkingPaperSubmission,
 )
+from marking.tests.fixtures import MarkingChainTestCase
 from staff.models import Staff
-from store.models import Product as StoreProduct
 from students.models import Student
 
 
-class MarkingAdminViewsTestCase(APITestCase):
+class MarkingAdminViewsTestCase(MarkingChainTestCase):
     """Permission + listing + filter smoke tests for admin endpoints."""
 
-    def setUp(self):
-        self.superuser = User.objects.create_superuser(
-            username='root', email='root@example.com', password='pw',
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.superuser = User.objects.create_superuser(
+            username='fixture_root',
+            email='fixture_root@example.com',
+            password='pw',
         )
-        self.staff_only = User.objects.create_user(
-            username='staff', email='staff@example.com', password='pw',
+        cls.staff_only = User.objects.create_user(
+            username='fixture_staff_only',
+            email='fixture_staff_only@example.com',
+            password='pw',
             is_staff=True,
         )
 
-        self.student_user = User.objects.create_user(
-            username='stu', email='s@example.com', password='pw',
+        cls.marker_user = User.objects.create_user(
+            username='fixture_marker_admin',
+            email='fixture_marker_admin@example.com',
+            password='pw',
         )
-        self.student = Student.objects.create(user=self.student_user)
-
-        self.marker_user = User.objects.create_user(
-            username='mkr', email='m@example.com', password='pw',
-        )
-        self.marker = Marker.objects.create(
-            user=self.marker_user, initial='MKR',
+        cls.marker = Marker.objects.create(
+            user=cls.marker_user, initial='MKR',
         )
 
-        self.staff_user = User.objects.create_user(
-            username='stf', email='stf@example.com', password='pw',
+        cls.staff_user = User.objects.create_user(
+            username='fixture_staff_admin',
+            email='fixture_staff_admin@example.com',
+            password='pw',
             is_staff=True,
         )
-        self.staff = Staff.objects.create(user=self.staff_user)
+        cls.staff = Staff.objects.create(user=cls.staff_user)
 
-        self.exam_session = ExamSession.objects.create(
-            session_code='JAN2026',
-            start_date=timezone.now() + timedelta(days=30),
-            end_date=timezone.now() + timedelta(days=60),
-        )
-        self.subject = Subject.objects.create(
-            code='CP1', description='Actuarial Practice', active=True,
-        )
-        self.ess = ExamSessionSubject.objects.create(
-            exam_session=self.exam_session, subject=self.subject,
-        )
-        self.cat_product = CatalogProduct.objects.create(
-            code='PA01', fullname='A', shortname='A',
-        )
-        self.variation = ProductVariation.objects.create(
-            variation_type='Marking', name='Std',
-        )
-        self.ppv = ProductProductVariation.objects.create(
-            product=self.cat_product, product_variation=self.variation,
-        )
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
-        )
-        self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product, name='AdminP',
-            deadline=timezone.now() + timedelta(days=45),
-            recommended_submit_date=timezone.now() + timedelta(days=40),
-        )
-        self.submission = MarkingPaperSubmission.objects.create(
-            student=self.student, marking_paper=self.paper,
+        cls.submission = MarkingPaperSubmission.objects.create(
+            student=cls.student,
+            marking_paper=cls.paper,
             submission_date=timezone.now(),
         )
-        self.grading = MarkingPaperGrading.objects.create(
-            submission=self.submission, marker=self.marker,
-            allocate_date=timezone.now(), allocate_by=self.staff,
+        cls.grading = MarkingPaperGrading.objects.create(
+            submission=cls.submission,
+            marker=cls.marker,
+            allocate_date=timezone.now(),
+            allocate_by=cls.staff,
             score=75,
         )
-        self.feedback = MarkingPaperFeedback.objects.create(
-            grading=self.grading, grade='G',
+        cls.feedback = MarkingPaperFeedback.objects.create(
+            grading=cls.grading,
+            grade='G',
             submission_date=timezone.now(),
         )
 
@@ -116,7 +89,7 @@ class MarkingAdminViewsTestCase(APITestCase):
         self.assertGreaterEqual(len(results), 1)
         first = results[0]
         self.assertEqual(first['student'], self.student.pk)
-        self.assertEqual(first['marking_paper_name'], 'AdminP')
+        self.assertEqual(first['marking_paper_name'], 'FixPaper')
 
     def test_gradings_list_returns_seeded_row(self):
         self.client.force_authenticate(user=self.superuser)
