@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta
 
 from marking.models import MarkingPaper
+from marking.tests.fixtures import MarkingChainTestCase
 from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
@@ -490,48 +491,8 @@ class MarkerModelTestCase(TestCase):
         self.assertEqual(str(marker), 'AS (Alice Smith)')
 
 
-class MarkingPaperSubmissionTestCase(TestCase):
+class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
     """Tests for MarkingPaperSubmission model."""
-
-    def setUp(self):
-        # Student + its auth user
-        self.student_user = User.objects.create_user(
-            username='stu1', email='s1@example.com', password='pw'
-        )
-        self.student = Student.objects.create(user=self.student_user)
-
-        # Minimal store product chain for MarkingPaper (copied from
-        # existing MarkingPaperTestCase setUp)
-        self.exam_session = ExamSession.objects.create(
-            session_code='JUNE2026',
-            start_date=timezone.now() + timedelta(days=30),
-            end_date=timezone.now() + timedelta(days=60),
-        )
-        self.subject = Subject.objects.create(
-            code='CM2', description='Fin Eng', active=True,
-        )
-        self.ess = ExamSessionSubject.objects.create(
-            exam_session=self.exam_session, subject=self.subject,
-        )
-        self.cat_product = CatalogProduct.objects.create(
-            code='P001', fullname='Prod', shortname='Prod',
-        )
-        self.variation = ProductVariation.objects.create(
-            variation_type='Marking', name='Std',
-        )
-        self.ppv = ProductProductVariation.objects.create(
-            product=self.cat_product, product_variation=self.variation,
-        )
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
-        )
-        self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
-            name='P1',
-            deadline=timezone.now() + timedelta(days=45),
-            recommended_submit_date=timezone.now() + timedelta(days=40),
-        )
 
     def test_submission_creation_required_fields_only(self):
         from marking.models import MarkingPaperSubmission
