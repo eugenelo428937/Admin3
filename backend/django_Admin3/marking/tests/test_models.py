@@ -7,6 +7,7 @@ relationships, and model behavior.
 
 from django.test import TestCase
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from datetime import timedelta
 
 from marking.models import MarkingPaper
@@ -734,3 +735,144 @@ class MarkingPaperGradingTestCase(TestCase):
         )
         expected = f'Grading({self.submission.id}) by MKR'
         self.assertEqual(str(grading), expected)
+
+
+class MarkingPaperFeedbackTestCase(TestCase):
+    """Tests for MarkingPaperFeedback model."""
+
+    def setUp(self):
+        self.student_user = User.objects.create_user(
+            username='stuF', email='sf@example.com', password='pw',
+        )
+        self.student = Student.objects.create(user=self.student_user)
+
+        self.marker_user = User.objects.create_user(
+            username='mkrF', email='mf@example.com', password='pw',
+        )
+        from marking.models import Marker
+        self.marker = Marker.objects.create(user=self.marker_user, initial='F')
+
+        self.staff_user = User.objects.create_user(
+            username='stfF', email='stf@example.com', password='pw',
+            is_staff=True,
+        )
+        self.staff = Staff.objects.create(user=self.staff_user)
+
+        self.exam_session = ExamSession.objects.create(
+            session_code='APR2026',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        self.subject = Subject.objects.create(
+            code='CB1', description='Actuarial', active=True,
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject,
+        )
+        self.cat_product = CatalogProduct.objects.create(
+            code='P003', fullname='Prod3', shortname='P3',
+        )
+        self.variation = ProductVariation.objects.create(
+            variation_type='Marking', name='Std3',
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.cat_product, product_variation=self.variation,
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+        )
+        self.paper = MarkingPaper.objects.create(
+            store_product=self.store_product, name='F1',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40),
+        )
+
+        from marking.models import MarkingPaperSubmission, MarkingPaperGrading
+        self.submission = MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        self.grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+
+    def test_feedback_creation(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(fb.grading, self.grading)
+        self.assertIsNone(fb.grade)
+        self.assertEqual(fb.comments, '')
+
+    def test_feedback_grade_choices_valid(self):
+        from marking.models import MarkingPaperFeedback
+        for g in ['E', 'G', 'A', 'P']:
+            MarkingPaperFeedback.objects.filter(grading=self.grading).delete()
+            fb = MarkingPaperFeedback(
+                grading=self.grading,
+                grade=g,
+                submission_date=timezone.now(),
+            )
+            fb.full_clean()
+            fb.save()
+
+    def test_feedback_grade_choices_invalid(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback(
+            grading=self.grading,
+            grade='X',
+            submission_date=timezone.now(),
+        )
+        with self.assertRaises(ValidationError):
+            fb.full_clean()
+
+    def test_feedback_cascades_when_grading_deleted(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        fb_id = fb.id
+        self.grading.delete()
+        self.assertFalse(
+            MarkingPaperFeedback.objects.filter(id=fb_id).exists()
+        )
+
+    def test_feedback_grading_is_one_to_one(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        # Reverse descriptor returns the instance, proving OneToOne (not FK)
+        self.assertEqual(self.grading.feedback, fb)
+        with self.assertRaises(IntegrityError):
+            MarkingPaperFeedback.objects.create(
+                grading=self.grading,
+                submission_date=timezone.now(),
+            )
+
+    def test_feedback_derives_student_via_chain(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            submission_date=timezone.now(),
+        )
+        self.assertEqual(fb.grading.submission.student, self.student)
+
+    def test_feedback_str(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            grade='G',
+            submission_date=timezone.now(),
+        )
+        expected = f'Feedback({self.grading.id}) grade=G'
+        self.assertEqual(str(fb), expected)
