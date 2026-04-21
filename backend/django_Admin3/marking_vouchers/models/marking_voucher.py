@@ -10,14 +10,14 @@ class MarkingVoucher(models.Model):
     code = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    
+
     # Pricing
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    
+
     # Availability
     is_active = models.BooleanField(default=True)
     expiry_date = models.DateTimeField(null=True, blank=True, help_text="Voucher expires after this date. Leave blank for no expiry.")
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
