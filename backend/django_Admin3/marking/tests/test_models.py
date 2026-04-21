@@ -481,6 +481,14 @@ class MarkerModelTestCase(TestCase):
         expected = f'ELO ({self.user.username})'
         self.assertEqual(str(marker), expected)
 
+    def test_marker_str_with_full_name(self):
+        from marking.models import Marker
+        self.user.first_name = 'Alice'
+        self.user.last_name = 'Smith'
+        self.user.save()
+        marker = Marker.objects.create(user=self.user, initial='AS')
+        self.assertEqual(str(marker), 'AS (Alice Smith)')
+
 
 class MarkingPaperSubmissionTestCase(TestCase):
     """Tests for MarkingPaperSubmission model."""

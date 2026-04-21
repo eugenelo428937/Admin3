@@ -46,7 +46,7 @@ Import tooling is a later phase.
 3. **`on_delete` pattern: PROTECT for audit-critical FKs, CASCADE for
    tight ownership chains.**
    - Submission.student / Submission.marking_paper / Submission.marking_voucher /
-     Submission.order_item / Grading.marker / Grading.allocate_by / Feedback.student
+     Submission.order_item / Grading.marker / Grading.allocate_by
      → **PROTECT** (preserves audit history; blocks accidental deletes).
    - Grading.submission → **CASCADE** (grading belongs to submission).
    - Feedback.grading → **CASCADE** (feedback belongs to grading).

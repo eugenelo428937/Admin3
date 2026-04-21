@@ -197,3 +197,30 @@ class MarkingAdminViewsTestCase(APITestCase):
         results = data.get('results', data)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['student'], self.student.pk)
+
+    def test_feedback_filter_by_grade(self):
+        # Seed a second feedback with a different grade — filter must exclude it.
+        other_student_user = User.objects.create_user(
+            username='stu4', email='s4@example.com', password='pw',
+        )
+        other_student = Student.objects.create(user=other_student_user)
+        other_submission = MarkingPaperSubmission.objects.create(
+            student=other_student, marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+        other_grading = MarkingPaperGrading.objects.create(
+            submission=other_submission, marker=self.marker,
+            allocate_date=timezone.now(), allocate_by=self.staff,
+        )
+        MarkingPaperFeedback.objects.create(
+            grading=other_grading, grade='P',
+            submission_date=timezone.now(),
+        )
+
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get('/api/markings/admin-feedback/?grade=G')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        results = data.get('results', data)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['grade'], 'G')
