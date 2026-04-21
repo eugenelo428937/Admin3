@@ -555,60 +555,33 @@ class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
         self.assertEqual(str(sub), expected)
 
 
-class MarkingPaperGradingTestCase(TestCase):
+class MarkingPaperGradingTestCase(MarkingChainTestCase):
     """Tests for MarkingPaperGrading model."""
 
-    def setUp(self):
-        self.student_user = User.objects.create_user(
-            username='stuG', email='sg@example.com', password='pw',
-        )
-        self.student = Student.objects.create(user=self.student_user)
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
 
-        self.marker_user = User.objects.create_user(
-            username='mkrG', email='mg@example.com', password='pw',
-        )
-        from marking.models import Marker
-        self.marker = Marker.objects.create(user=self.marker_user, initial='MKR')
+        from marking.models import Marker, MarkingPaperSubmission
 
-        self.staff_user = User.objects.create_user(
-            username='stfG', email='sfg@example.com', password='pw',
+        cls.marker_user = User.objects.create_user(
+            username='fixture_marker_grading',
+            email='fixture_marker_grading@example.com',
+            password='pw',
+        )
+        cls.marker = Marker.objects.create(user=cls.marker_user, initial='MKR')
+
+        cls.staff_user = User.objects.create_user(
+            username='fixture_staff_grading',
+            email='fixture_staff_grading@example.com',
+            password='pw',
             is_staff=True,
         )
-        self.staff = Staff.objects.create(user=self.staff_user)
+        cls.staff = Staff.objects.create(user=cls.staff_user)
 
-        self.exam_session = ExamSession.objects.create(
-            session_code='SEPT2026',
-            start_date=timezone.now() + timedelta(days=30),
-            end_date=timezone.now() + timedelta(days=60),
-        )
-        self.subject = Subject.objects.create(
-            code='CS2', description='Risk', active=True,
-        )
-        self.ess = ExamSessionSubject.objects.create(
-            exam_session=self.exam_session, subject=self.subject,
-        )
-        self.cat_product = CatalogProduct.objects.create(
-            code='P002', fullname='Prod2', shortname='P2',
-        )
-        self.variation = ProductVariation.objects.create(
-            variation_type='Marking', name='Std2',
-        )
-        self.ppv = ProductProductVariation.objects.create(
-            product=self.cat_product, product_variation=self.variation,
-        )
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
-        )
-        self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product, name='G1',
-            deadline=timezone.now() + timedelta(days=45),
-            recommended_submit_date=timezone.now() + timedelta(days=40),
-        )
-        from marking.models import MarkingPaperSubmission
-        self.submission = MarkingPaperSubmission.objects.create(
-            student=self.student,
-            marking_paper=self.paper,
+        cls.submission = MarkingPaperSubmission.objects.create(
+            student=cls.student,
+            marking_paper=cls.paper,
             submission_date=timezone.now(),
         )
 
