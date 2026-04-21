@@ -68,3 +68,39 @@ class IssuedVoucherService:
             secrets.token_bytes(cls.CODE_RANDOM_BYTES)
         ).decode('ascii').rstrip('=')
         return f"{cls.CODE_PREFIX}-{yyyymm}-{random}"
+
+    @classmethod
+    def expire_batch(cls, now=None):
+        """Transition active vouchers past expiry to status='expired'.
+
+        Only affects rows where status='active' — already-redeemed or
+        already-cancelled vouchers are left alone (their lifecycle is
+        considered terminal even if expires_at has passed).
+
+        Returns the number of rows updated.
+        """
+        now = now or timezone.now()
+        return IssuedVoucher.objects.filter(
+            status='active',
+            expires_at__lt=now,
+        ).update(status='expired')
+
+    @classmethod
+    def cancel_for_order_item(cls, order_item, reason=''):
+        """Cancel all still-active vouchers belonging to `order_item`.
+
+        Used on order-item cancellation / refund. Skips vouchers already
+        in terminal states (redeemed, expired, cancelled) so we don't
+        unwind a legitimate redemption by canceling its order item.
+
+        Returns the number of rows updated.
+        """
+        now = timezone.now()
+        return IssuedVoucher.objects.filter(
+            order_item=order_item,
+            status='active',
+        ).update(
+            status='cancelled',
+            cancelled_at=now,
+            cancellation_reason=reason,
+        )

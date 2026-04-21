@@ -53,3 +53,73 @@ class IssuedVoucherServiceIssueTests(TestCase):
         oi = OrderItem.objects.create(order=self.order, purchasable_id=other.pk, quantity=1)
         with self.assertRaises(ValueError):
             IssuedVoucherService.issue(oi)
+
+
+class IssuedVoucherServiceExpireTests(TestCase):
+    def setUp(self):
+        from store.models import GenericItem
+        from orders.models import Order, OrderItem
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(username='u15', password='p', email='u15@x.com')
+        self.gi = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-EXP-T15', name='E',
+            validity_period_days=1460,
+        )
+        self.order = Order.objects.create(user=self.user)
+        self.oi = OrderItem.objects.create(
+            order=self.order, purchasable_id=self.gi.pk, quantity=2,
+        )
+
+    def test_expire_batch_transitions_active_past_expiry(self):
+        vouchers = IssuedVoucherService.issue(self.oi)
+        past = timezone.now() - timedelta(days=1)
+        IssuedVoucher.objects.filter(pk=vouchers[0].pk).update(expires_at=past)
+
+        count = IssuedVoucherService.expire_batch()
+
+        self.assertEqual(count, 1)
+        vouchers[0].refresh_from_db()
+        self.assertEqual(vouchers[0].status, 'expired')
+        vouchers[1].refresh_from_db()
+        self.assertEqual(vouchers[1].status, 'active')
+
+    def test_expire_batch_ignores_non_active(self):
+        """Already-redeemed or cancelled vouchers stay in their current state."""
+        vouchers = IssuedVoucherService.issue(self.oi)
+        past = timezone.now() - timedelta(days=1)
+        IssuedVoucher.objects.filter(pk=vouchers[0].pk).update(
+            expires_at=past, status='redeemed', redeemed_at=timezone.now(),
+        )
+
+        IssuedVoucherService.expire_batch()
+
+        vouchers[0].refresh_from_db()
+        self.assertEqual(vouchers[0].status, 'redeemed')  # not 'expired'
+
+    def test_cancel_for_order_item(self):
+        vouchers = IssuedVoucherService.issue(self.oi)
+
+        count = IssuedVoucherService.cancel_for_order_item(self.oi, reason='refund')
+
+        self.assertEqual(count, 2)
+        for v in IssuedVoucher.objects.filter(order_item=self.oi):
+            self.assertEqual(v.status, 'cancelled')
+            self.assertEqual(v.cancellation_reason, 'refund')
+            self.assertIsNotNone(v.cancelled_at)
+
+    def test_cancel_does_not_touch_already_redeemed(self):
+        vouchers = IssuedVoucherService.issue(self.oi)
+        IssuedVoucher.objects.filter(pk=vouchers[0].pk).update(
+            status='redeemed', redeemed_at=timezone.now(),
+        )
+
+        IssuedVoucherService.cancel_for_order_item(self.oi, reason='refund')
+
+        vouchers[0].refresh_from_db()
+        self.assertEqual(vouchers[0].status, 'redeemed')
+
+    def test_cancel_returns_count(self):
+        vouchers = IssuedVoucherService.issue(self.oi)
+        count = IssuedVoucherService.cancel_for_order_item(self.oi, reason='rollback')
+        self.assertEqual(count, 2)
