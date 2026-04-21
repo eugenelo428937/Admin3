@@ -565,6 +565,12 @@ class ActedOrderItemSerializerTest(TestCase, CartTestDataMixin):
         mock_item.product = product
         mock_item.metadata = metadata or {}
         mock_item.marking_voucher = None
+        # Task 19 shim attributes — stub to None so serializer helpers
+        # fall back to legacy columns instead of auto-generated MagicMocks.
+        mock_item.purchasable_id = None
+        mock_item.product_shim = None
+        mock_item.marking_voucher_shim = None
+        mock_item.item_type_shim = item_type
         return mock_item
 
     def test_get_product_name_fee(self):

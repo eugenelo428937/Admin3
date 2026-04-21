@@ -95,3 +95,49 @@ class OrderItem(models.Model):
         if self.item_type == 'marking_voucher':
             return self.marking_voucher.price
         return None
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Backward-compat shims — added in Task 19, renamed to plain names in
+    # Task 23 when the legacy product/marking_voucher/item_type columns are
+    # dropped from the DB. These derive the same values from the unified
+    # `purchasable` FK so new code paths that populate only `purchasable_id`
+    # still expose the legacy representation for callers during the
+    # transition window.
+    # ─────────────────────────────────────────────────────────────────────
+    @property
+    def product_shim(self):
+        """Returns the Product instance if purchasable.kind == 'product', else None."""
+        if self.purchasable_id is None:
+            return None
+        try:
+            if self.purchasable.kind != 'product':
+                return None
+            # Product is an MTI subclass of Purchasable; access via parent→child cast.
+            return self.purchasable.product
+        except Exception:
+            return None
+
+    @property
+    def marking_voucher_shim(self):
+        """Returns the GenericItem instance if purchasable.kind == 'marking_voucher'."""
+        if self.purchasable_id is None:
+            return None
+        try:
+            if self.purchasable.kind != 'marking_voucher':
+                return None
+            return self.purchasable.genericitem
+        except Exception:
+            return None
+
+    @property
+    def item_type_shim(self):
+        """Returns the legacy item_type string derived from purchasable.kind.
+
+        If the row has a legacy item_type column set (pre-backfill), prefer that;
+        otherwise fall back to purchasable.kind.
+        """
+        if self.item_type:
+            return self.item_type
+        if self.purchasable_id:
+            return self.purchasable.kind
+        return None
