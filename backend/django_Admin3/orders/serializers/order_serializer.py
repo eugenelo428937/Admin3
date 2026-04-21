@@ -1,9 +1,15 @@
 from rest_framework import serializers
 from orders.models import Order, OrderItem, Payment
+from store.serializers import PurchasableSerializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     item_name = serializers.ReadOnlyField()
+    # Task 18: dual-emit unified catalog parent.
+    # Alongside the legacy product / marking_voucher / item_type fields so the
+    # frontend can migrate progressively. Becomes the sole reference after
+    # Release B (Tasks 22–24) drops the legacy FKs.
+    purchasable = PurchasableSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
@@ -11,6 +17,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'id', 'item_type', 'item_name', 'quantity', 'price_type',
             'actual_price', 'net_amount', 'vat_amount', 'gross_amount',
             'vat_rate', 'is_vat_exempt', 'metadata',
+            # Task 18: unified purchasable nested object
+            'purchasable',
         ]
 
 

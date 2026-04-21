@@ -1,5 +1,6 @@
 import logging
 from rest_framework import serializers
+from store.serializers import PurchasableSerializer
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,12 @@ class CartItemSerializer(serializers.ModelSerializer):
     vat_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     gross_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
+    # Task 18: unified catalog parent exposed as nested object.
+    # Dual-emit alongside the legacy product / marking_voucher fields so the
+    # frontend can migrate progressively. Becomes the sole reference after
+    # Release B (Tasks 22–24) drops the legacy FKs.
+    purchasable = PurchasableSerializer(read_only=True)
+
     class Meta:
         model = CartItem
         fields = [
@@ -28,7 +35,9 @@ class CartItemSerializer(serializers.ModelSerializer):
             'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
             'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
             # Phase 5: VAT fields
-            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
+            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount',
+            # Task 18: unified purchasable nested object
+            'purchasable',
         ]
 
     def get_subject_code(self, obj):
@@ -278,10 +287,18 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
     subject_code = serializers.SerializerMethodField()
     exam_session_code = serializers.SerializerMethodField()
     product_type = serializers.SerializerMethodField()
+    # Task 18: dual-emit unified catalog parent (if present on the row).
+    purchasable = PurchasableSerializer(read_only=True)
 
     class Meta:
         model = ActedOrderItem
-        fields = ['id', 'item_type', 'product', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata']
+        fields = [
+            'id', 'item_type', 'product', 'product_name', 'product_code', 'subject_code',
+            'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price',
+            'metadata',
+            # Task 18: unified purchasable nested object
+            'purchasable',
+        ]
 
     def get_product_name(self, obj):
         """Get product name or fee name"""
