@@ -224,10 +224,15 @@ class TestPriceModel(TestCase):
         self.assertIn('additional', choices)
 
     def test_price_unique_together(self):
-        """Test Price has unique_together (product+price_type) constraint."""
+        """Test Price has unique_together (purchasable+price_type) constraint.
+
+        Release B (Task 22): the unique_together was moved from
+        (product, price_type) to (purchasable, price_type) after the
+        Price.purchasable FK was backfilled and enforced NOT NULL.
+        """
         from store.models import Price
         constraints = Price._meta.unique_together
-        self.assertIn(('product', 'price_type'), constraints)
+        self.assertIn(('purchasable', 'price_type'), constraints)
 
 
 class TestBundleModel(TestCase):

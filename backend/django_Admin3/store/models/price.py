@@ -42,7 +42,6 @@ class Price(models.Model):
         'store.Purchasable',
         on_delete=models.CASCADE,
         related_name='prices',
-        null=True, blank=True,
         help_text='The purchasable this price applies to.'
     )
     price_type = models.CharField(
@@ -70,8 +69,7 @@ class Price(models.Model):
 
     class Meta:
         db_table = '"acted"."prices"'
-        # unique_together dropped during dual-write (Tasks 3-11).
-        # Restored as ('purchasable', 'price_type') in Task 11 after backfill.
+        unique_together = ('purchasable', 'price_type')
         verbose_name = 'Price'
         verbose_name_plural = 'Prices'
 

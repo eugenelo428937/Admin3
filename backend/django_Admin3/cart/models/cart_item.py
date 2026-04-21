@@ -27,7 +27,6 @@ class CartItem(models.Model):
     purchasable = models.ForeignKey(
         'store.Purchasable',
         on_delete=models.PROTECT,
-        null=True, blank=True,
         related_name='cart_items_by_purchasable',
         help_text='The catalog entity being purchased. Non-null in Release B.'
     )
@@ -122,6 +121,55 @@ class CartItem(models.Model):
             models.Index(fields=['vat_calculated_at'], name='idx_cartitem_vat_calc_at'),
             models.Index(fields=['cart', 'vat_region'], name='idx_cartitem_cart_vat_region'),
         ]
+
+    def save(self, *args, **kwargs):
+        """Auto-populate purchasable_id from legacy FKs during the transition.
+
+        Release B shim: callers that set only `product=...`,
+        `marking_voucher=...`, or `item_type='fee'` get `purchasable_id`
+        populated automatically:
+
+        - product-backed rows: purchasable_id == product_id (Product is an
+          MTI subclass of Purchasable, so the parent pointer equals the
+          Product PK).
+        - voucher-backed rows: look up the GenericItem created in
+          store.0008_backfill_purchasable_from_vouchers via matching code.
+        - fee rows: point at the FEE_GENERIC Purchasable (created in
+          store.0009_create_fee_generic_purchasable).
+
+        Mirrors the save() shim on Price (store.models.Price) and is
+        removed in Task 23 when the legacy product/marking_voucher/fee
+        columns are dropped from the DB.
+        """
+        if self.purchasable_id is None:
+            if self.product_id is not None:
+                # Product.id == Purchasable.id post-MTI.
+                self.purchasable_id = self.product_id
+            elif self.marking_voucher_id is not None:
+                from store.models import GenericItem
+                mv = self.marking_voucher
+                gi, _ = GenericItem.objects.get_or_create(
+                    kind='marking_voucher',
+                    code=mv.code,
+                    defaults={
+                        'name': mv.name,
+                        'description': mv.description or '',
+                        'is_active': mv.is_active,
+                        'dynamic_pricing': False,
+                        'vat_classification': '',
+                        'validity_period_days': 1460,
+                        'stock_tracked': False,
+                    },
+                )
+                self.purchasable_id = gi.purchasable_ptr_id
+            elif self.item_type == 'fee':
+                from store.models import Purchasable
+                try:
+                    fee = Purchasable.objects.get(code='FEE_GENERIC')
+                    self.purchasable_id = fee.id
+                except Purchasable.DoesNotExist:
+                    pass
+        super().save(*args, **kwargs)
 
     def __str__(self):
         if self.item_type == 'marking_voucher':

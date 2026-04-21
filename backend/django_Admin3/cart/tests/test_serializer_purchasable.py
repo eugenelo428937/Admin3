@@ -73,8 +73,14 @@ class CartItemSerializerPurchasableTests(TestCase):
         self.assertIn('product_name', data)
         self.assertIn('product_code', data)
 
-    def test_serializer_purchasable_null_when_absent(self):
-        """Fee-only items without a purchasable FK should emit null, not error."""
+    def test_serializer_fee_item_emits_fee_generic_purchasable(self):
+        """Fee items auto-populate to FEE_GENERIC in Release B (Task 22).
+
+        Previously (Release A) fee items could have purchasable=NULL and
+        the serializer emitted ``None``. After Task 22 enforces NOT NULL,
+        the CartItem.save() shim auto-populates purchasable_id to
+        FEE_GENERIC, so the serializer emits that Purchasable payload.
+        """
         item = CartItem.objects.create(
             cart=self.cart,
             item_type='fee',
@@ -84,4 +90,5 @@ class CartItemSerializerPurchasableTests(TestCase):
         )
         data = CartItemSerializer(item).data
         self.assertIn('purchasable', data)
-        self.assertIsNone(data['purchasable'])
+        self.assertIsNotNone(data['purchasable'])
+        self.assertEqual(data['purchasable']['code'], 'FEE_GENERIC')
