@@ -1,22 +1,13 @@
 """Tests for marking admin-panel API endpoints."""
-from datetime import timedelta
-
 from django.contrib.auth.models import User
 from django.utils import timezone
-from rest_framework.test import APITestCase
 
-from catalog.models import (
-    ExamSession, ExamSessionSubject, Subject,
-    Product as CatalogProduct,
-    ProductVariation, ProductProductVariation,
-)
 from marking.models import (
-    Marker, MarkingPaper, MarkingPaperFeedback,
+    Marker, MarkingPaperFeedback,
     MarkingPaperGrading, MarkingPaperSubmission,
 )
 from marking.tests.fixtures import MarkingChainTestCase
 from staff.models import Staff
-from store.models import Product as StoreProduct
 from students.models import Student
 
 

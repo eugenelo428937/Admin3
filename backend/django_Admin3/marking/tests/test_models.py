@@ -448,7 +448,6 @@ class MarkingModelsModuleTestCase(TestCase):
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models import ProtectedError
-from students.models import Student
 from marking_vouchers.models import MarkingVoucher
 from staff.models import Staff
 
