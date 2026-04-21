@@ -441,3 +441,36 @@ class MarkingModelsModuleTestCase(TestCase):
         # The models/ package __init__.py should be what's loaded,
         # not the dead top-level models.py file
         self.assertTrue(models_pkg.__file__.endswith('__init__.py'))
+
+
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+
+
+class MarkerModelTestCase(TestCase):
+    """Tests for Marker model."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='marker1', email='m1@example.com', password='pw'
+        )
+
+    def test_marker_creation(self):
+        from marking.models import Marker
+        marker = Marker.objects.create(user=self.user, initial='ELO')
+        self.assertEqual(marker.user, self.user)
+        self.assertEqual(marker.initial, 'ELO')
+        self.assertIsNotNone(marker.created_at)
+        self.assertIsNotNone(marker.updated_at)
+
+    def test_marker_user_is_one_to_one(self):
+        from marking.models import Marker
+        Marker.objects.create(user=self.user, initial='ELO')
+        # Second Marker for same user must fail
+        with self.assertRaises(IntegrityError):
+            Marker.objects.create(user=self.user, initial='XYZ')
+
+    def test_marker_str(self):
+        from marking.models import Marker
+        marker = Marker.objects.create(user=self.user, initial='ELO')
+        self.assertIn('ELO', str(marker))
