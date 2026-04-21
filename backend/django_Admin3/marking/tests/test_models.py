@@ -448,6 +448,7 @@ from django.db import IntegrityError
 from django.db.models import ProtectedError
 from students.models import Student
 from marking_vouchers.models import MarkingVoucher
+from staff.models import Staff
 
 
 class MarkerModelTestCase(TestCase):
@@ -582,3 +583,138 @@ class MarkingPaperSubmissionTestCase(TestCase):
         )
         expected = f'{self.student} \u2014 {self.paper.name}'
         self.assertEqual(str(sub), expected)
+
+
+class MarkingPaperGradingTestCase(TestCase):
+    """Tests for MarkingPaperGrading model."""
+
+    def setUp(self):
+        self.student_user = User.objects.create_user(
+            username='stuG', email='sg@example.com', password='pw',
+        )
+        self.student = Student.objects.create(user=self.student_user)
+
+        self.marker_user = User.objects.create_user(
+            username='mkrG', email='mg@example.com', password='pw',
+        )
+        from marking.models import Marker
+        self.marker = Marker.objects.create(user=self.marker_user, initial='MKR')
+
+        self.staff_user = User.objects.create_user(
+            username='stfG', email='sfg@example.com', password='pw',
+            is_staff=True,
+        )
+        self.staff = Staff.objects.create(user=self.staff_user)
+
+        self.exam_session = ExamSession.objects.create(
+            session_code='SEPT2026',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        self.subject = Subject.objects.create(
+            code='CS2', description='Risk', active=True,
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject,
+        )
+        self.cat_product = CatalogProduct.objects.create(
+            code='P002', fullname='Prod2', shortname='P2',
+        )
+        self.variation = ProductVariation.objects.create(
+            variation_type='Marking', name='Std2',
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.cat_product, product_variation=self.variation,
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+        )
+        self.paper = MarkingPaper.objects.create(
+            store_product=self.store_product, name='G1',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40),
+        )
+        from marking.models import MarkingPaperSubmission
+        self.submission = MarkingPaperSubmission.objects.create(
+            student=self.student,
+            marking_paper=self.paper,
+            submission_date=timezone.now(),
+        )
+
+    def test_grading_creation(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        self.assertEqual(grading.submission, self.submission)
+        self.assertEqual(grading.marker, self.marker)
+        self.assertEqual(grading.allocate_by, self.staff)
+        self.assertIsNone(grading.score)
+        self.assertIsNone(grading.hub_download_date)
+
+    def test_grading_submission_is_one_to_one(self):
+        from marking.models import MarkingPaperGrading
+        MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        with self.assertRaises(IntegrityError):
+            MarkingPaperGrading.objects.create(
+                submission=self.submission,
+                marker=self.marker,
+                allocate_date=timezone.now(),
+                allocate_by=self.staff,
+            )
+
+    def test_grading_cascades_when_submission_deleted(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        grading_id = grading.id
+        self.submission.delete()
+        self.assertFalse(
+            MarkingPaperGrading.objects.filter(id=grading_id).exists()
+        )
+
+    def test_grading_protect_on_marker_delete(self):
+        from marking.models import MarkingPaperGrading
+        MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        with self.assertRaises(ProtectedError):
+            self.marker.delete()
+
+    def test_grading_score_nullable(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+            score=85,
+        )
+        self.assertEqual(grading.score, 85)
+
+    def test_grading_str(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        expected = f'Grading({self.submission.id}) by MKR'
+        self.assertEqual(str(grading), expected)
