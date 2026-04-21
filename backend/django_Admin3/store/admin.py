@@ -1,6 +1,35 @@
 """Admin configuration for the store app."""
 from django.contrib import admin
-from store.models import Product, Price, Bundle, BundleProduct
+from store.models import Product, Price, Bundle, BundleProduct, Purchasable, GenericItem
+
+
+@admin.register(Purchasable)
+class PurchasableAdmin(admin.ModelAdmin):
+    """Admin for the unified store.Purchasable catalog parent.
+
+    Product rows also appear here (MTI subclass); edit ESS-specific fields
+    via ProductAdmin. GenericItem rows (vouchers, binders, additional
+    charges) have their own admin via GenericItemAdmin.
+    """
+    list_display = ['code', 'kind', 'name', 'is_active', 'dynamic_pricing', 'updated_at']
+    list_filter = ['kind', 'is_active', 'dynamic_pricing']
+    search_fields = ['code', 'name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['-updated_at']
+    list_per_page = 50
+
+
+@admin.register(GenericItem)
+class GenericItemAdmin(admin.ModelAdmin):
+    """Admin for non-ESS catalog items (marking vouchers, binders, additional charges)."""
+    list_display = [
+        'code', 'kind', 'name', 'validity_period_days',
+        'stock_tracked', 'dynamic_pricing', 'is_active',
+    ]
+    list_filter = ['kind', 'is_active', 'stock_tracked', 'dynamic_pricing']
+    search_fields = ['code', 'name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['kind', 'code']
 
 
 class PriceInline(admin.TabularInline):
