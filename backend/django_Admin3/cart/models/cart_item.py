@@ -18,6 +18,20 @@ class CartItem(models.Model):
     )
     marking_voucher = models.ForeignKey('marking_vouchers.MarkingVoucher', on_delete=models.CASCADE, null=True, blank=True)
 
+    # Dual-write phase (Task 9): new unified FK alongside legacy product / marking_voucher FKs.
+    # Becomes NOT NULL in Release B (Task 23) once backfill (Task 11) completes.
+    # NOTE: reverse accessor is 'cart_items_by_purchasable' to avoid clashing with the
+    # legacy product FK's 'cart_items' accessor — Product is an MTI subclass of Purchasable,
+    # so both FKs ultimately reach the purchasables table. After Release B drops the
+    # legacy FK, this can be renamed to 'cart_items'.
+    purchasable = models.ForeignKey(
+        'store.Purchasable',
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name='cart_items_by_purchasable',
+        help_text='The catalog entity being purchased. Non-null in Release B.'
+    )
+
     # Item type to distinguish between products, vouchers, and fees
     ITEM_TYPE_CHOICES = [
         ('product', 'Product'),
@@ -72,6 +86,7 @@ class CartItem(models.Model):
                 condition=(
                     models.Q(product__isnull=False) |
                     models.Q(marking_voucher__isnull=False) |
+                    models.Q(purchasable__isnull=False) |
                     models.Q(item_type='fee')
                 ),
                 name='cart_item_has_product_or_voucher_or_is_fee'
