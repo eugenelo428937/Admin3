@@ -14,11 +14,23 @@ class PriceSerializer(serializers.ModelSerializer):
         source='purchasable.code',
         read_only=True
     )
+    # Release B back-compat: frontend pact contract + older clients still
+    # read `product` as an id. `purchasable` (the new canonical field) is
+    # populated from the same FK column, so this just mirrors it when the
+    # purchasable is a store.Product — null otherwise.
+    product = serializers.SerializerMethodField()
+
+    def get_product(self, obj):
+        if obj.purchasable_id is None:
+            return None
+        kind = getattr(obj.purchasable, 'kind', None)
+        return obj.purchasable_id if kind == 'product' else None
 
     class Meta:
         model = Price
         fields = [
             'id',
+            'product',
             'purchasable',
             'purchasable_code',
             'price_type',
