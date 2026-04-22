@@ -1,11 +1,46 @@
 """Admin configuration for the store app."""
 from django.contrib import admin
-from store.models import Product, Price, Bundle, BundleProduct
+from store.models import Product, Price, Bundle, BundleProduct, Purchasable, GenericItem
+
+
+@admin.register(Purchasable)
+class PurchasableAdmin(admin.ModelAdmin):
+    """Admin for the unified store.Purchasable catalog parent.
+
+    Product rows also appear here (MTI subclass); edit ESS-specific fields
+    via ProductAdmin. GenericItem rows (vouchers, binders, additional
+    charges) have their own admin via GenericItemAdmin.
+    """
+    list_display = ['code', 'kind', 'name', 'is_active', 'dynamic_pricing', 'updated_at']
+    list_filter = ['kind', 'is_active', 'dynamic_pricing']
+    search_fields = ['code', 'name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['-updated_at']
+    list_per_page = 50
+
+
+@admin.register(GenericItem)
+class GenericItemAdmin(admin.ModelAdmin):
+    """Admin for non-ESS catalog items (marking vouchers, binders, additional charges)."""
+    list_display = [
+        'code', 'kind', 'name', 'validity_period_days',
+        'stock_tracked', 'dynamic_pricing', 'is_active',
+    ]
+    list_filter = ['kind', 'is_active', 'stock_tracked', 'dynamic_pricing']
+    search_fields = ['code', 'name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['kind', 'code']
 
 
 class PriceInline(admin.TabularInline):
-    """Inline admin for prices within a product."""
+    """Inline admin for prices within a product.
+
+    Task 23: Price.product was dropped. Price.purchasable is the live FK;
+    Product is an MTI subclass of Purchasable so this inline resolves
+    correctly when added to ProductAdmin.
+    """
     model = Price
+    fk_name = 'purchasable'
     extra = 0
     fields = ['price_type', 'amount', 'currency']
 
@@ -47,14 +82,14 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     """Admin for store.Price model."""
-    list_display = ['get_product_code', 'price_type', 'amount', 'currency']
+    list_display = ['get_purchasable_code', 'price_type', 'amount', 'currency']
     list_filter = ['price_type', 'currency']
-    search_fields = ['product__product_code']
-    raw_id_fields = ['product']
+    search_fields = ['purchasable__code']
+    raw_id_fields = ['purchasable']
 
-    @admin.display(description='Product')
-    def get_product_code(self, obj):
-        return obj.product.product_code
+    @admin.display(description='Purchasable')
+    def get_purchasable_code(self, obj):
+        return obj.purchasable.code if obj.purchasable_id else '—'
 
 
 @admin.register(Bundle)

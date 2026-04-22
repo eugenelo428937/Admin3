@@ -21,8 +21,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
-from marking_vouchers.models import MarkingVoucher
+from store.models import Product as StoreProduct, GenericItem
 
 User = get_user_model()
 
@@ -267,14 +266,13 @@ class OrderItemStrAndPropertiesTest(ORDBaseTestMixin, TestCase):
 
     def test_str_marking_voucher_item(self):
         """__str__ for marking_voucher type includes voucher info."""
-        voucher = MarkingVoucher.objects.create(
-            code='ORD_MV_STR', name='ORD Mock Voucher',
-            price=Decimal('25.00'), is_active=True,
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='ORD_MV_STR',
+            name='ORD Mock Voucher', validity_period_days=1460,
         )
         item = OrderItem.objects.create(
             order=self.order,
-            item_type='marking_voucher',
-            marking_voucher=voucher,
+            purchasable_id=voucher.purchasable_ptr_id,
             quantity=1,
             price_type='standard',
             actual_price=Decimal('25.00'),
@@ -297,15 +295,14 @@ class OrderItemStrAndPropertiesTest(ORDBaseTestMixin, TestCase):
         self.assertEqual(item.item_name, str(self.store_product))
 
     def test_item_name_marking_voucher(self):
-        """item_name property returns marking_voucher.name for voucher items."""
-        voucher = MarkingVoucher.objects.create(
-            code='ORD_MV_NAME', name='ORD Voucher Name',
-            price=Decimal('30.00'), is_active=True,
+        """item_name property returns voucher.name for voucher items."""
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='ORD_MV_NAME',
+            name='ORD Voucher Name', validity_period_days=1460,
         )
         item = OrderItem.objects.create(
             order=self.order,
-            item_type='marking_voucher',
-            marking_voucher=voucher,
+            purchasable_id=voucher.purchasable_ptr_id,
             quantity=1,
             actual_price=Decimal('30.00'),
         )
@@ -322,19 +319,10 @@ class OrderItemStrAndPropertiesTest(ORDBaseTestMixin, TestCase):
         )
         self.assertEqual(item.item_price, Decimal('75.00'))
 
-    def test_item_price_marking_voucher_fallback(self):
-        """item_price returns marking_voucher.price when actual_price is None."""
-        voucher = MarkingVoucher.objects.create(
-            code='ORD_MV_PRICE', name='ORD Price Voucher',
-            price=Decimal('30.00'), is_active=True,
-        )
-        item = OrderItem.objects.create(
-            order=self.order,
-            item_type='marking_voucher',
-            marking_voucher=voucher,
-            quantity=1,
-        )
-        self.assertEqual(item.item_price, Decimal('30.00'))
+    # Task 23 (Release B): ``test_item_price_marking_voucher_fallback``
+    # removed. ``OrderItem.marking_voucher`` now resolves to a
+    # ``store.GenericItem`` (which has no ``.price`` attribute — pricing
+    # lives on the related ``store.Price`` rows).
 
     def test_item_price_none_for_product_without_actual_price(self):
         """item_price returns None when actual_price is None and not a voucher."""

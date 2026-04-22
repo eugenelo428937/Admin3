@@ -1,7 +1,7 @@
 """Price model for the store app.
 
-Pricing information for store products, supporting multiple price types
-per product (standard, retaker, reduced, additional).
+Pricing information for store purchasables, supporting multiple price types
+per purchasable (standard, retaker, reduced, additional).
 
 Table: acted.prices
 """
@@ -10,9 +10,9 @@ from django.db import models
 
 class Price(models.Model):
     """
-    Pricing for a store product.
+    Pricing for a store purchasable.
 
-    Supports multiple price types per product:
+    Supports multiple price types per purchasable:
     - standard: Regular price
     - retaker: Price for returning exam candidates
     - reduced: Reduced rate (e.g., student discount)
@@ -31,11 +31,11 @@ class Price(models.Model):
         ('additional', 'Additional Copy'),
     ]
 
-    product = models.ForeignKey(
-        'store.Product',
+    purchasable = models.ForeignKey(
+        'store.Purchasable',
         on_delete=models.CASCADE,
         related_name='prices',
-        help_text='The product this price applies to'
+        help_text='The purchasable this price applies to.'
     )
     price_type = models.CharField(
         max_length=20,
@@ -62,9 +62,24 @@ class Price(models.Model):
 
     class Meta:
         db_table = '"acted"."prices"'
-        unique_together = ('product', 'price_type')
+        unique_together = ('purchasable', 'price_type')
         verbose_name = 'Price'
         verbose_name_plural = 'Prices'
 
+    def __init__(self, *args, **kwargs):
+        """Task 23 backward-compat: accept legacy ``product=`` kwarg.
+
+        ``Price.product`` FK has been dropped. Translate
+        ``product=<store.Product>`` to ``purchasable=<product.purchasable_ptr>``
+        so existing call sites (tests, legacy import scripts) keep working.
+        """
+        product = kwargs.pop('product', None)
+        if product is not None and 'purchasable' not in kwargs and 'purchasable_id' not in kwargs:
+            try:
+                kwargs['purchasable'] = product.purchasable_ptr
+            except AttributeError:
+                kwargs['purchasable'] = product
+        super().__init__(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.product.product_code} - {self.price_type}: {self.amount} {self.currency}"
+        return f"{self.purchasable.code} - {self.price_type}: {self.amount} {self.currency}"

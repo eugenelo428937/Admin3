@@ -1,6 +1,7 @@
 """Store serializers - API serialization for store models."""
 from store.serializers.product import ProductSerializer, ProductListSerializer
 from store.serializers.price import PriceSerializer, PriceListSerializer
+from store.serializers.purchasable import PurchasableSerializer
 from store.serializers.bundle import (
     BundleAdminWriteSerializer,
     BundleSerializer,
@@ -25,6 +26,7 @@ __all__ = [
     'ProductListSerializer',
     'PriceSerializer',
     'PriceListSerializer',
+    'PurchasableSerializer',
     'BundleAdminWriteSerializer',
     'BundleSerializer',
     'BundleListSerializer',

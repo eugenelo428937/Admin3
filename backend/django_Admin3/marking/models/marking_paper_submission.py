@@ -19,8 +19,11 @@ class MarkingPaperSubmission(models.Model):
         on_delete=models.PROTECT,
         related_name='submissions',
     )
+    # Post-merge (2026-04-22): originally pointed at marking_vouchers.MarkingVoucher,
+    # retargeted to store.GenericItem (its catalog replacement — same SKU-level
+    # semantics; GenericItem rows with kind='marking_voucher').
     marking_voucher = models.ForeignKey(
-        'marking_vouchers.MarkingVoucher',
+        'store.GenericItem',
         on_delete=models.PROTECT,
         null=True,
         blank=True,

@@ -121,21 +121,24 @@ class StoreCoverageTestDataMixin:
             is_active=True
         )
 
-        # Create prices
+        # Create prices (dual-write: product + purchasable, see Tasks 3-10)
         cls.price_standard = Price.objects.create(
             product=cls.store_product_printed,
+            purchasable=cls.store_product_printed,
             price_type='standard',
             amount=Decimal('149.99'),
             currency='GBP'
         )
         cls.price_retaker = Price.objects.create(
             product=cls.store_product_printed,
+            purchasable=cls.store_product_printed,
             price_type='retaker',
             amount=Decimal('99.99'),
             currency='GBP'
         )
         cls.price_ebook = Price.objects.create(
             product=cls.store_product_ebook,
+            purchasable=cls.store_product_ebook,
             price_type='standard',
             amount=Decimal('79.99'),
             currency='GBP'
@@ -217,9 +220,9 @@ class TestPriceAdmin(StoreCoverageTestDataMixin, TestCase):
         from store.models import Price
         self.admin = PriceAdmin(model=Price, admin_site=AdminSite())
 
-    def test_get_product_code(self):
-        """Admin display: get_product_code returns product code (line 57)."""
-        result = self.admin.get_product_code(self.price_standard)
+    def test_get_purchasable_code(self):
+        """Admin display: get_purchasable_code returns purchasable code (Task 23)."""
+        result = self.admin.get_purchasable_code(self.price_standard)
         self.assertEqual(result, 'CS1/PCSM01/2025-09')
 
 

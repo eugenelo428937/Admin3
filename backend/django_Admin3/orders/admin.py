@@ -8,7 +8,11 @@ from .models import (
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ('item_type', 'product', 'quantity', 'actual_price',
+    # Task 23: item_type / product are now read-only @properties, not
+    # model fields. readonly_fields only accepts callables / model fields,
+    # so expose `purchasable` (the live FK) and the properties' underlying
+    # data here.
+    readonly_fields = ('purchasable', 'quantity', 'actual_price',
                        'net_amount', 'vat_amount', 'gross_amount', 'vat_rate')
 
 
@@ -29,11 +33,16 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
+    # Task 23: `item_type` / `product` are @properties now, usable in
+    # list_display but NOT in list_filter (admin.E116) or readonly_fields
+    # (admin.E202) against a non-field name. Swap to the underlying
+    # `purchasable` FK for filtering/readonly, keep the properties as
+    # display-only callables.
     list_display = ('id', 'order', 'item_type', 'quantity', 'actual_price',
                     'net_amount', 'vat_amount', 'gross_amount')
     search_fields = ('order__user__username',)
-    list_filter = ('item_type', 'price_type')
-    readonly_fields = ('order', 'product', 'quantity', 'actual_price')
+    list_filter = ('price_type',)
+    readonly_fields = ('order', 'purchasable', 'quantity', 'actual_price')
 
 
 @admin.register(Payment)

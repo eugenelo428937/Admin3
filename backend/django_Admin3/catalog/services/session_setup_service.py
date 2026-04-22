@@ -90,11 +90,12 @@ class SessionSetupService:
                 (new_ess.id, prev_product.product_product_variation_id)
             ] = new_product
 
-            # 4. Copy prices for this product
-            prev_prices = Price.objects.filter(product=prev_product)
+            # 4. Copy prices for this product (Task 23: Price is keyed by
+            # purchasable; Product is an MTI subclass so PK is shared).
+            prev_prices = Price.objects.filter(purchasable_id=prev_product.pk)
             for prev_price in prev_prices:
                 Price.objects.create(
-                    product=new_product,
+                    purchasable_id=new_product.pk,
                     price_type=prev_price.price_type,
                     amount=prev_price.amount,
                     currency=prev_price.currency,
@@ -191,8 +192,10 @@ class SessionSetupService:
             exam_session_subject_id__in=ess_ids, is_active=True
         ).update(is_active=False)
 
+        # Post-Release-B: Price.product FK is gone; traverse via the MTI
+        # parent (Purchasable) to the Product child to reach exam_session_subject.
         price_count = Price.objects.filter(
-            product__exam_session_subject_id__in=ess_ids, is_active=True
+            purchasable__product__exam_session_subject_id__in=ess_ids, is_active=True
         ).update(is_active=False)
 
         product_count = Product.objects.filter(

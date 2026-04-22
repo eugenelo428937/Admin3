@@ -1,5 +1,6 @@
 import logging
 from rest_framework import serializers
+from store.serializers import PurchasableSerializer
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
 
 logger = logging.getLogger(__name__)
@@ -14,12 +15,34 @@ class CartItemSerializer(serializers.ModelSerializer):
     current_product = serializers.SerializerMethodField()
     product_id = serializers.SerializerMethodField()
 
+    # Task 23: legacy `product` / `marking_voucher` / `item_type` are now
+    # @properties on the model, derived from the unified `purchasable` FK.
+    # These helpers stay as thin delegations so existing get_* methods below
+    # keep the same call shape.
+    @staticmethod
+    def _product(obj):
+        return obj.product
+
+    @staticmethod
+    def _marking_voucher(obj):
+        return obj.marking_voucher
+
+    @staticmethod
+    def _item_type(obj):
+        return obj.item_type
+
     # Phase 5: VAT fields (stored in CartItem model from orchestrator results)
     net_amount = serializers.SerializerMethodField()
     vat_region = serializers.CharField(read_only=True)
     vat_rate = serializers.DecimalField(max_digits=5, decimal_places=4, read_only=True)
     vat_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     gross_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
+    # Task 18: unified catalog parent exposed as nested object.
+    # Dual-emit alongside the legacy product / marking_voucher fields so the
+    # frontend can migrate progressively. Becomes the sole reference after
+    # Release B (Tasks 22–24) drops the legacy FKs.
+    purchasable = PurchasableSerializer(read_only=True)
 
     class Meta:
         model = CartItem
@@ -28,55 +51,72 @@ class CartItemSerializer(serializers.ModelSerializer):
             'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
             'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
             # Phase 5: VAT fields
-            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
+            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount',
+            # Task 18: unified purchasable nested object
+            'purchasable',
         ]
 
     def get_subject_code(self, obj):
         """Get subject code - marking vouchers don't have subjects"""
-        if obj.item_type == 'marking_voucher':
+        item_type = self._item_type(obj)
+        if item_type == 'marking_voucher':
             return None  # Marking vouchers are not tied to subjects
-        if obj.product:
-            return obj.product.exam_session_subject.subject.code
+        product = self._product(obj)
+        if product:
+            return product.exam_session_subject.subject.code
         return None
 
     def get_product_name(self, obj):
         """Get product name - handles marking vouchers"""
-        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
-            return obj.marking_voucher.name or 'Marking Voucher'
-        if obj.product:
-            return obj.product.product.fullname
+        item_type = self._item_type(obj)
+        voucher = self._marking_voucher(obj)
+        if item_type == 'marking_voucher' and voucher:
+            return voucher.name or 'Marking Voucher'
+        product = self._product(obj)
+        if product:
+            return product.product.fullname
         return None
 
     def get_product_code(self, obj):
         """Get product code - handles marking vouchers"""
-        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
-            return obj.marking_voucher.code
-        if obj.product:
-            return obj.product.product.code
+        item_type = self._item_type(obj)
+        voucher = self._marking_voucher(obj)
+        if item_type == 'marking_voucher' and voucher:
+            return voucher.code
+        product = self._product(obj)
+        if product:
+            return product.product.code
         return None
 
     def get_exam_session_code(self, obj):
         """Get exam session code - marking vouchers don't have exam sessions"""
-        if obj.item_type == 'marking_voucher':
+        item_type = self._item_type(obj)
+        if item_type == 'marking_voucher':
             return None  # Marking vouchers are not tied to exam sessions
-        if obj.product:
-            return obj.product.exam_session_subject.exam_session.session_code
+        product = self._product(obj)
+        if product:
+            return product.exam_session_subject.exam_session.session_code
         return None
 
     def get_current_product(self, obj):
         """Get current product ID - returns None for marking vouchers"""
-        if obj.item_type == 'marking_voucher':
+        item_type = self._item_type(obj)
+        if item_type == 'marking_voucher':
             return None
-        if obj.product:
-            return obj.product.id
+        product = self._product(obj)
+        if product:
+            return product.id
         return None
 
     def get_product_id(self, obj):
         """Get product ID - returns voucher ID for marking vouchers"""
-        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
-            return obj.marking_voucher.id
-        if obj.product:
-            return obj.product.product.id
+        item_type = self._item_type(obj)
+        voucher = self._marking_voucher(obj)
+        if item_type == 'marking_voucher' and voucher:
+            return voucher.id
+        product = self._product(obj)
+        if product:
+            return product.product.id
         return None
 
     def get_net_amount(self, obj):
@@ -97,21 +137,24 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_product_type(self, obj):
         """Determine product type based on item type, product name, or group"""
+        item_type = self._item_type(obj)
+
         # Handle fee items (no product)
-        if obj.item_type == 'fee':
+        if item_type == 'fee':
             return 'fee'
 
         # Handle marking voucher items
-        if obj.item_type == 'marking_voucher':
+        if item_type == 'marking_voucher':
             return 'marking_voucher'
 
-        if not obj.product:
+        product = self._product(obj)
+        if not product:
             return None
 
-        product_name = obj.product.product.fullname.lower()
+        product_name = product.product.fullname.lower()
 
-        if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
-            group_name = obj.product.product.group_name.lower()
+        if hasattr(product.product, 'group_name') and product.product.group_name:
+            group_name = product.product.group_name.lower()
             if 'tutorial' in group_name:
                 return 'tutorial'
             elif 'marking' in group_name:
@@ -278,52 +321,98 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
     subject_code = serializers.SerializerMethodField()
     exam_session_code = serializers.SerializerMethodField()
     product_type = serializers.SerializerMethodField()
+    # Task 19: convert legacy `product` and `item_type` to SerializerMethodFields
+    # so they fall back to the purchasable-derived shims when the legacy FK
+    # is null on a row created by new code paths.
+    product = serializers.SerializerMethodField()
+    item_type = serializers.SerializerMethodField()
+    # Task 18: dual-emit unified catalog parent (if present on the row).
+    purchasable = PurchasableSerializer(read_only=True)
 
     class Meta:
         model = ActedOrderItem
-        fields = ['id', 'item_type', 'product', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata']
+        fields = [
+            'id', 'item_type', 'product', 'product_name', 'product_code', 'subject_code',
+            'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price',
+            'metadata',
+            # Task 18: unified purchasable nested object
+            'purchasable',
+        ]
+
+    # Task 23: `product` / `item_type` are now @properties on the model,
+    # derived from the unified `purchasable` FK.
+    @staticmethod
+    def _product(obj):
+        return obj.product
+
+    @staticmethod
+    def _item_type(obj):
+        return obj.item_type
+
+    def get_product(self, obj):
+        """Emit legacy product FK as primary-key integer if present, else derive from purchasable shim.
+
+        Historical shape (when `product` was a ModelSerializer FK field on
+        ActedOrderItem) was the Product's primary key integer. Preserve that.
+        """
+        product = self._product(obj)
+        return product.pk if product is not None else None
+
+    def get_item_type(self, obj):
+        """Emit legacy item_type if set, else derive from purchasable.kind."""
+        return self._item_type(obj)
 
     def get_product_name(self, obj):
         """Get product name or fee name"""
-        if obj.item_type == 'fee':
-            return obj.metadata.get('fee_name', 'Fee')
-        elif obj.product:
-            return obj.product.product.fullname
+        item_type = self._item_type(obj)
+        if item_type == 'fee':
+            return obj.metadata.get('fee_name', 'Fee') if obj.metadata else 'Fee'
+        product = self._product(obj)
+        if product:
+            return product.product.fullname
         return None
 
     def get_product_code(self, obj):
         """Get product code or fee type"""
-        if obj.item_type == 'fee':
-            return obj.metadata.get('fee_type', 'fee')
-        elif obj.product:
-            return obj.product.product.code
+        item_type = self._item_type(obj)
+        if item_type == 'fee':
+            return obj.metadata.get('fee_type', 'fee') if obj.metadata else 'fee'
+        product = self._product(obj)
+        if product:
+            return product.product.code
         return None
 
     def get_subject_code(self, obj):
         """Get subject code (not applicable to fees)"""
-        if obj.item_type == 'fee':
+        item_type = self._item_type(obj)
+        if item_type == 'fee':
             return None
-        elif obj.product:
-            return obj.product.exam_session_subject.subject.code
+        product = self._product(obj)
+        if product:
+            return product.exam_session_subject.subject.code
         return None
 
     def get_exam_session_code(self, obj):
         """Get exam session code (not applicable to fees)"""
-        if obj.item_type == 'fee':
+        item_type = self._item_type(obj)
+        if item_type == 'fee':
             return None
-        elif obj.product:
-            return obj.product.exam_session_subject.exam_session.session_code
+        product = self._product(obj)
+        if product:
+            return product.exam_session_subject.exam_session.session_code
         return None
 
     def get_product_type(self, obj):
         """Determine product type based on item type and product info"""
-        if obj.item_type == 'fee':
+        item_type = self._item_type(obj)
+        if item_type == 'fee':
             return 'fee'
-        elif obj.product:
-            product_name = obj.product.product.fullname.lower()
+        product = self._product(obj)
+        if product:
+            product_name = product.product.fullname.lower()
 
-            if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
-                group_name = obj.product.product.group_name.lower()
+            if hasattr(product.product, 'group_name') and product.product.group_name:
+                group_name = product.product.group_name.lower()
                 if 'tutorial' in group_name:
                     return 'tutorial'
                 elif 'marking' in group_name:

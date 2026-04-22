@@ -37,6 +37,21 @@ def populate_location_ids():
         """)
         col = cursor.fetchone()[0]
 
+        # Post-Release-B: store.Product is now an MTI subclass of
+        # store.Purchasable — acted.products.id was renamed to
+        # acted.products.purchasable_ptr_id by store.0010_product_to_mti_subclass.
+        # This service is called both as a one-shot migration op (from
+        # tutorials/0007, before store.0010 runs → column is still `id`) AND
+        # from tests running post all migrations (column is `purchasable_ptr_id`).
+        # Detect which PK column name is current on acted.products.
+        cursor.execute("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_schema = 'acted'
+              AND table_name = 'products'
+              AND column_name IN ('id', 'purchasable_ptr_id')
+        """)
+        product_pk_col = cursor.fetchone()[0]
+
         cursor.execute(f"""
             UPDATE acted.tutorial_events te
             SET location_id = tl.id
@@ -47,6 +62,6 @@ def populate_location_ids():
               ON cp.id = ppv.product_id
             JOIN acted.tutorial_locations tl
               ON tl.name = cp.shortname
-            WHERE sp.id = te.{col}
+            WHERE sp.{product_pk_col} = te.{col}
         """)
         return cursor.rowcount

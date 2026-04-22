@@ -448,7 +448,7 @@ class MarkingModelsModuleTestCase(TestCase):
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models import ProtectedError
-from marking_vouchers.models import MarkingVoucher
+from store.models import GenericItem
 from staff.models import Staff
 
 
@@ -508,8 +508,8 @@ class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
 
     def test_submission_with_marking_voucher(self):
         from marking.models import MarkingPaperSubmission
-        voucher = MarkingVoucher.objects.create(
-            code='V1', name='Voucher 1', price=50,
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='V1', name='Voucher 1',
         )
         sub = MarkingPaperSubmission.objects.create(
             student=self.student,

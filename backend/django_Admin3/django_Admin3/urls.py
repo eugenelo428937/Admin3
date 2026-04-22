@@ -35,7 +35,8 @@ urlpatterns = [
     path('api/utils/', include('utils.urls')),
     path('api/countries/', country_list, name='country_list'),
     path('api/markings/', include('marking.urls')),
-    path('api/marking-vouchers/', include('marking_vouchers.urls')),
+    # Legacy /api/marking-vouchers/ endpoints removed in Release B Task 24;
+    # voucher catalog is now served via /api/store/ (kind='marking_voucher').
     path('api/tutorials/', include('tutorials.urls')),
     # Catalog API - consolidated catalog endpoints (002-catalog-api-consolidation)
     path('api/catalog/', include('catalog.urls')),

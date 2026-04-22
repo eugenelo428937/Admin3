@@ -56,17 +56,41 @@ class Migration(migrations.Migration):
                                 );
                             END LOOP;
 
-                            -- Add new FK constraint if it doesn't exist
+                            -- Add new FK constraint if it doesn't exist.
+                            -- acted.products was converted to an MTI
+                            -- subclass of store.Purchasable (store.0010),
+                            -- renaming its PK column from "id" to
+                            -- "purchasable_ptr_id". Detect the actual PK
+                            -- column so this migration works regardless of
+                            -- which schema generation is in effect.
                             IF NOT EXISTS (
                                 SELECT 1 FROM information_schema.table_constraints
                                 WHERE constraint_name = 'acted_marking_paper_store_product_id_fk_products_id'
                                   AND table_name = 'marking_paper'
                             ) THEN
-                                ALTER TABLE "acted"."marking_paper"
-                                    ADD CONSTRAINT "acted_marking_paper_store_product_id_fk_products_id"
-                                    FOREIGN KEY (store_product_id)
-                                    REFERENCES "acted"."products" (id)
-                                    DEFERRABLE INITIALLY DEFERRED;
+                                IF EXISTS (
+                                    SELECT 1 FROM information_schema.columns
+                                    WHERE table_schema = 'acted'
+                                      AND table_name = 'products'
+                                      AND column_name = 'id'
+                                ) THEN
+                                    ALTER TABLE "acted"."marking_paper"
+                                        ADD CONSTRAINT "acted_marking_paper_store_product_id_fk_products_id"
+                                        FOREIGN KEY (store_product_id)
+                                        REFERENCES "acted"."products" (id)
+                                        DEFERRABLE INITIALLY DEFERRED;
+                                ELSIF EXISTS (
+                                    SELECT 1 FROM information_schema.columns
+                                    WHERE table_schema = 'acted'
+                                      AND table_name = 'products'
+                                      AND column_name = 'purchasable_ptr_id'
+                                ) THEN
+                                    ALTER TABLE "acted"."marking_paper"
+                                        ADD CONSTRAINT "acted_marking_paper_store_product_id_fk_products_id"
+                                        FOREIGN KEY (store_product_id)
+                                        REFERENCES "acted"."products" (purchasable_ptr_id)
+                                        DEFERRABLE INITIALLY DEFERRED;
+                                END IF;
                             END IF;
                         END
                         $$;

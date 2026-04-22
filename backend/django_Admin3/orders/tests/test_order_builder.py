@@ -92,6 +92,11 @@ class OrderBuilderTest(TestCase):
         self.assertEqual(item2_order.vat_amount, Decimal('6.00'))
 
     def test_build_transfers_fees(self):
+        """Task 23 (Release B): fee order items no longer have an
+        ``item_type`` DB column — they're identified by
+        ``purchasable.code == 'FEE_GENERIC'``. Filter on that instead.
+        """
+        from store.models import Purchasable
         CartFee.objects.create(
             cart=self.cart,
             fee_type='tutorial_booking_fee',
@@ -103,7 +108,8 @@ class OrderBuilderTest(TestCase):
         builder = OrderBuilder(cart=self.cart, user=self.user, vat_result=self.vat_result)
         order = builder.build()
 
-        fee_items = order.items.filter(item_type='fee')
+        fee_generic = Purchasable.objects.get(code='FEE_GENERIC')
+        fee_items = order.items.filter(purchasable=fee_generic)
         self.assertEqual(fee_items.count(), 1)
         fee_item = fee_items.first()
         self.assertEqual(fee_item.actual_price, Decimal('25.00'))

@@ -221,7 +221,7 @@ class TestSessionSetupService(CatalogAPITestCase):
             product_product_variation=self.ppv_core_ebook,
         ).first()
         self.assertIsNotNone(new_ebook)
-        std_price = Price.objects.get(product=new_ebook, price_type='standard')
+        std_price = Price.objects.get(purchasable_id=new_ebook.pk, price_type='standard')
         self.assertEqual(std_price.amount, self.store_prod_ebook.prices.get(
             price_type='standard').amount)
         self.assertEqual(std_price.currency, 'GBP')
