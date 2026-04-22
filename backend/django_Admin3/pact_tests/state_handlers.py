@@ -123,7 +123,7 @@ def setup_store_product():
     )
 
     price, _ = Price.objects.get_or_create(
-        product=store_product,
+        purchasable_id=store_product.pk,
         price_type='standard',
         defaults={'amount': Decimal('59.99'), 'currency': 'GBP'},
     )
@@ -927,7 +927,7 @@ def state_store_product_exists(params=None):
         is_active=True,
     )
     Price.objects.get_or_create(
-        product=sp,
+        purchasable_id=sp.pk,
         price_type='standard',
         defaults={'amount': D('59.99'), 'currency': 'GBP'},
     )
@@ -1214,7 +1214,7 @@ def state_session_setup_data_exists_for_copy(params=None):
         defaults={'is_active': True},
     )
     Price.objects.get_or_create(
-        product=prev_store_product,
+        purchasable_id=prev_store_product.pk,
         price_type='standard',
         defaults={'amount': Decimal('59.99'), 'currency': 'GBP'},
     )
