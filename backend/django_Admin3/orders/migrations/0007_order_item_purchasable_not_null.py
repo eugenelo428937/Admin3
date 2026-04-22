@@ -17,7 +17,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("orders", "0005_order_item_backfill_issued_vouchers"),
+        ("orders", "0006_order_item_backfill_issued_vouchers"),
     ]
 
     operations = [

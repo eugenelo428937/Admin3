@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("marking_vouchers", "0002_migrate_to_acted_schema"),
-        ("orders", "0004_order_item_backfill_purchasable"),
+        ("orders", "0005_order_item_backfill_purchasable"),
         ("store", "0011_price_backfill_purchasable"),
     ]
 

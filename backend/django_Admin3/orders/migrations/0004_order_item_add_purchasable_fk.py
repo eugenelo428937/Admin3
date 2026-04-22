@@ -15,7 +15,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("orders", "0002_initial"),
+        # Depends on orders.0003 (merged in from main 2026-04-22) which flips
+        # OrderItem to managed=True and registers the pre-existing order /
+        # product / marking_voucher FKs + check constraints in Django state.
+        ("orders", "0003_alter_orderitem_options"),
         # Minimum required ancestor: store.Purchasable is created in
         # store.0004_create_purchasable. Pinning here (rather than to a
         # later store migration like 0011) keeps the dependency graph

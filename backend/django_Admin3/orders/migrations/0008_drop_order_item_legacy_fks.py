@@ -1,21 +1,19 @@
 # Task 23 (Release B): drop legacy product / marking_voucher / item_type
 # columns from acted.order_items.
 #
-# OrderItem.Meta.managed = False so we hand-write the DDL via RunSQL and
-# mirror it in Django state via state_operations (same pattern as
-# 0003/0006). Drops:
+# After the merge with main on 2026-04-22, OrderItem is now `managed=True`
+# and orders.0003_alter_orderitem_options (state-only) registered `product`,
+# `marking_voucher`, the 2 CHECK constraints, and `item_type` already was
+# in state via 0002_initial. So state_operations must now remove:
+#   - both CHECK constraints (registered in state by 0003_alter_orderitem_options)
+#   - product and marking_voucher FKs (registered in state by 0003_alter_orderitem_options)
+#   - item_type (registered in state by 0002_initial)
+#
+# Database-wise (all pre-exist from the original 0001_initial raw SQL):
 #   - CHECK constraints order_item_has_product_or_voucher_or_is_fee and
 #     order_item_not_both_product_and_voucher
 #   - FK constraints order_items_product_id_fk, order_items_marking_voucher_id_fk
 #   - columns product_id, marking_voucher_id, item_type
-#
-# State-level note: on this unmanaged model, `product` and
-# `marking_voucher` were never added to Django's model state (they existed
-# only on the Python class and in the database). The migration-time state
-# knows only the fields emitted by 0002_initial — of which `item_type` is
-# the only one we are dropping now — so state_operations removes just
-# that. CHECK/FK constraints were also created via raw SQL in 0001/0003
-# and were never added to state, so no RemoveConstraint ops are needed.
 
 from django.db import migrations
 
@@ -23,14 +21,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("orders", "0006_order_item_purchasable_not_null"),
+        ("orders", "0007_order_item_purchasable_not_null"),
         ("cart", "0007_drop_cart_item_legacy_fks"),
         ("store", "0013_drop_price_product_fk"),
     ]
 
     operations = [
         # Drop the temp backfill table created by store.0008. All migrations
-        # that consumed it (cart.0005, orders.0004, store.0011) have run by
+        # that consumed it (cart.0005, orders.0005, store.0011) have run by
         # the time this migration applies, thanks to the dependency edges
         # above.
         migrations.RunSQL(
@@ -59,6 +57,22 @@ class Migration(migrations.Migration):
                 ),
             ],
             state_operations=[
+                migrations.RemoveConstraint(
+                    model_name="orderitem",
+                    name="order_item_has_product_or_voucher_or_is_fee",
+                ),
+                migrations.RemoveConstraint(
+                    model_name="orderitem",
+                    name="order_item_not_both_product_and_voucher",
+                ),
+                migrations.RemoveField(
+                    model_name="orderitem",
+                    name="product",
+                ),
+                migrations.RemoveField(
+                    model_name="orderitem",
+                    name="marking_voucher",
+                ),
                 migrations.RemoveField(
                     model_name="orderitem",
                     name="item_type",

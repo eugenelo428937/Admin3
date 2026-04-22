@@ -12,6 +12,16 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("marking_vouchers", "0003_create_issued_voucher"),
+        # marking.MarkingPaperSubmission.marking_voucher FK was retargeted from
+        # MarkingVoucher to store.GenericItem by marking.0009 — must run before
+        # we drop the table here, or the FK constraint blocks the DROP.
+        ("marking", "0009_switch_marking_voucher_to_generic_item"),
+        # orders.0003_alter_orderitem_options (from main) registered
+        # orders.OrderItem.marking_voucher as a lazy ref to MarkingVoucher.
+        # orders.0008 removes that state entry — must run before this
+        # migration deletes the MarkingVoucher model, otherwise any RunPython
+        # in between trips StateApps validation on the dangling lazy ref.
+        ("orders", "0008_drop_order_item_legacy_fks"),
     ]
 
     operations = [

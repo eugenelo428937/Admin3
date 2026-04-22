@@ -58,7 +58,7 @@ def reverse(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orders', '0003_order_item_add_purchasable_fk'),
+        ('orders', '0004_order_item_add_purchasable_fk'),
         ('store', '0009_create_fee_generic_purchasable'),
     ]
     operations = [migrations.RunPython(backfill, reverse)]
