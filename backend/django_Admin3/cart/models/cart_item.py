@@ -152,19 +152,41 @@ class CartItem(models.Model):
 
     @property
     def item_name(self):
-        """Get the display name of the item"""
+        """Get the display name of the item.
+
+        Prefers the product's string representation for ESS products, falls
+        back to the purchasable's name for vouchers / binders / fees. Any
+        row without a purchasable returns None (shouldn't happen after
+        Release B since purchasable is NOT NULL, but defensive).
+        """
+        if self.purchasable_id is None:
+            return None
         if self.item_type == 'marking_voucher':
             return self.marking_voucher.name
-        return str(self.product)
+        product = self.product
+        if product is not None:
+            return str(product)
+        return self.purchasable.name
 
     @property
     def item_price(self):
-        """Get the price of the item"""
+        """Get the price of the item.
+
+        Prefers the line-level actual_price (captured at add-to-cart time).
+        Falls back to the purchasable's standard-tier Price row. Returns None
+        if neither is available.
+        """
         if self.actual_price is not None:
             return self.actual_price
-        if self.item_type == 'marking_voucher':
-            return self.marking_voucher.price
-        return None
+        if self.purchasable_id is None:
+            return None
+        try:
+            standard = self.purchasable.prices.filter(
+                price_type='standard', is_active=True,
+            ).first()
+        except Exception:
+            return None
+        return standard.amount if standard else None
 
     # ─────────────────────────────────────────────────────────────────────
     # Task 23: legacy `product`, `marking_voucher`, and `item_type` FK/
