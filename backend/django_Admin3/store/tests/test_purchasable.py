@@ -52,65 +52,7 @@ class PurchasablePricingTests(TestCase):
         self.assertEqual(p.prices.count(), 1)
         self.assertEqual(p.prices.first().amount, Decimal('50.00'))
 
-    def test_price_still_linked_to_product_legacy_path(self):
-        """Guards the dual-write contract — the legacy product FK must
-        remain writable during Tasks 3-10 before Task 11 backfills and
-        Release B removes it.
-
-        Post-Task-7: Product is now an MTI subclass of Purchasable, so the
-        inherited ``prices`` reverse accessor resolves via Price.purchasable.
-        This test verifies both: the legacy ``Price.product`` FK is still
-        writable, AND the MTI reverse accessor works when Price.purchasable
-        is set to the Product (which IS a Purchasable).
-        """
-        from django.utils import timezone
-        from catalog.models import (
-            Subject, ExamSession, ExamSessionSubject,
-            Product as CatalogProduct, ProductVariation,
-            ProductProductVariation,
-        )
-        subject = Subject.objects.create(code='LP1', description='Legacy Path', active=True)
-        session = ExamSession.objects.create(
-            session_code='2099-01',
-            start_date=timezone.now(),
-            end_date=timezone.now() + timezone.timedelta(days=30),
-        )
-        ess = ExamSessionSubject.objects.create(
-            exam_session=session, subject=subject, is_active=True
-        )
-        catalog_product = CatalogProduct.objects.create(
-            fullname='Legacy Product', shortname='LP', code='LP01', is_active=True,
-        )
-        variation = ProductVariation.objects.create(
-            variation_type='Printed', name='Printed', code='P',
-        )
-        ppv = ProductProductVariation.objects.create(
-            product=catalog_product, product_variation=variation,
-        )
-        product = Product.objects.create(
-            exam_session_subject=ess,
-            product_product_variation=ppv,
-        )
-        # Legacy product FK still writable (dual-write contract)
-        legacy_price = Price.objects.create(
-            product=product, price_type='standard', amount=Decimal('25.00')
-        )
-        self.assertEqual(legacy_price.product_id, product.pk)
-        # Price.save() auto-populates purchasable from product, so the legacy
-        # row is also reachable via the MTI reverse accessor. This is the
-        # Release A invariant: setting only product= means purchasable= is
-        # set automatically so callers migrating to product.prices never see
-        # a gap.
-        self.assertEqual(legacy_price.purchasable_id, product.pk)
-
-        # Explicit purchasable= also works — exercises the MTI parent
-        # relationship directly.
-        Price.objects.create(
-            purchasable=product, price_type='retaker', amount=Decimal('20.00')
-        )
-        # Both prices are visible via product.prices (MTI-inherited reverse
-        # accessor) — the legacy-FK one via the auto-populate shim, the new
-        # one directly.
-        self.assertEqual(product.prices.count(), 2)
-        amounts = set(product.prices.values_list('amount', flat=True))
-        self.assertEqual(amounts, {Decimal('25.00'), Decimal('20.00')})
+    # Task 23 (Release B): ``test_price_still_linked_to_product_legacy_path``
+    # was removed. ``Price.product`` FK no longer exists as a DB column
+    # after ``store.migrations.0013_drop_price_product_fk``; only the
+    # ``product=`` kwarg shim in ``Price.__init__`` remains for compat.

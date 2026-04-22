@@ -1,5 +1,4 @@
-"""Smoke test: every MarkingVoucher has a matching GenericItem + Price + map row."""
-from django.db import connection
+"""Smoke test: every MarkingVoucher has a matching GenericItem + Price."""
 from django.test import TestCase
 
 from marking_vouchers.models import MarkingVoucher
@@ -24,8 +23,7 @@ class VoucherBackfillTests(TestCase):
         ).count()
         self.assertEqual(price_count, voucher_count)
 
-    def test_migration_map_table_exists_and_populated(self):
-        with connection.cursor() as cur:
-            cur.execute('SELECT COUNT(*) FROM acted._voucher_migration_map')
-            count = cur.fetchone()[0]
-        self.assertEqual(count, MarkingVoucher.objects.count())
+    # Task 23 (Release B): ``acted._voucher_migration_map`` temp table
+    # was dropped by ``orders.migrations.0007_drop_order_item_legacy_fks``
+    # after it had served its purpose during Release A. The test that
+    # used to assert the map was populated was removed with the table.

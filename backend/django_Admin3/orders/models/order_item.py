@@ -1,5 +1,4 @@
 from django.db import models
-from store.models import Product as StoreProduct
 from .order import Order
 
 
@@ -12,36 +11,17 @@ class OrderItem(models.Model):
 
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
 
-    # Product reference
-    product = models.ForeignKey(
-        StoreProduct,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='order_items',
-        help_text="Reference to store.Product"
-    )
-    marking_voucher = models.ForeignKey(
-        'marking_vouchers.MarkingVoucher',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-
-    # Dual-write phase (Task 10): new unified FK alongside legacy product / marking_voucher FKs.
-    # Becomes NOT NULL in Release B (Task 23) once backfill completes.
-    # NOTE: reverse accessor is 'order_items_by_purchasable' to avoid clashing with the
-    # legacy product FK's 'order_items' accessor — Product is an MTI subclass of Purchasable,
-    # so both FKs ultimately reach the purchasables table. After Release B drops the
-    # legacy FK, this can be renamed to 'order_items'.
+    # Task 23 (Release B): legacy `product`, `marking_voucher`, and
+    # `item_type` columns have been dropped. All items reach the catalog
+    # via the unified `purchasable` FK; the former fields are now
+    # read-only @properties derived from `purchasable`.
     purchasable = models.ForeignKey(
         'store.Purchasable',
         on_delete=models.PROTECT,
         related_name='order_items_by_purchasable',
-        help_text='The catalog entity being purchased. Non-null in Release B.'
+        help_text='The catalog entity being purchased.'
     )
 
-    item_type = models.CharField(max_length=20, choices=ITEM_TYPE_CHOICES, default='product')
     quantity = models.PositiveIntegerField(default=1)
     price_type = models.CharField(max_length=20, default="standard")
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -60,70 +40,44 @@ class OrderItem(models.Model):
         managed = False
         verbose_name = 'Order Item'
         verbose_name_plural = 'Order Items'
-        constraints = [
-            models.CheckConstraint(
-                condition=(
-                    models.Q(product__isnull=False) |
-                    models.Q(marking_voucher__isnull=False) |
-                    models.Q(purchasable__isnull=False) |
-                    models.Q(item_type='fee')
-                ),
-                name='order_item_has_product_or_voucher_or_is_fee'
-            ),
-            models.CheckConstraint(
-                condition=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
-                name='order_item_not_both_product_and_voucher'
-            )
-        ]
 
-    def save(self, *args, **kwargs):
-        """Auto-populate purchasable_id from legacy FKs during the transition.
+    def __init__(self, *args, **kwargs):
+        """Task 23 backward-compat: translate legacy kwargs to `purchasable`.
 
-        Release B shim: callers that set only `product=...`,
-        `marking_voucher=...`, or `item_type='fee'` get `purchasable_id`
-        populated automatically:
-
-        - product-backed rows: purchasable_id == product_id (Product is an
-          MTI subclass of Purchasable, so the parent pointer equals the
-          Product PK).
-        - voucher-backed rows: look up the GenericItem created in
-          store.0008_backfill_purchasable_from_vouchers via matching code.
-        - fee rows: point at the FEE_GENERIC Purchasable (created in
-          store.0009_create_fee_generic_purchasable).
-
-        Mirrors the save() shim on CartItem and on Price, and is removed
-        in Task 23 when the legacy product/marking_voucher/fee columns
-        are dropped from the DB.
+        See ``cart.models.cart_item.CartItem.__init__`` for rationale —
+        identical kwarg translation for the orders side.
         """
-        if self.purchasable_id is None:
-            if self.product_id is not None:
-                # Product.id == Purchasable.id post-MTI.
-                self.purchasable_id = self.product_id
-            elif self.marking_voucher_id is not None:
+        product = kwargs.pop('product', None)
+        marking_voucher = kwargs.pop('marking_voucher', None)
+        item_type = kwargs.pop('item_type', None)
+        if 'purchasable' not in kwargs and 'purchasable_id' not in kwargs:
+            if product is not None:
+                try:
+                    kwargs['purchasable'] = product.purchasable_ptr
+                except AttributeError:
+                    kwargs['purchasable'] = product
+            elif marking_voucher is not None:
                 from store.models import GenericItem
-                mv = self.marking_voucher
                 gi, _ = GenericItem.objects.get_or_create(
                     kind='marking_voucher',
-                    code=mv.code,
+                    code=marking_voucher.code,
                     defaults={
-                        'name': mv.name,
-                        'description': mv.description or '',
-                        'is_active': mv.is_active,
+                        'name': marking_voucher.name,
+                        'description': getattr(marking_voucher, 'description', '') or '',
+                        'is_active': getattr(marking_voucher, 'is_active', True),
                         'dynamic_pricing': False,
                         'vat_classification': '',
                         'validity_period_days': 1460,
                         'stock_tracked': False,
                     },
                 )
-                self.purchasable_id = gi.purchasable_ptr_id
-            elif self.item_type == 'fee':
+                kwargs['purchasable_id'] = gi.purchasable_ptr_id
+            elif item_type == 'fee':
                 from store.models import Purchasable
-                try:
-                    fee = Purchasable.objects.get(code='FEE_GENERIC')
-                    self.purchasable_id = fee.id
-                except Purchasable.DoesNotExist:
-                    pass
-        super().save(*args, **kwargs)
+                fee = Purchasable.objects.filter(code='FEE_GENERIC').first()
+                if fee is not None:
+                    kwargs['purchasable'] = fee
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         if self.item_type == 'marking_voucher':
@@ -145,15 +99,12 @@ class OrderItem(models.Model):
         return None
 
     # ─────────────────────────────────────────────────────────────────────
-    # Backward-compat shims — added in Task 19, renamed to plain names in
-    # Task 23 when the legacy product/marking_voucher/item_type columns are
-    # dropped from the DB. These derive the same values from the unified
-    # `purchasable` FK so new code paths that populate only `purchasable_id`
-    # still expose the legacy representation for callers during the
-    # transition window.
+    # Task 23: legacy `product`, `marking_voucher`, and `item_type` FK/
+    # column names are now read-only @properties derived from `purchasable`.
+    # Replaces the Task 19 `*_shim` variants, which have been renamed here.
     # ─────────────────────────────────────────────────────────────────────
     @property
-    def product_shim(self):
+    def product(self):
         """Returns the Product instance if purchasable.kind == 'product', else None."""
         if self.purchasable_id is None:
             return None
@@ -166,7 +117,7 @@ class OrderItem(models.Model):
             return None
 
     @property
-    def marking_voucher_shim(self):
+    def marking_voucher(self):
         """Returns the GenericItem instance if purchasable.kind == 'marking_voucher'."""
         if self.purchasable_id is None:
             return None
@@ -178,14 +129,24 @@ class OrderItem(models.Model):
             return None
 
     @property
-    def item_type_shim(self):
-        """Returns the legacy item_type string derived from purchasable.kind.
+    def item_type(self):
+        """Returns the legacy item_type string derived from purchasable.
 
-        If the row has a legacy item_type column set (pre-backfill), prefer that;
-        otherwise fall back to purchasable.kind.
+        Mapping:
+          - purchasable.code == 'FEE_GENERIC'     → 'fee'
+          - purchasable.kind == 'product'          → 'product'
+          - purchasable.kind == 'marking_voucher'  → 'marking_voucher'
+          - any other GenericItem kind             → 'fee'
         """
-        if self.item_type:
-            return self.item_type
-        if self.purchasable_id:
-            return self.purchasable.kind
-        return None
+        if self.purchasable_id is None:
+            return None
+        try:
+            p = self.purchasable
+        except Exception:
+            return None
+        if getattr(p, 'code', None) == 'FEE_GENERIC':
+            return 'fee'
+        kind = getattr(p, 'kind', None)
+        if kind in ('product', 'marking_voucher'):
+            return kind
+        return 'fee'

@@ -15,20 +15,21 @@ class CartItemSerializer(serializers.ModelSerializer):
     current_product = serializers.SerializerMethodField()
     product_id = serializers.SerializerMethodField()
 
-    # Task 19: backward-compat shim accessors — prefer legacy FK when present,
-    # else derive from the unified purchasable FK. This lets items created with
-    # only `purchasable_id` set still serialize to the same output shape.
+    # Task 23: legacy `product` / `marking_voucher` / `item_type` are now
+    # @properties on the model, derived from the unified `purchasable` FK.
+    # These helpers stay as thin delegations so existing get_* methods below
+    # keep the same call shape.
     @staticmethod
     def _product(obj):
-        return obj.product or obj.product_shim
+        return obj.product
 
     @staticmethod
     def _marking_voucher(obj):
-        return obj.marking_voucher or obj.marking_voucher_shim
+        return obj.marking_voucher
 
     @staticmethod
     def _item_type(obj):
-        return obj.item_type_shim
+        return obj.item_type
 
     # Phase 5: VAT fields (stored in CartItem model from orchestrator results)
     net_amount = serializers.SerializerMethodField()
@@ -338,15 +339,15 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
             'purchasable',
         ]
 
-    # Task 19: shim-aware accessors — prefer legacy FK when set, else derive
-    # from purchasable via the model shim properties so new rows still serialize.
+    # Task 23: `product` / `item_type` are now @properties on the model,
+    # derived from the unified `purchasable` FK.
     @staticmethod
     def _product(obj):
-        return obj.product or obj.product_shim
+        return obj.product
 
     @staticmethod
     def _item_type(obj):
-        return obj.item_type_shim
+        return obj.item_type
 
     def get_product(self, obj):
         """Emit legacy product FK as primary-key integer if present, else derive from purchasable shim.

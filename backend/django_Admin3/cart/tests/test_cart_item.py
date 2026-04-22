@@ -1,8 +1,10 @@
 """
-Task 9: CartItem.purchasable FK dual-write phase tests.
+Task 23 (Release B): CartItem unified purchasable FK tests.
 
-Tests that CartItem accepts the new nullable `purchasable` FK while
-retaining legacy `product` / `marking_voucher` FKs.
+The legacy `product` / `marking_voucher` / `item_type` columns have been
+dropped. Items reach the catalog via the unified `purchasable` FK, and
+the former field names survive as read-only @properties derived from
+``purchasable.kind``.
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -14,7 +16,7 @@ User = get_user_model()
 
 
 class CartItemPurchasableFKTests(TestCase):
-    """Dual-write phase: new purchasable FK coexists with legacy FKs."""
+    """The single supported FK for CartItem is `purchasable`."""
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -37,28 +39,26 @@ class CartItemPurchasableFKTests(TestCase):
         )
         self.assertEqual(item.purchasable_id, p.id)
 
-    def test_cart_item_product_fk_still_works(self):
-        """Dual-write contract: legacy product FK must remain usable."""
+    def test_cart_item_product_backed_via_purchasable(self):
+        """Product is an MTI subclass of Purchasable; product.pk ==
+        purchasable_ptr_id, so the same PK backs both sides.
+        """
         cart = Cart.objects.create(user=self.user)
         product = Product.objects.first()
         if product is None:
             self.skipTest("No products available")
         item = CartItem.objects.create(
             cart=cart,
-            product=product,
+            purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.product_id, product.pk)
+        self.assertEqual(item.purchasable_id, product.pk)
+        self.assertEqual(item.product, product)
 
 
-class CartItemShimPropertiesTests(TestCase):
-    """Task 19: backward-compat shim properties derived from purchasable.
-
-    During Release A (Tasks 19-22), the legacy `product`/`marking_voucher`/
-    `item_type` DB fields coexist with the new `purchasable` FK. These shim
-    properties derive the same legacy values from `purchasable` for rows
-    created with only `purchasable_id` set. In Release B (Task 23), the
-    legacy columns are dropped and the shims are renamed to plain names.
+class CartItemPurchasablePropertiesTests(TestCase):
+    """Task 23: `product`, `marking_voucher`, `item_type` are now read-only
+    @properties derived from the unified `purchasable` FK.
     """
 
     def setUp(self):
@@ -67,20 +67,18 @@ class CartItemShimPropertiesTests(TestCase):
         )
         self.cart = Cart.objects.create(user=self.user)
 
-    def test_product_shim_returns_product_for_product_kind(self):
+    def test_product_property_returns_product_for_product_kind(self):
         product = Product.objects.first()
         if product is None:
             self.skipTest('No Product fixtures')
-        # Create a CartItem pointing at the Product's purchasable parent
-        # via the MTI pointer, NOT the legacy product FK.
         item = CartItem.objects.create(
             cart=self.cart,
             purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.product_shim, product)
+        self.assertEqual(item.product, product)
 
-    def test_marking_voucher_shim_returns_generic_item(self):
+    def test_marking_voucher_property_returns_generic_item(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -93,9 +91,9 @@ class CartItemShimPropertiesTests(TestCase):
             purchasable=gi.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.marking_voucher_shim, gi)
+        self.assertEqual(item.marking_voucher, gi)
 
-    def test_product_shim_none_for_voucher_purchasable(self):
+    def test_product_property_none_for_voucher_purchasable(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -108,9 +106,9 @@ class CartItemShimPropertiesTests(TestCase):
             purchasable=gi.purchasable_ptr,
             quantity=1,
         )
-        self.assertIsNone(item.product_shim)
+        self.assertIsNone(item.product)
 
-    def test_marking_voucher_shim_none_for_product_purchasable(self):
+    def test_marking_voucher_property_none_for_product_purchasable(self):
         product = Product.objects.first()
         if product is None:
             self.skipTest('No Product fixtures')
@@ -119,9 +117,9 @@ class CartItemShimPropertiesTests(TestCase):
             purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertIsNone(item.marking_voucher_shim)
+        self.assertIsNone(item.marking_voucher)
 
-    def test_item_type_shim_derives_from_purchasable_kind(self):
+    def test_item_type_derives_from_purchasable_kind(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -129,13 +127,20 @@ class CartItemShimPropertiesTests(TestCase):
             name='X',
             validity_period_days=1460,
         )
-        # Create without setting item_type column explicitly — default is 'product'.
-        # The shim should prefer the legacy column when it's non-empty, but
-        # this test row has kind=marking_voucher so we need to confirm behavior.
         item = CartItem.objects.create(
             cart=self.cart,
             purchasable=gi.purchasable_ptr,
-            item_type='',  # Force empty to exercise purchasable fallback path
             quantity=1,
         )
-        self.assertEqual(item.item_type_shim, 'marking_voucher')
+        self.assertEqual(item.item_type, 'marking_voucher')
+
+    def test_item_type_fee_for_fee_generic_purchasable(self):
+        fee = Purchasable.objects.filter(code='FEE_GENERIC').first()
+        if fee is None:
+            self.skipTest('FEE_GENERIC purchasable not present')
+        item = CartItem.objects.create(
+            cart=self.cart,
+            purchasable=fee,
+            quantity=1,
+        )
+        self.assertEqual(item.item_type, 'fee')

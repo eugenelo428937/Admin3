@@ -78,7 +78,7 @@ class Command(BaseCommand):
                             # Check if primary cart already has this exact item
                             existing_item = CartItem.objects.filter(
                                 cart=primary_cart,
-                                product=cart_item.product,
+                                purchasable_id=cart_item.purchasable_id,
                                 price_type=cart_item.price_type,
                                 metadata__variationId=cart_item.metadata.get('variationId')
                             ).first()

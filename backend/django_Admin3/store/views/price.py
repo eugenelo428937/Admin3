@@ -18,7 +18,7 @@ class PriceViewSet(viewsets.ModelViewSet):
     Write operations: IsSuperUser
     """
     pagination_class = None
-    queryset = Price.objects.select_related('product')
+    queryset = Price.objects.select_related('purchasable')
     serializer_class = PriceSerializer
 
     def get_permissions(self):

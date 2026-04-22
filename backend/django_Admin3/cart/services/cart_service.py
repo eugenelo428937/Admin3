@@ -52,11 +52,30 @@ class CartService:
         return item, None
 
     def add_marking_voucher(self, cart, voucher, quantity=1, actual_price=None):
-        """Add a marking voucher item to the cart."""
+        """Add a marking voucher item to the cart.
+
+        Task 23 (Release B): legacy MarkingVoucher table is no longer a valid
+        cart FK target. Map the incoming ``voucher`` to the unified
+        ``store.GenericItem`` (kind='marking_voucher') via matching ``code``.
+        """
+        from store.models import GenericItem
+
+        gi, _ = GenericItem.objects.get_or_create(
+            kind='marking_voucher',
+            code=voucher.code,
+            defaults={
+                'name': voucher.name,
+                'description': voucher.description or '',
+                'is_active': voucher.is_active,
+                'dynamic_pricing': False,
+                'vat_classification': '',
+                'validity_period_days': 1460,
+                'stock_tracked': False,
+            },
+        )
         item, created = CartItem.objects.get_or_create(
             cart=cart,
-            marking_voucher=voucher,
-            item_type='marking_voucher',
+            purchasable_id=gi.purchasable_ptr_id,
             defaults={
                 'quantity': quantity,
                 'actual_price': actual_price or voucher.price,
@@ -111,10 +130,11 @@ class CartService:
         user_cart, _ = Cart.objects.get_or_create(user=user)
 
         for item in guest_cart.items.all():
-            # Check for duplicate product+price_type+variation
+            # Task 23: match by the unified purchasable FK (product rows are
+            # MTI subclasses so purchasable_id == product_id).
             existing = CartItem.objects.filter(
                 cart=user_cart,
-                product=item.product,
+                purchasable_id=item.purchasable_id,
                 price_type=item.price_type,
             )
             if item.metadata.get('variationId'):
@@ -223,14 +243,16 @@ class CartService:
         """Handle adding regular (non-tutorial) items with variation logic."""
         variation_id = metadata.get('variationId')
 
+        # Task 23: filter by unified purchasable FK (product_id == purchasable_id
+        # under MTI).
         if variation_id:
             existing = CartItem.objects.filter(
-                cart=cart, product=product, price_type=price_type,
+                cart=cart, purchasable_id=product.pk, price_type=price_type,
                 metadata__variationId=variation_id,
             ).first()
         else:
             existing = CartItem.objects.filter(
-                cart=cart, product=product, price_type=price_type,
+                cart=cart, purchasable_id=product.pk, price_type=price_type,
                 metadata__variationId__isnull=True,
             ).first()
 
@@ -249,9 +271,12 @@ class CartService:
         is_marking = self._is_marking_product(product)
         deadline_info = self._get_expired_deadline_info(product) if is_marking else {}
 
+        # Task 23: product-backed cart lines persist via the unified purchasable
+        # FK. Product is an MTI subclass of Purchasable, so product.pk ==
+        # purchasable_ptr_id.
         return CartItem.objects.create(
             cart=cart,
-            product=product,
+            purchasable_id=product.pk,
             quantity=quantity,
             price_type=price_type,
             actual_price=actual_price,

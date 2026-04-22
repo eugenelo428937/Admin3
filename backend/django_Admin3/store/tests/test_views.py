@@ -410,7 +410,11 @@ class TestPriceViewSet(StoreAPITestCase):
         self.assertIn('currency', price)
 
     def test_retrieve_price_detail(self):
-        """Retrieve endpoint should return detailed price information."""
+        """Retrieve endpoint should return detailed price information.
+
+        Task 23 (Release B): price detail payload now exposes
+        ``purchasable_code`` instead of the legacy ``product_code``.
+        """
         response = self.client.get(f'/api/store/prices/{self.price_retail.id}/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -420,7 +424,7 @@ class TestPriceViewSet(StoreAPITestCase):
         self.assertEqual(data['price_type'], 'retail')
         self.assertEqual(data['amount'], '199.99')
         self.assertEqual(data['currency'], 'GBP')
-        self.assertEqual(data['product_code'], 'CM2/PCSM01P/2025-04')
+        self.assertEqual(data['purchasable_code'], 'CM2/PCSM01P/2025-04')
 
     def test_retrieve_nonexistent_price(self):
         """Retrieve endpoint should return 404 for non-existent prices."""

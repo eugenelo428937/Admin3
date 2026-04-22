@@ -249,10 +249,16 @@ class TestStorePriceAdminWrite(StoreAdminTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_as_superuser_returns_201(self):
-        """POST as superuser returns 201."""
+        """POST as superuser returns 201.
+
+        Task 23 (Release B): the Price serializer now expects
+        ``purchasable`` instead of the legacy ``product`` field.
+        store.Product is an MTI subclass of Purchasable, so Product PKs
+        resolve as Purchasable PKs transparently.
+        """
         self.authenticate_superuser()
         response = self.client.post('/api/store/prices/', {
-            'product': self.store_product_2.id,
+            'purchasable': self.store_product_2.id,
             'price_type': 'standard',
             'amount': '99.99',
             'currency': 'GBP',
@@ -263,7 +269,7 @@ class TestStorePriceAdminWrite(StoreAdminTestCase):
         """POST as regular user returns 403."""
         self.authenticate_regular_user()
         response = self.client.post('/api/store/prices/', {
-            'product': self.store_product_2.id,
+            'purchasable': self.store_product_2.id,
             'price_type': 'standard',
             'amount': '99.99',
         })

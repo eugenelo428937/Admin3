@@ -8,10 +8,10 @@ class PriceSerializer(serializers.ModelSerializer):
     """
     Serializer for store.Price model.
 
-    Provides pricing information for a product.
+    Provides pricing information for a purchasable.
     """
-    product_code = serializers.CharField(
-        source='product.product_code',
+    purchasable_code = serializers.CharField(
+        source='purchasable.code',
         read_only=True
     )
 
@@ -19,8 +19,8 @@ class PriceSerializer(serializers.ModelSerializer):
         model = Price
         fields = [
             'id',
-            'product',
-            'product_code',
+            'purchasable',
+            'purchasable_code',
             'price_type',
             'amount',
             'currency',
@@ -28,17 +28,13 @@ class PriceSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
-        # Release B (Task 22): the model-level unique_together is now
-        # (purchasable, price_type). Because the serializer exposes the
-        # legacy `product` FK (not `purchasable`), DRF's auto-generated
-        # UniqueTogetherValidator cannot operate. Price.save() guarantees
-        # purchasable_id == product_id (MTI parent pointer), so validating
-        # (product, price_type) is equivalent and keeps duplicate POSTs
-        # returning 400 instead of leaking an IntegrityError.
+        # Task 23 (Release B): model-level unique_together is
+        # (purchasable, price_type). Mirror it at the serializer so
+        # duplicate POSTs return 400 rather than leaking an IntegrityError.
         validators = [
             UniqueTogetherValidator(
                 queryset=Price.objects.all(),
-                fields=('product', 'price_type'),
+                fields=('purchasable', 'price_type'),
             ),
         ]
 

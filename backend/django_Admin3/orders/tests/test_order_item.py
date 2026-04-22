@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 class OrderItemPurchasableFKTests(TestCase):
-    """Task 10: dual-write phase for OrderItem.purchasable FK."""
+    """Task 23 (Release B): OrderItem uses the unified `purchasable` FK."""
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -38,8 +38,10 @@ class OrderItemPurchasableFKTests(TestCase):
         )
         self.assertEqual(item.purchasable_id, p.id)
 
-    def test_order_item_product_fk_still_works(self):
-        """Dual-write contract: legacy product FK must remain usable."""
+    def test_order_item_product_backed_via_purchasable(self):
+        """Product is an MTI subclass of Purchasable; product.pk ==
+        purchasable_ptr_id.
+        """
         order = Order.objects.create(
             user=self.user,
             subtotal=Decimal('10.00'),
@@ -51,18 +53,16 @@ class OrderItemPurchasableFKTests(TestCase):
             self.skipTest("No products available")
         item = OrderItem.objects.create(
             order=order,
-            product=product,
+            purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.product_id, product.pk)
+        self.assertEqual(item.purchasable_id, product.pk)
+        self.assertEqual(item.product, product)
 
 
-class OrderItemShimPropertiesTests(TestCase):
-    """Task 19: backward-compat shim properties derived from purchasable.
-
-    Mirror of `CartItemShimPropertiesTests` for OrderItem — new rows created
-    with only `purchasable_id` set must still expose the legacy product /
-    marking_voucher / item_type representation via shim properties.
+class OrderItemPurchasablePropertiesTests(TestCase):
+    """Task 23: `product` / `marking_voucher` / `item_type` are now read-only
+    @properties derived from the unified `purchasable` FK.
     """
 
     def setUp(self):
@@ -76,7 +76,7 @@ class OrderItemShimPropertiesTests(TestCase):
             total_amount=Decimal('10.00'),
         )
 
-    def test_product_shim_returns_product_for_product_kind(self):
+    def test_product_property_returns_product_for_product_kind(self):
         product = StoreProduct.objects.first()
         if product is None:
             self.skipTest('No Product fixtures')
@@ -85,9 +85,9 @@ class OrderItemShimPropertiesTests(TestCase):
             purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.product_shim, product)
+        self.assertEqual(item.product, product)
 
-    def test_marking_voucher_shim_returns_generic_item(self):
+    def test_marking_voucher_property_returns_generic_item(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -100,9 +100,9 @@ class OrderItemShimPropertiesTests(TestCase):
             purchasable=gi.purchasable_ptr,
             quantity=1,
         )
-        self.assertEqual(item.marking_voucher_shim, gi)
+        self.assertEqual(item.marking_voucher, gi)
 
-    def test_product_shim_none_for_voucher_purchasable(self):
+    def test_product_property_none_for_voucher_purchasable(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -115,9 +115,9 @@ class OrderItemShimPropertiesTests(TestCase):
             purchasable=gi.purchasable_ptr,
             quantity=1,
         )
-        self.assertIsNone(item.product_shim)
+        self.assertIsNone(item.product)
 
-    def test_marking_voucher_shim_none_for_product_purchasable(self):
+    def test_marking_voucher_property_none_for_product_purchasable(self):
         product = StoreProduct.objects.first()
         if product is None:
             self.skipTest('No Product fixtures')
@@ -126,9 +126,9 @@ class OrderItemShimPropertiesTests(TestCase):
             purchasable=product.purchasable_ptr,
             quantity=1,
         )
-        self.assertIsNone(item.marking_voucher_shim)
+        self.assertIsNone(item.marking_voucher)
 
-    def test_item_type_shim_derives_from_purchasable_kind(self):
+    def test_item_type_derives_from_purchasable_kind(self):
         from store.models import GenericItem
         gi = GenericItem.objects.create(
             kind='marking_voucher',
@@ -139,7 +139,17 @@ class OrderItemShimPropertiesTests(TestCase):
         item = OrderItem.objects.create(
             order=self.order,
             purchasable=gi.purchasable_ptr,
-            item_type='',  # Force empty to exercise purchasable fallback path
             quantity=1,
         )
-        self.assertEqual(item.item_type_shim, 'marking_voucher')
+        self.assertEqual(item.item_type, 'marking_voucher')
+
+    def test_item_type_fee_for_fee_generic_purchasable(self):
+        fee = Purchasable.objects.filter(code='FEE_GENERIC').first()
+        if fee is None:
+            self.skipTest('FEE_GENERIC purchasable not present')
+        item = OrderItem.objects.create(
+            order=self.order,
+            purchasable=fee,
+            quantity=1,
+        )
+        self.assertEqual(item.item_type, 'fee')

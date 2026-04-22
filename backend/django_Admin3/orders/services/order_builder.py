@@ -61,11 +61,12 @@ class OrderBuilder:
             vat_per_unit = vat_amount / item.quantity if item.quantity > 0 else Decimal('0.00')
             gross_amount = net_amount + vat_per_unit
 
+            # Task 23 (Release B): legacy product/marking_voucher/item_type
+            # columns are gone. Carry the unified `purchasable` FK across
+            # cart → order instead.
             OrderItem.objects.create(
                 order=order,
-                product=item.product,
-                marking_voucher=item.marking_voucher,
-                item_type=item.item_type,
+                purchasable_id=item.purchasable_id,
                 quantity=item.quantity,
                 price_type=item.price_type,
                 actual_price=item.actual_price,
@@ -78,10 +79,14 @@ class OrderBuilder:
             )
 
     def _transfer_fees(self, order: Order):
+        # Task 23: fee lines point at the singleton FEE_GENERIC Purchasable
+        # (created in store.0009). Resolve once per call.
+        from store.models import Purchasable
+        fee_purchasable = Purchasable.objects.filter(code='FEE_GENERIC').first()
         for fee in self.cart.fees.all():
             OrderItem.objects.create(
                 order=order,
-                item_type='fee',
+                purchasable=fee_purchasable,
                 quantity=1,
                 actual_price=fee.amount,
                 net_amount=fee.amount,

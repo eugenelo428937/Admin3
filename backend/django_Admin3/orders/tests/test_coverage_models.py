@@ -322,19 +322,10 @@ class OrderItemStrAndPropertiesTest(ORDBaseTestMixin, TestCase):
         )
         self.assertEqual(item.item_price, Decimal('75.00'))
 
-    def test_item_price_marking_voucher_fallback(self):
-        """item_price returns marking_voucher.price when actual_price is None."""
-        voucher = MarkingVoucher.objects.create(
-            code='ORD_MV_PRICE', name='ORD Price Voucher',
-            price=Decimal('30.00'), is_active=True,
-        )
-        item = OrderItem.objects.create(
-            order=self.order,
-            item_type='marking_voucher',
-            marking_voucher=voucher,
-            quantity=1,
-        )
-        self.assertEqual(item.item_price, Decimal('30.00'))
+    # Task 23 (Release B): ``test_item_price_marking_voucher_fallback``
+    # removed. ``OrderItem.marking_voucher`` now resolves to a
+    # ``store.GenericItem`` (which has no ``.price`` attribute — pricing
+    # lives on the related ``store.Price`` rows).
 
     def test_item_price_none_for_product_without_actual_price(self):
         """item_price returns None when actual_price is None and not a voucher."""

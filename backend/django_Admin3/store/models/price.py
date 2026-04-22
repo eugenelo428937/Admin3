@@ -1,7 +1,7 @@
 """Price model for the store app.
 
-Pricing information for store products, supporting multiple price types
-per product (standard, retaker, reduced, additional).
+Pricing information for store purchasables, supporting multiple price types
+per purchasable (standard, retaker, reduced, additional).
 
 Table: acted.prices
 """
@@ -10,9 +10,9 @@ from django.db import models
 
 class Price(models.Model):
     """
-    Pricing for a store product.
+    Pricing for a store purchasable.
 
-    Supports multiple price types per product:
+    Supports multiple price types per purchasable:
     - standard: Regular price
     - retaker: Price for returning exam candidates
     - reduced: Reduced rate (e.g., student discount)
@@ -31,13 +31,6 @@ class Price(models.Model):
         ('additional', 'Additional Copy'),
     ]
 
-    product = models.ForeignKey(
-        'store.Product',
-        on_delete=models.CASCADE,
-        related_name='+',  # disable reverse accessor during transition
-        null=True, blank=True,
-        help_text='DEPRECATED - use purchasable. Removed in Release B.'
-    )
     purchasable = models.ForeignKey(
         'store.Purchasable',
         on_delete=models.CASCADE,
@@ -73,25 +66,20 @@ class Price(models.Model):
         verbose_name = 'Price'
         verbose_name_plural = 'Prices'
 
-    def save(self, *args, **kwargs):
-        """Auto-populate purchasable from product during the dual-write phase.
+    def __init__(self, *args, **kwargs):
+        """Task 23 backward-compat: accept legacy ``product=`` kwarg.
 
-        Release A shim: callers (including legacy code and test fixtures) that
-        set only `product=...` get `purchasable=...` populated automatically
-        because `Product` is an MTI subclass of `Purchasable` (Task 7), so
-        `product.pk == product.purchasable_ptr_id == purchasable.pk`.
-
-        Ensures `purchasable.prices.all()` (the MTI-inherited reverse accessor)
-        always sees every Price row, even ones written via the legacy FK.
-
-        Removed in Release B when the `product` FK is dropped (Task 23).
+        ``Price.product`` FK has been dropped. Translate
+        ``product=<store.Product>`` to ``purchasable=<product.purchasable_ptr>``
+        so existing call sites (tests, legacy import scripts) keep working.
         """
-        if self.product_id is not None and self.purchasable_id is None:
-            self.purchasable_id = self.product_id
-        super().save(*args, **kwargs)
+        product = kwargs.pop('product', None)
+        if product is not None and 'purchasable' not in kwargs and 'purchasable_id' not in kwargs:
+            try:
+                kwargs['purchasable'] = product.purchasable_ptr
+            except AttributeError:
+                kwargs['purchasable'] = product
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
-        label = self.purchasable.code if self.purchasable_id else (
-            self.product.product_code if self.product_id else '?'
-        )
-        return f"{label} - {self.price_type}: {self.amount} {self.currency}"
+        return f"{self.purchasable.code} - {self.price_type}: {self.amount} {self.currency}"

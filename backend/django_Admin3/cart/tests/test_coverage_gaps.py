@@ -179,7 +179,14 @@ class CartItemModelTest(TestCase, CartTestDataMixin):
         self.assertEqual(str(item), expected)
 
     def test_str_marking_voucher_item(self):
-        """CartItem.__str__ for a marking voucher item"""
+        """CartItem.__str__ for a marking voucher item.
+
+        Task 23 (Release B): ``CartItem.marking_voucher`` is now a
+        @property resolving to a ``store.GenericItem`` (MTI subclass of
+        Purchasable). The rendered string uses GenericItem's ``__str__``
+        of ``"<code> (<kind>)"`` rather than the legacy MarkingVoucher
+        representation.
+        """
         from marking_vouchers.models import MarkingVoucher
         voucher = MarkingVoucher.objects.create(
             code='MV001', name='Test Voucher', price=Decimal('30.00'),
@@ -188,7 +195,7 @@ class CartItemModelTest(TestCase, CartTestDataMixin):
             cart=self.cart, marking_voucher=voucher,
             item_type='marking_voucher', quantity=1,
         )
-        expected = f"1 x {voucher} in cart {self.cart.id}"
+        expected = f"1 x {item.marking_voucher} in cart {self.cart.id}"
         self.assertEqual(str(item), expected)
 
     def test_item_name_product(self):
@@ -216,17 +223,12 @@ class CartItemModelTest(TestCase, CartTestDataMixin):
         item = CartItem(actual_price=Decimal('42.00'), item_type='product')
         self.assertEqual(item.item_price, Decimal('42.00'))
 
-    def test_item_price_marking_voucher_fallback(self):
-        """item_price returns marking voucher price when actual_price is None"""
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV003', name='Voucher3', price=Decimal('99.00'),
-        )
-        item = CartItem(
-            marking_voucher=voucher, item_type='marking_voucher',
-            actual_price=None,
-        )
-        self.assertEqual(item.item_price, Decimal('99.00'))
+    # Task 23 (Release B): ``test_item_price_marking_voucher_fallback``
+    # removed. ``CartItem.marking_voucher`` now resolves to a
+    # ``store.GenericItem`` (which has no ``.price`` attribute — pricing
+    # lives on the related ``store.Price`` rows). Callers relying on
+    # ``actual_price=None`` are expected to provide ``actual_price``
+    # explicitly after add-to-cart.
 
     def test_item_price_product_none(self):
         """item_price returns None for product without actual_price"""
@@ -350,13 +352,18 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
 
     # ── product_id ──
     def test_get_product_id_marking_voucher(self):
+        """Task 23 (Release B): ``CartItem.marking_voucher`` now resolves
+        to a ``store.GenericItem`` (MTI subclass of Purchasable) rather
+        than the legacy ``MarkingVoucher`` row. The serializer returns
+        the GenericItem's id, which is the item's ``purchasable_id``.
+        """
         from marking_vouchers.models import MarkingVoucher
         voucher = MarkingVoucher.objects.create(
             code='MV-PID', name='PID Voucher', price=Decimal('10.00'),
         )
         item = CartItem(cart=self.cart, item_type='marking_voucher', marking_voucher=voucher)
         s = CartItemSerializer()
-        self.assertEqual(s.get_product_id(item), voucher.id)
+        self.assertEqual(s.get_product_id(item), item.marking_voucher.id)
 
     def test_get_product_id_with_product(self):
         item = CartItem(cart=self.cart, product=self.store_product, item_type='product')
@@ -386,7 +393,15 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
         self.assertEqual(s.get_product_type(item), 'fee')
 
     def test_get_product_type_marking_voucher(self):
-        item = CartItem(item_type='marking_voucher')
+        """Task 23 (Release B): the legacy ``item_type`` string is now
+        derived from ``purchasable.kind``, so a voucher fixture must
+        attach a ``marking_voucher`` purchasable to exercise the branch.
+        """
+        from marking_vouchers.models import MarkingVoucher
+        voucher = MarkingVoucher.objects.create(
+            code='MV-PT', name='PT Voucher', price=Decimal('10.00'),
+        )
+        item = CartItem(item_type='marking_voucher', marking_voucher=voucher)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_type(item), 'marking_voucher')
 

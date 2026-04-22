@@ -33,9 +33,14 @@ class GenericItemAdmin(admin.ModelAdmin):
 
 
 class PriceInline(admin.TabularInline):
-    """Inline admin for prices within a product."""
+    """Inline admin for prices within a product.
+
+    Task 23: Price.product was dropped. Price.purchasable is the live FK;
+    Product is an MTI subclass of Purchasable so this inline resolves
+    correctly when added to ProductAdmin.
+    """
     model = Price
-    fk_name = 'product'
+    fk_name = 'purchasable'
     extra = 0
     fields = ['price_type', 'amount', 'currency']
 
@@ -77,14 +82,14 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     """Admin for store.Price model."""
-    list_display = ['get_product_code', 'price_type', 'amount', 'currency']
+    list_display = ['get_purchasable_code', 'price_type', 'amount', 'currency']
     list_filter = ['price_type', 'currency']
-    search_fields = ['product__product_code']
-    raw_id_fields = ['product']
+    search_fields = ['purchasable__code']
+    raw_id_fields = ['purchasable']
 
-    @admin.display(description='Product')
-    def get_product_code(self, obj):
-        return obj.product.product_code
+    @admin.display(description='Purchasable')
+    def get_purchasable_code(self, obj):
+        return obj.purchasable.code if obj.purchasable_id else '—'
 
 
 @admin.register(Bundle)

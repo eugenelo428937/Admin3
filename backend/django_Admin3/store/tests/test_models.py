@@ -197,21 +197,24 @@ class TestPriceModel(TestCase):
     """T016: Test store.Price model fields and constraints."""
 
     def test_price_fields(self):
-        """Test Price model has required fields."""
+        """Test Price model has required fields.
+
+        Task 23 (Release B): the legacy ``product`` FK column was
+        dropped; Price now links to the catalog exclusively via the
+        unified ``purchasable`` FK.
+        """
         from store.models import Price
         field_names = [f.name for f in Price._meta.get_fields()]
-        self.assertIn('product', field_names)
+        self.assertIn('purchasable', field_names)
         self.assertIn('price_type', field_names)
         self.assertIn('amount', field_names)
         self.assertIn('currency', field_names)
         self.assertIn('created_at', field_names)
         self.assertIn('updated_at', field_names)
 
-    def test_price_product_fk(self):
-        """Test Price has FK to store.Product."""
-        from store.models import Price, Product
-        product_field = Price._meta.get_field('product')
-        self.assertEqual(product_field.related_model, Product)
+    # Task 23: ``test_price_product_fk`` was removed — ``Price.product``
+    # FK no longer exists as a DB column (only as a kwarg shim in
+    # ``Price.__init__`` for backward-compat with legacy call sites).
 
     def test_price_type_choices(self):
         """Test Price price_type has correct choices."""
