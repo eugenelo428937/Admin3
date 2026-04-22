@@ -37,7 +37,7 @@ class OrderItem(models.Model):
 
     class Meta:
         db_table = '"acted"."order_items"'
-        managed = False
+        managed = True
         verbose_name = 'Order Item'
         verbose_name_plural = 'Order Items'
 
