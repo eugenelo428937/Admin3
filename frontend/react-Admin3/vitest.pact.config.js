@@ -81,6 +81,15 @@ export default defineConfig({
     include: ['src/pact/**/*.pact.test.js'],
     // Pact tests need longer timeouts (mock server startup)
     testTimeout: 30000,
+    // Serialize file execution — each PactV3 `executeTest` spins up a
+    // mock HTTP server on an OS-assigned port. When vitest runs files in
+    // parallel threads, two mock servers can race on the same ephemeral
+    // port and one test's axios request lands in the wrong mock (or the
+    // mock isn't listening yet), surfacing as intermittent
+    // "request expected but not received" failures in different files
+    // each run. One file at a time fixes it without hurting total runtime
+    // meaningfully — the whole pact suite is ~40s.
+    fileParallelism: false,
     deps: {
       optimizer: {
         web: {
