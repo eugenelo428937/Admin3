@@ -51,34 +51,20 @@ class CartService:
 
         return item, None
 
-    def add_marking_voucher(self, cart, voucher, quantity=1, actual_price=None):
-        """Add a marking voucher item to the cart.
+    def add_generic_item(self, cart, generic_item, quantity=1, actual_price=None):
+        """Add a ``store.GenericItem`` (e.g. marking voucher) to the cart.
 
-        Task 23 (Release B): legacy MarkingVoucher table is no longer a valid
-        cart FK target. Map the incoming ``voucher`` to the unified
-        ``store.GenericItem`` (kind='marking_voucher') via matching ``code``.
+        This replaces the legacy ``add_marking_voucher`` method removed in
+        Task 24 (Release B). All generic catalog items (vouchers, gift cards,
+        etc.) share a single code path that attaches the cart line to the
+        item's ``Purchasable`` row.
         """
-        from store.models import GenericItem
-
-        gi, _ = GenericItem.objects.get_or_create(
-            kind='marking_voucher',
-            code=voucher.code,
-            defaults={
-                'name': voucher.name,
-                'description': voucher.description or '',
-                'is_active': voucher.is_active,
-                'dynamic_pricing': False,
-                'vat_classification': '',
-                'validity_period_days': 1460,
-                'stock_tracked': False,
-            },
-        )
         item, created = CartItem.objects.get_or_create(
             cart=cart,
-            purchasable_id=gi.purchasable_ptr_id,
+            purchasable_id=generic_item.purchasable_ptr_id,
             defaults={
                 'quantity': quantity,
-                'actual_price': actual_price or voucher.price,
+                'actual_price': actual_price,
             }
         )
         if not created:

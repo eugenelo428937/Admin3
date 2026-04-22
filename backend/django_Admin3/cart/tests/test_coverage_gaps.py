@@ -181,19 +181,19 @@ class CartItemModelTest(TestCase, CartTestDataMixin):
     def test_str_marking_voucher_item(self):
         """CartItem.__str__ for a marking voucher item.
 
-        Task 23 (Release B): ``CartItem.marking_voucher`` is now a
-        @property resolving to a ``store.GenericItem`` (MTI subclass of
-        Purchasable). The rendered string uses GenericItem's ``__str__``
-        of ``"<code> (<kind>)"`` rather than the legacy MarkingVoucher
-        representation.
+        Task 24 (Release B): voucher catalog items are now
+        ``store.GenericItem`` rows (MTI subclass of Purchasable). The
+        rendered string uses GenericItem's ``__str__`` of
+        ``"<code> (<kind>)"``.
         """
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV001', name='Test Voucher', price=Decimal('30.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV001', name='Test Voucher',
+            validity_period_days=1460,
         )
         item = CartItem.objects.create(
-            cart=self.cart, marking_voucher=voucher,
-            item_type='marking_voucher', quantity=1,
+            cart=self.cart, purchasable_id=voucher.purchasable_ptr_id,
+            quantity=1,
         )
         expected = f"1 x {item.marking_voucher} in cart {self.cart.id}"
         self.assertEqual(str(item), expected)
@@ -208,13 +208,13 @@ class CartItemModelTest(TestCase, CartTestDataMixin):
 
     def test_item_name_marking_voucher(self):
         """item_name property for marking voucher items"""
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV002', name='Voucher Name', price=Decimal('25.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV002', name='Voucher Name',
+            validity_period_days=1460,
         )
         item = CartItem(
-            cart=self.cart, marking_voucher=voucher,
-            item_type='marking_voucher',
+            cart=self.cart, purchasable_id=voucher.purchasable_ptr_id,
         )
         self.assertEqual(item.item_name, 'Voucher Name')
 
@@ -271,20 +271,22 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
 
     # ── product_name ──
     def test_get_product_name_marking_voucher(self):
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-SER1', name='Serializer Voucher', price=Decimal('10.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-SER1',
+            name='Serializer Voucher', validity_period_days=1460,
         )
-        item = CartItem(cart=self.cart, item_type='marking_voucher', marking_voucher=voucher)
+        item = CartItem(cart=self.cart, purchasable_id=voucher.purchasable_ptr_id)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_name(item), 'Serializer Voucher')
 
     def test_get_product_name_marking_voucher_no_name(self):
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-SER2', name='', price=Decimal('10.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-SER2', name='',
+            validity_period_days=1460,
         )
-        item = CartItem(cart=self.cart, item_type='marking_voucher', marking_voucher=voucher)
+        item = CartItem(cart=self.cart, purchasable_id=voucher.purchasable_ptr_id)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_name(item), 'Marking Voucher')
 
@@ -300,11 +302,12 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
 
     # ── product_code ──
     def test_get_product_code_marking_voucher(self):
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-CODE', name='Voucher', price=Decimal('10.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-CODE', name='Voucher',
+            validity_period_days=1460,
         )
-        item = CartItem(cart=self.cart, item_type='marking_voucher', marking_voucher=voucher)
+        item = CartItem(cart=self.cart, purchasable_id=voucher.purchasable_ptr_id)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_code(item), 'MV-CODE')
 
@@ -352,16 +355,16 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
 
     # ── product_id ──
     def test_get_product_id_marking_voucher(self):
-        """Task 23 (Release B): ``CartItem.marking_voucher`` now resolves
-        to a ``store.GenericItem`` (MTI subclass of Purchasable) rather
-        than the legacy ``MarkingVoucher`` row. The serializer returns
-        the GenericItem's id, which is the item's ``purchasable_id``.
+        """Task 24 (Release B): voucher items are ``store.GenericItem``
+        rows (MTI subclass of Purchasable). The serializer returns the
+        GenericItem's id, which is the item's ``purchasable_id``.
         """
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-PID', name='PID Voucher', price=Decimal('10.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-PID', name='PID Voucher',
+            validity_period_days=1460,
         )
-        item = CartItem(cart=self.cart, item_type='marking_voucher', marking_voucher=voucher)
+        item = CartItem(cart=self.cart, purchasable_id=voucher.purchasable_ptr_id)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_id(item), item.marking_voucher.id)
 
@@ -393,15 +396,16 @@ class CartItemSerializerBranchTest(TestCase, CartTestDataMixin):
         self.assertEqual(s.get_product_type(item), 'fee')
 
     def test_get_product_type_marking_voucher(self):
-        """Task 23 (Release B): the legacy ``item_type`` string is now
+        """Task 24 (Release B): the legacy ``item_type`` string is
         derived from ``purchasable.kind``, so a voucher fixture must
         attach a ``marking_voucher`` purchasable to exercise the branch.
         """
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-PT', name='PT Voucher', price=Decimal('10.00'),
+        from store.models import GenericItem
+        voucher = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-PT', name='PT Voucher',
+            validity_period_days=1460,
         )
-        item = CartItem(item_type='marking_voucher', marking_voucher=voucher)
+        item = CartItem(purchasable_id=voucher.purchasable_ptr_id)
         s = CartItemSerializer()
         self.assertEqual(s.get_product_type(item), 'marking_voucher')
 
@@ -854,26 +858,30 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
         self.assertEqual(item.quantity, 3)
 
     @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
-    def test_add_marking_voucher(self, mock_vat):
-        """add_marking_voucher creates a marking voucher item."""
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-SVC', name='Service Voucher', price=Decimal('50.00'),
+    def test_add_generic_item(self, mock_vat):
+        """add_generic_item creates a generic (voucher-kind) cart item."""
+        from store.models import GenericItem
+        gi = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-SVC', name='Service Voucher',
+            validity_period_days=1460,
         )
-        item = self.service.add_marking_voucher(self.cart, voucher, quantity=2, actual_price=Decimal('45.00'))
+        item = self.service.add_generic_item(
+            self.cart, gi, quantity=2, actual_price=Decimal('45.00'),
+        )
         self.assertEqual(item.item_type, 'marking_voucher')
         self.assertEqual(item.quantity, 2)
         self.assertEqual(item.actual_price, Decimal('45.00'))
 
     @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
-    def test_add_marking_voucher_existing_increments(self, mock_vat):
-        """add_marking_voucher increments quantity on existing voucher."""
-        from marking_vouchers.models import MarkingVoucher
-        voucher = MarkingVoucher.objects.create(
-            code='MV-SVC2', name='Service Voucher 2', price=Decimal('50.00'),
+    def test_add_generic_item_existing_increments(self, mock_vat):
+        """add_generic_item increments quantity for an existing line."""
+        from store.models import GenericItem
+        gi = GenericItem.objects.create(
+            kind='marking_voucher', code='MV-SVC2', name='Service Voucher 2',
+            validity_period_days=1460,
         )
-        self.service.add_marking_voucher(self.cart, voucher, quantity=1)
-        item = self.service.add_marking_voucher(self.cart, voucher, quantity=3)
+        self.service.add_generic_item(self.cart, gi, quantity=1)
+        item = self.service.add_generic_item(self.cart, gi, quantity=3)
         self.assertEqual(item.quantity, 4)
 
     # ── update_item ──
