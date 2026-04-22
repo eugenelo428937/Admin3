@@ -192,8 +192,10 @@ class SessionSetupService:
             exam_session_subject_id__in=ess_ids, is_active=True
         ).update(is_active=False)
 
+        # Post-Release-B: Price.product FK is gone; traverse via the MTI
+        # parent (Purchasable) to the Product child to reach exam_session_subject.
         price_count = Price.objects.filter(
-            product__exam_session_subject_id__in=ess_ids, is_active=True
+            purchasable__product__exam_session_subject_id__in=ess_ids, is_active=True
         ).update(is_active=False)
 
         product_count = Product.objects.filter(
