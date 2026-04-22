@@ -903,29 +903,49 @@ def state_store_product_exists(params=None):
     """State: store product exists (single product detail)
 
     Pact detail endpoint uses /api/store/products/1/, so ensure id=1 exists.
+
+    Post-Release-B note: Product is now an MTI subclass of Purchasable (shared
+    PK). Passing id=1 to StoreProduct.objects.create appears to suppress
+    auto_now_add on the parent's created_at during the two-step MTI insert,
+    so we build the parent Purchasable first (direct create populates
+    auto_now_add fields correctly) and link the child explicitly.
     """
-    from store.models import Product as StoreProduct
+    from store.models import Product as StoreProduct, Purchasable
 
     store_product, _price = setup_store_product()
 
     if store_product.id == 1:
         return
 
-    # Move store product to id=1
+    # Clear id=1 occupants (e.g. FEE_GENERIC from migration 0009, or prior
+    # StoreProducts at that PK) and the candidate store product so the FK
+    # graph is clean before we assign id=1 to a fresh Product row.
     StoreProduct.objects.filter(id=1).exclude(pk=store_product.pk).delete()
     store_product.delete()
+    Purchasable.objects.filter(id=1).delete()
 
     _subject, _es, ess, _cp, _var, ppv = setup_catalog_foundation()
     from store.models import Price
     from decimal import Decimal as D
 
-    sp = StoreProduct.objects.create(
+    # Create parent Purchasable first so auto_now_add fires on direct create.
+    parent = Purchasable.objects.create(
         id=1,
+        kind='product',
+        code='CM2/PCSM01P/2025-04',
+        name='CM2 Printed Combined Study Material',
+        is_active=True,
+    )
+    # Build child Product linked to the parent via save_base(raw=True) to
+    # skip the custom save() logic (which would otherwise try to regenerate
+    # the parent's code/kind and re-save the parent).
+    sp = StoreProduct(
+        purchasable_ptr=parent,
         exam_session_subject=ess,
         product_product_variation=ppv,
         product_code='CM2/PCSM01P/2025-04',
-        is_active=True,
     )
+    sp.save_base(raw=True, force_insert=True)
     Price.objects.get_or_create(
         purchasable_id=sp.pk,
         price_type='standard',
