@@ -516,6 +516,18 @@ class TestNavigationDataView(CatalogAPITestCase):
         response = self.client.get('/api/catalog/navigation-data/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_navigation_data_ignores_invalid_jwt(self):
+        """navigation-data is public; an invalid/expired JWT must not block access.
+
+        Regression: a stale token in the client's localStorage was causing
+        JWTAuthentication to reject the request with 401 before AllowAny was
+        consulted, leaving the navbar empty.
+        """
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid.jwt.token')
+
+        response = self.client.get('/api/catalog/navigation-data/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 @unittest.skipUnless(trigram_extension_available(), "Requires PostgreSQL pg_trgm extension")
 class TestFuzzySearchView(CatalogAPITestCase):
