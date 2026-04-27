@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment
+from orders.models import (
+    Order, OrderContact, OrderPreference, OrderAcknowledgment, OrderDelivery,
+)
 from orders.serializers.order_serializer import OrderItemSerializer, PaymentSerializer
 
 
@@ -48,6 +50,17 @@ class OrderAcknowledgmentSerializer(serializers.ModelSerializer):
         ]
 
 
+class OrderDeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderDelivery
+        fields = [
+            'id',
+            'delivery_address_type', 'delivery_address_data',
+            'invoice_address_type', 'invoice_address_data',
+            'created_at', 'updated_at',
+        ]
+
+
 class AdminOrderListSerializer(serializers.ModelSerializer):
     student = serializers.SerializerMethodField()
     item_codes = serializers.SerializerMethodField()
@@ -88,6 +101,7 @@ class AdminOrderDetailSerializer(serializers.ModelSerializer):
     user_contact = serializers.SerializerMethodField()
     user_preferences = OrderPreferenceSerializer(many=True, read_only=True)
     user_acknowledgments = OrderAcknowledgmentSerializer(many=True, read_only=True)
+    delivery_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -99,6 +113,7 @@ class AdminOrderDetailSerializer(serializers.ModelSerializer):
             'student',
             'items', 'payments',
             'user_contact', 'user_preferences', 'user_acknowledgments',
+            'delivery_detail',
         ]
 
     def get_student(self, obj):
@@ -116,3 +131,9 @@ class AdminOrderDetailSerializer(serializers.ModelSerializer):
         contacts = list(obj.user_contact.all())
         contact = contacts[0] if contacts else None
         return OrderContactSerializer(contact).data if contact else None
+
+    def get_delivery_detail(self, obj):
+        # Use list() so the prefetch_related('delivery_detail') cache is honored.
+        records = list(obj.delivery_detail.all())
+        record = records[0] if records else None
+        return OrderDeliverySerializer(record).data if record else None

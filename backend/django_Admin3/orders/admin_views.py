@@ -47,6 +47,7 @@ class AdminOrderViewSet(viewsets.ReadOnlyModelViewSet):
                 'user_contact',
                 'user_preferences',
                 'user_acknowledgments',
+                'delivery_detail',
             )
             .order_by('-created_at')
         )

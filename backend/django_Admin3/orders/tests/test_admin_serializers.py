@@ -177,3 +177,25 @@ class AdminOrderDetailSerializerTest(TestCase):
         assert data['payments'] == []
         assert data['user_preferences'] == []
         assert data['user_acknowledgments'] == []
+
+    def test_detail_includes_delivery_addresses(self):
+        from orders.models import OrderDelivery
+        OrderDelivery.objects.create(
+            order=self.order,
+            delivery_address_type='home',
+            delivery_address_data={'line1': '1 High St', 'city': 'London', 'country': 'GB'},
+            invoice_address_type='work',
+            invoice_address_data={'line1': '2 Work Way', 'city': 'London', 'country': 'GB'},
+        )
+        data = AdminOrderDetailSerializer(self.order).data
+        assert data['delivery_detail'] is not None
+        assert data['delivery_detail']['delivery_address_type'] == 'home'
+        assert data['delivery_detail']['delivery_address_data']['city'] == 'London'
+        assert data['delivery_detail']['invoice_address_data']['line1'] == '2 Work Way'
+
+    def test_detail_handles_missing_delivery_addresses(self):
+        # Use the bare order from the prior test fixture to ensure no delivery
+        bare_user = User.objects.create_user(username='bare2', email='bare2@x.com')
+        bare_order = Order.objects.create(user=bare_user, total_amount=Decimal('0'))
+        data = AdminOrderDetailSerializer(bare_order).data
+        assert data['delivery_detail'] is None
