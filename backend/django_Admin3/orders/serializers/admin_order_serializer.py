@@ -112,5 +112,7 @@ class AdminOrderDetailSerializer(serializers.ModelSerializer):
         }
 
     def get_user_contact(self, obj):
-        contact = obj.user_contact.first()
+        # Use list() so the prefetch_related('user_contact') cache is honored.
+        contacts = list(obj.user_contact.all())
+        contact = contacts[0] if contacts else None
         return OrderContactSerializer(contact).data if contact else None
