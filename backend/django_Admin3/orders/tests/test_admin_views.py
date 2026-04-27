@@ -198,5 +198,6 @@ class AdminOrderViewSetQueryCountTest(APITestCase):
             response = self.client.get('/api/orders/admin/')
         assert response.status_code == 200
         # Bound: pagination COUNT + main + select_related joined + prefetches.
-        # With 6 prefetch relations expect ~10. Cap at 15 as regression guard.
-        assert len(ctx.captured_queries) <= 15, f"Query count {len(ctx.captured_queries)} exceeds bound"
+        # Actual count is ~8 with all prefetches; cap at 10 for tight regression guard.
+        # Dropping any single prefetch would add ~5 queries (one per row), exceeding bound.
+        assert len(ctx.captured_queries) <= 10, f"Query count {len(ctx.captured_queries)} exceeds bound"

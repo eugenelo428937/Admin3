@@ -82,6 +82,10 @@ class AdminOrderViewSet(viewsets.ReadOnlyModelViewSet):
         if product_code:
             qs = qs.filter(items__purchasable__code=product_code).distinct()
 
+        # Date filters use the database timezone (UTC) for date extraction.
+        # An order created at 23:30 UTC on day X falls under date_from=X.
+        # If admins need their local-timezone calendar, this needs adjustment
+        # via TruncDate(..., tzinfo=...).
         date_from = params.get('date_from')
         if date_from:
             qs = qs.filter(created_at__date__gte=date_from)
