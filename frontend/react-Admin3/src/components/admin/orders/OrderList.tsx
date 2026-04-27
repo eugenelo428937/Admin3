@@ -184,9 +184,6 @@ const OrderList: React.FC = () => {
             pageSize={vm.pageSize}
             total={vm.totalCount}
             onPageChange={vm.handleChangePage}
-            onPageSizeChange={(e) =>
-              vm.handleChangeRowsPerPage(e as unknown as React.ChangeEvent<HTMLInputElement>)
-            }
           />
         </div>
       )}

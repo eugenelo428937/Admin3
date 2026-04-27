@@ -144,7 +144,6 @@ const useOrderListVM = () => {
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRowsPerPage = (_event: React.ChangeEvent<HTMLInputElement>) => setPage(0);
 
   const onView = (orderId: number) => navigate(`/admin/orders/${orderId}`);
 
@@ -156,7 +155,7 @@ const useOrderListVM = () => {
     clearFilters,
     productCodeOptions,
     ordering, toggleSort,
-    handleChangePage, handleChangeRowsPerPage,
+    handleChangePage,
     onView,
   };
 };

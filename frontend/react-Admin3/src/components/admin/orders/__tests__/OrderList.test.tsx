@@ -40,7 +40,6 @@ const vmReturn = {
   ordering: '-created_at',
   toggleSort: vi.fn(),
   handleChangePage: vi.fn(),
-  handleChangeRowsPerPage: vi.fn(),
   onView: vi.fn(),
 };
 
