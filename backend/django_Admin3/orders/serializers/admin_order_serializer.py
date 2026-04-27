@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from orders.models import OrderContact, OrderPreference, OrderAcknowledgment
+from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment
 
 
 class OrderContactSerializer(serializers.ModelSerializer):
@@ -45,3 +45,36 @@ class OrderAcknowledgmentSerializer(serializers.ModelSerializer):
             'content_version',
             'acknowledgment_data',
         ]
+
+
+class AdminOrderListSerializer(serializers.ModelSerializer):
+    student = serializers.SerializerMethodField()
+    item_codes = serializers.SerializerMethodField()
+    item_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'created_at', 'total_amount',
+            'student', 'item_codes', 'item_count',
+        ]
+
+    def get_student(self, obj):
+        u = obj.user
+        student = getattr(u, 'student', None)
+        return {
+            'student_ref': student.student_ref if student else None,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'email': u.email,
+        }
+
+    def get_item_codes(self, obj):
+        codes = []
+        for item in obj.items.all():
+            if item.purchasable_id:
+                codes.append(item.purchasable.code)
+        return codes
+
+    def get_item_count(self, obj):
+        return len(obj.items.all())

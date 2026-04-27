@@ -2,12 +2,15 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 
-from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment
+from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment, OrderItem
 from orders.serializers.admin_order_serializer import (
     OrderContactSerializer,
     OrderPreferenceSerializer,
     OrderAcknowledgmentSerializer,
+    AdminOrderListSerializer,
 )
+from store.models import Purchasable
+from students.models import Student
 
 User = get_user_model()
 
@@ -76,3 +79,46 @@ class OrderAcknowledgmentSerializerTest(TestCase):
         assert data['is_accepted'] is True
         assert data['content_version'] == '3.0'
         assert 'accepted_at' in data
+
+
+class AdminOrderListSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='jsmith',
+            email='jane@example.com',
+            first_name='Jane',
+            last_name='Smith',
+        )
+        self.student = Student.objects.create(user=self.user)
+        self.order = Order.objects.create(
+            user=self.user, total_amount=Decimal('540.00')
+        )
+        # Purchasables for items
+        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='product')
+        p2 = Purchasable.objects.create(code='CP2/CPBOR/26', name='CP2 BOR', kind='product')
+        OrderItem.objects.create(order=self.order, purchasable=p1, quantity=1, gross_amount=Decimal('100.00'))
+        OrderItem.objects.create(order=self.order, purchasable=p2, quantity=1, gross_amount=Decimal('200.00'))
+
+    def test_includes_student_summary_with_student_ref(self):
+        data = AdminOrderListSerializer(self.order).data
+        assert data['student'] == {
+            'student_ref': self.student.student_ref,
+            'first_name': 'Jane',
+            'last_name': 'Smith',
+            'email': 'jane@example.com',
+        }
+
+    def test_includes_item_codes_and_count(self):
+        data = AdminOrderListSerializer(self.order).data
+        assert sorted(data['item_codes']) == ['CM1/CC/26', 'CP2/CPBOR/26']
+        assert data['item_count'] == 2
+
+    def test_student_ref_null_when_user_has_no_student_record(self):
+        user_no_student = User.objects.create_user(
+            username='nostudent', email='ns@example.com',
+            first_name='No', last_name='Student',
+        )
+        order = Order.objects.create(user=user_no_student, total_amount=Decimal('10.00'))
+        data = AdminOrderListSerializer(order).data
+        assert data['student']['student_ref'] is None
+        assert data['student']['first_name'] == 'No'
