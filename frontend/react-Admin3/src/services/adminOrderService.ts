@@ -25,7 +25,6 @@ export interface ProductCodeOption {
 }
 
 const baseUrl = `${config.apiBaseUrl}/api/orders/admin`;
-const storeProductsUrl = `${config.apiBaseUrl}/api/store/products`;
 
 const adminOrderService = {
   async search(
@@ -47,19 +46,11 @@ const adminOrderService = {
   },
 
   async listProductCodes(): Promise<ProductCodeOption[]> {
-    // Loads all store.Product codes for the product-code filter combobox.
-    // NOTE: voucher/fee Purchasables are NOT included — those item codes can
-    // still be filtered server-side via free-text URL param if needed.
-    const response = await httpService.get(`${storeProductsUrl}/`, {
-      params: { page_size: 10000 },
-    });
-    const results = response.data?.results ?? response.data ?? [];
-    return results
-      .filter((p: { product_code?: string }) => Boolean(p.product_code))
-      .map((p: { product_code: string; name?: string }) => ({
-        code: p.product_code,
-        name: p.name ?? '',
-      }));
+    // Returns distinct purchasable codes appearing in actual order items
+    // (products + vouchers + fees). Backed by /api/orders/admin/product-codes/.
+    const response = await httpService.get(`${baseUrl}/product-codes/`);
+    const results: ProductCodeOption[] = response.data ?? [];
+    return results;
   },
 };
 

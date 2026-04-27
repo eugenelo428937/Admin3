@@ -1,6 +1,8 @@
 from django.db.models import Prefetch, Q
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from catalog.permissions import IsSuperUser
 from orders.models import Order, OrderItem
@@ -104,3 +106,23 @@ class AdminOrderViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return AdminOrderDetailSerializer
         return AdminOrderListSerializer
+
+    @action(detail=False, methods=['get'], url_path='product-codes')
+    def product_codes(self, request):
+        """Return distinct purchasable codes appearing in any order item.
+
+        Used by the admin order filter combobox. Returns codes from products
+        AND voucher/fee purchasables — anything that has actually been
+        purchased — rather than the full catalog.
+        """
+        rows = (
+            OrderItem.objects
+            .filter(purchasable__isnull=False)
+            .values_list('purchasable__code', 'purchasable__name')
+            .distinct()
+            .order_by('purchasable__code')
+        )
+        return Response([
+            {'code': code, 'name': name}
+            for code, name in rows
+        ])

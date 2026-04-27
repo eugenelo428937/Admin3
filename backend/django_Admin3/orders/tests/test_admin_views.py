@@ -210,3 +210,37 @@ class AdminOrderViewSetQueryCountTest(APITestCase):
         # Actual count is ~8 with all prefetches; cap at 10 for tight regression guard.
         # Dropping any single prefetch would add ~5 queries (one per row), exceeding bound.
         assert len(ctx.captured_queries) <= 10, f"Query count {len(ctx.captured_queries)} exceeds bound"
+
+
+class AdminOrderViewSetProductCodesTest(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='adm', email='a@x.com', password='p',
+        )
+        self.client.force_authenticate(user=self.admin)
+
+        u = User.objects.create_user(username='u1', email='u1@x.com')
+        order = Order.objects.create(user=u, total_amount=Decimal('1'))
+        p1 = Purchasable.objects.create(code='ZZA/CC/26', name='Course CC', kind='product')
+        p2 = Purchasable.objects.create(code='ZZB/CPBOR/26', name='Course BOR', kind='product')
+        # Two items pointing at p1 to confirm distinct
+        OrderItem.objects.create(order=order, purchasable=p1, quantity=1, gross_amount=Decimal('1'))
+        OrderItem.objects.create(order=order, purchasable=p1, quantity=1, gross_amount=Decimal('1'))
+        OrderItem.objects.create(order=order, purchasable=p2, quantity=1, gross_amount=Decimal('1'))
+        self.test_codes = {'ZZA/CC/26', 'ZZB/CPBOR/26'}
+
+    def test_product_codes_endpoint_returns_distinct_codes(self):
+        response = self.client.get('/api/orders/admin/product-codes/')
+        assert response.status_code == 200
+        # Test DB may have other orders/items from prior runs, but our codes
+        # must be present, distinct, and shaped as {code, name}.
+        codes_seen = [item['code'] for item in response.data]
+        assert codes_seen.count('ZZA/CC/26') == 1, 'duplicate not collapsed'
+        assert codes_seen.count('ZZB/CPBOR/26') == 1
+        for item in response.data:
+            assert set(item.keys()) == {'code', 'name'}
+
+    def test_product_codes_endpoint_requires_superuser(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get('/api/orders/admin/product-codes/')
+        assert response.status_code in (401, 403)
