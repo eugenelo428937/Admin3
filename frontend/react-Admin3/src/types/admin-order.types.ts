@@ -26,7 +26,7 @@ export interface AdminOrderItem {
   gross_amount: string;
   vat_rate: string;
   is_vat_exempt: boolean;
-  metadata: Record<string, unknown>;
+  metadata: { orderno?: string | number; [key: string]: unknown };
   purchasable: { id: number; code: string; name: string; kind: string } | null;
 }
 
@@ -85,6 +85,16 @@ export interface AdminOrderAcknowledgment {
   acknowledgment_data: Record<string, unknown>;
 }
 
+export interface AdminOrderDelivery {
+  id: number;
+  delivery_address_type: 'home' | 'work' | null;
+  delivery_address_data: Record<string, unknown>;
+  invoice_address_type: 'home' | 'work' | null;
+  invoice_address_data: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AdminOrderDetail {
   id: number;
   created_at: string;
@@ -102,6 +112,7 @@ export interface AdminOrderDetail {
   user_contact: AdminOrderContact | null;
   user_preferences: AdminOrderPreference[];
   user_acknowledgments: AdminOrderAcknowledgment[];
+  delivery_detail: AdminOrderDelivery | null;
 }
 
 export interface PaginatedResponse<T> {

@@ -37,7 +37,7 @@ const fullOrder = {
     id: 1, item_type: 'product', item_name: 'CM1 Core', quantity: 1,
     price_type: 'standard', actual_price: '450.00',
     net_amount: '450.00', vat_amount: '90.00', gross_amount: '540.00',
-    vat_rate: '0.2000', is_vat_exempt: false, metadata: {},
+    vat_rate: '0.2000', is_vat_exempt: false, metadata: { orderno: 'ORD-001' },
     purchasable: { id: 5, code: 'CM1/CC/26', name: 'CM1 Core', kind: 'product' },
   }],
   payments: [{
@@ -65,6 +65,12 @@ const fullOrder = {
     title: 'T&Cs v3', content_summary: 'You agree...', is_accepted: true,
     accepted_at: '2026-04-22T14:30:00Z', content_version: '3.0', acknowledgment_data: {},
   }],
+  delivery_detail: {
+    id: 1,
+    delivery_address_type: 'home', delivery_address_data: { line1: '1 High St', city: 'London' },
+    invoice_address_type: 'work', invoice_address_data: { line1: '2 Work Way', city: 'London' },
+    created_at: '2026-04-22T14:30:00Z', updated_at: '2026-04-22T14:30:00Z',
+  },
 };
 
 // Wrapper to provide route params
@@ -83,39 +89,43 @@ const renderAt = (id: string) => render(
 describe('OrderDetail', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
-  it('renders all six sections when order has data', async () => {
+  it('renders the consolidated Order Summary with student, contact, total', async () => {
     mockService.getById.mockResolvedValue(fullOrder);
     renderAt('42');
-    await waitFor(() => {
-      expect(screen.getByText(/Order Summary/i)).toBeInTheDocument();
-    }, { timeout: 2000 });
-    expect(screen.getByText(/Order Items/i)).toBeInTheDocument();
-    expect(screen.getByText(/Payments/i)).toBeInTheDocument();
-    expect(screen.getByText(/Contact/i)).toBeInTheDocument();
-    expect(screen.getByText(/Preferences/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acknowledgments/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Order Summary')).toBeInTheDocument());
     expect(screen.getByText(/Jane Smith/)).toBeInTheDocument();
-    expect(screen.getByText(/jane@example.com/)).toBeInTheDocument();
+    expect(screen.getByText(/j@x.com/)).toBeInTheDocument();
+    expect(screen.getByText('Total:')).toBeInTheDocument();
+    // Items section title
+    expect(screen.getByText(/Order Items/)).toBeInTheDocument();
+    // Payments section title
+    expect(screen.getByText(/Payments/)).toBeInTheDocument();
+    // Combined preferences & acks section
+    expect(screen.getByText(/Preferences & Acknowledgments/)).toBeInTheDocument();
   });
 
-  it('renders empty states for missing relations', async () => {
+  it('shows order no in the items table from item metadata', async () => {
+    mockService.getById.mockResolvedValue(fullOrder);
+    renderAt('42');
+    await waitFor(() => expect(screen.getByText('ORD-001')).toBeInTheDocument());
+  });
+
+  it('renders empty preferences/acknowledgments messages when arrays empty', async () => {
     mockService.getById.mockResolvedValue({
       ...fullOrder,
-      user_contact: null, user_preferences: [], user_acknowledgments: [], payments: [],
+      user_preferences: [], user_acknowledgments: [], payments: [],
     });
     renderAt('42');
-    await waitFor(() => expect(screen.getByText(/Order Summary/i)).toBeInTheDocument(), { timeout: 2000 });
-    expect(screen.getByText(/no payments/i)).toBeInTheDocument();
-    expect(screen.getByText(/no contact/i)).toBeInTheDocument();
-    expect(screen.getByText(/no preferences/i)).toBeInTheDocument();
-    expect(screen.getByText(/no acknowledgments/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Order Summary')).toBeInTheDocument());
+    expect(screen.getByText(/No preferences captured/)).toBeInTheDocument();
+    expect(screen.getByText(/No acknowledgments captured/)).toBeInTheDocument();
   });
 
   it('shows error message on 404', async () => {
     mockService.getById.mockRejectedValue({ response: { status: 404 } });
     renderAt('999');
     await waitFor(() => {
-      expect(screen.getByText('Order not found')).toBeInTheDocument();
+      expect(screen.getByText(/order not found/i)).toBeInTheDocument();
     }, { timeout: 2000 });
   });
 });
