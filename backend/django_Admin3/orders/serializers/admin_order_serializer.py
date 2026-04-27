@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment
+from orders.serializers.order_serializer import OrderItemSerializer, PaymentSerializer
 
 
 class OrderContactSerializer(serializers.ModelSerializer):
@@ -78,3 +79,38 @@ class AdminOrderListSerializer(serializers.ModelSerializer):
 
     def get_item_count(self, obj):
         return len(obj.items.all())
+
+
+class AdminOrderDetailSerializer(serializers.ModelSerializer):
+    student = serializers.SerializerMethodField()
+    items = OrderItemSerializer(many=True, read_only=True)
+    payments = PaymentSerializer(many=True, read_only=True)
+    user_contact = serializers.SerializerMethodField()
+    user_preferences = OrderPreferenceSerializer(many=True, read_only=True)
+    user_acknowledgments = OrderAcknowledgmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'created_at', 'updated_at',
+            'subtotal', 'vat_amount', 'total_amount',
+            'vat_rate', 'vat_country', 'vat_calculation_type',
+            'calculations_applied',
+            'student',
+            'items', 'payments',
+            'user_contact', 'user_preferences', 'user_acknowledgments',
+        ]
+
+    def get_student(self, obj):
+        u = obj.user
+        student = getattr(u, 'student', None)
+        return {
+            'student_ref': student.student_ref if student else None,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'email': u.email,
+        }
+
+    def get_user_contact(self, obj):
+        contact = obj.user_contact.first()
+        return OrderContactSerializer(contact).data if contact else None

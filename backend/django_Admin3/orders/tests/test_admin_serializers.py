@@ -2,12 +2,13 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 
-from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment, OrderItem
+from orders.models import Order, OrderContact, OrderPreference, OrderAcknowledgment, OrderItem, Payment
 from orders.serializers.admin_order_serializer import (
     OrderContactSerializer,
     OrderPreferenceSerializer,
     OrderAcknowledgmentSerializer,
     AdminOrderListSerializer,
+    AdminOrderDetailSerializer,
 )
 from store.models import Purchasable
 from students.models import Student
@@ -122,3 +123,57 @@ class AdminOrderListSerializerTest(TestCase):
         data = AdminOrderListSerializer(order).data
         assert data['student']['student_ref'] is None
         assert data['student']['first_name'] == 'No'
+
+
+class AdminOrderDetailSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='jsmith2', email='jane2@example.com',
+            first_name='Jane', last_name='Smith',
+        )
+        Student.objects.create(user=self.user)
+        self.order = Order.objects.create(
+            user=self.user,
+            subtotal=Decimal('450.00'),
+            vat_amount=Decimal('90.00'),
+            total_amount=Decimal('540.00'),
+            vat_rate=Decimal('0.2000'),
+            vat_country='GB',
+        )
+        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='product')
+        OrderItem.objects.create(order=self.order, purchasable=p1, quantity=1, gross_amount=Decimal('540.00'))
+        Payment.objects.create(
+            order=self.order, payment_method='card',
+            amount=Decimal('540.00'), status='completed',
+        )
+        OrderContact.objects.create(
+            order=self.order, mobile_phone='+447000', email_address='c@example.com',
+        )
+        OrderPreference.objects.create(
+            order=self.order, preference_key='k1', title='T1',
+            preference_value={'choice': 'yes'}, input_type='radio',
+        )
+        OrderAcknowledgment.objects.create(
+            order=self.order, acknowledgment_type='terms_conditions',
+            title='T&C', content_summary='ok', is_accepted=True,
+        )
+
+    def test_detail_includes_all_six_sections(self):
+        data = AdminOrderDetailSerializer(self.order).data
+        assert data['id'] == self.order.id
+        assert data['student']['email'] == 'jane2@example.com'
+        assert len(data['items']) == 1
+        assert len(data['payments']) == 1
+        assert data['user_contact']['email_address'] == 'c@example.com'
+        assert len(data['user_preferences']) == 1
+        assert len(data['user_acknowledgments']) == 1
+
+    def test_detail_handles_missing_contact_and_empty_relations(self):
+        bare_user = User.objects.create_user(username='bare', email='bare@x.com')
+        bare_order = Order.objects.create(user=bare_user, total_amount=Decimal('0'))
+        data = AdminOrderDetailSerializer(bare_order).data
+        assert data['user_contact'] is None
+        assert data['items'] == []
+        assert data['payments'] == []
+        assert data['user_preferences'] == []
+        assert data['user_acknowledgments'] == []
