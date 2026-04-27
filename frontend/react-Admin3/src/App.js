@@ -109,6 +109,10 @@ const ClosingSalutationForm = React.lazy(() => import("./components/admin/email/
 const LegacyProductList = React.lazy(() => import("./components/admin/legacy-products/LegacyProductList"));
 const LegacyOrderList = React.lazy(() => import("./components/admin/legacy-orders/LegacyOrderList"));
 
+// Admin: Orders
+const AdminOrderList = React.lazy(() => import("./components/admin/orders/OrderList.tsx"));
+const AdminOrderDetail = React.lazy(() => import("./components/admin/orders/OrderDetail.tsx"));
+
 const system = createSystem(defaultConfig);
 
 const LazyFallback = () => (
@@ -338,6 +342,10 @@ function App() {
 									<Route path="/admin/email/closing-salutations" element={<ClosingSalutationList />} />
 									<Route path="/admin/email/closing-salutations/new" element={<ClosingSalutationForm />} />
 									<Route path="/admin/email/closing-salutations/:id/edit" element={<ClosingSalutationForm />} />
+
+									{/* Admin: Orders */}
+									<Route path="/admin/orders" element={<AdminOrderList />} />
+									<Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
 
 									{/* Admin: Legacy Product Archive */}
 									<Route path="/admin/legacy-products" element={<LegacyProductList />} />
