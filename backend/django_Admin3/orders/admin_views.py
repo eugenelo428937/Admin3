@@ -1,8 +1,8 @@
 from django.db.models import Prefetch
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 
+from catalog.permissions import IsSuperUser
 from orders.models import Order, OrderItem
 from orders.serializers.admin_order_serializer import (
     AdminOrderListSerializer,
@@ -22,7 +22,7 @@ class AdminOrderViewSet(viewsets.ReadOnlyModelViewSet):
     Superuser-only browsing of all orders, with related items, payments,
     contact, preferences, and acknowledgments.
     """
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperUser]
     pagination_class = AdminOrderPagination
 
     def get_queryset(self):

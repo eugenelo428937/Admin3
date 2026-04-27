@@ -3,7 +3,9 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from decimal import Decimal
 
-from orders.models import Order
+from orders.models import Order, OrderItem
+from students.models import Student
+from store.models import Purchasable
 
 User = get_user_model()
 
@@ -11,8 +13,12 @@ User = get_user_model()
 class AdminOrderViewSetPermissionTest(APITestCase):
     def setUp(self):
         self.regular = User.objects.create_user(username='reg', email='r@x.com', password='p')
-        self.admin = User.objects.create_user(
-            username='adm', email='a@x.com', password='p', is_staff=True,
+        self.staff_only = User.objects.create_user(
+            username='staff', email='s@x.com', password='p',
+            is_staff=True, is_superuser=False,
+        )
+        self.admin = User.objects.create_superuser(
+            username='adm', email='a@x.com', password='p',
         )
 
     def test_anonymous_user_gets_401_or_403(self):
@@ -26,21 +32,22 @@ class AdminOrderViewSetPermissionTest(APITestCase):
         response = self.client.get('/api/orders/admin/')
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_staff_only_user_gets_403(self):
+        # Project standard: admin endpoints require is_superuser, not just is_staff.
+        self.client.force_authenticate(user=self.staff_only)
+        response = self.client.get('/api/orders/admin/')
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
     def test_admin_user_gets_200(self):
         self.client.force_authenticate(user=self.admin)
         response = self.client.get('/api/orders/admin/')
         assert response.status_code == status.HTTP_200_OK
 
 
-from students.models import Student
-from store.models import Purchasable
-from orders.models import OrderItem
-
-
 class AdminOrderViewSetListRetrieveTest(APITestCase):
     def setUp(self):
-        self.admin = User.objects.create_user(
-            username='adm', email='a@x.com', password='p', is_staff=True,
+        self.admin = User.objects.create_superuser(
+            username='adm', email='a@x.com', password='p',
         )
         self.client.force_authenticate(user=self.admin)
         self.user_a = User.objects.create_user(
