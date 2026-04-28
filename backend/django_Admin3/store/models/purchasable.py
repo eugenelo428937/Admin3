@@ -30,6 +30,14 @@ class Purchasable(models.Model):
         default=False,
         help_text='If True, price is set per cart/order line (actual_price), not from Price table.'
     )
+    is_addon = models.BooleanField(
+        default=False,
+        help_text=(
+            'True for solution/addon purchasables (e.g., PXS, CXS, CM1S, CYS). '
+            'Distinguishes addons from their base product when both share the '
+            'same catalog PPV (see Product.unique_together).'
+        ),
+    )
     vat_classification = models.CharField(
         max_length=32, blank=True,
         help_text='Used by VAT rules engine to select rate.'

@@ -81,3 +81,4 @@ pacts/*
 .cursor\rules\codacy.mdc
 *.code-workspace
 docs/misc/*
+Misc/*backup*.*

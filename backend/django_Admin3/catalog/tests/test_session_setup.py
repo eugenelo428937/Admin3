@@ -76,17 +76,25 @@ class TestSessionSetupService(CatalogAPITestCase):
             product_product_variation=self.ppv_marking,
             is_active=True,
         )
-        # Tutorial product (should be excluded from copy)
+        # Tutorial product (should be excluded from copy).
+        # Pass product_code explicitly: tutorial codes are auto-generated
+        # from a linked TutorialEvent, which we don't need for this fixture
+        # (see store.models.product.Product._generate_product_code).
         self.store_prod_tutorial = StoreProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_tutorial,
             is_active=True,
+            product_code='CM2/TUT/26',
         )
-        # Inactive product (should be excluded from copy)
+        # Inactive product (should be excluded from copy).
+        # ppv_marking_hub uses variation_type='Hub' which (like Tutorial)
+        # requires a linked TutorialEvent for code auto-gen — bypass with
+        # an explicit product_code.
         self.store_prod_inactive = StoreProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_marking_hub,
             is_active=False,
+            product_code='CM2/HUB/26',
         )
 
         # Create prices for previous products
