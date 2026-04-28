@@ -45,7 +45,9 @@ Usage:
 import csv
 import os
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, time
+
+from django.utils import timezone
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand, CommandError
@@ -483,7 +485,7 @@ class Command(BaseCommand):
     def _commit_batch(self, batch):
         created_orders = 0
         created_items = 0
-        for (user_id, _order_date), items in batch:
+        for (user_id, order_date), items in batch:
             # Compute order subtotal from per-item actual_price * quantity
             # so the summed line totals match the order header. VAT and
             # fees are out of scope for legacy import (subtotal == total).
@@ -491,10 +493,17 @@ class Command(BaseCommand):
                 (rec["actual_price"] or Decimal("0")) * rec["quantity"]
                 for rec in items
             )
+            # CSV `date` is a calendar date; promote to midnight local-tz
+            # datetime so it can be stored in Order.order_date (DateTime).
+            order_date_dt = (
+                timezone.make_aware(datetime.combine(order_date, time.min))
+                if order_date else None
+            )
             order = Order.objects.create(
                 user_id=user_id,
                 subtotal=subtotal,
                 total_amount=subtotal,
+                order_date=order_date_dt,
             )
             created_orders += 1
             for rec in items:

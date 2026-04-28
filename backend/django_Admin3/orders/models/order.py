@@ -18,6 +18,13 @@ class Order(models.Model):
     # Rule engine calculations
     calculations_applied = models.JSONField(default=dict, blank=True, help_text="All rule engine calculations applied to this order")
 
+    order_date = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Business order date (when the customer placed the order). "
+                  "Distinct from created_at (DB insert time). Imported from "
+                  "the historical CSV `date` column.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
