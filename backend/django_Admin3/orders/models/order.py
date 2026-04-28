@@ -23,7 +23,7 @@ class Order(models.Model):
 
     class Meta:
         db_table = '"acted"."orders"'
-        managed = False
+        managed = True
         verbose_name = 'Order'
         verbose_name_plural = 'Orders'
         ordering = ['-created_at']

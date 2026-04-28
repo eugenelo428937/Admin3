@@ -27,6 +27,8 @@ class OrderItem(models.Model):
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_cancelled = models.BooleanField(
         default=False, help_text="Whether this item is cancelled")
+    is_foc = models.BooleanField(
+        default=False, help_text="Free of charge order item (no sale)")
     # VAT information per item
     net_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Amount before VAT")
     vat_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="VAT amount for this item")

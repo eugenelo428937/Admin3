@@ -45,7 +45,10 @@ class Product(Purchasable):
 
     class Meta:
         db_table = '"acted"."products"'
-        unique_together = ('exam_session_subject', 'product_product_variation')
+        # unique_together on (ess, ppv) was dropped to allow addon rows
+        # (Purchasable.is_addon=True) to share the same catalog PPV as their
+        # base product. Uniqueness is still enforced per-row via
+        # Purchasable.code UNIQUE.
         verbose_name = 'Store Product'
         verbose_name_plural = 'Store Products'
 
@@ -79,16 +82,20 @@ class Product(Purchasable):
             super().save(*args, **kwargs)
 
     def _generate_product_code(self):
-        """
-        Generate product code from related entities.
+        """Generate product code from related entities.
 
         Format depends on variation type:
         - Material/Marking (eBook, Printed, Marking):
             {subject_code}/{variation_code}{product_code}/{exam_session_code}
-            Example: CB1/PC/2025-04 (Printed Combined Pack)
+            Example: CB1/PC/26 , CP1/MM1/26S
         - Tutorial/Other:
-            {subject_code}/{prefix}{product_code}{variation_code}/{exam_session_code}
-            Example: CB1/TLONCB1_f2f_3/2025-04-472 (Tutorial London)
+            {subject_code}/{location}/{variation_code}/{exam_session_code}
+            Example: CB1/GSW/F2F_3F/26 (Tutorial Glasgow)
+
+        Tutorial location is derived from the first linked TutorialEvent's
+        TutorialLocation.code. A Product without an associated TutorialEvent
+        cannot produce a valid tutorial code — raise ValueError so the
+        caller fixes the data rather than silently producing a bad code.
         """
         ess = self.exam_session_subject
         ppv = self.product_product_variation
@@ -103,9 +110,22 @@ class Product(Purchasable):
         if variation.variation_type in ('eBook', 'Printed', 'Marking'):
             return f"{subject_code}/{variation_code}{product_code}/{exam_code}"
 
-        # Tutorial and other products: keep prefix format with ID suffix for uniqueness
-        prefix = variation.variation_type[0].upper() if variation.variation_type else ''
-        return f"{subject_code}/{prefix}{product_code}{variation_code}/{exam_code}-{self.pk}"
+        # Tutorial/other: location from first linked TutorialEvent.
+        # Local import avoids circular dependency with tutorials app.
+        from tutorials.models import TutorialEvents
+        event = (
+            TutorialEvents.objects
+            .filter(store_product=self)
+            .select_related('location')
+            .first()
+        )
+        if event is None or event.location is None or not event.location.code:
+            raise ValueError(
+                f"Cannot generate tutorial product code for Product pk={self.pk}: "
+                "no TutorialEvent with a TutorialLocation.code is linked. "
+                "Create the event + location before saving the product."
+            )
+        return f"{subject_code}/{event.location.code}/{variation_code}/{exam_code}"
 
     def __str__(self):
         return self.product_code
