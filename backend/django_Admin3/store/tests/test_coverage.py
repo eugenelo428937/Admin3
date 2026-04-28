@@ -306,21 +306,41 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
         self.assertEqual(result.first(), self.store_product_printed)
 
     def test_tutorial_product_code_generation(self):
-        """Product code generation for tutorial/other type (lines 88-89)."""
+        """Product code generation for tutorial/other type (lines 88-89).
+
+        Tutorial codes are derived from a linked TutorialEvent's
+        TutorialLocation.code. We bootstrap with an explicit
+        product_code (so save() doesn't try to auto-generate before the
+        event exists), attach the event/location, then re-trigger
+        generation by clearing product_code and saving again.
+        """
         from store.models import Product
+        from tutorials.models import TutorialEvents, TutorialLocation
 
         product = Product.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_tutorial,
-            is_active=True
-            # No product_code provided - triggers auto-generation
+            is_active=True,
+            product_code='CS1/TUT/PLACEHOLDER',
         )
 
-        # Tutorial format: {subject}/{prefix}{product_code}{variation_code}/{exam_session}-{id}
-        # prefix = variation_type[0].upper() = 'T'
-        self.assertIn('CS1/', product.product_code)
-        self.assertIn('2025-09', product.product_code)
-        self.assertIn(str(product.pk), product.product_code)
+        location = TutorialLocation.objects.create(name='London', code='LON')
+        TutorialEvents.objects.create(
+            code=f'TUT-COV-{product.pk}',
+            location=location,
+            start_date='2026-06-01',
+            end_date='2026-06-03',
+            store_product=product,
+        )
+
+        # Re-trigger auto-generation now that an event exists.
+        product.product_code = ''
+        product.save()
+        product.refresh_from_db()
+
+        # New format: {subject}/{location}/{variation_code}/{exam_session}
+        self.assertTrue(product.product_code.startswith('CS1/LON/'))
+        self.assertTrue(product.product_code.endswith('/2025-09'))
 
     def test_marking_product_code_generation(self):
         """Product code generation for marking type (material/marking path)."""

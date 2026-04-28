@@ -58,3 +58,35 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['product_code', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        """Reject duplicate (ESS, PPV) for non-addon admin writes.
+
+        The DB-level unique_together on (ess, ppv) was relaxed in b4940224
+        so addon rows (Purchasable.is_addon=True) can clone a base
+        product's PPV. The admin endpoint never creates addons (those are
+        produced by store.create_addon_products), so we keep the (ess, ppv)
+        invariant for non-addon writes here.
+        """
+        ess = attrs.get('exam_session_subject') or getattr(
+            self.instance, 'exam_session_subject', None
+        )
+        ppv = attrs.get('product_product_variation') or getattr(
+            self.instance, 'product_product_variation', None
+        )
+        if ess is None or ppv is None:
+            return attrs
+
+        qs = Product.objects.filter(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
+            is_addon=False,
+        )
+        if self.instance is not None:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(
+                'A non-addon product already exists for this exam session '
+                'subject and product variation.'
+            )
+        return attrs

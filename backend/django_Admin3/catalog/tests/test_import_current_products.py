@@ -90,8 +90,11 @@ class TestHappyPath(ImportCurrentProductsTestBase):
 
     def test_creates_store_products(self):
         out = StringIO()
+        # --no-addons keeps this test focused on the base import; addon
+        # cloning (CM1→CM1S etc.) runs by default since b4940224 and is
+        # exercised by the dedicated create_addon_products tests.
         call_command('import_current_products', MINI_CURRENT_CSV,
-                     '--session-code', '26', stdout=out)
+                     '--session-code', '26', '--no-addons', stdout=out)
         # 13 non-wildcard rows, but after dedup:
         # CM1: Course Notes P, Course Notes C, CMP P, CMP C,
         #       Mock Exam Marking M (3 rows → 1) = 5

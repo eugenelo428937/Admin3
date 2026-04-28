@@ -867,7 +867,8 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
         )
         store_product = StoreProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv
+            product_product_variation=ppv,
+            product_code='TUT_BC/STORE',
         )
         event = TutorialEvents.objects.create(
             code='TUT-BC-001',
@@ -906,7 +907,8 @@ class TutorialProductListViewWithStoreProductTestCase(APITestCase):
         )
         self.store_product = StoreProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv
+            product_product_variation=ppv,
+            product_code='TUT_PL/STORE',
         )
         self.exam_session = exam_session
         self.client = APIClient()

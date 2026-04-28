@@ -13,7 +13,6 @@ Tests cover:
 """
 from decimal import Decimal
 from django.test import TestCase
-from django.db import IntegrityError
 from django.utils import timezone
 
 
@@ -84,11 +83,15 @@ class TestProductModel(TestCase):
         code_field = Product._meta.get_field('product_code')
         self.assertTrue(code_field.unique)
 
-    def test_product_unique_together(self):
-        """T020: Test Product has unique_together (ESS+PPV) constraint."""
+    def test_product_unique_together_relaxed_for_addons(self):
+        """Product no longer has unique_together (ESS+PPV) — relaxed in
+        b4940224 so that addon rows (Purchasable.is_addon=True) can share
+        their base product's PPV. Uniqueness is still enforced per-row via
+        Purchasable.code UNIQUE; the admin serializer enforces the (ESS,PPV)
+        invariant for non-addon writes (see StoreProductAdminSerializer).
+        """
         from store.models import Product
-        constraints = Product._meta.unique_together
-        self.assertIn(('exam_session_subject', 'product_product_variation'), constraints)
+        self.assertEqual(Product._meta.unique_together, ())
 
 
 class TestProductModelCreation(TestCase):
@@ -171,8 +174,12 @@ class TestProductModelCreation(TestCase):
 
         self.assertEqual(str(product), 'CM2/PCSM01P/2025-04')
 
-    def test_product_unique_constraint_violation(self):
-        """T020: Test that duplicate ESS+PPV combination raises IntegrityError."""
+    def test_product_duplicate_ess_ppv_allowed_at_db_level(self):
+        """Duplicate (ESS, PPV) is allowed at the DB level since b4940224
+        so that addon rows (Purchasable.is_addon=True) can clone a base
+        product's PPV. Application-level safety (preventing accidental
+        non-addon duplicates) is enforced in StoreProductAdminSerializer.
+        """
         from store.models import Product
 
         # Create first product
@@ -183,14 +190,21 @@ class TestProductModelCreation(TestCase):
             is_active=True
         )
 
-        # Attempt to create duplicate should raise IntegrityError
-        with self.assertRaises(IntegrityError):
-            Product.objects.create(
+        # Same (ess, ppv) with a distinct product_code now succeeds.
+        duplicate = Product.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='CM2/PCSM01P/2025-04-DUPE',
+            is_active=True
+        )
+        self.assertEqual(
+            Product.objects.filter(
                 exam_session_subject=self.ess,
                 product_product_variation=self.ppv,
-                product_code='CM2/PCSM01P/2025-04-DUPE',  # Different code
-                is_active=True
-            )
+            ).count(),
+            2,
+        )
+        self.assertNotEqual(duplicate.product_code, 'CM2/PCSM01P/2025-04')
 
 
 class TestPriceModel(TestCase):
