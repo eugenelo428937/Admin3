@@ -25,6 +25,7 @@ import {
   Mail,
   Archive,
   ScrollText,
+  ShoppingCart,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -52,6 +53,16 @@ const navGroups = [
          },
       ],
    },
+   {
+    label: "Orders",
+    items: [
+       {
+          label: "Orders",
+          path: "/admin/orders",
+          icon: ShoppingCart,
+       },
+    ],
+ },
    {
       label: "Current Products",
       items: [
