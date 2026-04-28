@@ -89,7 +89,19 @@ export default defineConfig({
     // "request expected but not received" failures in different files
     // each run. One file at a time fixes it without hurting total runtime
     // meaningfully — the whole pact suite is ~40s.
+    //
+    // `fileParallelism: false` alone is not always sufficient under
+    // Vitest 4 (the thread pool can still cycle through ephemeral ports
+    // faster than the OS releases them). Pinning to a single forked
+    // process gives a hard guarantee that only one mock server is ever
+    // live at a time — which is what the test contract actually needs.
     fileParallelism: false,
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
     deps: {
       optimizer: {
         web: {
