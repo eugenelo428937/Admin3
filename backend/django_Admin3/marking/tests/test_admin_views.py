@@ -7,10 +7,7 @@ from marking.models import (
     MarkingPaperGrading, MarkingPaperSubmission,
 )
 from marking.tests.fixtures import MarkingChainTestCase
-from orders.models import Order
-from orders.models.order_item import OrderItem
 from staff.models import Staff
-from store.models import Purchasable
 from students.models import Student
 
 
@@ -49,19 +46,6 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
             is_staff=True,
         )
         cls.staff = Staff.objects.create(user=cls.staff_user)
-
-        cls.mv_purchasable = Purchasable.objects.create(
-            kind='marking_voucher', code='MV_ADM', name='Marking Voucher Admin',
-        )
-        cls.order = Order.objects.create(
-            user=cls.student_user, order_date=timezone.now(),
-        )
-        cls.order_item = OrderItem.objects.create(
-            order=cls.order,
-            purchasable=cls.mv_purchasable,
-            quantity=1,
-            metadata={'orderno': 'TEST_ADM'},
-        )
 
         cls.submission = MarkingPaperSubmission.objects.create(
             student=cls.student,

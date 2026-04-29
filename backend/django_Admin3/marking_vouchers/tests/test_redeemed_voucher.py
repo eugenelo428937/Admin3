@@ -5,27 +5,12 @@ from django.utils import timezone
 
 from marking.tests.fixtures import MarkingChainTestCase
 from marking_vouchers.models import IssuedVoucher, RedeemedVoucher
-from orders.models import Order
-from orders.models.order_item import OrderItem
-from store.models import Purchasable
 
 
 class RedeemedVoucherTests(MarkingChainTestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.mv_purchasable = Purchasable.objects.create(
-            kind='marking_voucher', code='MV', name='Marking Voucher',
-        )
-        cls.order = Order.objects.create(
-            user=cls.student_user, order_date=timezone.now(),
-        )
-        cls.order_item = OrderItem.objects.create(
-            order=cls.order,
-            purchasable=cls.mv_purchasable,
-            quantity=1,
-            metadata={'orderno': '1490175'},
-        )
         cls.iv = IssuedVoucher.objects.create(
             voucher_code='ABC123',
             order_item=cls.order_item,
