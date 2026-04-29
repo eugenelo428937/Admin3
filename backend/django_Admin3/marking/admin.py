@@ -30,10 +30,10 @@ class MarkerAdmin(admin.ModelAdmin):
 @admin.register(MarkingPaperSubmission)
 class MarkingPaperSubmissionAdmin(admin.ModelAdmin):
     list_display = ('id', 'student', 'marking_paper', 'submission_date',
-                    'hub_download_date')
-    list_filter = ('submission_date', 'hub_download_date')
+                    'hub_download_date', 'is_active')
+    list_filter = ('submission_date', 'hub_download_date', 'is_active')
     search_fields = ('student__user__email', 'marking_paper__name')
-    raw_id_fields = ('student', 'marking_paper', 'marking_voucher',
+    raw_id_fields = ('student', 'marking_paper', 'redeemed_voucher',
                      'order_item')
     readonly_fields = ('created_at', 'updated_at')
 

@@ -44,7 +44,7 @@ class MarkingPaperSubmissionAdminViewSet(viewsets.ReadOnlyModelViewSet):
         qs = (
             MarkingPaperSubmission.objects
             .select_related('student__user', 'marking_paper',
-                            'marking_voucher', 'order_item')
+                            'redeemed_voucher', 'order_item')
             .order_by('-submission_date')
         )
         params = self.request.query_params

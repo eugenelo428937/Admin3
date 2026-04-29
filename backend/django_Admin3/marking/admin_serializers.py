@@ -39,8 +39,8 @@ class MarkingPaperSubmissionAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = MarkingPaperSubmission
         fields = ('id', 'student', 'student_ref', 'marking_paper',
-                  'marking_paper_name', 'marking_voucher', 'order_item',
-                  'submission_date', 'hub_download_date',
+                  'marking_paper_name', 'redeemed_voucher', 'order_item',
+                  'submission_date', 'hub_download_date', 'is_active',
                   'created_at', 'updated_at')
 
 

@@ -8,6 +8,7 @@ relationships, and model behavior.
 from django.test import TestCase
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from datetime import timedelta
 
 from marking.models import MarkingPaper
@@ -16,7 +17,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, Purchasable
 
 
 class MarkingPaperTestCase(TestCase):
@@ -517,7 +518,10 @@ class MarkingModelsModuleTestCase(TestCase):
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models import ProtectedError
-from store.models import GenericItem
+from orders.models import Order
+from orders.models.order_item import OrderItem
+from store.models import Purchasable
+from marking_vouchers.models import IssuedVoucher, RedeemedVoucher
 from staff.models import Staff
 
 
@@ -581,51 +585,82 @@ class MarkerModelTestCase(TestCase):
 class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
     """Tests for MarkingPaperSubmission model."""
 
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.mv_purchasable = Purchasable.objects.create(
+            kind='marking_voucher', code='MV_SUB', name='Marking Voucher Sub',
+        )
+        cls.order = Order.objects.create(
+            user=cls.student_user, order_date=timezone.now(),
+        )
+        cls.order_item = OrderItem.objects.create(
+            order=cls.order,
+            purchasable=cls.mv_purchasable,
+            quantity=1,
+            metadata={'orderno': 'TEST_SUB'},
+        )
+        cls.iv = IssuedVoucher.objects.create(
+            voucher_code='SUB_IV1',
+            order_item=cls.order_item,
+            purchasable=cls.mv_purchasable,
+            expires_at=timezone.now() + timedelta(days=365),
+        )
+
     def test_submission_creation_required_fields_only(self):
         from marking.models import MarkingPaperSubmission
         sub = MarkingPaperSubmission.objects.create(
             student=self.student,
             marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         self.assertEqual(sub.student, self.student)
         self.assertEqual(sub.marking_paper, self.paper)
-        self.assertIsNone(sub.marking_voucher)
-        self.assertIsNone(sub.order_item)
+        self.assertIsNone(sub.redeemed_voucher)
+        self.assertIsNotNone(sub.order_item)
         self.assertIsNone(sub.hub_download_date)
+        self.assertTrue(sub.is_active)
 
-    def test_submission_with_marking_voucher(self):
+    def test_submission_with_redeemed_voucher(self):
         from marking.models import MarkingPaperSubmission
-        voucher = GenericItem.objects.create(
-            kind='marking_voucher', code='V1', name='Voucher 1',
+        rv = RedeemedVoucher.objects.create(
+            issued_voucher=self.iv,
+            marking_paper=self.paper,
+            redeemed_at=timezone.now(),
         )
         sub = MarkingPaperSubmission.objects.create(
             student=self.student,
             marking_paper=self.paper,
-            marking_voucher=voucher,
+            order_item=self.order_item,
+            redeemed_voucher=rv,
             submission_date=timezone.now(),
         )
-        self.assertEqual(sub.marking_voucher, voucher)
+        self.assertEqual(sub.redeemed_voucher, rv)
 
     def test_submission_unique_student_paper(self):
         from marking.models import MarkingPaperSubmission
         MarkingPaperSubmission.objects.create(
             student=self.student,
             marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         with self.assertRaises(IntegrityError):
-            MarkingPaperSubmission.objects.create(
-                student=self.student,
-                marking_paper=self.paper,
-                submission_date=timezone.now(),
-            )
+            with transaction.atomic():
+                MarkingPaperSubmission.objects.create(
+                    student=self.student,
+                    marking_paper=self.paper,
+                    order_item=self.order_item,
+                    submission_date=timezone.now(),
+                )
 
     def test_submission_protect_on_student_delete(self):
         from marking.models import MarkingPaperSubmission
         MarkingPaperSubmission.objects.create(
             student=self.student,
             marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         with self.assertRaises(ProtectedError):
@@ -636,6 +671,7 @@ class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
         sub = MarkingPaperSubmission.objects.create(
             student=self.student,
             marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         expected = f'{self.student} \u2014 {self.paper.name}'
@@ -666,9 +702,23 @@ class MarkingPaperGradingTestCase(MarkingChainTestCase):
         )
         cls.staff = Staff.objects.create(user=cls.staff_user)
 
+        cls.mv_purchasable_g = Purchasable.objects.create(
+            kind='marking_voucher', code='MV_GRAD', name='Marking Voucher Grad',
+        )
+        cls.order_g = Order.objects.create(
+            user=cls.student_user, order_date=timezone.now(),
+        )
+        cls.order_item_g = OrderItem.objects.create(
+            order=cls.order_g,
+            purchasable=cls.mv_purchasable_g,
+            quantity=1,
+            metadata={'orderno': 'TEST_GRAD'},
+        )
+
         cls.submission = MarkingPaperSubmission.objects.create(
             student=cls.student,
             marking_paper=cls.paper,
+            order_item=cls.order_item_g,
             submission_date=timezone.now(),
         )
 
@@ -794,9 +844,23 @@ class MarkingPaperFeedbackTestCase(MarkingChainTestCase):
         )
         cls.staff = Staff.objects.create(user=cls.staff_user)
 
+        cls.mv_purchasable_f = Purchasable.objects.create(
+            kind='marking_voucher', code='MV_FEED', name='Marking Voucher Feed',
+        )
+        cls.order_f = Order.objects.create(
+            user=cls.student_user, order_date=timezone.now(),
+        )
+        cls.order_item_f = OrderItem.objects.create(
+            order=cls.order_f,
+            purchasable=cls.mv_purchasable_f,
+            quantity=1,
+            metadata={'orderno': 'TEST_FEED'},
+        )
+
         cls.submission = MarkingPaperSubmission.objects.create(
             student=cls.student,
             marking_paper=cls.paper,
+            order_item=cls.order_item_f,
             submission_date=timezone.now(),
         )
         cls.grading = MarkingPaperGrading.objects.create(

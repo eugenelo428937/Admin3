@@ -7,7 +7,10 @@ from marking.models import (
     MarkingPaperGrading, MarkingPaperSubmission,
 )
 from marking.tests.fixtures import MarkingChainTestCase
+from orders.models import Order
+from orders.models.order_item import OrderItem
 from staff.models import Staff
+from store.models import Purchasable
 from students.models import Student
 
 
@@ -47,9 +50,23 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         )
         cls.staff = Staff.objects.create(user=cls.staff_user)
 
+        cls.mv_purchasable = Purchasable.objects.create(
+            kind='marking_voucher', code='MV_ADM', name='Marking Voucher Admin',
+        )
+        cls.order = Order.objects.create(
+            user=cls.student_user, order_date=timezone.now(),
+        )
+        cls.order_item = OrderItem.objects.create(
+            order=cls.order,
+            purchasable=cls.mv_purchasable,
+            quantity=1,
+            metadata={'orderno': 'TEST_ADM'},
+        )
+
         cls.submission = MarkingPaperSubmission.objects.create(
             student=cls.student,
             marking_paper=cls.paper,
+            order_item=cls.order_item,
             submission_date=timezone.now(),
         )
         cls.grading = MarkingPaperGrading.objects.create(
@@ -133,6 +150,7 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         other_student = Student.objects.create(user=other_student_user)
         other_submission = MarkingPaperSubmission.objects.create(
             student=other_student, marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         MarkingPaperGrading.objects.create(
@@ -158,6 +176,7 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         other_student = Student.objects.create(user=other_user)
         MarkingPaperSubmission.objects.create(
             student=other_student, marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
 
@@ -179,6 +198,7 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         other_student = Student.objects.create(user=other_student_user)
         other_submission = MarkingPaperSubmission.objects.create(
             student=other_student, marking_paper=self.paper,
+            order_item=self.order_item,
             submission_date=timezone.now(),
         )
         other_grading = MarkingPaperGrading.objects.create(
