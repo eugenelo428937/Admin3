@@ -102,6 +102,20 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         self.assertEqual(results[0]['marker_initial'], 'MKR')
         self.assertEqual(results[0]['score'], 75)
 
+    def test_gradings_list_includes_new_fields(self):
+        """Gradings API response should include graded_date, grade, and is_active fields."""
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get('/api/markings/admin-gradings/')
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.json()
+        results = payload.get('results', payload)
+        self.assertGreater(len(results), 0)
+        first = results[0]
+        self.assertIn('graded_date', first)
+        self.assertIn('grade', first)
+        self.assertIn('is_active', first)
+        self.assertTrue(first['is_active'])  # default value is True
+
     def test_feedback_list_returns_seeded_row(self):
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.get('/api/markings/admin-feedback/')
