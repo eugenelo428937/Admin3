@@ -1,7 +1,6 @@
 """Tests for RedeemedVoucher — one-to-one redemption against a marking paper."""
 from datetime import timedelta
-from django.contrib.auth.models import User
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from marking.tests.fixtures import MarkingChainTestCase
@@ -51,11 +50,12 @@ class RedeemedVoucherTests(MarkingChainTestCase):
             redeemed_at=timezone.now(),
         )
         with self.assertRaises(IntegrityError):
-            RedeemedVoucher.objects.create(
-                issued_voucher=self.iv,
-                marking_paper=self.paper,
-                redeemed_at=timezone.now(),
-            )
+            with transaction.atomic():
+                RedeemedVoucher.objects.create(
+                    issued_voucher=self.iv,
+                    marking_paper=self.paper,
+                    redeemed_at=timezone.now(),
+                )
 
     def test_str_representation(self):
         rv = RedeemedVoucher.objects.create(
