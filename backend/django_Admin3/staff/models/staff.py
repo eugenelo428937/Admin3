@@ -20,6 +20,13 @@ class Staff(models.Model):
         default='',
         help_text="e.g. 'Senior Tutor'",
     )
+    initials = models.CharField(
+        max_length=10,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text='Short initials used to identify staff in legacy systems',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -66,6 +66,21 @@ class StaffModelTest(TestCase):
             )
             self.assertIsNotNone(cursor.fetchone())
 
+    def test_staff_has_initials_field(self):
+        from django.contrib.auth.models import User
+        from staff.models import Staff
+        user = User.objects.create_user(username='alice', first_name='Alice', last_name='Allen')
+        staff = Staff.objects.create(user=user, initials='AA')
+        refreshed = Staff.objects.get(pk=staff.pk)
+        self.assertEqual(refreshed.initials, 'AA')
+
+    def test_staff_initials_default_blank(self):
+        from django.contrib.auth.models import User
+        from staff.models import Staff
+        user = User.objects.create_user(username='bob')
+        staff = Staff.objects.create(user=user)
+        self.assertEqual(staff.initials, '')
+
 
 class TeamModelTest(TestCase):
     """Tests for staff.Team model."""
