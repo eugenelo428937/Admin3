@@ -30,14 +30,4 @@ class Migration(migrations.Migration):
             name='is_active',
             field=models.BooleanField(default=True, db_index=True),
         ),
-        migrations.AlterField(
-            model_name='markingpaperfeedback',
-            name='rating',
-            field=models.CharField(
-                blank=True,
-                choices=[('E', 'Excellent'), ('G', 'Good'), ('A', 'Average'), ('P', 'Poor')],
-                max_length=1,
-                null=True,
-            ),
-        ),
     ]
