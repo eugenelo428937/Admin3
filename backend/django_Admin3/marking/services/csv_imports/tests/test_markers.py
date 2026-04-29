@@ -7,6 +7,19 @@ from marking.services.csv_imports.markers import (
     parse_markers_csv,
     validate_markers_rows,
 )
+from userprofile.hash_utils import compute_search_hash
+from userprofile.models.user_profile import UserProfile
+
+
+def seed_user_with_hashed_name(username, firstname, lastname):
+    """Create an auth_user (signal auto-creates UserProfile) and set its
+    first_name_hash/last_name_hash so the marker resolver can find it."""
+    user = User.objects.create_user(username=username)
+    profile = user.userprofile
+    profile.first_name_hash = compute_search_hash(firstname)
+    profile.last_name_hash = compute_search_hash(lastname)
+    profile.save(update_fields=['first_name_hash', 'last_name_hash'])
+    return user
 
 
 class ParseMarkersCsvTests(TestCase):
@@ -35,25 +48,30 @@ class ParseMarkersCsvTests(TestCase):
 
 class ValidateMarkersRowsTests(TestCase):
     def setUp(self):
-        self.user_alice = User.objects.create_user(
-            username='alice', first_name='Alice', last_name='Allen',
-        )
+        self.user_alice = seed_user_with_hashed_name('alice', 'Alice', 'Allen')
 
     def test_valid_row_no_errors(self):
         row = MarkerCsvRow(row_num=2, mkref='10', firstname='Alice', lastname='Allen', initials='AA')
         errors, resolved = validate_markers_rows([row])
-        self.assertEqual(errors, [])
+        self.assertEqual(errors, [], msg=[e.error_message for e in errors])
         self.assertEqual(resolved[0].user_id, self.user_alice.id)
         self.assertEqual(resolved[0].mkref_int, 10)
+
+    def test_match_is_case_insensitive(self):
+        # compute_search_hash lowercases input — verify CSV with different case still matches.
+        row = MarkerCsvRow(row_num=2, mkref='10', firstname='ALICE', lastname='allen', initials='AA')
+        errors, resolved = validate_markers_rows([row])
+        self.assertEqual(errors, [], msg=[e.error_message for e in errors])
+        self.assertEqual(resolved[0].user_id, self.user_alice.id)
 
     def test_zero_match_is_error(self):
         row = MarkerCsvRow(row_num=2, mkref='10', firstname='Bob', lastname='Brown', initials='BB')
         errors, resolved = validate_markers_rows([row])
         self.assertEqual(len(errors), 1)
-        self.assertIn("No auth_user matches", errors[0].error_message)
+        self.assertIn("No UserProfile matches", errors[0].error_message)
 
     def test_ambiguous_match_is_error(self):
-        User.objects.create_user(username='alice2', first_name='Alice', last_name='Allen')
+        seed_user_with_hashed_name('alice2', 'Alice', 'Allen')
         row = MarkerCsvRow(row_num=2, mkref='10', firstname='Alice', lastname='Allen', initials='AA')
         errors, resolved = validate_markers_rows([row])
         self.assertEqual(len(errors), 1)

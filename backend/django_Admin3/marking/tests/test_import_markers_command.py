@@ -7,16 +7,22 @@ from django.core.management import CommandError, call_command
 from django.test import TestCase
 
 from marking.models import Marker
+from userprofile.hash_utils import compute_search_hash
+
+
+def _seed_user(username, firstname, lastname):
+    user = User.objects.create_user(username=username)
+    profile = user.userprofile
+    profile.first_name_hash = compute_search_hash(firstname)
+    profile.last_name_hash = compute_search_hash(lastname)
+    profile.save(update_fields=['first_name_hash', 'last_name_hash'])
+    return user
 
 
 class ImportMarkersCommandTests(TestCase):
     def setUp(self):
-        self.user_alice = User.objects.create_user(
-            username='alice', first_name='Alice', last_name='Allen',
-        )
-        self.user_bob = User.objects.create_user(
-            username='bob', first_name='Bob', last_name='Brown',
-        )
+        self.user_alice = _seed_user('alice', 'Alice', 'Allen')
+        self.user_bob = _seed_user('bob', 'Bob', 'Brown')
 
     def _write_csv(self, content):
         f = tempfile.NamedTemporaryFile(
@@ -64,7 +70,7 @@ class ImportMarkersCommandTests(TestCase):
         self.assertEqual(Marker.objects.count(), 0)
         with open(errors_path) as f:
             text = f.read()
-        self.assertIn('No auth_user matches', text)
+        self.assertIn('No UserProfile matches', text)
         os.unlink(errors_path)
 
     def test_dry_run_does_not_import(self):
