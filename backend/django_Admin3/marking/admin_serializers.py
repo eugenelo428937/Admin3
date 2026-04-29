@@ -62,12 +62,12 @@ class MarkingPaperGradingAdminSerializer(serializers.ModelSerializer):
 
 
 class MarkingPaperFeedbackAdminSerializer(serializers.ModelSerializer):
-    grade_display = serializers.CharField(
-        source='get_grade_display', read_only=True,
+    rating_display = serializers.CharField(
+        source='get_rating_display', read_only=True,
     )
 
     class Meta:
         model = MarkingPaperFeedback
-        fields = ('id', 'grading', 'grade', 'grade_display', 'comments',
-                  'submission_date', 'hub_download_date',
+        fields = ('id', 'grading', 'rating', 'rating_display', 'comments',
+                  'feedback_date', 'is_active',
                   'created_at', 'updated_at')

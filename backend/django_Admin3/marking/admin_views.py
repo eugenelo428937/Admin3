@@ -104,12 +104,12 @@ class MarkingPaperFeedbackAdminViewSet(viewsets.ReadOnlyModelViewSet):
         qs = (
             MarkingPaperFeedback.objects
             .select_related('grading')
-            .order_by('-submission_date')
+            .order_by('-feedback_date')
         )
         params = self.request.query_params
-        grade = params.get('grade')
-        if grade:
-            qs = qs.filter(grade=grade)
+        rating = params.get('rating')
+        if rating:
+            qs = qs.filter(rating=rating)
         grading = params.get('grading')
         if grading:
             qs = qs.filter(grading_id=grading)

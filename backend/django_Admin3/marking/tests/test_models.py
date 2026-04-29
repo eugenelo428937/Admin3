@@ -855,39 +855,47 @@ class MarkingPaperFeedbackTestCase(MarkingChainTestCase):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback.objects.create(
             grading=self.grading,
-            submission_date=timezone.now(),
+            feedback_date=timezone.now(),
         )
         self.assertEqual(fb.grading, self.grading)
-        self.assertIsNone(fb.grade)
+        self.assertIsNone(fb.rating)
         self.assertEqual(fb.comments, '')
 
-    def test_feedback_grade_choices_valid(self):
+    def test_feedback_rating_choices_valid(self):
         from marking.models import MarkingPaperFeedback
         for g in ['E', 'G', 'A', 'P']:
             MarkingPaperFeedback.objects.filter(grading=self.grading).delete()
             fb = MarkingPaperFeedback(
                 grading=self.grading,
-                grade=g,
-                submission_date=timezone.now(),
+                rating=g,
+                feedback_date=timezone.now(),
             )
             fb.full_clean()
             fb.save()
 
-    def test_feedback_grade_choices_invalid(self):
+    def test_feedback_rating_choices_invalid(self):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback(
             grading=self.grading,
-            grade='X',
-            submission_date=timezone.now(),
+            rating='X',
+            feedback_date=timezone.now(),
         )
         with self.assertRaises(ValidationError):
             fb.full_clean()
+
+    def test_feedback_is_active_defaults_true(self):
+        from marking.models import MarkingPaperFeedback
+        fb = MarkingPaperFeedback.objects.create(
+            grading=self.grading,
+            feedback_date=timezone.now(),
+        )
+        self.assertTrue(fb.is_active)
 
     def test_feedback_cascades_when_grading_deleted(self):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback.objects.create(
             grading=self.grading,
-            submission_date=timezone.now(),
+            feedback_date=timezone.now(),
         )
         fb_id = fb.id
         self.grading.delete()
@@ -899,21 +907,21 @@ class MarkingPaperFeedbackTestCase(MarkingChainTestCase):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback.objects.create(
             grading=self.grading,
-            submission_date=timezone.now(),
+            feedback_date=timezone.now(),
         )
         # Reverse descriptor returns the instance, proving OneToOne (not FK)
         self.assertEqual(self.grading.feedback, fb)
         with self.assertRaises(IntegrityError):
             MarkingPaperFeedback.objects.create(
                 grading=self.grading,
-                submission_date=timezone.now(),
+                feedback_date=timezone.now(),
             )
 
     def test_feedback_derives_student_via_chain(self):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback.objects.create(
             grading=self.grading,
-            submission_date=timezone.now(),
+            feedback_date=timezone.now(),
         )
         self.assertEqual(fb.grading.submission.student, self.student)
 
@@ -921,8 +929,8 @@ class MarkingPaperFeedbackTestCase(MarkingChainTestCase):
         from marking.models import MarkingPaperFeedback
         fb = MarkingPaperFeedback.objects.create(
             grading=self.grading,
-            grade='G',
-            submission_date=timezone.now(),
+            rating='G',
+            feedback_date=timezone.now(),
         )
-        expected = f'Feedback({self.grading.id}) grade=G'
+        expected = f'Feedback({self.grading.id}) rating=G'
         self.assertEqual(str(fb), expected)

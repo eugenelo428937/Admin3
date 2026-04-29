@@ -52,7 +52,7 @@ class MarkingPaperGradingAdmin(admin.ModelAdmin):
 
 @admin.register(MarkingPaperFeedback)
 class MarkingPaperFeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'grading', 'grade', 'submission_date')
-    list_filter = ('grade', 'submission_date')
+    list_display = ('id', 'grading', 'rating', 'feedback_date', 'is_active')
+    list_filter = ('rating', 'feedback_date', 'is_active')
     raw_id_fields = ('grading',)
     readonly_fields = ('created_at', 'updated_at')

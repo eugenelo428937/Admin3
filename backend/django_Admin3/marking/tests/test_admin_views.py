@@ -62,8 +62,8 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         )
         cls.feedback = MarkingPaperFeedback.objects.create(
             grading=cls.grading,
-            grade='G',
-            submission_date=timezone.now(),
+            rating='G',
+            feedback_date=timezone.now(),
         )
 
     # Permissions
@@ -123,8 +123,22 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         data = resp.json()
         results = data.get('results', data)
         self.assertGreaterEqual(len(results), 1)
-        self.assertEqual(results[0]['grade'], 'G')
-        self.assertEqual(results[0]['grade_display'], 'Good')
+        self.assertEqual(results[0]['rating'], 'G')
+        self.assertEqual(results[0]['rating_display'], 'Good')
+
+    def test_feedbacks_list_includes_new_fields(self):
+        """Feedback API response should include rating, feedback_date, and is_active fields."""
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get('/api/markings/admin-feedback/')
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.json()
+        results = payload.get('results', payload)
+        self.assertGreater(len(results), 0)
+        first = results[0]
+        self.assertIn('rating', first)
+        self.assertIn('feedback_date', first)
+        self.assertIn('is_active', first)
+        self.assertTrue(first['is_active'])  # default value is True
 
     def test_markers_retrieve_detail(self):
         self.client.force_authenticate(user=self.superuser)
@@ -188,8 +202,8 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['student'], self.student.pk)
 
-    def test_feedback_filter_by_grade(self):
-        # Seed a second feedback with a different grade — filter must exclude it.
+    def test_feedback_filter_by_rating(self):
+        # Seed a second feedback with a different rating — filter must exclude it.
         other_student_user = User.objects.create_user(
             username='stu4', email='s4@example.com', password='pw',
         )
@@ -204,14 +218,14 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
             allocate_date=timezone.now(), allocate_by=self.staff,
         )
         MarkingPaperFeedback.objects.create(
-            grading=other_grading, grade='P',
-            submission_date=timezone.now(),
+            grading=other_grading, rating='P',
+            feedback_date=timezone.now(),
         )
 
         self.client.force_authenticate(user=self.superuser)
-        resp = self.client.get('/api/markings/admin-feedback/?grade=G')
+        resp = self.client.get('/api/markings/admin-feedback/?rating=G')
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         results = data.get('results', data)
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['grade'], 'G')
+        self.assertEqual(results[0]['rating'], 'G')
