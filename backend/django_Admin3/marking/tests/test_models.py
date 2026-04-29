@@ -69,13 +69,15 @@ class MarkingPaperTestCase(TestCase):
         recommended_date = timezone.now() + timedelta(days=40)
 
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
         )
 
-        self.assertEqual(paper.store_product, self.store_product)
+        # paper.purchasable returns a Purchasable instance; compare PKs since the
+        # Product MTI-shares the same PK as its Purchasable parent.
+        self.assertEqual(paper.purchasable_id, self.store_product.pk)
         self.assertEqual(paper.name, 'Paper1')
         self.assertEqual(paper.deadline, deadline)
         self.assertEqual(paper.recommended_submit_date, recommended_date)
@@ -87,55 +89,61 @@ class MarkingPaperTestCase(TestCase):
 
         name = 'A' * 10
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name=name,
             deadline=deadline,
             recommended_submit_date=recommended_date
         )
         self.assertEqual(len(paper.name), 10)
 
-    def test_foreign_key_relationship_to_store_product(self):
-        """Test ForeignKey relationship with store.Product."""
+    def test_foreign_key_relationship_to_purchasable(self):
+        """Test ForeignKey relationship with store.Purchasable."""
         deadline = timezone.now() + timedelta(days=45)
         recommended_date = timezone.now() + timedelta(days=40)
 
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
         )
 
-        # Access store product from paper
-        self.assertEqual(paper.store_product, self.store_product)
+        # Access purchasable from paper (compare PKs as in test above).
+        self.assertEqual(paper.purchasable_id, self.store_product.pk)
 
-        # Access papers from store product (reverse relationship)
+        # Access papers from store product (reverse relationship preserved
+        # because related_name='marking_papers' is unchanged and Product
+        # inherits the relation via Purchasable MTI).
         papers = self.store_product.marking_papers.all()
         self.assertEqual(papers.count(), 1)
         self.assertEqual(papers.first(), paper)
 
-    def test_cascade_delete_store_product(self):
-        """Test cascading delete - deleting store product deletes marking papers."""
+    def test_protect_delete_purchasable(self):
+        """Deleting a purchasable that owns marking papers must raise ProtectedError."""
+        from django.db.models import ProtectedError
+        from django.db import transaction
+
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
         paper_id = paper.id
 
-        # Delete the store product
-        self.store_product.delete()
+        # PROTECT prevents deletion while the paper still references it.
+        with self.assertRaises(ProtectedError):
+            with transaction.atomic():
+                self.store_product.delete()
 
-        # MarkingPaper should also be deleted
-        with self.assertRaises(MarkingPaper.DoesNotExist):
-            MarkingPaper.objects.get(id=paper_id)
+        # MarkingPaper still exists.
+        self.assertTrue(MarkingPaper.objects.filter(id=paper_id).exists())
 
     def test_deadline_required(self):
         """Test deadline is a required field."""
         with self.assertRaises(Exception):
             MarkingPaper.objects.create(
-                store_product=self.store_product,
+                purchasable=self.store_product,
                 name='Paper1',
                 recommended_submit_date=timezone.now() + timedelta(days=40)
             )
@@ -144,15 +152,15 @@ class MarkingPaperTestCase(TestCase):
         """Test recommended_submit_date is a required field."""
         with self.assertRaises(Exception):
             MarkingPaper.objects.create(
-                store_product=self.store_product,
+                purchasable=self.store_product,
                 name='Paper1',
                 deadline=timezone.now() + timedelta(days=45)
             )
 
     def test_str_method_formatting(self):
-        """Test __str__ method returns name and store product."""
+        """Test __str__ method returns name and purchasable id."""
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -162,36 +170,35 @@ class MarkingPaperTestCase(TestCase):
         self.assertIn('Paper1', str_representation)
 
     def test_str_method_exact_format(self):
-        """Test __str__ returns exact format: '{name} ({store_product})'."""
+        """Test __str__ returns exact format: '{name} ({purchasable_id})'."""
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
-        expected = f"Paper1 ({self.store_product})"
+        expected = f"Paper1 ({self.store_product.pk})"
         self.assertEqual(str(paper), expected)
 
-    def test_str_method_includes_store_product_code(self):
-        """Test __str__ includes the store product's product_code."""
+    def test_str_method_includes_purchasable_id(self):
+        """Test __str__ includes the linked purchasable id."""
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         str_representation = str(paper)
-        # store.Product.__str__ returns product_code
-        self.assertIn(self.store_product.product_code, str_representation)
+        self.assertIn(str(self.store_product.pk), str_representation)
         self.assertIn('(', str_representation)
         self.assertIn(')', str_representation)
 
-    def test_str_method_with_none_store_product(self):
-        """Test __str__ handles None store_product (nullable FK)."""
+    def test_str_method_with_none_purchasable(self):
+        """Test __str__ handles None purchasable (nullable FK)."""
         paper = MarkingPaper.objects.create(
-            store_product=None,
+            purchasable=None,
             name='OrphanP',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -207,23 +214,23 @@ class MarkingPaperTestCase(TestCase):
             '"acted"."marking_paper"'
         )
 
-    def test_multiple_papers_for_same_store_product(self):
-        """Test creating multiple marking papers for same store product."""
+    def test_multiple_papers_for_same_purchasable(self):
+        """Test creating multiple marking papers for same purchasable."""
         paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
         )
 
-        papers = MarkingPaper.objects.filter(store_product=self.store_product)
+        papers = MarkingPaper.objects.filter(purchasable=self.store_product)
         self.assertEqual(papers.count(), 2)
 
     def test_deadline_date_validation(self):
@@ -231,7 +238,7 @@ class MarkingPaperTestCase(TestCase):
         future_deadline = timezone.now() + timedelta(days=90)
 
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=future_deadline,
             recommended_submit_date=timezone.now() + timedelta(days=80)
@@ -245,7 +252,7 @@ class MarkingPaperTestCase(TestCase):
         recommended_date = timezone.now() + timedelta(days=40)
 
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -259,7 +266,7 @@ class MarkingPaperTestCase(TestCase):
         recommended_date = timezone.now() + timedelta(days=45)
 
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -267,30 +274,30 @@ class MarkingPaperTestCase(TestCase):
 
         self.assertGreater(paper.recommended_submit_date, paper.deadline)
 
-    def test_query_by_store_product(self):
-        """Test querying marking papers by store product."""
+    def test_query_by_purchasable(self):
+        """Test querying marking papers by purchasable."""
         paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
-        papers = MarkingPaper.objects.filter(store_product=self.store_product)
+        papers = MarkingPaper.objects.filter(purchasable=self.store_product)
         self.assertEqual(papers.count(), 1)
         self.assertEqual(papers.first(), paper1)
 
     def test_query_by_deadline_range(self):
         """Test querying marking papers by deadline range."""
         paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=90),
             recommended_submit_date=timezone.now() + timedelta(days=85)
@@ -305,7 +312,7 @@ class MarkingPaperTestCase(TestCase):
     def test_date_timezone_awareness(self):
         """Test deadline and recommended_submit_date are timezone-aware."""
         paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -317,14 +324,14 @@ class MarkingPaperTestCase(TestCase):
     def test_name_field_uniqueness_not_enforced(self):
         """Test name field has no unique constraint (duplicates allowed)."""
         paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -387,7 +394,7 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
 
         # Create marking paper
         self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='CompatP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -418,7 +425,7 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
             product_product_variation=ppv2
         )
         paper2 = MarkingPaper.objects.create(
-            store_product=store_product2,
+            purchasable=store_product2,
             name='NoEsspP',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)

@@ -11,11 +11,11 @@ from marking.models import (
 
 @admin.register(MarkingPaper)
 class MarkingPaperAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'store_product', 'deadline',
-                    'recommended_submit_date')
-    list_filter = ('deadline',)
+    list_display = ('id', 'name', 'purchasable', 'deadline',
+                    'recommended_submit_date', 'is_active', 'sequences')
+    list_filter = ('deadline', 'is_active')
     search_fields = ('name',)
-    raw_id_fields = ('store_product',)
+    raw_id_fields = ('purchasable',)
 
 
 @admin.register(Marker)

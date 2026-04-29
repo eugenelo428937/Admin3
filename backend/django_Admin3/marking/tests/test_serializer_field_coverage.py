@@ -55,7 +55,7 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
             product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
         )
         self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper A',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),

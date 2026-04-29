@@ -76,7 +76,7 @@ class MarkingChainTestCase(APITestCase):
             product_product_variation=cls.ppv,
         )
         cls.paper = MarkingPaper.objects.create(
-            store_product=cls.store_product,
+            purchasable=cls.store_product,
             name='FixPaper',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),

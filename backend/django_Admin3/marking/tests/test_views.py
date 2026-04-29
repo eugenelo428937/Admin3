@@ -78,21 +78,21 @@ class MarkingPaperAPITestCase(APITestCase):
 
         # Create marking papers
         self.paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product1,
+            purchasable=self.store_product1,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         self.paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product1,
+            purchasable=self.store_product1,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
         )
 
         self.paper3 = MarkingPaper.objects.create(
-            store_product=self.store_product2,
+            purchasable=self.store_product2,
             name='Paper3',
             deadline=timezone.now() + timedelta(days=60),
             recommended_submit_date=timezone.now() + timedelta(days=55)
@@ -119,8 +119,8 @@ class MarkingPaperAPITestCase(APITestCase):
         self.assertEqual(response.data['name'], 'Paper1')
 
     def test_deadlines_action_with_valid_store_product_id(self):
-        """Test GET /api/markings/papers/deadlines/?store_product_id={id}."""
-        response = self.client.get(f'/api/markings/papers/deadlines/?store_product_id={self.store_product1.id}')
+        """Test GET /api/markings/papers/deadlines/?purchasable_id={id}."""
+        response = self.client.get(f'/api/markings/papers/deadlines/?purchasable_id={self.store_product1.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
@@ -137,11 +137,11 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'store_product_id or essp_id is required')
+        self.assertEqual(response.data['error'], 'purchasable_id or essp_id is required')
 
     def test_deadlines_action_with_invalid_store_product_id(self):
-        """Test GET /api/markings/papers/deadlines/?store_product_id={invalid_id}."""
-        response = self.client.get('/api/markings/papers/deadlines/?store_product_id=999999')
+        """Test GET /api/markings/papers/deadlines/?purchasable_id={invalid_id}."""
+        response = self.client.get('/api/markings/papers/deadlines/?purchasable_id=999999')
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn('error', response.data)
@@ -165,7 +165,7 @@ class MarkingPaperAPITestCase(APITestCase):
             product_product_variation=ppv3
         )
 
-        response = self.client.get(f'/api/markings/papers/deadlines/?store_product_id={store_product_no_papers.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?purchasable_id={store_product_no_papers.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
@@ -174,7 +174,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_action_with_valid_store_product_ids(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with valid store product ids."""
         data = {
-            'store_product_ids': [self.store_product1.id, self.store_product2.id]
+            'purchasable_ids': [self.store_product1.id, self.store_product2.id]
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -198,12 +198,12 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'store_product_ids or essp_ids is required and must be a list')
+        self.assertEqual(response.data['error'], 'purchasable_ids or essp_ids is required and must be a list')
 
     def test_bulk_deadlines_action_with_invalid_ids_type(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with non-list store_product_ids."""
         data = {
-            'store_product_ids': 'not_a_list'
+            'purchasable_ids': 'not_a_list'
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -214,7 +214,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_action_with_empty_list(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with empty list."""
         data = {
-            'store_product_ids': []
+            'purchasable_ids': []
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -225,7 +225,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_action_with_nonexistent_ids(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with nonexistent IDs."""
         data = {
-            'store_product_ids': [999998, 999999]
+            'purchasable_ids': [999998, 999999]
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -238,7 +238,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_action_mixed_valid_invalid_ids(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with mixed valid/invalid IDs."""
         data = {
-            'store_product_ids': [self.store_product1.id, 999999]  # One valid, one invalid
+            'purchasable_ids': [self.store_product1.id, 999999]  # One valid, one invalid
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -252,7 +252,7 @@ class MarkingPaperAPITestCase(APITestCase):
 
     def test_deadlines_response_structure(self):
         """Test deadlines action response contains expected fields."""
-        response = self.client.get(f'/api/markings/papers/deadlines/?store_product_id={self.store_product1.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?purchasable_id={self.store_product1.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
@@ -267,7 +267,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_response_structure(self):
         """Test bulk deadlines action response structure."""
         data = {
-            'store_product_ids': [self.store_product1.id]
+            'purchasable_ids': [self.store_product1.id]
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -293,7 +293,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_readonly_viewset_no_create(self):
         """Test ReadOnlyModelViewSet does not allow POST to create papers."""
         data = {
-            'store_product': self.store_product1.id,
+            'purchasable': self.store_product1.id,
             'name': 'NewPaper',
             'deadline': (timezone.now() + timedelta(days=70)).isoformat(),
             'recommended_submit_date': (timezone.now() + timedelta(days=65)).isoformat()
@@ -328,7 +328,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_permission_classes_allow_any(self):
         """Test API endpoints are accessible without authentication (AllowAny)."""
         # Test without authentication
-        response = self.client.get(f'/api/markings/papers/deadlines/?store_product_id={self.store_product1.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?purchasable_id={self.store_product1.id}')
 
         # Should allow access (AllowAny permission)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -388,13 +388,13 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
 
         # Create marking papers linked to the store product
         self.paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='EsspP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
         self.paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='EsspP2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -527,19 +527,19 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
 
         # Create marking papers for each store product
         self.paper1 = MarkingPaper.objects.create(
-            store_product=self.store_product1,
+            purchasable=self.store_product1,
             name='BulkP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
         self.paper2 = MarkingPaper.objects.create(
-            store_product=self.store_product1,
+            purchasable=self.store_product1,
             name='BulkP2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
         )
         self.paper3 = MarkingPaper.objects.create(
-            store_product=self.store_product2,
+            purchasable=self.store_product2,
             name='BulkP3',
             deadline=timezone.now() + timedelta(days=55),
             recommended_submit_date=timezone.now() + timedelta(days=50)
