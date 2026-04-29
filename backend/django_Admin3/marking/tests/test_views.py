@@ -145,7 +145,7 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'Store product not found')
+        self.assertEqual(response.data['error'], 'Purchasable not found')
 
     def test_deadlines_action_with_store_product_no_papers(self):
         """Test deadlines action for store product with no marking papers."""

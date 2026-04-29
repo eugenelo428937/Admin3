@@ -72,4 +72,7 @@ class MarkingPaper(models.Model):
         ).first()
 
     def __str__(self):
-        return f"{self.name} ({self.purchasable_id})"
+        if self.purchasable_id is None:
+            return f"{self.name} (no purchasable)"
+        label = getattr(self.purchasable, 'code', None) or self.purchasable_id
+        return f"{self.name} ({label})"

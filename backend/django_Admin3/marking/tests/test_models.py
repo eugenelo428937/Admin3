@@ -170,7 +170,7 @@ class MarkingPaperTestCase(TestCase):
         self.assertIn('Paper1', str_representation)
 
     def test_str_method_exact_format(self):
-        """Test __str__ returns exact format: '{name} ({purchasable_id})'."""
+        """Test __str__ returns '{name} ({code})' when purchasable has a code attribute."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
             name='Paper1',
@@ -178,11 +178,11 @@ class MarkingPaperTestCase(TestCase):
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
-        expected = f"Paper1 ({self.store_product.pk})"
+        expected = f"Paper1 ({self.store_product.code})"
         self.assertEqual(str(paper), expected)
 
-    def test_str_method_includes_purchasable_id(self):
-        """Test __str__ includes the linked purchasable id."""
+    def test_str_method_includes_purchasable_code(self):
+        """Test __str__ includes the linked purchasable code (or id as fallback)."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
             name='Paper1',
@@ -191,7 +191,8 @@ class MarkingPaperTestCase(TestCase):
         )
 
         str_representation = str(paper)
-        self.assertIn(str(self.store_product.pk), str_representation)
+        label = getattr(self.store_product, 'code', None) or str(self.store_product.pk)
+        self.assertIn(label, str_representation)
         self.assertIn('(', str_representation)
         self.assertIn(')', str_representation)
 
@@ -205,7 +206,7 @@ class MarkingPaperTestCase(TestCase):
         )
 
         str_representation = str(paper)
-        self.assertEqual(str_representation, "OrphanP (None)")
+        self.assertEqual(str_representation, "OrphanP (no purchasable)")
 
     def test_db_table_name(self):
         """Test custom database table name."""
@@ -338,6 +339,67 @@ class MarkingPaperTestCase(TestCase):
         )
 
         self.assertEqual(MarkingPaper.objects.filter(name='Paper1').count(), 2)
+
+    def test_marking_paper_is_active_default_true(self):
+        """is_active should default to True for new papers."""
+        from marking.models import MarkingPaper
+        from django.utils import timezone
+        from datetime import timedelta
+        paper = MarkingPaper.objects.create(
+            purchasable=self.store_product,
+            name='ActiveTest',
+            deadline=timezone.now() + timedelta(days=10),
+            recommended_submit_date=timezone.now() + timedelta(days=5),
+        )
+        self.assertTrue(paper.is_active)
+
+    def test_marking_paper_sequences_nullable(self):
+        """sequences should accept None."""
+        from marking.models import MarkingPaper
+        from django.utils import timezone
+        from datetime import timedelta
+        paper = MarkingPaper.objects.create(
+            purchasable=self.store_product,
+            name='NoSeq',
+            deadline=timezone.now() + timedelta(days=10),
+            recommended_submit_date=timezone.now() + timedelta(days=5),
+        )
+        self.assertIsNone(paper.sequences)
+
+    def test_marking_paper_sequences_stores_integer(self):
+        """sequences should store an integer for paper-by-sequence lookup."""
+        from marking.models import MarkingPaper
+        from django.utils import timezone
+        from datetime import timedelta
+        paper = MarkingPaper.objects.create(
+            purchasable=self.store_product,
+            name='X',
+            sequences=2,
+            deadline=timezone.now() + timedelta(days=10),
+            recommended_submit_date=timezone.now() + timedelta(days=5),
+        )
+        refreshed = MarkingPaper.objects.get(pk=paper.pk)
+        self.assertEqual(refreshed.sequences, 2)
+
+    def test_marking_paper_filter_by_name_and_sequences(self):
+        """The primary lookup pattern: find a paper by (name, sequences)."""
+        from marking.models import MarkingPaper
+        from django.utils import timezone
+        from datetime import timedelta
+        p1 = MarkingPaper.objects.create(
+            purchasable=self.store_product,
+            name='X', sequences=1,
+            deadline=timezone.now() + timedelta(days=10),
+            recommended_submit_date=timezone.now() + timedelta(days=5),
+        )
+        p2 = MarkingPaper.objects.create(
+            purchasable=self.store_product,
+            name='X', sequences=2,
+            deadline=timezone.now() + timedelta(days=10),
+            recommended_submit_date=timezone.now() + timedelta(days=5),
+        )
+        found = MarkingPaper.objects.get(name='X', sequences=2)
+        self.assertEqual(found.pk, p2.pk)
 
 
 class MarkingPaperBackwardCompatTestCase(TestCase):

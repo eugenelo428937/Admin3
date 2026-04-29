@@ -4,4 +4,4 @@ from marking.models import MarkingPaper
 class MarkingPaperSerializer(serializers.ModelSerializer):
     class Meta:
         model = MarkingPaper
-        fields = ['id', 'name', 'deadline', 'recommended_submit_date']
+        fields = ['id', 'purchasable', 'name', 'deadline', 'recommended_submit_date', 'is_active', 'sequences']

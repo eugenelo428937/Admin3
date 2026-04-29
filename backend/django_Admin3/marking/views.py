@@ -46,7 +46,7 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 purchasable = Purchasable.objects.get(id=purchasable_id)
             except Purchasable.DoesNotExist:
-                return Response({'error': 'Store product not found'}, status=404)
+                return Response({'error': 'Purchasable not found'}, status=404)
         elif essp_id:
             # Backward compatibility: Map ESSP to store product (which is a Purchasable)
             from catalog.models import ExamSessionSubjectProduct
