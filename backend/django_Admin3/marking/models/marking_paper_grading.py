@@ -1,13 +1,15 @@
-"""
-MarkingPaperGrading model.
-
-One grading per submission. Represents a marker's work on a submitted paper,
-including allocation metadata (who assigned it and when) and scoring outcome.
-"""
+"""MarkingPaperGrading model — one grading per submission."""
 from django.db import models
 
 
 class MarkingPaperGrading(models.Model):
+    GRADE_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+    ]
+
     submission = models.OneToOneField(
         'marking.MarkingPaperSubmission',
         on_delete=models.CASCADE,
@@ -24,10 +26,16 @@ class MarkingPaperGrading(models.Model):
         on_delete=models.PROTECT,
         related_name='allocated_gradings',
     )
-    submission_date = models.DateTimeField(null=True, blank=True)
-    hub_download_date = models.DateTimeField(null=True, blank=True)
+    graded_date = models.DateTimeField(null=True, blank=True)
     hub_upload_date = models.DateTimeField(null=True, blank=True)
     score = models.IntegerField(null=True, blank=True)
+    grade = models.CharField(
+        max_length=1,
+        choices=GRADE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

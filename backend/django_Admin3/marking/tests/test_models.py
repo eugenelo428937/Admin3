@@ -706,7 +706,29 @@ class MarkingPaperGradingTestCase(MarkingChainTestCase):
         self.assertEqual(grading.marker, self.marker)
         self.assertEqual(grading.allocate_by, self.staff)
         self.assertIsNone(grading.score)
-        self.assertIsNone(grading.hub_download_date)
+        self.assertIsNone(grading.graded_date)
+
+    def test_grading_grade_persists(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+            grade='A',
+        )
+        refetched = MarkingPaperGrading.objects.get(pk=grading.pk)
+        self.assertEqual(refetched.grade, 'A')
+
+    def test_grading_is_active_defaults_true(self):
+        from marking.models import MarkingPaperGrading
+        grading = MarkingPaperGrading.objects.create(
+            submission=self.submission,
+            marker=self.marker,
+            allocate_date=timezone.now(),
+            allocate_by=self.staff,
+        )
+        self.assertTrue(grading.is_active)
 
     def test_grading_submission_is_one_to_one(self):
         from marking.models import MarkingPaperGrading

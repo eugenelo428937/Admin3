@@ -54,8 +54,8 @@ class MarkingPaperGradingAdminSerializer(serializers.ModelSerializer):
         model = MarkingPaperGrading
         fields = ('id', 'submission', 'marker', 'marker_initial',
                   'allocate_date', 'allocate_by', 'allocate_by_name',
-                  'submission_date', 'hub_download_date', 'hub_upload_date',
-                  'score', 'created_at', 'updated_at')
+                  'graded_date', 'hub_upload_date',
+                  'score', 'grade', 'is_active', 'created_at', 'updated_at')
 
     def get_allocate_by_name(self, obj):
         return str(obj.allocate_by)
