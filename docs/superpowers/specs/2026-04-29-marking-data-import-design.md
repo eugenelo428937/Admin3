@@ -25,7 +25,7 @@ Each app's migrations declare cross-app dependencies so Django runs them topolog
 |-------|-----|-----------|--------|
 | 1 | `staff` | `0004_add_staff_initials` | Add `Staff.initials` (CharField, indexed). |
 | 2 | `marking_vouchers` | `0005_add_redeemed_voucher` | Create `RedeemedVoucher` table. |
-| 3 | `marking` | `0010_marking_paper_purchasable_fk` | Rename `marking_paper.store_product` → `purchasable`; retarget FK `store.Product` → `store.Purchasable`; `on_delete=PROTECT`; add `is_active`. |
+| 3 | `marking` | `0010_marking_paper_purchasable_fk` | Rename `marking_paper.store_product` → `purchasable`; retarget FK `store.Product` → `store.Purchasable`; `on_delete=PROTECT`; add `is_active`; add `sequences` (IntegerField, nullable). |
 | 4 | `marking` | `0011_add_marker_legacy_id` | Add `Marker.legacy_id` (PositiveIntegerField, unique, nullable, indexed). |
 | 5 | `marking` | `0012_submission_swap_voucher_fk` | Drop `marking_voucher` FK on `MarkingPaperSubmission`; add `redeemed_voucher` FK to `marking_vouchers.RedeemedVoucher` (nullable); make `order_item` non-nullable; add `is_active`. |
 | 6 | `marking` | `0013_grading_field_changes` | On `MarkingPaperGrading`: add `grade` (CharField, choices A/B/C/D, nullable); rename `submission_date` → `graded_date`; drop `hub_download_date`; add `is_active`. |
@@ -38,6 +38,7 @@ Existing `marking_paper` rows are preserved through migration 3 because `store.P
 `marking.MarkingPaper`:
 - Rename `store_product` → `purchasable` (FK to `store.Purchasable`, `on_delete=PROTECT`).
 - Add `is_active = BooleanField(default=True, db_index=True)`.
+- Add `sequences = IntegerField(null=True, blank=True, db_index=True)`. The legacy CSV has a `sequence` column (int) per paper, e.g., for "X" papers the rows are `(name='X', sequences=1..6)`; for Mock Exams `(name='M1'|'M2'|'M3', sequences=1..2)`. Lookup by `(subject, name, sequences)` (see §5.4). Field is nullable to allow operator backfill on existing `MarkingPaper` rows out-of-band.
 
 `marking.MarkingPaperSubmission`:
 - Drop `marking_voucher` FK (was → `store.GenericItem`).
@@ -315,13 +316,23 @@ def parse_date(value: str) -> datetime | None:
 
 ### 5.4 Marking paper lookup
 
-`MarkingPaper.name` follows the format `f"{abbrev}-{sequence}"` (e.g., `X-1`, `M2-1`). The user will update existing `MarkingPaper` rows to match this convention before running marks26.
+`MarkingPaper.name` stores the abbrev (e.g., `X`, `Y`, `M1`, `M2`, `M3`) and `MarkingPaper.sequences` stores the integer sequence number. Examples:
+
+| CSV row | name | sequences |
+|---------|------|-----------|
+| abbrev=X, sequence=1 | `X` | `1` |
+| abbrev=X, sequence=2 | `X` | `2` |
+| abbrev=M2, sequence=1 | `M2` | `1` |
+| abbrev=M2, sequence=2 | `M2` | `2` |
+
+The operator updates existing `MarkingPaper` rows to set `name` and `sequences` consistently before running marks26.
 
 ```python
 def lookup_marking_paper(subject_code: str, abbrev: str, sequence: int) -> MarkingPaper | None:
     return MarkingPaper.objects.filter(
         purchasable__product__exam_session_subject__subject__code=subject_code,
-        name=f"{abbrev}-{sequence}",
+        name=abbrev,
+        sequences=sequence,
         is_active=True,
     ).first()
 ```

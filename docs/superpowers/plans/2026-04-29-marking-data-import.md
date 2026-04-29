@@ -520,9 +520,11 @@ git commit -m "feat(marking): add legacy_id to Marker model"
 
 ---
 
-### Task A5: Rename `MarkingPaper.store_product` → `purchasable`, retarget FK, add `is_active`
+### Task A5: Rename `MarkingPaper.store_product` → `purchasable`, retarget FK, add `is_active` and `sequences`
 
 This task is wider because the rename affects fixtures, tests, admin, views, and the existing `import_marking_deadlines` command.
+
+**Note on `sequences` field:** marks26.csv has separate `abbrev` and `sequence` columns. The MarkingPaper lookup is by `(subject, name=abbrev, sequences=sequence)`. Examples: X paper rows are `(name='X', sequences=1..6)`; Mock Exam rows are `(name='M2', sequences=1..2)`. The field is nullable to allow operator backfill on existing rows.
 
 **Files:**
 - Modify: `backend/django_Admin3/marking/models/marking_paper.py`
@@ -550,6 +552,12 @@ Modify `marking/models/marking_paper.py` — replace the `store_product` field b
         help_text='The purchasable this marking paper belongs to',
     )
     is_active = models.BooleanField(default=True, db_index=True)
+    sequences = models.IntegerField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Sequence number within the named paper (e.g., X-1, X-2, M2-1, M2-2).',
+    )
 ```
 
 Update the docstring at the top to reflect the new FK target. Update the `exam_session_subject_product` property to access the product via `Purchasable` MTI:
@@ -606,6 +614,16 @@ operations = [
         model_name='markingpaper',
         name='is_active',
         field=models.BooleanField(db_index=True, default=True),
+    ),
+    migrations.AddField(
+        model_name='markingpaper',
+        name='sequences',
+        field=models.IntegerField(
+            blank=True,
+            db_index=True,
+            help_text='Sequence number within the named paper (e.g., X-1, X-2, M2-1, M2-2).',
+            null=True,
+        ),
     ),
 ]
 ```
@@ -1701,9 +1719,9 @@ class Marks26Row:
     def has_valid_hubfeedbk(self) -> bool:
         return self.hubfeedbk.strip() not in ('', EMPTY_DATE_MARKER)
 
-    def paper_name(self) -> str:
-        """Construct MarkingPaper.name lookup key from abbrev + sequence."""
-        return f"{self.abbrev}-{self.sequence}"
+    def sequence_int(self) -> int:
+        """Parse the CSV sequence column as int (raises ValueError if non-numeric)."""
+        return int(self.sequence)
 
 
 def parse_marks26_csv(file_obj: IO) -> List[Marks26Row]:
@@ -1821,6 +1839,10 @@ class BuildLookupsTests(MarkingChainTestCase):
             expires_at=timezone.now() + timedelta(days=30),
         )
 
+        # Set sequences on the fixture paper so build_lookups indexes it.
+        cls.paper.sequences = 1
+        cls.paper.save(update_fields=['sequences'])
+
     def test_lookups_keyed_correctly(self):
         lookups = build_lookups()
         self.assertIn(self.student.student_ref, lookups.students)
@@ -1828,7 +1850,7 @@ class BuildLookupsTests(MarkingChainTestCase):
         self.assertEqual(lookups.staff['SXC'].pk, self.staff.pk)
         self.assertEqual(lookups.products[self.store_product.product_code].pk, self.store_product.pk)
         self.assertEqual(
-            lookups.papers[(self.subject.code, self.paper.name)].pk,
+            lookups.papers[(self.subject.code, self.paper.name, self.paper.sequences)].pk,
             self.paper.pk,
         )
         self.assertEqual(lookups.issued_vouchers['7401908'].pk, self.iv.pk)
@@ -1881,7 +1903,7 @@ class Marks26Lookups:
     markers: Dict[str, Marker] = field(default_factory=dict)
     staff: Dict[str, Staff] = field(default_factory=dict)
     products: Dict[str, StoreProduct] = field(default_factory=dict)
-    papers: Dict[Tuple[str, str], MarkingPaper] = field(default_factory=dict)
+    papers: Dict[Tuple[str, str, int], MarkingPaper] = field(default_factory=dict)
     issued_vouchers: Dict[str, IssuedVoucher] = field(default_factory=dict)
     order_items: Dict[Tuple[str, str], OrderItem] = field(default_factory=dict)
     mv_purchasable: Purchasable = None
@@ -1907,11 +1929,15 @@ def build_lookups() -> Marks26Lookups:
         if p.product_code
     }
     lookups.papers = {
-        (p.purchasable.product.exam_session_subject.subject.code, p.name): p
+        (
+            p.purchasable.product.exam_session_subject.subject.code,
+            p.name,
+            p.sequences,
+        ): p
         for p in MarkingPaper.objects.filter(is_active=True).select_related(
             'purchasable__product__exam_session_subject__subject'
         )
-        if hasattr(p.purchasable, 'product')
+        if hasattr(p.purchasable, 'product') and p.sequences is not None
     }
     lookups.issued_vouchers = {
         iv.voucher_code: iv for iv in IssuedVoucher.objects.all()
@@ -1988,7 +2014,7 @@ class PreflightChecksTests(MarkingChainTestCase):
         lookups = build_lookups()
         row = make_row(
             ref=str(self.student.student_ref),
-            subject='FIX', assign='FIX01/MX/26', abbrev='FixPaper',
+            subject='FIX', assign='FIX01/MX/26', abbrev='X',
             sequence='1', datelogged='10/04/2026', dateout='13/04/2026',
             staffalloc='ZZZ', marker='AAA', order='99',
         )
@@ -2033,7 +2059,7 @@ class ValidateMarks26RowTests(MarkingChainTestCase):
         lookups = build_lookups()
         row = make_row(
             ref=str(self.student.student_ref),
-            subject='FIX', assign='FIX01/MX/26', abbrev='FixPaper', sequence='1',
+            subject='FIX', assign='FIX01/MX/26', abbrev='X', sequence='1',
             datelogged='/  /',  # invalid
             dateout='10/04/2026',  # but dateout is valid → orphan grading
             staffalloc='AA', marker='MM', order='1',
@@ -2045,7 +2071,7 @@ class ValidateMarks26RowTests(MarkingChainTestCase):
         lookups = build_lookups()
         row = make_row(
             ref=str(self.student.student_ref),
-            subject='FIX', assign='FIX01/MX/26', abbrev='FixPaper', sequence='1',
+            subject='FIX', assign='FIX01/MX/26', abbrev='X', sequence='1',
             datelogged='10/04/2026', dateout='/  /',
             hubfeedbk='15/04/2026',  # feedback without grading
             order='1',
@@ -2057,7 +2083,7 @@ class ValidateMarks26RowTests(MarkingChainTestCase):
         lookups = build_lookups()
         row = make_row(
             ref=str(self.student.student_ref),
-            subject='FIX', assign='FIX01/MX/26', abbrev='FixPaper', sequence='1',
+            subject='FIX', assign='FIX01/MX/26', abbrev='X', sequence='1',
             datelogged='10/04/2026', dateout='13/04/2026',
             staffalloc='AA', marker='MM', grade='Z',  # invalid
             order='1',
@@ -2069,7 +2095,7 @@ class ValidateMarks26RowTests(MarkingChainTestCase):
         lookups = build_lookups()
         row = make_row(
             ref=str(self.student.student_ref),
-            subject='FIX', assign='FIX01/MX/26', abbrev='FixPaper', sequence='1',
+            subject='FIX', assign='FIX01/MX/26', abbrev='X', sequence='1',
             datelogged='10/04/2026', dateout='13/04/2026',
             staffalloc='AA', marker='MM',
             hubfeedbk='15/04/2026', rating='Z',  # invalid
@@ -2172,24 +2198,38 @@ def validate_marks26_row(
             err('order', f"no OrderItem with orderno={row.order!r} and purchasable.code='MV'")
 
         if row.has_valid_datelogged():
-            paper = lookups.papers.get((row.subject, row.paper_name()))
-            if paper is None:
-                err(
-                    'marking_paper',
-                    f"no MarkingPaper for subject={row.subject!r} name={row.paper_name()!r}",
-                )
+            try:
+                seq_int = row.sequence_int()
+            except ValueError:
+                err('sequence', f"sequence={row.sequence!r} is not an integer")
+                seq_int = None
+            if seq_int is not None:
+                paper = lookups.papers.get((row.subject, row.abbrev, seq_int))
+                if paper is None:
+                    err(
+                        'marking_paper',
+                        f"no MarkingPaper for subject={row.subject!r} "
+                        f"name={row.abbrev!r} sequences={seq_int}",
+                    )
     else:
         # Non-voucher row — assign should match a Product code
         product = lookups.products.get(row.assign)
         if product is None:
             err('assign', f"assign={row.assign!r} not found in products.product_code")
         else:
-            paper = lookups.papers.get((row.subject, row.paper_name()))
-            if paper is None:
-                err(
-                    'marking_paper',
-                    f"no MarkingPaper for subject={row.subject!r} name={row.paper_name()!r}",
-                )
+            try:
+                seq_int = row.sequence_int()
+            except ValueError:
+                err('sequence', f"sequence={row.sequence!r} is not an integer")
+                seq_int = None
+            if seq_int is not None:
+                paper = lookups.papers.get((row.subject, row.abbrev, seq_int))
+                if paper is None:
+                    err(
+                        'marking_paper',
+                        f"no MarkingPaper for subject={row.subject!r} "
+                        f"name={row.abbrev!r} sequences={seq_int}",
+                    )
             oi = lookups.order_items.get((row.order, row.assign))
             if oi is None:
                 err(
@@ -2237,7 +2277,7 @@ def validate_marks26_row(
 python manage.py test marking.services.csv_imports.tests.test_marks26_validators -v 2
 ```
 
-Expected: all tests pass. (Note: some tests reference `FixPaper` as the paper name, matching what `MarkingChainTestCase` creates. Run-and-fix any drift.)
+Expected: all tests pass. The validator tests assume the fixture paper has `name='X'` and `sequences=1`. If `MarkingChainTestCase` keeps `name='FixPaper'`, update those test cases to match the fixture, OR update the test's `setUpTestData` to set `cls.paper.name = 'X'; cls.paper.sequences = 1; cls.paper.save()`. Run-and-fix any drift.
 
 - [ ] **Step 5: Commit**
 
@@ -2401,8 +2441,9 @@ class RunImportStepsTests(MarkingChainTestCase):
             metadata={'orderno': '1848940'},
         )
         # Update fixture paper.name to match abbrev-sequence convention
-        cls.paper.name = 'X-1'
-        cls.paper.save()
+        cls.paper.name = 'X'
+        cls.paper.sequences = 1
+        cls.paper.save(update_fields=['name', 'sequences'])
 
     def test_voucher_unredeemed_creates_only_iv(self):
         rows = [make_row(
@@ -2551,7 +2592,7 @@ def run_import_steps(rows: List[Marks26Row], lookups: Marks26Lookups) -> Dict[st
         if not row.is_voucher_row_redeemed():
             continue
         iv = iv_by_voucher_code[row.voucher]
-        paper = lookups.papers[(row.subject, row.paper_name())]
+        paper = lookups.papers[(row.subject, row.abbrev, row.sequence_int())]
         redeemed_at = parse_date(row.datelogged)
         rv = RedeemedVoucher.objects.create(
             issued_voucher=iv,
@@ -2569,7 +2610,7 @@ def run_import_steps(rows: List[Marks26Row], lookups: Marks26Lookups) -> Dict[st
         if not row.has_valid_datelogged():
             continue
         student = lookups.students[int(row.ref)]
-        paper = lookups.papers[(row.subject, row.paper_name())]
+        paper = lookups.papers[(row.subject, row.abbrev, row.sequence_int())]
         if row.is_voucher_row():
             order_item = lookups.order_items[(row.order, 'MV')]
         else:
@@ -2694,8 +2735,9 @@ class ImportMarks26CommandTests(MarkingChainTestCase):
             order=cls.order, purchasable=cls.mv, quantity=1,
             metadata={'orderno': '9001'},
         )
-        cls.paper.name = 'X-1'
-        cls.paper.save()
+        cls.paper.name = 'X'
+        cls.paper.sequences = 1
+        cls.paper.save(update_fields=['name', 'sequences'])
 
     def _write(self, body):
         f = tempfile.NamedTemporaryFile(
