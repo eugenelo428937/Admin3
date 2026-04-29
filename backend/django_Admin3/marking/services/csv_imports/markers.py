@@ -1,18 +1,16 @@
 """markers.csv parsing and validation.
 
-Names in this codebase are anonymised: ``auth_user.first_name`` /
-``last_name`` may be hashed in production, with the cleartext-equivalent
-hash stored in ``userprofile.UserProfile.first_name_hash`` /
-``last_name_hash`` (HMAC-SHA256, lowercased + stripped — see
-``userprofile.hash_utils.compute_search_hash``). We resolve markers by
-hashing the CSV's plaintext name and matching the UserProfile hash.
+All markers in the legacy system were originally students, so
+``markers.csv:mkref`` is a ``students.student_ref``. We resolve each
+marker by looking up the Student row and using its ``user_id``. The
+firstname/lastname columns are retained in error messages for the
+operator's benefit but aren't used for matching.
 """
 import csv
 from dataclasses import dataclass
 from typing import IO, List, Tuple
 
-from userprofile.hash_utils import compute_search_hash
-from userprofile.models.user_profile import UserProfile
+from students.models import Student
 
 
 @dataclass
@@ -77,25 +75,16 @@ def validate_markers_rows(
         elif len(row.initials) > 10:
             row_errors.append(f"initials={row.initials!r} exceeds 10 characters")
 
-        first_hash = compute_search_hash(row.firstname)
-        last_hash = compute_search_hash(row.lastname)
-        matches = UserProfile.objects.filter(
-            first_name_hash=first_hash,
-            last_name_hash=last_hash,
-        )
-        match_count = matches.count()
         user_id = None
-        if match_count == 0:
-            row_errors.append(
-                f"No UserProfile matches firstname={row.firstname!r} lastname={row.lastname!r} (hashed)"
-            )
-        elif match_count > 1:
-            row_errors.append(
-                f"Ambiguous match: {match_count} UserProfile rows have "
-                f"firstname={row.firstname!r} lastname={row.lastname!r} (hashed)"
-            )
-        else:
-            user_id = matches.first().user_id
+        if mkref_int > 0:
+            try:
+                student = Student.objects.get(student_ref=mkref_int)
+                user_id = student.user_id
+            except Student.DoesNotExist:
+                row_errors.append(
+                    f"No Student with student_ref={mkref_int} "
+                    f"(firstname={row.firstname!r} lastname={row.lastname!r})"
+                )
 
         if row_errors:
             errors.append(MarkerError(row=row, error_message='; '.join(row_errors)))
