@@ -16,6 +16,13 @@ class Marker(models.Model):
         related_name='marker',
     )
     initial = models.CharField(max_length=10)
+    legacy_id = models.PositiveIntegerField(
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='mkref from legacy system (markers.csv)',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

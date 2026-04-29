@@ -489,6 +489,25 @@ class MarkerModelTestCase(TestCase):
         marker = Marker.objects.create(user=self.user, initial='AS')
         self.assertEqual(str(marker), 'AS (Alice Smith)')
 
+    def test_marker_has_legacy_id(self):
+        from django.contrib.auth.models import User
+        from marking.models import Marker
+        user = User.objects.create_user(username='m1', first_name='Mary', last_name='Marker')
+        marker = Marker.objects.create(user=user, initial='MM', legacy_id=42)
+        refreshed = Marker.objects.get(pk=marker.pk)
+        self.assertEqual(refreshed.legacy_id, 42)
+
+    def test_marker_legacy_id_unique(self):
+        from django.contrib.auth.models import User
+        from django.db import IntegrityError, transaction
+        from marking.models import Marker
+        u1 = User.objects.create_user(username='m_a', first_name='A', last_name='A')
+        u2 = User.objects.create_user(username='m_b', first_name='B', last_name='B')
+        Marker.objects.create(user=u1, initial='AA', legacy_id=99)
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Marker.objects.create(user=u2, initial='BB', legacy_id=99)
+
 
 class MarkingPaperSubmissionTestCase(MarkingChainTestCase):
     """Tests for MarkingPaperSubmission model."""
