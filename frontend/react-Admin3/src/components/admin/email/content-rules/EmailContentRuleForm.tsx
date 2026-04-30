@@ -33,14 +33,14 @@ const EmailContentRuleForm: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <AdminPage>
+            <AdminPage className="tw:max-w-3xl">
                 <AdminLoadingState rows={8} columns={2} />
             </AdminPage>
         );
     }
 
     return (
-        <AdminPage>
+        <AdminPage className="tw:max-w-3xl">
             <h1 className="tw:mb-6 tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
                 {vm.isEditMode ? 'Edit Content Rule' : 'New Content Rule'}
             </h1>

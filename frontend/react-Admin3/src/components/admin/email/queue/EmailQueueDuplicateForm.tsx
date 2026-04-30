@@ -78,7 +78,7 @@ const EmailQueueDuplicateForm: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <AdminPage>
+            <AdminPage className="tw:max-w-3xl">
                 <AdminLoadingState rows={6} columns={3} />
             </AdminPage>
         );
@@ -86,7 +86,7 @@ const EmailQueueDuplicateForm: React.FC = () => {
 
     if (!vm.originalItem && !vm.loading && !vm.error) {
         return (
-            <AdminPage>
+            <AdminPage className="tw:max-w-3xl">
                 <div role="alert" className="tw:rounded-md tw:border tw:border-amber-200 tw:bg-amber-50 tw:p-4 tw:text-sm tw:text-amber-800">
                     Original queue item not found.
                 </div>
@@ -103,7 +103,7 @@ const EmailQueueDuplicateForm: React.FC = () => {
     }
 
     return (
-        <AdminPage>
+        <AdminPage className="tw:max-w-3xl">
             <h1 className="tw:mb-6 tw:text-2xl tw:font-semibold tw:tracking-tight tw:text-admin-fg">
                 Duplicate Queue Item
             </h1>

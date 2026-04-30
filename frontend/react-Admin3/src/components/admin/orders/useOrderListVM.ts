@@ -27,7 +27,7 @@ const INITIAL_FILTERS: Filters = {
 };
 
 const PAGE_SIZE = 20;
-const DEFAULT_ORDERING = '-created_at';
+const DEFAULT_ORDERING = '-order_date';
 
 const useOrderListVM = () => {
   const { isSuperuser } = useAuth();
@@ -40,7 +40,7 @@ const useOrderListVM = () => {
   const [page, setPage] = useState(0);
 
   const [ordering, setOrdering] = useState<string>(DEFAULT_ORDERING);
-  const [sortedField, setSortedField] = useState<string>('created_at');
+  const [sortedField, setSortedField] = useState<string>('order_date');
   const [sortToggleCount, setSortToggleCount] = useState<number>(0);
 
   const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);

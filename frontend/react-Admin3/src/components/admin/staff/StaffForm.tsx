@@ -18,7 +18,7 @@ const AdminStaffForm: React.FC = () => {
   if (vm.loading) return null;
 
   return (
-    <AdminPage>
+    <AdminPage className="tw:max-w-3xl">
       <AdminFormLayout
         title={vm.isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}
         onSubmit={vm.handleSubmit}

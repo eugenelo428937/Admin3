@@ -22,9 +22,19 @@ class EmailBatchAdminViewSet(
 
     def get_queryset(self):
         qs = super().get_queryset()
-        status_filter = self.request.query_params.get('status')
+        params = self.request.query_params
+
+        status_filter = params.get('status')
         if status_filter:
             qs = qs.filter(status=status_filter)
+
+        template_id = params.get('template_id')
+        if template_id:
+            try:
+                qs = qs.filter(template_id=int(template_id))
+            except (TypeError, ValueError):
+                return qs.none()
+
         return qs
 
     def list(self, request, *args, **kwargs):

@@ -24,7 +24,7 @@ const AdminProductVariationForm: React.FC = () => {
   if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
   return (
-    <AdminPage>
+    <AdminPage className="tw:max-w-3xl">
       <AdminFormLayout
         title={vm.isEditMode ? 'Edit Product Variation' : 'Create Product Variation'}
         onSubmit={vm.handleSubmit}
