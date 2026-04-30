@@ -1,16 +1,29 @@
 """markers.csv parsing and validation.
 
-All markers in the legacy system were originally students, so
-``markers.csv:mkref`` is a ``students.student_ref``. We resolve each
-marker by looking up the Student row and using its ``user_id``. The
-firstname/lastname columns are retained in error messages for the
-operator's benefit but aren't used for matching.
+Resolution strategy (two-tier):
+
+1. **Staff by hashed name** — most current markers are staff. Names in
+   ``auth_user`` are anonymised; the cleartext-equivalent hash lives on
+   ``UserProfile.first_name_hash`` / ``last_name_hash`` (HMAC-SHA256,
+   lowercased + stripped — see ``userprofile.hash_utils``). We hash the
+   CSV's plaintext name and look up via Staff → User → UserProfile.
+
+2. **Student fallback** — if no staff match, the marker may be a former
+   student who hasn't been promoted to staff. The CSV's ``mkref`` is a
+   ``students.student_ref``; we narrow by ``student_type='M'`` (markers
+   only — excludes regular students 'S', qualified 'Q', inactive 'I').
+
+The first tier wins because a person currently in the staff table
+represents their *current* role; the legacy student record may be a
+pre-staff history entry.
 """
 import csv
 from dataclasses import dataclass
 from typing import IO, List, Tuple
 
+from staff.models import Staff
 from students.models import Student
+from userprofile.hash_utils import compute_search_hash
 
 
 @dataclass
@@ -75,16 +88,36 @@ def validate_markers_rows(
         elif len(row.initials) > 10:
             row_errors.append(f"initials={row.initials!r} exceeds 10 characters")
 
+        # Tier 1 — staff lookup by hashed name
         user_id = None
-        if mkref_int > 0:
-            try:
-                student = Student.objects.get(student_ref=mkref_int)
-                user_id = student.user_id
-            except Student.DoesNotExist:
-                row_errors.append(
-                    f"No Student with student_ref={mkref_int} "
-                    f"(firstname={row.firstname!r} lastname={row.lastname!r})"
-                )
+        first_hash = compute_search_hash(row.firstname)
+        last_hash = compute_search_hash(row.lastname)
+        staff_matches = Staff.objects.filter(
+            user__userprofile__first_name_hash=first_hash,
+            user__userprofile__last_name_hash=last_hash,
+        )
+        staff_count = staff_matches.count()
+        if staff_count == 1:
+            user_id = staff_matches.first().user_id
+        elif staff_count > 1:
+            row_errors.append(
+                f"Ambiguous Staff match: {staff_count} rows have "
+                f"firstname={row.firstname!r} lastname={row.lastname!r} (hashed)"
+            )
+        else:
+            # Tier 2 — student fallback by mkref + student_type='M'
+            if mkref_int > 0:
+                try:
+                    student = Student.objects.get(
+                        student_ref=mkref_int, student_type='M',
+                    )
+                    user_id = student.user_id
+                except Student.DoesNotExist:
+                    row_errors.append(
+                        f"No Staff matches firstname={row.firstname!r} "
+                        f"lastname={row.lastname!r} (hashed), and no Student "
+                        f"with student_ref={mkref_int} student_type='M'"
+                    )
 
         if row_errors:
             errors.append(MarkerError(row=row, error_message='; '.join(row_errors)))
