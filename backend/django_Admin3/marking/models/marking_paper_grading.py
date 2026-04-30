@@ -8,6 +8,7 @@ class MarkingPaperGrading(models.Model):
         ('B', 'B'),
         ('C', 'C'),
         ('D', 'D'),
+        ('E', 'E'),
     ]
 
     submission = models.OneToOneField(

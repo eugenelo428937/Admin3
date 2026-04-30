@@ -7,7 +7,7 @@ from .marks26_lookups import Marks26Lookups
 from .marks26_parsing import Marks26Row
 
 
-VALID_GRADES = {'A', 'B', 'C', 'D'}
+VALID_GRADES = {'A', 'B', 'C', 'D', 'E'}
 VALID_RATINGS = {'E', 'G', 'A', 'P'}
 
 
@@ -136,7 +136,7 @@ def validate_marks26_row(
             except ValueError:
                 err('score', f"score={row.score!r} is not an integer")
         if row.grade and row.grade not in VALID_GRADES:
-            err('grade', f"grade={row.grade!r} not in {{A,B,C,D}}")
+            err('grade', f"grade={row.grade!r} not in {{A,B,C,D,E}}")
 
     if row.has_valid_hubfeedbk():
         if not row.has_valid_dateout():

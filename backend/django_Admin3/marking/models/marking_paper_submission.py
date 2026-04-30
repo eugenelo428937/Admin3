@@ -38,7 +38,13 @@ class MarkingPaperSubmission(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['student', 'marking_paper'],
-                name='uq_submission_student_paper',
+                condition=models.Q(redeemed_voucher__isnull=True),
+                name='uq_submission_student_paper_no_voucher',
+            ),
+            models.UniqueConstraint(
+                fields=['student', 'marking_paper', 'redeemed_voucher'],
+                condition=models.Q(redeemed_voucher__isnull=False),
+                name='uq_submission_student_paper_voucher',
             ),
         ]
 

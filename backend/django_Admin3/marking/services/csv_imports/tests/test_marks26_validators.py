@@ -131,7 +131,7 @@ class ValidateMarks26RowTests(MarkingChainTestCase):
             order='1',
         )
         errors = validate_marks26_row(row, lookups)
-        self.assertTrue(any('grade' in e.error_message and 'A,B,C,D' in e.error_message for e in errors))
+        self.assertTrue(any('grade' in e.error_message and 'A,B,C,D,E' in e.error_message for e in errors))
 
     def test_invalid_rating_is_error(self):
         lookups = build_lookups()
