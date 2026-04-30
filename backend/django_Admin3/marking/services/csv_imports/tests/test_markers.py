@@ -87,13 +87,28 @@ class ValidateMarkersRowsStudentFallbackTests(TestCase):
         self.assertEqual(errors, [], msg=[e.error_message for e in errors])
         self.assertEqual(resolved[0].user_id, student.user_id)
 
-    def test_student_with_wrong_type_is_not_resolved(self):
+    def test_student_with_regular_type_is_not_resolved(self):
         # student exists but type='S' (regular) — should NOT match the marker fallback
         seed_student('bob', student_ref=99, student_type='S')
         row = MarkerCsvRow(row_num=2, mkref='99', firstname='Bob', lastname='Brown', initials='BB')
         errors, resolved = validate_markers_rows([row])
         self.assertEqual(len(errors), 1)
-        self.assertIn("student_type='M'", errors[0].error_message)
+        self.assertIn("student_type in", errors[0].error_message)
+
+    def test_student_with_qualified_type_resolves(self):
+        # 'Q' is in MARKER_STUDENT_TYPES — should resolve
+        student = seed_student('bob', student_ref=99, student_type='Q')
+        row = MarkerCsvRow(row_num=2, mkref='99', firstname='Bob', lastname='Brown', initials='BB')
+        errors, resolved = validate_markers_rows([row])
+        self.assertEqual(errors, [], msg=[e.error_message for e in errors])
+        self.assertEqual(resolved[0].user_id, student.user_id)
+
+    def test_student_with_inactive_type_resolves(self):
+        student = seed_student('charlie', student_ref=100, student_type='I')
+        row = MarkerCsvRow(row_num=2, mkref='100', firstname='Chuck', lastname='Carr', initials='CC')
+        errors, resolved = validate_markers_rows([row])
+        self.assertEqual(errors, [], msg=[e.error_message for e in errors])
+        self.assertEqual(resolved[0].user_id, student.user_id)
 
     def test_no_staff_and_no_student_is_error(self):
         row = MarkerCsvRow(row_num=2, mkref='999', firstname='Ghost', lastname='None', initials='GN')

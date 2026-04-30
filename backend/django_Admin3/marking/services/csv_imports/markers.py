@@ -9,8 +9,10 @@ Resolution strategy (two-tier):
 
 2. **Student fallback** — if no staff match, the marker may be a former
    student who hasn't been promoted to staff. The CSV's ``mkref`` is a
-   ``students.student_ref``; we narrow by ``student_type='M'`` (markers
-   only — excludes regular students 'S', qualified 'Q', inactive 'I').
+   ``students.student_ref``; we narrow by ``student_type IN
+   ('M','Q','I','O','D')`` — every non-regular-student type seen in
+   the legacy marker pool. This excludes regular students ('S') to
+   prevent false matches with the much larger student base.
 
 The first tier wins because a person currently in the staff table
 represents their *current* role; the legacy student record may be a
@@ -22,6 +24,12 @@ from typing import IO, List, Tuple
 
 from staff.models import Staff
 from students.models import Student
+
+
+# student_type values eligible for the marker fallback. Excludes 'S'
+# (regular students) to prevent accidental cross-wiring with the
+# 10k+ regular-student base. See module docstring for rationale.
+MARKER_STUDENT_TYPES = ('M', 'Q', 'I', 'O', 'D')
 
 
 @dataclass
@@ -101,18 +109,20 @@ def validate_markers_rows(
                 f"firstname={row.firstname!r} lastname={row.lastname!r}"
             )
         else:
-            # Tier 2 — student fallback by mkref + student_type='M'
+            # Tier 2 — student fallback by mkref + marker-eligible type
             if mkref_int > 0:
                 try:
                     student = Student.objects.get(
-                        student_ref=mkref_int, student_type='M',
+                        student_ref=mkref_int,
+                        student_type__in=MARKER_STUDENT_TYPES,
                     )
                     user_id = student.user_id
                 except Student.DoesNotExist:
                     row_errors.append(
                         f"No Staff matches firstname={row.firstname!r} "
                         f"lastname={row.lastname!r}, and no Student "
-                        f"with student_ref={mkref_int} student_type='M'"
+                        f"with student_ref={mkref_int} and "
+                        f"student_type in {MARKER_STUDENT_TYPES}"
                     )
 
         if row_errors:
