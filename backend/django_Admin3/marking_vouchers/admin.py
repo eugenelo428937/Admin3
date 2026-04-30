@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import IssuedVoucher
+from .models import IssuedVoucher, RedeemedVoucher
 
 
 @admin.register(IssuedVoucher)
@@ -37,3 +37,34 @@ class IssuedVoucherAdmin(admin.ModelAdmin):
     @admin.display(description='Catalog SKU')
     def get_purchasable_code(self, obj):
         return obj.purchasable.code
+
+
+@admin.register(RedeemedVoucher)
+class RedeemedVoucherAdmin(admin.ModelAdmin):
+    """Admin for redeemed voucher records (one row per redemption event).
+
+    Records are created by the import_marks26 management command and
+    will later be created by the redemption service. Direct editing
+    should be avoided.
+    """
+    list_display = [
+        'id', 'get_voucher_code', 'get_paper_name', 'redeemed_at', 'created_at',
+    ]
+    list_filter = ['redeemed_at']
+    search_fields = [
+        'issued_voucher__voucher_code',
+        'marking_paper__name',
+    ]
+    raw_id_fields = ['issued_voucher', 'marking_paper']
+    list_select_related = ['issued_voucher', 'marking_paper']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['-redeemed_at']
+    list_per_page = 50
+
+    @admin.display(description='Voucher code')
+    def get_voucher_code(self, obj):
+        return obj.issued_voucher.voucher_code
+
+    @admin.display(description='Marking paper')
+    def get_paper_name(self, obj):
+        return obj.marking_paper.name

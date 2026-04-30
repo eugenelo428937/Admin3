@@ -11,6 +11,7 @@ Class-level attributes created by `setUpTestData`:
     exam_session, subject, ess
     cat_product, variation, ppv, store_product
     paper
+    mv_purchasable, fixture_order, order_item
 
 Each test accesses these via `self.xxx`. Django automatically deep-copies
 class-level fixture attributes per test, so in-memory mutations don't leak
@@ -76,8 +77,27 @@ class MarkingChainTestCase(APITestCase):
             product_product_variation=cls.ppv,
         )
         cls.paper = MarkingPaper.objects.create(
-            store_product=cls.store_product,
+            purchasable=cls.store_product,
             name='FixPaper',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),
+        )
+
+        # OrderItem fixture (shared across submission/grading/feedback tests).
+        # Builds: Purchasable(MV) + Order + OrderItem with metadata.orderno.
+        from orders.models import Order
+        from orders.models.order_item import OrderItem
+        from store.models import Purchasable
+        cls.mv_purchasable = Purchasable.objects.create(
+            kind='marking_voucher', code='MV', name='Marking Voucher',
+        )
+        cls.fixture_order = Order.objects.create(
+            user=cls.student_user,
+            order_date=timezone.now(),
+        )
+        cls.order_item = OrderItem.objects.create(
+            order=cls.fixture_order,
+            purchasable=cls.mv_purchasable,
+            quantity=1,
+            metadata={'orderno': 'FIX-ORDER-001'},
         )

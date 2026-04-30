@@ -2904,7 +2904,7 @@
               "is_active": true,
               "name": "order_confirmation",
               "subject_template": "Your Order #{{order_id}}",
-              "template_type": "order_confirmation"
+              "template_type": "transactional"
             }
           ]
         },
@@ -5115,11 +5115,11 @@
   ],
   "metadata": {
     "pact-js": {
-      "version": "16.0.4"
+      "version": "16.3.0"
     },
     "pactRust": {
-      "ffi": "0.4.28",
-      "models": "1.3.5"
+      "ffi": "0.5.3",
+      "models": "1.3.9"
     },
     "pactSpecification": {
       "version": "3.0.0"
