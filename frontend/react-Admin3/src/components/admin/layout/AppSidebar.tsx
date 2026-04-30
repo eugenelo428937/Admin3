@@ -26,6 +26,7 @@ import {
   Archive,
   ScrollText,
   ShoppingCart,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -63,6 +64,16 @@ const navGroups = [
        },
     ],
  },
+   {
+      label: "Marking",
+      items: [
+         {
+            label: "Submissions",
+            path: "/admin/marking/submissions",
+            icon: ClipboardCheck,
+         },
+      ],
+   },
    {
       label: "Current Products",
       items: [

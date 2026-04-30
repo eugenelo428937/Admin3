@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .admin_list_views import MarkingSubmissionListAdminViewSet
 from .admin_views import (
     MarkerAdminViewSet,
     MarkingPaperFeedbackAdminViewSet,
@@ -19,6 +20,10 @@ admin_router.register(
 admin_router.register(
     r'admin-submissions', MarkingPaperSubmissionAdminViewSet,
     basename='marking-submission-admin',
+)
+admin_router.register(
+    r'admin-submission-list', MarkingSubmissionListAdminViewSet,
+    basename='marking-submission-list-admin',
 )
 admin_router.register(
     r'admin-gradings', MarkingPaperGradingAdminViewSet,
