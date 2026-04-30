@@ -81,15 +81,25 @@ export default defineConfig({
     include: ['src/pact/**/*.pact.test.js'],
     // Pact tests need longer timeouts (mock server startup)
     testTimeout: 30000,
-    // Serialize file execution — each PactV3 `executeTest` spins up a
-    // mock HTTP server on an OS-assigned port. When vitest runs files in
-    // parallel threads, two mock servers can race on the same ephemeral
-    // port and one test's axios request lands in the wrong mock (or the
-    // mock isn't listening yet), surfacing as intermittent
-    // "request expected but not received" failures in different files
-    // each run. One file at a time fixes it without hurting total runtime
-    // meaningfully — the whole pact suite is ~40s.
+    // Each PactV3 `executeTest` spins up a fresh HTTP mock server on an
+    // OS-assigned port and tears it down at the end of the test. The
+    // teardown→startup boundary has a small window where the next test's
+    // axios call can fire against a port the OS hasn't fully bound yet,
+    // surfacing as a fast-fail "request expected but not received" — see
+    // PR #94 run 25057437896 (admin-store + auth) and PR #96 run
+    // 25059690383 (rules-engine), each failing on a different test.
+    //
+    // `fileParallelism: false` already forces `maxWorkers: 1` (vitest
+    // resolves it that way internally), so we are not racing across
+    // workers — the race is inside a single worker between back-to-back
+    // mock servers, which no pool tuning can fix.
+    //
+    // `retry: 2` lets vitest re-run a transient mock-server race once
+    // before failing the build. It's the standard remedy for inherently
+    // timing-sensitive contract tests; a real contract mismatch fails
+    // all attempts and is still reported.
     fileParallelism: false,
+    retry: 2,
     deps: {
       optimizer: {
         web: {
