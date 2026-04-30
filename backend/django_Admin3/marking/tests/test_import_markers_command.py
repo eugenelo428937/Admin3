@@ -9,15 +9,12 @@ from django.test import TestCase
 from marking.models import Marker
 from staff.models import Staff
 from students.models import Student
-from userprofile.hash_utils import compute_search_hash
 
 
 def _seed_staff(username: str, firstname: str, lastname: str) -> Staff:
-    user = User.objects.create_user(username=username)
-    profile = user.userprofile
-    profile.first_name_hash = compute_search_hash(firstname)
-    profile.last_name_hash = compute_search_hash(lastname)
-    profile.save(update_fields=['first_name_hash', 'last_name_hash'])
+    user = User.objects.create_user(
+        username=username, first_name=firstname, last_name=lastname,
+    )
     return Staff.objects.create(user=user, initials=username.upper()[:3])
 
 

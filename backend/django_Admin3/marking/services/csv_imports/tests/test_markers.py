@@ -9,17 +9,13 @@ from marking.services.csv_imports.markers import (
 )
 from staff.models import Staff
 from students.models import Student
-from userprofile.hash_utils import compute_search_hash
 
 
 def seed_staff(username: str, firstname: str, lastname: str) -> Staff:
-    """Create an auth_user, set the auto-created UserProfile's hashes,
-    and link a Staff record."""
-    user = User.objects.create_user(username=username)
-    profile = user.userprofile
-    profile.first_name_hash = compute_search_hash(firstname)
-    profile.last_name_hash = compute_search_hash(lastname)
-    profile.save(update_fields=['first_name_hash', 'last_name_hash'])
+    """Create an auth_user with cleartext first/last name and link a Staff record."""
+    user = User.objects.create_user(
+        username=username, first_name=firstname, last_name=lastname,
+    )
     return Staff.objects.create(user=user, initials=username.upper()[:3])
 
 
@@ -65,6 +61,7 @@ class ValidateMarkersRowsStaffTierTests(TestCase):
         self.assertEqual(resolved[0].user_id, staff.user_id)
 
     def test_staff_match_is_case_insensitive(self):
+        # auth_user.first_name='Alice' but CSV has 'ALICE' — iexact handles it
         staff = seed_staff('alice', 'Alice', 'Allen')
         row = MarkerCsvRow(row_num=2, mkref='10', firstname='ALICE', lastname='allen', initials='AA')
         errors, resolved = validate_markers_rows([row])

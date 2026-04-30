@@ -2,11 +2,10 @@
 
 Resolution strategy (two-tier):
 
-1. **Staff by hashed name** — most current markers are staff. Names in
-   ``auth_user`` are anonymised; the cleartext-equivalent hash lives on
-   ``UserProfile.first_name_hash`` / ``last_name_hash`` (HMAC-SHA256,
-   lowercased + stripped — see ``userprofile.hash_utils``). We hash the
-   CSV's plaintext name and look up via Staff → User → UserProfile.
+1. **Staff by plaintext name** — most current markers are staff. Staff
+   names on ``auth_user.first_name`` / ``last_name`` are stored as
+   cleartext (staff data is not anonymised), so we can match the CSV
+   firstname/lastname directly with case-insensitive comparison.
 
 2. **Student fallback** — if no staff match, the marker may be a former
    student who hasn't been promoted to staff. The CSV's ``mkref`` is a
@@ -23,7 +22,6 @@ from typing import IO, List, Tuple
 
 from staff.models import Staff
 from students.models import Student
-from userprofile.hash_utils import compute_search_hash
 
 
 @dataclass
@@ -88,13 +86,11 @@ def validate_markers_rows(
         elif len(row.initials) > 10:
             row_errors.append(f"initials={row.initials!r} exceeds 10 characters")
 
-        # Tier 1 — staff lookup by hashed name
+        # Tier 1 — staff lookup by plaintext name (case-insensitive)
         user_id = None
-        first_hash = compute_search_hash(row.firstname)
-        last_hash = compute_search_hash(row.lastname)
         staff_matches = Staff.objects.filter(
-            user__userprofile__first_name_hash=first_hash,
-            user__userprofile__last_name_hash=last_hash,
+            user__first_name__iexact=row.firstname,
+            user__last_name__iexact=row.lastname,
         )
         staff_count = staff_matches.count()
         if staff_count == 1:
@@ -102,7 +98,7 @@ def validate_markers_rows(
         elif staff_count > 1:
             row_errors.append(
                 f"Ambiguous Staff match: {staff_count} rows have "
-                f"firstname={row.firstname!r} lastname={row.lastname!r} (hashed)"
+                f"firstname={row.firstname!r} lastname={row.lastname!r}"
             )
         else:
             # Tier 2 — student fallback by mkref + student_type='M'
@@ -115,7 +111,7 @@ def validate_markers_rows(
                 except Student.DoesNotExist:
                     row_errors.append(
                         f"No Staff matches firstname={row.firstname!r} "
-                        f"lastname={row.lastname!r} (hashed), and no Student "
+                        f"lastname={row.lastname!r}, and no Student "
                         f"with student_ref={mkref_int} student_type='M'"
                     )
 
