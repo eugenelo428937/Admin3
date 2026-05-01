@@ -1,0 +1,10 @@
+query {
+   priceLevels {
+      edges {
+         node {
+            id
+            name
+         }
+      }
+   }
+}

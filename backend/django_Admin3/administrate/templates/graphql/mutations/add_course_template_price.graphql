@@ -1,0 +1,28 @@
+mutation addPublicPrices(
+   $courseTemplateId: ID!
+   $priceLevelId: ID!
+   $amount: Decimal!
+   $financialUnitId: ID!
+   $regionId: ID!
+) {
+   courseTemplate {
+      addPublicPrices(
+         input: {
+            courseTemplateId: $courseTemplateId
+            priceLevelId: $priceLevelId
+            amount: $amount
+            financialUnitId: $financialUnitId
+            regionId: $regionId
+         }
+      ) {
+         prices {
+            id
+         }
+         errors {
+            label
+            message
+            value
+         }
+      }
+   }
+}
