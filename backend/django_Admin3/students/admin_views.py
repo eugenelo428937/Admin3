@@ -27,6 +27,12 @@ class StudentAdminPagination(PageNumberPagination):
     max_page_size = 200
 
 
+ALLOWED_ORDERING = {
+    'student_ref', '-student_ref',
+    'modified_date', '-modified_date',
+}
+
+
 class StudentAdminViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -59,10 +65,13 @@ class StudentAdminViewSet(
                 'user__userprofile__contact_numbers',
                 'user__userprofile__addresses',
             )
-            .order_by('student_ref')
         )
 
         params = self.request.query_params
+        ordering = params.get('ordering')
+        qs = qs.order_by(
+            ordering if ordering in ALLOWED_ORDERING else 'student_ref'
+        )
 
         # Global search — match ANY field
         search = params.get('search', '').strip()

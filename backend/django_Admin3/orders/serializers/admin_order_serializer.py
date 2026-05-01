@@ -69,7 +69,7 @@ class AdminOrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'created_at', 'total_amount',
+            'id', 'order_date', 'created_at', 'total_amount',
             'student', 'item_codes', 'item_count',
         ]
 
@@ -106,7 +106,7 @@ class AdminOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'created_at', 'updated_at',
+            'id', 'order_date', 'created_at', 'updated_at',
             'subtotal', 'vat_amount', 'total_amount',
             'vat_rate', 'vat_country', 'vat_calculation_type',
             'calculations_applied',

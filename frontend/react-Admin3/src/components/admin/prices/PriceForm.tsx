@@ -22,7 +22,7 @@ const AdminPriceForm: React.FC = () => {
   if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
   return (
-    <AdminPage>
+    <AdminPage className="tw:max-w-3xl">
       <AdminFormLayout
         title={vm.isEditMode ? 'Edit Price' : 'Add New Price'}
         onSubmit={vm.handleSubmit}

@@ -74,9 +74,19 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        template_type = self.request.query_params.get('template_type')
+        params = self.request.query_params
+
+        template_type = params.get('template_type')
         if template_type:
             qs = qs.filter(template_type=template_type)
+
+        search = params.get('search', '').strip()
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(display_name__icontains=search) | Q(name__icontains=search)
+            )
+
         return qs
 
     def get_serializer_class(self):
