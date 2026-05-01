@@ -25,6 +25,53 @@ The swap validator needs to assert "same course template" between source session
 
 ---
 
+## Phase 0' — Tutorial events/sessions importer (added 2026-05-01)
+
+### Why this exists
+
+The orders backfill (Phase 5, planned) needs to resolve `xname + csitting` in `tutorial_orders.csv` to a `TutorialEvents` row. The historical 2024 sittings (24A/24S) currently have **0 events in the DB**. This phase imports them from `docs/misc/tutorial_import.csv` (7,603 rows: one event header + N session rows per event).
+
+### CSV format
+
+Columns: `Code, Title, Start Date, Start Time, End Date, End Time, Venue, Sold Out, Finalisation date, remain_space, Location, main instructor, Instructors, Sequence`
+
+- **Event header row**: `Sequence` is empty; `Finalisation date` and `remain_space` populated; `main instructor` populated.
+- **Session row**: `Sequence` is `1..N`; `Finalisation date` and `remain_space` empty; `main instructor` empty.
+- **Code**: variation code, e.g. `CB1_LO_6`, `CB2_f2f_4` — matches orders CSV `xcode`.
+- **Title**: event code `CB1-01-24A` (event row) or session code `CB1-01-24A-1` (session row). The third `-` segment encodes the sitting (`24A`, `24S`).
+
+### Resolution rules
+
+1. Parse Title → `subject_code = first segment`, `sitting_short = third segment`.
+2. `ExamSession.session_code` derivation: `24A → "24"`, `24S → "24S"`. Generally: trailing `A` → strip; trailing `S` → keep.
+3. `get_or_create` chain for catalog dependencies:
+   - `Subject(code=subject_code)` (description fallback `f"{subject_code} subject"`).
+   - `ExamSession(session_code=...)` (start/end dates from event row's Start/End Date, since CSV doesn't carry session boundaries explicitly).
+   - `ExamSessionSubject(exam_session, subject)`.
+   - `ProductVariation(code=Code, name=Code, variation_type='Tutorial')`.
+   - `Product(code=Code, fullname=Code, shortname=Code)` (catalog Product).
+   - `ProductProductVariation(product=cat_prod, product_variation=pv)`.
+   - `store.Product(exam_session_subject=ess, product_product_variation=ppv, product_code=Code)` — **explicitly setting product_code skips auto-generation** (see `store/models/product.py:55-82`).
+4. `get_or_create` chain for tutorial dependencies:
+   - `TutorialLocation(name=Location)` (`code` derived: first 3 letters uppercase, e.g. `Lon`, `Edi`, `Liv`).
+   - `TutorialVenue(name=Venue, location=loc)`.
+   - `TutorialInstructor` per name in `Instructors` (semicolon-separated): create `auth.User` (username = slugified name, no password / unusable password) → `staff.Staff` → `TutorialInstructor`.
+
+### Truncation and import
+
+After all dependencies are resolved (or created), the command truncates `tutorial_session_instructors`, `tutorial_sessions`, `tutorial_events` (in that order to respect FK constraints) and re-inserts from CSV. This is **destructive** so it must be gated behind `--commit` (default `--dry-run` reports counts only).
+
+### Tasks
+
+- **Task 0'.1**: Parser (`tutorials/services/event_csv_parser.py`) — turns CSV stream into `[ParsedEvent(header, sessions=[ParsedSession])]`.
+- **Task 0'.2**: Resolver helpers (`tutorials/services/event_csv_resolver.py`) — `get_or_create` for each dependency chain.
+- **Task 0'.3**: Orchestrator (`tutorials/services/event_csv_importer.py`) — truncate + bulk insert, returns counts and error list.
+- **Task 0'.4**: Management command `import_tutorial_events_csv` with `--dry-run`/`--commit` flags.
+
+Each task follows TDD: failing test → minimal impl → green → commit.
+
+---
+
 ### Task 0.1: Add nullable `course_template` FK to TutorialEvents
 
 **Files:**
