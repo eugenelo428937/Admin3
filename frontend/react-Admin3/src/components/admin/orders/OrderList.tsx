@@ -142,7 +142,7 @@ const OrderList: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>
-                    <SortableHeader label="Order Date" field="created_at"
+                    <SortableHeader label="Order Date" field="order_date"
                       ordering={vm.ordering} onToggle={vm.toggleSort} />
                   </TableHead>
                   <TableHead>
@@ -156,7 +156,7 @@ const OrderList: React.FC = () => {
               <TableBody>
                 {vm.orders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell>{formatDate(order.created_at)}</TableCell>
+                    <TableCell>{formatDate(order.order_date ?? order.created_at)}</TableCell>
                     <TableCell>{formatStudent(order.student)}</TableCell>
                     <TableCell className="tw:max-w-[400px]">
                       <div className="tw:flex tw:items-center tw:gap-2">

@@ -13,6 +13,7 @@ from orders.serializers.admin_order_serializer import (
 
 
 ALLOWED_ORDERING = {
+    'order_date', '-order_date',
     'created_at', '-created_at',
     'id', '-id',
     'user__last_name', '-user__last_name',

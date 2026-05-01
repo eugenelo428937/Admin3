@@ -87,12 +87,12 @@ describe('useOrderListVM', () => {
 
   it('cycles ordering: ascending -> descending -> cleared', async () => {
     const { result } = renderHook(() => useOrderListVM());
-    expect(result.current.ordering).toBe('-created_at');
-    act(() => result.current.toggleSort('created_at'));
-    expect(result.current.ordering).toBe('created_at');
-    act(() => result.current.toggleSort('created_at'));
-    expect(result.current.ordering).toBe('-created_at');
-    act(() => result.current.toggleSort('created_at'));
+    expect(result.current.ordering).toBe('-order_date');
+    act(() => result.current.toggleSort('order_date'));
+    expect(result.current.ordering).toBe('order_date');
+    act(() => result.current.toggleSort('order_date'));
+    expect(result.current.ordering).toBe('-order_date');
+    act(() => result.current.toggleSort('order_date'));
     expect(result.current.ordering).toBe('');
   });
 

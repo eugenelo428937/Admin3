@@ -16,7 +16,7 @@ const AdminProductForm: React.FC = () => {
   if (!vm.isSuperuser) return <Navigate to="/" replace />;
 
   return (
-    <AdminPage>
+    <AdminPage className="tw:max-w-3xl">
       <AdminFormLayout
         title={vm.isEditMode ? 'Edit Product' : 'Add New Product'}
         onSubmit={vm.handleSubmit}

@@ -23,6 +23,7 @@ export interface StudentSearchParams {
     email?: string;
     phone?: string;
     address?: string;
+    ordering?: string;
 }
 
 const studentService = {

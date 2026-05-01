@@ -18,14 +18,14 @@ const AdminStoreProductForm: React.FC = () => {
 
     if (vm.loading) {
         return (
-            <AdminPage>
+            <AdminPage className="tw:max-w-3xl">
                 <AdminLoadingState rows={4} columns={1} />
             </AdminPage>
         );
     }
 
     return (
-        <AdminPage>
+        <AdminPage className="tw:max-w-3xl">
             <AdminFormLayout
                 title={vm.isEditMode ? 'Edit Store Product' : 'Add New Store Product'}
                 onSubmit={vm.handleSubmit}

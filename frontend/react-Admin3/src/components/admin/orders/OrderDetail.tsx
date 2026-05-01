@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import {
-  ChevronLeft, FileText, Package, CreditCard, CheckCircle, Info, ChevronsUpDown,
+  ChevronLeft, FileText, Package, CheckCircle, Info, ChevronsUpDown,
 } from 'lucide-react';
 import {
   AdminPage, AdminPageHeader, AdminLoadingState, AdminErrorAlert, AdminEmptyState,
@@ -143,7 +143,7 @@ const OrderDetail: React.FC = () => {
         <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-8 tw:gap-y-2 tw:text-sm tw:mb-3">
           <div>
             <span className="tw:text-muted-foreground">Order date:</span>{' '}
-            {new Date(o.created_at).toLocaleString('en-GB')}
+            {new Date(o.order_date ?? o.created_at).toLocaleString('en-GB')}
           </div>
           <div className="tw:flex tw:items-center tw:gap-1">
             <span className="tw:text-muted-foreground">Total:</span>{' '}
@@ -180,7 +180,7 @@ const OrderDetail: React.FC = () => {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6 tw:mt-3 tw:pt-3 tw:border-t">
+            <div className="tw:grid tw:grid-cols-2 tw:gap-6 tw:mt-3 tw:pt-3 tw:border-t">
               <AddressBlock
                 title="Delivery address"
                 type={d?.delivery_address_type ?? null}
@@ -261,7 +261,7 @@ const OrderDetail: React.FC = () => {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="tw:grid tw:grid-cols-1 lg:tw:grid-cols-2 tw:gap-6 tw:mt-3">
+            <div className="tw:grid tw:grid-cols-2 tw:gap-6 tw:mt-3">
               <div>
                 <h3 className="tw:text-sm tw:font-semibold tw:mb-2">
                   <Package className="tw:inline tw:size-4 tw:mr-1" />

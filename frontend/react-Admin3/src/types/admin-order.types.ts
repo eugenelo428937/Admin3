@@ -7,6 +7,7 @@ export interface StudentSummary {
 
 export interface AdminOrderListItem {
   id: number;
+  order_date: string | null;
   created_at: string;
   total_amount: string;
   student: StudentSummary;
@@ -97,6 +98,7 @@ export interface AdminOrderDelivery {
 
 export interface AdminOrderDetail {
   id: number;
+  order_date: string | null;
   created_at: string;
   updated_at: string;
   subtotal: string;
