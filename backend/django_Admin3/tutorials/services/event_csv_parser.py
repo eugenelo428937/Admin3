@@ -55,9 +55,10 @@ class ParsedSession:
 
 @dataclass
 class ParsedEvent:
-    code: str  # the variation code (CSV "Code" column), e.g. "CB1_LO_6"
+    code: str  # legacy compound code (CSV "Code" column), e.g. "CB1_LO_6"
     title: str
-    subject_code: str
+    subject_code: str  # from CSV "Subject" column (preferred) or Title prefix
+    product_variation_code: str  # from CSV "product variations" column, e.g. "F2F_6H"
     sitting_short: str  # e.g. "24A", "24S"
     session_code: str  # ExamSession.session_code: "24A"→"24", "24S"→"24S"
     start_date: date
@@ -194,11 +195,15 @@ def _sitting_segment_from_title(title: str) -> Optional[str]:
 
 
 def _parse_event_row(raw: dict, row_num: int, title: str, cancelled: bool) -> ParsedEvent:
-    subject_code, sitting_short = _split_title(title, row_num)
+    title_subject_code, sitting_short = _split_title(title, row_num)
+    # Prefer explicit Subject column when present; fall back to title prefix.
+    subject_code = (raw.get("Subject") or "").strip() or title_subject_code
+    product_variation_code = (raw.get("product variations") or "").strip()
     return ParsedEvent(
         code=(raw.get("Code") or "").strip(),
         title=title,
         subject_code=subject_code,
+        product_variation_code=product_variation_code,
         sitting_short=sitting_short,
         session_code=_sitting_to_session_code(sitting_short),
         start_date=_parse_date(raw.get("Start Date"), "Start Date", row_num),
