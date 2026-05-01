@@ -35,9 +35,10 @@ from tutorials.models import (
 from tutorials.services.event_csv_parser import ParsedEvent
 
 
-# Maps the CSV "Location" string to an existing catalog.Product.code
-# (location-keyed product templates). Locations not in this map produce an
-# error so we don't accidentally pollute master catalog data.
+# Maps the CSV "Location" string to a catalog.Product.code (location-keyed
+# product templates). Locations IN this map are valid; the resolver
+# get_or_creates the catalog.Product if missing. Locations NOT in this map
+# produce an error — protects master data from polluted location strings.
 LOCATION_TO_CATALOG_CODE: dict[str, str] = {
     'Live Online': 'Live',
     'London': 'Lon',
@@ -48,6 +49,7 @@ LOCATION_TO_CATALOG_CODE: dict[str, str] = {
     'Glasgow': 'GLA',
     'Bristol': 'Bri',
     'Dublin': 'Dub',
+    'Reading': 'Rea',
     'Online': 'OC',  # OC events are skipped earlier; included for completeness
 }
 
@@ -152,18 +154,22 @@ def _lookup_product_variation(code: str) -> ProductVariation:
 
 
 def _lookup_location_catalog_product(location_name: str) -> CatProduct:
+    """Resolve location → catalog.Product. Get_or_create if the location is
+    in LOCATION_TO_CATALOG_CODE (the whitelist); error otherwise.
+    """
     catalog_code = LOCATION_TO_CATALOG_CODE.get(location_name)
     if catalog_code is None:
         raise ResolutionError(
             f"No catalog.Product mapping for location {location_name!r}; "
             f"add to LOCATION_TO_CATALOG_CODE if this is a real location."
         )
-    p = CatProduct.objects.filter(code=catalog_code).first()
-    if p is None:
-        raise ResolutionError(
-            f"catalog.Product not found for location {location_name!r} "
-            f"(expected code {catalog_code!r})"
-        )
+    p, _ = CatProduct.objects.get_or_create(
+        code=catalog_code,
+        defaults={
+            'fullname': f'Tutorial - {location_name}',
+            'shortname': f'Tutorial {location_name}',
+        },
+    )
     return p
 
 
@@ -242,22 +248,32 @@ def _get_or_create_instructor(full_name: str) -> TutorialInstructor:
 def _get_or_create_store_product(
     ess: ExamSessionSubject,
     ppv: ProductProductVariation,
-    legacy_code: str,
+    legacy_code: str,  # kept in signature for back-compat / debugging; not used
 ) -> StoreProduct:
-    """Look up store.Product by (ess, ppv); create with legacy_code if missing.
+    """Look up store.Product by (ess, ppv); create with a canonical
+    ``{subject}/{location_code}/{variation}/{sitting}`` product_code if missing.
 
-    Pre-setting product_code skips Product.save()'s auto-generation path,
-    so the legacy CSV code is preserved.
+    The legacy CSV Code (e.g. 'CB1_f2f_3') is shared across many events so
+    it can't be the unique product_code. Pre-setting our own canonical code
+    skips the Product.save() auto-generation path (which would fail because
+    no TutorialEvent is linked yet — chicken-and-egg).
     """
     sp = StoreProduct.objects.filter(
         exam_session_subject=ess, product_product_variation=ppv,
     ).first()
     if sp is not None:
         return sp
+
+    subject_code = ess.subject.code
+    sitting_code = ess.exam_session.session_code
+    variation_code = ppv.product_variation.code
+    location_code = ppv.product.code  # 'Lon', 'Live', 'Edi', etc.
+    canonical_code = f"{subject_code}/{location_code}/{variation_code}/{sitting_code}"
+
     sp = StoreProduct(
         exam_session_subject=ess,
         product_product_variation=ppv,
-        product_code=legacy_code,
+        product_code=canonical_code,
     )
     sp.save()
     return sp

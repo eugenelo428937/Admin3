@@ -76,7 +76,7 @@ class ResolverHappyPathTests(TestCase):
         self.assertEqual(resolution.product_variation, self.variation)
         self.assertEqual(resolution.catalog_product, self.cat_product)
         self.assertIsNotNone(resolution.store_product)
-        self.assertEqual(resolution.store_product.product_code, 'CB1_LO_6')
+        self.assertEqual(resolution.store_product.product_code, 'CB1/Live/LO_6H/24')
         self.assertEqual(resolution.tutorial_location.name, 'Live Online')
         self.assertEqual(resolution.tutorial_venue.name, 'Live Online')
         self.assertEqual(len(resolution.instructors), 1)
@@ -133,13 +133,25 @@ class ResolverErrorPathTests(TestCase):
         self.assertIsNone(resolution.store_product)
         self.assertTrue(any('variation' in e.lower() and 'UNKNOWN_VAR' in e for e in resolution.errors))
 
-    def test_missing_location_catalog_product_records_error(self):
-        # 'Reading' has no entry in LOCATION_TO_CATALOG_CODE → error
+    def test_unmapped_location_records_error(self):
+        # 'Atlantis' isn't in LOCATION_TO_CATALOG_CODE → error.
         Subject.objects.create(code='CB1', description='Bus Fin', active=True)
-        parsed = _make_parsed_event(location_name='Reading')
+        parsed = _make_parsed_event(location_name='Atlantis')
         resolution = resolve_event_dependencies(parsed)
         self.assertIsNone(resolution.store_product)
-        self.assertTrue(any('reading' in e.lower() for e in resolution.errors))
+        self.assertTrue(any('atlantis' in e.lower() for e in resolution.errors))
+
+    def test_reading_location_auto_creates_catalog_product(self):
+        # 'Reading' IS in LOCATION_TO_CATALOG_CODE → resolver get_or_creates
+        # the catalog.Product if missing.
+        Subject.objects.create(code='CB1', description='Bus Fin', active=True)
+        self.assertFalse(CatProduct.objects.filter(code='Rea').exists())
+        parsed = _make_parsed_event(location_name='Reading')
+        resolution = resolve_event_dependencies(parsed)
+        self.assertEqual(resolution.errors, [])
+        rea = CatProduct.objects.get(code='Rea')
+        self.assertEqual(rea.fullname, 'Tutorial - Reading')
+        self.assertEqual(resolution.catalog_product, rea)
 
 
 class ResolverLocationMappingTests(TestCase):
