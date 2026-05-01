@@ -39,8 +39,8 @@ class MarkingPaperSubmissionAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = MarkingPaperSubmission
         fields = ('id', 'student', 'student_ref', 'marking_paper',
-                  'marking_paper_name', 'marking_voucher', 'order_item',
-                  'submission_date', 'hub_download_date',
+                  'marking_paper_name', 'redeemed_voucher', 'order_item',
+                  'submission_date', 'hub_download_date', 'is_active',
                   'created_at', 'updated_at')
 
 
@@ -54,20 +54,20 @@ class MarkingPaperGradingAdminSerializer(serializers.ModelSerializer):
         model = MarkingPaperGrading
         fields = ('id', 'submission', 'marker', 'marker_initial',
                   'allocate_date', 'allocate_by', 'allocate_by_name',
-                  'submission_date', 'hub_download_date', 'hub_upload_date',
-                  'score', 'created_at', 'updated_at')
+                  'graded_date', 'hub_upload_date',
+                  'score', 'grade', 'is_active', 'created_at', 'updated_at')
 
     def get_allocate_by_name(self, obj):
         return str(obj.allocate_by)
 
 
 class MarkingPaperFeedbackAdminSerializer(serializers.ModelSerializer):
-    grade_display = serializers.CharField(
-        source='get_grade_display', read_only=True,
+    rating_display = serializers.CharField(
+        source='get_rating_display', read_only=True,
     )
 
     class Meta:
         model = MarkingPaperFeedback
-        fields = ('id', 'grading', 'grade', 'grade_display', 'comments',
-                  'submission_date', 'hub_download_date',
+        fields = ('id', 'grading', 'rating', 'rating_display', 'comments',
+                  'feedback_date', 'is_active',
                   'created_at', 'updated_at')

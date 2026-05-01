@@ -7,7 +7,7 @@ patterns that the coverage auditor scanner detects:
 - Write: 'field_name': value in dict literals (in files with .post() calls)
 
 Coverage targets:
-- MarkingPaperSerializer: 4 fields (all read + write)
+- MarkingPaperSerializer: 7 fields (all read + write)
 """
 from datetime import timedelta
 
@@ -55,7 +55,7 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
             product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
         )
         self.paper = MarkingPaper.objects.create(
-            store_product=self.store_product,
+            purchasable=self.store_product,
             name='Paper A',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),
@@ -65,6 +65,9 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
     def test_read_id(self):
         _ = self.data['id']
 
+    def test_read_purchasable(self):
+        self.assertIsNotNone(self.data['purchasable'])
+
     def test_read_name(self):
         self.assertEqual(self.data['name'], 'Paper A')
 
@@ -73,6 +76,12 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
 
     def test_read_recommended_submit_date(self):
         self.assertIsNotNone(self.data['recommended_submit_date'])
+
+    def test_read_is_active(self):
+        self.assertTrue(self.data['is_active'])
+
+    def test_read_sequences(self):
+        self.assertIsNone(self.data['sequences'])
 
 
 class MarkingPaperSerializerWriteCoverageTest(TestCase):
@@ -90,8 +99,11 @@ class MarkingPaperSerializerWriteCoverageTest(TestCase):
         """Trigger write coverage for all MarkingPaperSerializer fields."""
         payload = {
             'id': 1,
+            'purchasable': 1,
             'name': 'Paper A',
             'deadline': '2025-06-15T12:00:00Z',
             'recommended_submit_date': '2025-06-10T12:00:00Z',
+            'is_active': True,
+            'sequences': None,
         }
         response = self.client.post('/api/marking/papers/', payload, content_type='application/json')

@@ -1,10 +1,4 @@
-"""
-MarkingPaperSubmission model.
-
-One row per (student, marking paper) — represents a student's submission
-of an assignment or mock exam for marking. Data is imported from an
-external hub system.
-"""
+"""MarkingPaperSubmission model — one row per (student, marking_paper)."""
 from django.db import models
 
 
@@ -19,11 +13,8 @@ class MarkingPaperSubmission(models.Model):
         on_delete=models.PROTECT,
         related_name='submissions',
     )
-    # Post-merge (2026-04-22): originally pointed at marking_vouchers.MarkingVoucher,
-    # retargeted to store.GenericItem (its catalog replacement — same SKU-level
-    # semantics; GenericItem rows with kind='marking_voucher').
-    marking_voucher = models.ForeignKey(
-        'store.GenericItem',
+    redeemed_voucher = models.ForeignKey(
+        'marking_vouchers.RedeemedVoucher',
         on_delete=models.PROTECT,
         null=True,
         blank=True,
@@ -32,12 +23,11 @@ class MarkingPaperSubmission(models.Model):
     order_item = models.ForeignKey(
         'orders.OrderItem',
         on_delete=models.PROTECT,
-        null=True,
-        blank=True,
         related_name='marking_submissions',
     )
     submission_date = models.DateTimeField()
     hub_download_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,7 +38,13 @@ class MarkingPaperSubmission(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['student', 'marking_paper'],
-                name='uq_submission_student_paper',
+                condition=models.Q(redeemed_voucher__isnull=True),
+                name='uq_submission_student_paper_no_voucher',
+            ),
+            models.UniqueConstraint(
+                fields=['student', 'marking_paper', 'redeemed_voucher'],
+                condition=models.Q(redeemed_voucher__isnull=False),
+                name='uq_submission_student_paper_voucher',
             ),
         ]
 

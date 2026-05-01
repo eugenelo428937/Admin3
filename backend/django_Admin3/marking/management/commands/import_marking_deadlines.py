@@ -51,9 +51,12 @@ class Command(BaseCommand):
                     if not ess:
                         self.stderr.write(f"Row {row_num}: No ExamSessionSubject for subject '{subject_code}'. Skipping.")
                         continue
-                    # Find store.Product directly by ESS, product code, and Marking variation type
-                    # This avoids ambiguity when multiple catalog products share the same code
-                    # (e.g., M1 exists for both Mock Exam eBook and Mock Exam Marking)
+                    # Find store.Product directly by ESS, product code, and Marking
+                    # variation type. The Product instance is also a valid Purchasable
+                    # (shared PK via MTI), so we can pass it as the `purchasable` FK
+                    # value below. This avoids ambiguity when multiple catalog
+                    # products share the same code (e.g., M1 exists for both Mock
+                    # Exam eBook and Mock Exam Marking).
                     store_product = StoreProduct.objects.filter(
                         exam_session_subject=ess,
                         product_product_variation__product__code=product_code,
@@ -76,7 +79,7 @@ class Command(BaseCommand):
                         self.stderr.write(f"Row {row_num}: Invalid date(s). Skipping.")
                         continue
                     MarkingPaper.objects.create(
-                        store_product=store_product,
+                        purchasable=store_product,
                         name=paper_name.strip(),
                         recommended_submit_date=recommended,
                         deadline=deadline
