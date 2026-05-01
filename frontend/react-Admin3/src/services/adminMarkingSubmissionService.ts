@@ -38,12 +38,12 @@ export interface MarkingSubmissionRow {
 export interface MarkingSubmissionFilters {
     student_ref?: string;
     student_name?: string;
+    student_email?: string;
     subject?: string[];        // sent as repeated ?subject=CM2&subject=SA1
     product_code?: string;
     sequence?: string;
     marker?: string;           // marker id
     marker_legacy_id?: string;
-    marker_name?: string;
     voucher?: boolean;
     submission_date_gte?: string;
     submission_date_lte?: string;

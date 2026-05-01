@@ -31,12 +31,12 @@ export interface MarkingSubmissionListVM {
 const EMPTY_FILTERS: MarkingSubmissionFilters = {
     student_ref: '',
     student_name: '',
+    student_email: '',
     subject: [],
     product_code: '',
     sequence: '',
     marker: '',
     marker_legacy_id: '',
-    marker_name: '',
     voucher: false,
     submission_date_gte: '',
     submission_date_lte: '',

@@ -39,12 +39,12 @@ class MarkingSubmissionListAdminViewSet(
     Query params (all optional, AND-combined):
         student_ref         — exact match on Student.student_ref
         student_name        — icontains on auth_user.first_name/last_name
+        student_email       — icontains on auth_user.email
         subject             — Subject.code (exact, repeatable)
         product_code        — store.Product.product_code icontains
         sequence            — MarkingPaper.sequences (exact)
         marker              — Marker.id (exact)
         marker_legacy_id    — Marker.legacy_id (exact)
-        marker_name         — icontains on Marker.user first/last name + initial
         voucher             — '1' / 'true' to show only voucher-redeemed rows
         submission_date_gte / submission_date_lte
         allocate_date_gte   / allocate_date_lte
@@ -97,19 +97,16 @@ class MarkingSubmissionListAdminViewSet(
                 | Q(student__user__last_name__icontains=name)
             )
 
+        email = params.get('student_email', '').strip()
+        if email:
+            qs = qs.filter(student__user__email__icontains=email)
+
         product_code = params.get('product_code', '').strip()
         if product_code:
             qs = qs.filter(
                 marking_paper__purchasable__product__product_code__icontains=product_code
             )
 
-        marker_name = params.get('marker_name', '').strip()
-        if marker_name:
-            qs = qs.filter(
-                Q(grading__marker__user__first_name__icontains=marker_name)
-                | Q(grading__marker__user__last_name__icontains=marker_name)
-                | Q(grading__marker__initial__icontains=marker_name)
-            )
         return qs
 
     def _apply_choice_filters(self, qs, params):
