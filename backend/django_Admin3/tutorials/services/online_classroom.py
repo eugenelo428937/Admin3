@@ -1,9 +1,10 @@
-"""Helper: detect whether a TutorialEvent is an Online Classroom variant.
+"""Helpers for Online Classroom detection and shared tutorial-choice validation.
 
 The OC marker lives several joins from a TutorialEvent
 (event → store_product → product_product_variation → product_variation
 → variation_type). Rather than encoding this in DB constraints, we keep it
-application-side and check it via TutorialChoice.clean() / API serializers.
+application-side. Both TutorialChoice.clean() and CartTutorialChoice.clean()
+will delegate to validate_tutorial_choice_event().
 """
 ONLINE_CLASSROOM_VARIATION_TYPE = 'Online Classroom Recording'
 
