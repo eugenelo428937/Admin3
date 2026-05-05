@@ -1,10 +1,10 @@
 """CartTutorialChoice — the student's preference (1st/2nd/3rd) of a
 tutorial event captured per cart_item.
 
-Mirrors TutorialChoice (orders side). Difference: parent FK is
-cart_item (CASCADE — short-lived) instead of order_item (PROTECT —
-audit-historical). Same validation rules, enforced via a shared
-helper.
+Mirrors TutorialChoice (orders side). Same constraints and validation
+rules; uses the shared `validate_tutorial_choice_event` helper. The
+parent FK uses CASCADE on both sides — cart and order — matching the
+parent line's lifecycle.
 """
 from django.db import models
 
@@ -54,6 +54,12 @@ class CartTutorialChoice(models.Model):
 
     def clean(self):
         super().clean()
+        # Skip cross-field validation if either FK is missing — the
+        # field-level required errors from clean_fields() will be reported
+        # separately. Avoids RelatedObjectDoesNotExist when an unsaved
+        # instance has an unset FK.
+        if not self.cart_item_id or not self.tutorial_event_id:
+            return
         validate_tutorial_choice_event(
             self.tutorial_event, self.cart_item.purchasable,
         )
