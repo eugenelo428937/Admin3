@@ -140,3 +140,43 @@ class OrderBuilderTest(TestCase):
         self.assertEqual(order.vat_amount, Decimal('0.00'))
         for item in order.items.all():
             self.assertTrue(item.is_vat_exempt)
+
+
+class TransferFeesHardFailTests(TestCase):
+    """`_transfer_fees` raises a clear app error when FEE_GENERIC is
+    missing AND the cart actually has fees. No fees → no error."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from cart.models import Cart, CartFee
+        from store.models import Purchasable
+        from orders.services.order_builder import OrderBuilder
+
+        self.user = User.objects.create_user(username='hardfail',
+                                             email='hf@t.com')
+        self.cart = Cart.objects.create(user=self.user)
+        # Remove FEE_GENERIC if present
+        Purchasable.objects.filter(code='FEE_GENERIC').delete()
+        self.builder = OrderBuilder(
+            cart=self.cart, user=self.user,
+            vat_result={'totals': {'net': '0.00', 'vat': '0.00',
+                                   'gross': '0.00'},
+                        'items': [], 'region': 'GB'},
+        )
+        self.CartFee = CartFee
+
+    def test_no_fees_no_error_even_if_fee_generic_missing(self):
+        order = self.builder._create_order()
+        self.builder._transfer_fees(order)  # should not raise
+
+    def test_with_fees_missing_fee_generic_raises_runtime_error(self):
+        from decimal import Decimal
+        order = self.builder._create_order()
+        self.CartFee.objects.create(
+            cart=self.cart, fee_type='tutorial_booking_fee',
+            name='Tutorial Booking Fee', amount=Decimal('1.00'),
+        )
+        with self.assertRaises(RuntimeError) as ctx:
+            self.builder._transfer_fees(order)
+        self.assertIn('FEE_GENERIC', str(ctx.exception))
+        self.assertIn('migrate store', str(ctx.exception))

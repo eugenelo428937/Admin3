@@ -80,9 +80,16 @@ class OrderBuilder:
 
     def _transfer_fees(self, order: Order):
         # Task 23: fee lines point at the singleton FEE_GENERIC Purchasable
-        # (created in store.0009). Resolve once per call.
+        # (created in store.0009 + ensured by store.0015). Resolve once.
+        if not self.cart.fees.exists():
+            return
         from store.models import Purchasable
         fee_purchasable = Purchasable.objects.filter(code='FEE_GENERIC').first()
+        if fee_purchasable is None:
+            raise RuntimeError(
+                "Missing FEE_GENERIC Purchasable row — run "
+                "`manage.py migrate store` to create it."
+            )
         for fee in self.cart.fees.all():
             OrderItem.objects.create(
                 order=order,
