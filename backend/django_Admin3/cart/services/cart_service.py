@@ -83,17 +83,33 @@ class CartService:
 
     def update_item(self, cart, item_id, quantity=None, metadata=None,
                     actual_price=None, price_type=None):
-        """Update an existing cart item's quantity, metadata, or price."""
+        """Update an existing cart item's quantity, metadata, or price.
+
+        If the metadata payload contains tutorial choices for an existing
+        tutorial cart line, the choices are reconciled through the same
+        relational upsert path used by add_item — keeping
+        metadata.locations[].choices[] and CartTutorialChoice rows in sync.
+        """
         item = CartItem.objects.get(id=item_id, cart=cart)
 
         if quantity is not None:
             item.quantity = int(quantity)
-        if metadata is not None:
-            item.metadata = metadata
         if actual_price is not None:
             item.actual_price = actual_price
         if price_type is not None:
             item.price_type = price_type
+
+        if metadata is not None:
+            incoming = (metadata.get('newLocation') or {}).get('choices') or []
+            if incoming and item.tutorial_choices.exists():
+                # Tutorial cart line — route through relational upsert.
+                student = self._require_student(cart)
+                from django.db import transaction
+                with transaction.atomic():
+                    self._upsert_tutorial_choices(item, student, incoming)
+                    self._refresh_tutorial_metadata(item)
+            else:
+                item.metadata = metadata
 
         item.save()
         self._trigger_vat_calculation(cart)
@@ -222,8 +238,10 @@ class CartService:
                 seed_metadata,
             )
 
-        self._upsert_tutorial_choices(item, student, incoming_choices)
-        self._refresh_tutorial_metadata(item)
+        from django.db import transaction
+        with transaction.atomic():
+            self._upsert_tutorial_choices(item, student, incoming_choices)
+            self._refresh_tutorial_metadata(item)
 
         # Lower the line price if the new add brought a cheaper option,
         # mirroring the prior _merge_tutorial_locations behavior.
@@ -303,6 +321,8 @@ class CartService:
             'tutorial_event__store_product__product_product_variation'
             '__product_variation',
             'tutorial_event__store_product__exam_session_subject__subject',
+            'tutorial_event__location',
+            'tutorial_event__venue',
         ).order_by('choice_rank'))
 
         metadata = item.metadata or {}
@@ -321,16 +341,12 @@ class CartService:
             ev = row.tutorial_event
             sp = ev.store_product
             ppv = sp.product_product_variation
-            # ev.location_label is preferred; fall back to a plain string
-            # built from whatever attributes exist. TutorialEvents has a
-            # `location` attribute via store_product → ESS → ... so the
-            # safest fallback is the event code's prefix.
-            loc_label = (
-                getattr(ev, 'location_label', None)
-                or getattr(ev, 'location', None)
-                or 'TBD'
-            )
-            venue = getattr(ev, 'venue', None) or ''
+            # ev.location and ev.venue are FKs to TutorialLocation /
+            # TutorialVenue. Coerce to str() before writing to JSONB
+            # metadata — both models' __str__ returns self.name.
+            loc_obj = ev.location
+            loc_label = (str(loc_obj) if loc_obj is not None else None) or 'TBD'
+            venue = str(ev.venue) if ev.venue_id is not None else ''
             choice_dict = {
                 'choice': TUTORIAL_RANK_LABEL[row.choice_rank],
                 'eventId': ev.id,
