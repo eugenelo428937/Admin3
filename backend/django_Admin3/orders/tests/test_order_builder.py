@@ -147,10 +147,7 @@ class TransferFeesHardFailTests(TestCase):
     missing AND the cart actually has fees. No fees → no error."""
 
     def setUp(self):
-        from django.contrib.auth.models import User
-        from cart.models import Cart, CartFee
         from store.models import Purchasable
-        from orders.services.order_builder import OrderBuilder
 
         self.user = User.objects.create_user(username='hardfail',
                                              email='hf@t.com')
@@ -175,8 +172,24 @@ class TransferFeesHardFailTests(TestCase):
         self.CartFee.objects.create(
             cart=self.cart, fee_type='tutorial_booking_fee',
             name='Tutorial Booking Fee', amount=Decimal('1.00'),
+            currency='GBP',
         )
         with self.assertRaises(RuntimeError) as ctx:
             self.builder._transfer_fees(order)
         self.assertIn('FEE_GENERIC', str(ctx.exception))
         self.assertIn('migrate store', str(ctx.exception))
+
+    def test_build_rolls_back_order_when_fee_generic_missing(self):
+        from decimal import Decimal
+        from orders.models import Order
+        # Add a fee so _transfer_fees actually runs and raises.
+        self.CartFee.objects.create(
+            cart=self.cart, fee_type='tutorial_booking_fee',
+            name='Tutorial Booking Fee', amount=Decimal('1.00'),
+            currency='GBP',
+        )
+        order_count_before = Order.objects.count()
+        with self.assertRaises(RuntimeError):
+            self.builder.build()
+        self.assertEqual(Order.objects.count(), order_count_before,
+                         "Order should be rolled back when fee transfer fails")
