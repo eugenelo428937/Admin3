@@ -64,7 +64,7 @@ class OrderBuilder:
             # Task 23 (Release B): legacy product/marking_voucher/item_type
             # columns are gone. Carry the unified `purchasable` FK across
             # cart → order instead.
-            OrderItem.objects.create(
+            order_item = OrderItem.objects.create(
                 order=order,
                 purchasable_id=item.purchasable_id,
                 quantity=item.quantity,
@@ -77,6 +77,27 @@ class OrderBuilder:
                 is_vat_exempt=(vat_rate == Decimal('0.0000')),
                 metadata=item.metadata,
             )
+            self._transfer_tutorial_choices(item, order_item)
+
+    def _transfer_tutorial_choices(self, cart_item, order_item):
+        """If the cart line has CartTutorialChoice rows, copy them into
+        TutorialChoice rows on the new order_item. Validation already
+        ran at add-to-cart time; rely on DB constraints here."""
+        from tutorials.models import TutorialChoice
+
+        cart_choices = list(cart_item.tutorial_choices.select_related(
+            'student', 'tutorial_event'))
+        if not cart_choices:
+            return
+        TutorialChoice.objects.bulk_create([
+            TutorialChoice(
+                order_item=order_item,
+                student=c.student,
+                tutorial_event=c.tutorial_event,
+                choice_rank=c.choice_rank,
+            )
+            for c in cart_choices
+        ])
 
     def _transfer_fees(self, order: Order):
         # Task 23: fee lines point at the singleton FEE_GENERIC Purchasable
