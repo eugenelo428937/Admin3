@@ -3,13 +3,32 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
-from .models import CartItem
+from .models import Cart, CartItem
 from .serializers import CartSerializer
 from .services.cart_service import cart_service
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _hydrate_cart_for_read(cart):
+    """Re-fetch a Cart instance with prefetches optimised for serialization.
+
+    Task 9: avoids N+1 on the new ``items.tutorial_choices`` reverse relation
+    while also covering the existing items/fees collections so a single read
+    response stays cheap.
+    """
+    return (
+        Cart.objects
+        .prefetch_related(
+            'items',
+            'fees',
+            'items__tutorial_choices__tutorial_event__store_product__exam_session_subject__subject',
+            'items__tutorial_choices__student',
+        )
+        .get(pk=cart.pk)
+    )
 
 
 class CartViewSet(viewsets.ViewSet):
@@ -19,6 +38,7 @@ class CartViewSet(viewsets.ViewSet):
     def list(self, request):
         """GET /cart/ - Get current cart."""
         cart = cart_service.get_or_create(request)
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -39,6 +59,7 @@ class CartViewSet(viewsets.ViewSet):
             return Response({'detail': error}, status=status.HTTP_404_NOT_FOUND)
 
         cart.refresh_from_db()
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -60,6 +81,7 @@ class CartViewSet(viewsets.ViewSet):
             return Response({'detail': 'Item not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         cart.refresh_from_db()
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -75,6 +97,7 @@ class CartViewSet(viewsets.ViewSet):
             return Response({'detail': 'Item not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         cart.refresh_from_db()
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -85,6 +108,7 @@ class CartViewSet(viewsets.ViewSet):
         cart_service.clear(cart)
 
         cart.refresh_from_db()
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -95,5 +119,6 @@ class CartViewSet(viewsets.ViewSet):
         cart_service._trigger_vat_calculation(cart)
 
         cart.refresh_from_db()
+        cart = _hydrate_cart_for_read(cart)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
