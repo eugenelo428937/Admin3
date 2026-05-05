@@ -6,3 +6,4 @@ from .tutorial_instructor import TutorialInstructor
 from .tutorial_location import TutorialLocation
 from .tutorial_venue import TutorialVenue
 from .tutorial_choice import TutorialChoice
+from .tutorial_registration import TutorialRegistration
