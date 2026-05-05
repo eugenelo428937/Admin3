@@ -99,6 +99,14 @@ class CartTutorialChoiceTests(TestCase):
                     tutorial_event=self.event_a, choice_rank=4,
                 )
 
+    def test_rejects_rank_zero(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                CartTutorialChoice.objects.create(
+                    cart_item=self.cart_item, student=self.student,
+                    tutorial_event=self.event_a, choice_rank=0,
+                )
+
     def test_unique_rank_per_cart_item(self):
         CartTutorialChoice.objects.create(
             cart_item=self.cart_item, student=self.student,
@@ -170,5 +178,6 @@ class CartTutorialChoiceTests(TestCase):
             cart_item=self.cart_item, student=self.student,
             tutorial_event=self.event_a, choice_rank=1,
         )
+        self.assertEqual(CartTutorialChoice.objects.count(), 1)
         self.cart_item.delete()
         self.assertEqual(CartTutorialChoice.objects.count(), 0)
