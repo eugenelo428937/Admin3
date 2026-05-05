@@ -3,6 +3,21 @@ from orders.models import Order, OrderItem, Payment
 from store.serializers import PurchasableSerializer
 
 
+class OrderTutorialChoiceSerializer(serializers.Serializer):
+    """Read-only nested serializer for order-side tutorial choices."""
+    id = serializers.IntegerField(read_only=True)
+    choice_rank = serializers.IntegerField(read_only=True)
+    student_id = serializers.IntegerField(read_only=True)
+    tutorial_event_id = serializers.IntegerField(read_only=True)
+    event_code = serializers.CharField(
+        source='tutorial_event.code', read_only=True)
+    event_subject_code = serializers.CharField(
+        source=(
+            'tutorial_event.store_product'
+            '.exam_session_subject.subject.code'),
+        read_only=True)
+
+
 class OrderItemSerializer(serializers.ModelSerializer):
     item_name = serializers.SerializerMethodField()
     # Task 23: `item_type` is now a read-only @property on OrderItem derived
@@ -12,6 +27,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
     # Task 18: unified catalog parent nested object (the sole catalog
     # reference now that the legacy FKs are gone in Release B).
     purchasable = PurchasableSerializer(read_only=True)
+    # Task 10: relational tutorial choices (dual-emit alongside metadata).
+    tutorial_choices = OrderTutorialChoiceSerializer(
+        many=True, read_only=True)
 
     class Meta:
         model = OrderItem
@@ -21,6 +39,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'vat_rate', 'is_vat_exempt', 'metadata',
             # Task 18: unified purchasable nested object
             'purchasable',
+            # Task 10: relational tutorial choices
+            'tutorial_choices',
         ]
 
     def get_item_type(self, obj):

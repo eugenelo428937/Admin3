@@ -82,7 +82,17 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        qs = Order.objects.filter(user=self.request.user).order_by('-created_at')
+        if self.action == 'retrieve':
+            # Task 10: avoid N+1 on items.tutorial_choices reverse relation
+            # for order-detail reads. Mirrors cart/views.py _hydrate_cart_for_read.
+            qs = qs.prefetch_related(
+                'items',
+                'payments',
+                'items__tutorial_choices__tutorial_event__store_product__exam_session_subject__subject',
+                'items__tutorial_choices__student',
+            )
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
