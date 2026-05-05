@@ -31,6 +31,10 @@ class TutorialRegistration(models.Model):
         null=True, blank=True, related_name='registrations',
     )
     is_active = models.BooleanField(default=True)
+    import_batch = models.ForeignKey(
+        'tutorials.TutorialEnrolmentImport', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='registrations',
+    )
     deactivated_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

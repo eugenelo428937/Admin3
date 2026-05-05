@@ -8,3 +8,4 @@ from .tutorial_venue import TutorialVenue
 from .tutorial_choice import TutorialChoice
 from .tutorial_registration import TutorialRegistration
 from .tutorial_attendance import TutorialAttendance
+from .tutorial_enrolment_import import TutorialEnrolmentImport
