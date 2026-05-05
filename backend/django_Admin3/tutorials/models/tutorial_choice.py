@@ -5,10 +5,9 @@ Decoupled from TutorialRegistration (the actual enrolment, owned by the
 registrations CSV sync). Choices are immutable historical record of intent;
 registrations are mutable state.
 """
-from django.core.exceptions import ValidationError
 from django.db import models
 
-from tutorials.services.online_classroom import is_online_classroom_event
+from tutorials.services.online_classroom import validate_tutorial_choice_event
 
 
 class TutorialChoice(models.Model):
@@ -49,22 +48,12 @@ class TutorialChoice(models.Model):
 
     def clean(self):
         super().clean()
-        if is_online_classroom_event(self.tutorial_event):
-            raise ValidationError({
-                'tutorial_event': 'Online Classroom events cannot be chosen — '
-                                  'students are auto-enrolled in OC products.'
-            })
-        try:
-            event_subject = self.tutorial_event.store_product.exam_session_subject.subject_id
-            order_subject = (
-                self.order_item.purchasable.product.exam_session_subject.subject_id
-            )
-        except AttributeError:
-            return
-        if event_subject != order_subject:
-            raise ValidationError({
-                'tutorial_event': "Event subject does not match the order item's subject.",
-            })
+        # Cart-side passes cart_item.purchasable; order-side passes
+        # order_item.purchasable. Both reach a store.Product via the
+        # MTI .product attribute.
+        validate_tutorial_choice_event(
+            self.tutorial_event, self.order_item.purchasable,
+        )
 
     def __str__(self):
         return f"{self.student} → {self.tutorial_event} (#{self.choice_rank})"
