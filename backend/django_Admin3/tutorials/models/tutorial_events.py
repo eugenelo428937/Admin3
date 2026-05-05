@@ -29,6 +29,15 @@ class TutorialEvents(models.Model):
         related_name='events',
     )
     is_soldout = models.BooleanField(default=False)
+    cancelled = models.BooleanField(
+        default=False,
+        help_text=(
+            "True for stub events that were referenced by orders but never ran "
+            "(or were cancelled after orders were placed). Excluded from "
+            "registration / attendance flows; kept so historical TutorialChoice "
+            "rows have a valid FK target."
+        ),
+    )
     finalisation_date = models.DateField(null=True, blank=True)
     remain_space = models.IntegerField(default=0)
     start_date = models.DateField()
