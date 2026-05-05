@@ -139,7 +139,7 @@ class TutorialAddCreatesChoicesTests(TestCase):
             [self.event_a.id, self.event_b.id],
         )
         self.assertEqual(set(c.student_id for c in choices),
-                         {self.student.id})
+                         {self.student.pk})
 
     def test_subsequent_add_for_same_subject_merges_into_same_cart_item(self):
         cart_service.add_item(
