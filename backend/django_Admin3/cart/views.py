@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -10,6 +12,22 @@ from .services.cart_service import cart_service
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _validation_error_payload(exc):
+    """Convert a django ValidationError to a JSON-friendly dict.
+
+    Cart-service tutorial validation (auth gate, invalid rank, OC,
+    subject mismatch, missing student) raises
+    ``django.core.exceptions.ValidationError`` — surface those as 400
+    responses with the original message(s) instead of letting them
+    bubble up as 500s through the default DRF handler.
+    """
+    if hasattr(exc, 'message_dict'):
+        return exc.message_dict
+    if hasattr(exc, 'messages'):
+        return {'detail': exc.messages}
+    return {'detail': str(exc)}
 
 
 def _hydrate_cart_for_read(cart):
@@ -52,9 +70,16 @@ class CartViewSet(viewsets.ViewSet):
         actual_price = request.data.get('actual_price')
         metadata = request.data.get('metadata', {})
 
-        item, error = cart_service.add_item(
-            cart, product_id, quantity, price_type, actual_price, metadata
-        )
+        try:
+            item, error = cart_service.add_item(
+                cart, product_id, quantity, price_type, actual_price, metadata
+            )
+        except DjangoValidationError as exc:
+            # Surface tutorial-path validation errors as 400 instead of
+            # letting them bubble to a 500 (no DRF EXCEPTION_HANDLER is
+            # configured for django.core.exceptions.ValidationError).
+            return Response(_validation_error_payload(exc),
+                            status=status.HTTP_400_BAD_REQUEST)
         if error:
             return Response({'detail': error}, status=status.HTTP_404_NOT_FOUND)
 
@@ -79,6 +104,9 @@ class CartViewSet(viewsets.ViewSet):
             )
         except CartItem.DoesNotExist:
             return Response({'detail': 'Item not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except DjangoValidationError as exc:
+            return Response(_validation_error_payload(exc),
+                            status=status.HTTP_400_BAD_REQUEST)
 
         cart.refresh_from_db()
         cart = _hydrate_cart_for_read(cart)

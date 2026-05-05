@@ -218,33 +218,39 @@ class CartService:
                 cart, product, quantity, price_type, actual_price, metadata,
             )
 
-        # Find or create the cart_item for (cart, product). Uses the
-        # purchasable FK as the merge key — NOT metadata.subjectCode.
-        item = CartItem.objects.filter(
-            cart=cart, purchasable_id=product.pk, price_type=price_type,
-        ).first()
-        if item is None:
-            # Strip choice data from initial metadata so it doesn't go
-            # stale. _refresh_tutorial_metadata will rebuild it from rows.
-            seed_metadata = {
-                'type': 'tutorial',
-                'subjectCode': subject_code,
-                'title': metadata.get('title', f"{subject_code} Tutorial"),
-                'locations': [],
-                'totalChoiceCount': 0,
-            }
-            item = self._create_item(
-                cart, product, quantity, price_type, actual_price,
-                seed_metadata,
-            )
-
+        # Find-or-create AND choice upsert/refresh share one atomic block:
+        # if _upsert_tutorial_choices raises (invalid rank, OC event,
+        # subject mismatch), the freshly-created cart_item must roll back
+        # too — otherwise an orphan line with empty seed metadata stays
+        # in the cart.
         from django.db import transaction
         with transaction.atomic():
+            # Find or create the cart_item for (cart, product). Uses the
+            # purchasable FK as the merge key — NOT metadata.subjectCode.
+            item = CartItem.objects.filter(
+                cart=cart, purchasable_id=product.pk, price_type=price_type,
+            ).first()
+            if item is None:
+                # Strip choice data from initial metadata so it doesn't go
+                # stale. _refresh_tutorial_metadata will rebuild it from rows.
+                seed_metadata = {
+                    'type': 'tutorial',
+                    'subjectCode': subject_code,
+                    'title': metadata.get('title', f"{subject_code} Tutorial"),
+                    'locations': [],
+                    'totalChoiceCount': 0,
+                }
+                item = self._create_item(
+                    cart, product, quantity, price_type, actual_price,
+                    seed_metadata,
+                )
             self._upsert_tutorial_choices(item, student, incoming_choices)
             self._refresh_tutorial_metadata(item)
 
         # Lower the line price if the new add brought a cheaper option,
-        # mirroring the prior _merge_tutorial_locations behavior.
+        # mirroring the prior _merge_tutorial_locations behavior. Outside
+        # the atomic block — idempotent UPDATE on an already-committed
+        # row.
         if actual_price is not None:
             new_price = Decimal(str(actual_price))
             current_price = (
