@@ -1,0 +1,63 @@
+"""Filter-options endpoint — populates the dropdown sources."""
+from django.contrib.auth.models import User
+from rest_framework.test import APITestCase
+
+from tutorials.tests import factories
+
+
+class FilterOptionsTests(APITestCase):
+    url = '/api/tutorials/admin/events/filter-options/'
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def test_anonymous_forbidden(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertIn(response.status_code, [401, 403])
+
+    def test_returns_expected_keys(self):
+        # seed minimal data
+        factories.make_event()
+        factories.make_location()
+        factories.make_venue()
+        factories.make_instructor()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        for key in ('subjects', 'locations', 'venues', 'instructors', 'sittings'):
+            self.assertIn(key, response.data)
+
+    def test_subject_shape(self):
+        factories.make_event()
+        response = self.client.get(self.url)
+        self.assertEqual(set(response.data['subjects'][0].keys()),
+                         {'code', 'description'})
+
+    def test_instructor_uses_full_name(self):
+        factories.make_instructor(first_name='Karen', last_name='Smith')
+        factories.make_event()
+        response = self.client.get(self.url)
+        names = {i['name'] for i in response.data['instructors']}
+        self.assertIn('Karen Smith', names)
+
+    def test_instructors_skipped_when_staff_null(self):
+        from tutorials.models import TutorialInstructor
+        TutorialInstructor.objects.create(staff=None, is_active=True)
+        factories.make_event()
+        response = self.client.get(self.url)
+        # No name composable -> not included.
+        self.assertNotIn(
+            None, [i.get('name') for i in response.data['instructors']],
+        )
+
+    def test_venue_no_is_active_filter_returns_all(self):
+        factories.make_venue('A')
+        factories.make_venue('B')
+        factories.make_event()
+        response = self.client.get(self.url)
+        names = {v['name'] for v in response.data['venues']}
+        self.assertEqual(names, {'A', 'B'})

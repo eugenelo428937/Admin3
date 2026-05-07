@@ -5,12 +5,25 @@ All endpoints require ``IsSuperUser``. See
 """
 from django.db.models import Count, Prefetch, Q
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
+from catalog.exam_session.models import ExamSession
 from catalog.permissions import IsSuperUser
+from catalog.subject.models import Subject
 from tutorials.admin_filters import apply_event_filters
-from tutorials.admin_serializers import AdminTutorialEventListSerializer
-from tutorials.models import TutorialEvents, TutorialSessions
+from tutorials.admin_serializers import (
+    AdminTutorialEventListSerializer,
+    FilterOptionsSerializer,
+)
+from tutorials.models import (
+    TutorialEvents,
+    TutorialInstructor,
+    TutorialLocation,
+    TutorialSessions,
+    TutorialVenue,
+)
 
 
 ALLOWED_ORDERING = {
@@ -69,3 +82,28 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             qs = qs.order_by('start_date')
         return qs
+
+    @action(detail=False, methods=['get'], url_path='filter-options')
+    def filter_options(self, request):
+        subjects = (
+            Subject.objects
+            .filter(active=True)
+            .order_by('code')
+        )
+        locations = TutorialLocation.objects.filter(is_active=True).order_by('name')
+        venues = TutorialVenue.objects.all().order_by('name')
+        instructors = (
+            TutorialInstructor.objects
+            .filter(is_active=True, staff__isnull=False)
+            .select_related('staff__user')
+        )
+        sittings = ExamSession.objects.order_by('-start_date')
+
+        data = FilterOptionsSerializer({
+            'subjects': subjects,
+            'locations': locations,
+            'venues': venues,
+            'instructors': instructors,
+            'sittings': sittings,
+        }).data
+        return Response(data)

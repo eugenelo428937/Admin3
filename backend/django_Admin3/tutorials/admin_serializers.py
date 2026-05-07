@@ -22,7 +22,7 @@ class _SubjectMiniSerializer(serializers.ModelSerializer):
         fields = ['code', 'description']
 
 
-class _ExamSessionMiniSerializer(serializers.ModelSerializer):
+class _SittingMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamSession
         fields = ['id', 'session_code', 'start_date', 'end_date']
@@ -97,7 +97,7 @@ class AdminTutorialEventListSerializer(serializers.ModelSerializer):
     def get_exam_session(self, obj):
         ess = getattr(obj.store_product, 'exam_session_subject', None) if obj.store_product_id else None
         es = getattr(ess, 'exam_session', None) if ess else None
-        return _ExamSessionMiniSerializer(es).data if es else None
+        return _SittingMiniSerializer(es).data if es else None
 
     def get_all_instructors(self, obj):
         # Aggregate main + every session instructor, deduplicated by id,
@@ -112,3 +112,11 @@ class AdminTutorialEventListSerializer(serializers.ModelSerializer):
                     seen.add(instr.id)
                     out.append(_InstructorMiniSerializer(instr).data)
         return out
+
+
+class FilterOptionsSerializer(serializers.Serializer):
+    subjects = _SubjectMiniSerializer(many=True, read_only=True)
+    locations = _LocationMiniSerializer(many=True, read_only=True)
+    venues = _VenueMiniSerializer(many=True, read_only=True)
+    instructors = _InstructorMiniSerializer(many=True, read_only=True)
+    sittings = _SittingMiniSerializer(many=True, read_only=True)
