@@ -294,3 +294,68 @@ class CartVATSerializerTestCase(TestCase):
         self.assertTrue(data['vat_calculation_error'])
         self.assertIn('vat_calculation_error_message', data)
         self.assertEqual(data['vat_calculation_error_message'], "Test error")
+
+
+class CartItemTutorialChoicesSerializerTests(TestCase):
+    def test_serializer_emits_tutorial_choices_array(self):
+        from datetime import date, timedelta
+        from django.contrib.auth.models import User
+        from django.utils import timezone
+        from cart.models import Cart, CartItem
+        from cart.serializers import CartItemSerializer
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        from students.models import Student
+        from tutorials.models import (
+            CartTutorialChoice, TutorialEvents,
+        )
+
+        user = User.objects.create_user(username='s', email='s@t.com')
+        student = Student.objects.create(user=user)
+        cart = Cart.objects.create(user=user)
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='CB1',
+            defaults={'description': 'CB1', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess, product_product_variation=ppv,
+            product_code='CB1/Live/LO_6H/25')
+        sp.save()
+        event = TutorialEvents.objects.create(
+            code='CB1-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+        item = CartItem.objects.create(
+            cart=cart, purchasable=sp.purchasable_ptr,
+            actual_price='10.00', quantity=1)
+        CartTutorialChoice.objects.create(
+            cart_item=item, student=student,
+            tutorial_event=event, choice_rank=1)
+
+        data = CartItemSerializer(item).data
+        self.assertIn('tutorial_choices', data)
+        self.assertEqual(len(data['tutorial_choices']), 1)
+        choice = data['tutorial_choices'][0]
+        self.assertEqual(choice['choice_rank'], 1)
+        self.assertEqual(choice['tutorial_event_id'], event.id)
+        self.assertEqual(choice['student_id'], student.pk)
+        self.assertEqual(choice['event_code'], 'CB1-01-25A')
+        self.assertEqual(choice['event_subject_code'], 'CB1')

@@ -230,3 +230,103 @@ class CheckoutOrchestratorTest(TestCase):
             orchestrator.execute()
 
         self.assertEqual(len(ctx.exception.required_acknowledgments), 1)
+
+
+class CheckoutWithTutorialAndFeeTests(TestCase):
+    """Reproduces the original 500: tutorial cart + tutorial booking
+    fee → checkout creates Order with TutorialChoice rows and a fee
+    OrderItem pointing at FEE_GENERIC."""
+
+    def test_checkout_persists_tutorial_choices_and_fee_line(self):
+        from datetime import date, timedelta
+        from decimal import Decimal
+        from django.contrib.auth.models import User
+        from django.utils import timezone
+        from cart.models import Cart, CartFee
+        from cart.services.cart_service import cart_service
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct, Purchasable
+        from students.models import Student
+        from tutorials.models import TutorialEvents, TutorialChoice
+
+        # Ensure FEE_GENERIC seed exists (Task 1 migration normally
+        # ensures this — defensive for SQLite test DB which skips
+        # migrations).
+        Purchasable.objects.update_or_create(
+            code='FEE_GENERIC',
+            defaults={'kind': 'additional_charge',
+                      'name': 'Generic Fee',
+                      'description': 'Catch-all',
+                      'is_active': True,
+                      'dynamic_pricing': True,
+                      'vat_classification': ''})
+
+        user = User.objects.create_user(username='e2e', email='e@t.com')
+        Student.objects.create(user=user)
+        cart = Cart.objects.create(user=user)
+
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='CP1',
+            defaults={'description': 'CP1', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess, product_product_variation=ppv,
+            product_code='CP1/Live/LO_6H/25')
+        sp.save()
+        event = TutorialEvents.objects.create(
+            code='CP1-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+
+        # Add tutorial via the cart service (relational path).
+        item, err = cart_service.add_item(
+            cart, sp.id, quantity=1, actual_price='10.00',
+            metadata={'type': 'tutorial', 'subjectCode': 'CP1',
+                      'newLocation': {'location': 'London',
+                                      'choices': [{'choice': '1st',
+                                                   'eventId': event.id,
+                                                   'variationId':
+                                                   ppv.id}],
+                                      'choiceCount': 1}})
+        self.assertIsNone(err)
+
+        CartFee.objects.create(
+            cart=cart, fee_type='tutorial_booking_fee',
+            name='Tutorial Booking Fee', amount=Decimal('1.00'))
+
+        # Run the orchestrator's build step directly (skip payment).
+        from orders.services.order_builder import OrderBuilder
+        builder = OrderBuilder(
+            cart=cart, user=user,
+            vat_result={'totals': {'net': '11.00', 'vat': '0.00',
+                                   'gross': '11.00'},
+                        'items': [], 'region': 'GB'})
+        order = builder.build()
+
+        # Order has 2 items: the tutorial product line + the fee line.
+        self.assertEqual(order.items.count(), 2)
+        self.assertEqual(
+            TutorialChoice.objects.filter(
+                order_item__order=order).count(), 1)
+        # Fee row is non-null on purchasable now
+        fee_item = order.items.filter(
+            purchasable__code='FEE_GENERIC').first()
+        self.assertIsNotNone(fee_item)

@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 CART_VAT_ERROR_FIELDS = ['vat_calculation_error', 'vat_calculation_error_message']
 CART_ITEM_VAT_FIELDS = ['vat_region', 'vat_rate', 'vat_amount', 'gross_amount']
 
+# Tutorial choice rank label → integer (matches frontend
+# `tutorialMetadataBuilder.ts`).
+TUTORIAL_RANK_MAP = {'1st': 1, '2nd': 2, '3rd': 3}
+TUTORIAL_RANK_LABEL = {v: k for k, v in TUTORIAL_RANK_MAP.items()}
+MAX_TUTORIAL_RANKS_PER_SUBJECT = 3
+
 
 class CartService:
     """Facade for all cart business logic — product resolution, item management, and flags."""
@@ -77,17 +83,34 @@ class CartService:
 
     def update_item(self, cart, item_id, quantity=None, metadata=None,
                     actual_price=None, price_type=None):
-        """Update an existing cart item's quantity, metadata, or price."""
+        """Update an existing cart item's quantity, metadata, or price.
+
+        If the metadata payload contains tutorial choices for an existing
+        tutorial cart line, the choices are reconciled through the same
+        relational upsert path used by add_item — keeping
+        metadata.locations[].choices[] and CartTutorialChoice rows in sync.
+        """
         item = CartItem.objects.get(id=item_id, cart=cart)
 
         if quantity is not None:
             item.quantity = int(quantity)
-        if metadata is not None:
-            item.metadata = metadata
         if actual_price is not None:
             item.actual_price = actual_price
         if price_type is not None:
             item.price_type = price_type
+
+        if metadata is not None:
+            incoming = (metadata.get('newLocation') or {}).get('choices') or []
+            if incoming and item.tutorial_choices.exists():
+                # Tutorial cart line — route through relational upsert.
+                # Student is best-effort (None allowed for guest/no-Student).
+                student = self._resolve_student(cart)
+                from django.db import transaction
+                with transaction.atomic():
+                    self._upsert_tutorial_choices(item, student, incoming)
+                    self._refresh_tutorial_metadata(item)
+            else:
+                item.metadata = metadata
 
         item.save()
         self._trigger_vat_calculation(cart)
@@ -138,6 +161,19 @@ class CartService:
         guest_cart.fees.update(cart=user_cart)
         guest_cart.delete()
 
+        # Best-effort backfill: any tutorial_choices that came across
+        # without a student now get linked to the user's Student row, if
+        # one exists. Choices added while logged-out will have student=
+        # None; choices added later (or if user has no Student) stay
+        # null. Checkout enforces only auth_user, not student-presence.
+        from students.models import Student
+        from tutorials.models import CartTutorialChoice
+        student = Student.objects.filter(user=user).first()
+        if student is not None:
+            CartTutorialChoice.objects.filter(
+                cart_item__cart=user_cart, student__isnull=True,
+            ).update(student=student)
+
         self._update_cart_flags(user_cart)
         self._trigger_vat_calculation(user_cart)
 
@@ -159,71 +195,209 @@ class CartService:
 
         return product
 
-    def _handle_tutorial_add(self, cart, product, quantity, price_type, actual_price, metadata):
-        """Handle adding tutorial items with location merging."""
+    def _resolve_student(self, cart):
+        """Best-effort: return the cart owner's Student row if any.
+        Returns None for guest carts and for authenticated users without
+        a Student profile. The hard auth gate lives at checkout
+        (OrderBuilder), not here — anyone can add a tutorial to cart.
+        """
+        from students.models import Student
+        user = getattr(cart, 'user', None)
+        if user is None or not user.is_authenticated:
+            return None
+        return Student.objects.filter(user=user).first()
+
+    def _handle_tutorial_add(self, cart, product, quantity, price_type,
+                            actual_price, metadata):
+        """Add a tutorial product line: one CartItem per (cart, product),
+        plus up to 3 CartTutorialChoice rows (rank 1/2/3) per cart_item.
+
+        Open to guests and to authenticated users without a Student row;
+        student_id on each choice row is best-effort and may be NULL.
+        """
+        student = self._resolve_student(cart)
+
         subject_code = metadata.get('subjectCode')
-        new_location = metadata.get('newLocation')
+        new_location = metadata.get('newLocation') or {}
+        incoming_choices = new_location.get('choices', [])
 
-        if not (subject_code and new_location):
-            # Fallback to simple creation
-            return self._create_item(cart, product, quantity, price_type, actual_price, metadata)
+        # Defensive fallback: if frontend sends a non-conforming payload
+        # (no subject + no choices), treat it as a regular add — preserves
+        # the old permissive behavior for non-tutorial-shape requests
+        # that happen to be tagged type='tutorial'.
+        if not (subject_code and incoming_choices):
+            return self._create_item(
+                cart, product, quantity, price_type, actual_price, metadata,
+            )
 
-        # Look for existing tutorial with same subject
-        existing = CartItem.objects.filter(
-            cart=cart,
-            price_type=price_type,
-            metadata__type='tutorial',
-            metadata__subjectCode=subject_code,
-        ).first()
+        # Find-or-create AND choice upsert/refresh share one atomic block:
+        # if _upsert_tutorial_choices raises (invalid rank, OC event,
+        # subject mismatch), the freshly-created cart_item must roll back
+        # too — otherwise an orphan line with empty seed metadata stays
+        # in the cart.
+        from django.db import transaction
+        with transaction.atomic():
+            # Find or create the cart_item for (cart, product). Uses the
+            # purchasable FK as the merge key — NOT metadata.subjectCode.
+            item = CartItem.objects.filter(
+                cart=cart, purchasable_id=product.pk, price_type=price_type,
+            ).first()
+            if item is None:
+                # Strip choice data from initial metadata so it doesn't go
+                # stale. _refresh_tutorial_metadata will rebuild it from rows.
+                seed_metadata = {
+                    'type': 'tutorial',
+                    'subjectCode': subject_code,
+                    'title': metadata.get('title', f"{subject_code} Tutorial"),
+                    'locations': [],
+                    'totalChoiceCount': 0,
+                }
+                item = self._create_item(
+                    cart, product, quantity, price_type, actual_price,
+                    seed_metadata,
+                )
+            self._upsert_tutorial_choices(item, student, incoming_choices)
+            self._refresh_tutorial_metadata(item)
 
-        if existing:
-            return self._merge_tutorial_locations(existing, new_location, actual_price)
+        # Lower the line price if the new add brought a cheaper option,
+        # mirroring the prior _merge_tutorial_locations behavior. Outside
+        # the atomic block — idempotent UPDATE on an already-committed
+        # row.
+        if actual_price is not None:
+            new_price = Decimal(str(actual_price))
+            current_price = (
+                Decimal(str(item.actual_price))
+                if item.actual_price is not None else None
+            )
+            if current_price is None or new_price < current_price:
+                item.actual_price = new_price
+                item.save(update_fields=['actual_price'])
 
-        # Create new tutorial item with locations array
-        tutorial_metadata = {
+        return item
+
+    def _upsert_tutorial_choices(self, item, student, incoming):
+        """Reconcile incoming `[{choice, eventId, ...}]` payload against
+        the cart_item's CartTutorialChoice rows.
+
+        For each incoming row:
+          - resolve label → rank (1/2/3); reject unknown labels
+          - delete any existing row for this rank OR this event_id
+            on this cart_item (so a re-submit replaces cleanly)
+          - create the new row, full_clean()-validated (OC + subject)
+
+        Caps at 3 rows; raises ValidationError if exceeded.
+        """
+        from django.core.exceptions import ValidationError
+        from tutorials.models import CartTutorialChoice
+
+        for c in incoming:
+            rank = TUTORIAL_RANK_MAP.get(c.get('choice'))
+            event_id = c.get('eventId')
+            if rank is None:
+                raise ValidationError(
+                    f"Invalid choice rank label: {c.get('choice')!r}. "
+                    f"Expected one of {sorted(TUTORIAL_RANK_MAP)}.")
+            if event_id is None:
+                raise ValidationError(
+                    f"Tutorial choice payload missing eventId: {c!r}")
+
+            # Replace conflicts: existing rank, or existing event for this
+            # cart_item.
+            CartTutorialChoice.objects.filter(
+                cart_item=item, choice_rank=rank,
+            ).delete()
+            CartTutorialChoice.objects.filter(
+                cart_item=item, tutorial_event_id=event_id,
+            ).delete()
+
+            choice = CartTutorialChoice(
+                cart_item=item, student=student,
+                tutorial_event_id=event_id, choice_rank=rank,
+            )
+            choice.full_clean()  # raises on OC / subject mismatch
+            choice.save()
+
+        if item.tutorial_choices.count() > MAX_TUTORIAL_RANKS_PER_SUBJECT:
+            raise ValidationError(
+                f"At most {MAX_TUTORIAL_RANKS_PER_SUBJECT} tutorial "
+                f"choices per subject.")
+
+    def _refresh_tutorial_metadata(self, item):
+        """Rebuild `item.metadata.locations[].choices[]` from the
+        relational rows so legacy readers (admin views, email templates,
+        older frontend code) stay consistent during the transition.
+
+        Output shape matches `frontend/.../tutorialMetadataBuilder.ts`:
+          {type, subjectCode, title, locations: [
+            {location, choices: [{choice, eventId, eventCode, eventTitle,
+              venue, location, startDate, endDate, variationId,
+              variationName}], choiceCount}
+          ], totalChoiceCount}
+        Choices grouped by event location, ordered by rank within each.
+        """
+        rows = list(item.tutorial_choices.select_related(
+            'tutorial_event__store_product__product_product_variation'
+            '__product_variation',
+            'tutorial_event__store_product__exam_session_subject__subject',
+            'tutorial_event__location',
+            'tutorial_event__venue',
+        ).order_by('choice_rank'))
+
+        metadata = item.metadata or {}
+        subject_code = metadata.get('subjectCode')
+        if subject_code is None and rows:
+            subject_code = (
+                rows[0].tutorial_event.store_product
+                .exam_session_subject.subject.code
+            )
+
+        title = metadata.get('title') or f"{subject_code} Tutorial"
+
+        # Group by location label
+        by_location = {}
+        for row in rows:
+            ev = row.tutorial_event
+            sp = ev.store_product
+            ppv = sp.product_product_variation
+            # ev.location and ev.venue are FKs to TutorialLocation /
+            # TutorialVenue. Coerce to str() before writing to JSONB
+            # metadata — both models' __str__ returns self.name.
+            loc_obj = ev.location
+            loc_label = (str(loc_obj) if loc_obj is not None else None) or 'TBD'
+            venue = str(ev.venue) if ev.venue_id is not None else ''
+            choice_dict = {
+                'choice': TUTORIAL_RANK_LABEL[row.choice_rank],
+                'eventId': ev.id,
+                'eventCode': ev.code,
+                'eventTitle': str(ev),
+                'venue': venue,
+                'location': loc_label,
+                'startDate': ev.start_date.isoformat() if ev.start_date else None,
+                'endDate': ev.end_date.isoformat() if ev.end_date else None,
+                'variationId': ppv.id if ppv else None,
+                'variationName': (
+                    ppv.product_variation.name if ppv else None
+                ),
+            }
+            by_location.setdefault(loc_label, []).append(choice_dict)
+
+        locations_list = []
+        for loc_label, choices in by_location.items():
+            locations_list.append({
+                'location': loc_label,
+                'choices': choices,
+                'choiceCount': len(choices),
+            })
+
+        item.metadata = {
             'type': 'tutorial',
             'subjectCode': subject_code,
-            'title': metadata.get('title', f"{subject_code} Tutorial"),
-            'locations': [new_location],
-            'totalChoiceCount': new_location.get('choiceCount', 0),
+            'title': title,
+            'locations': locations_list,
+            'totalChoiceCount': sum(len(loc['choices'])
+                                    for loc in locations_list),
         }
-        return self._create_item(cart, product, quantity, price_type, actual_price, tutorial_metadata)
-
-    def _merge_tutorial_locations(self, item, new_location, actual_price):
-        """Merge a new location into an existing tutorial cart item."""
-        locations = item.metadata.get('locations', [])
-        location_name = new_location.get('location')
-
-        # Find existing location
-        existing_idx = next(
-            (i for i, loc in enumerate(locations) if loc.get('location') == location_name),
-            None
-        )
-
-        if existing_idx is not None:
-            # Merge choices
-            existing_choices = locations[existing_idx].get('choices', [])
-            new_choices = new_location.get('choices', [])
-            choice_map = {f"{c.get('variationId')}_{c.get('eventId')}": c for c in existing_choices}
-            for c in new_choices:
-                choice_map[f"{c.get('variationId')}_{c.get('eventId')}"] = c
-            merged = list(choice_map.values())
-            locations[existing_idx] = {
-                'location': location_name,
-                'choices': merged,
-                'choiceCount': len(merged),
-            }
-        else:
-            locations.append(new_location)
-
-        item.metadata['locations'] = locations
-        item.metadata['totalChoiceCount'] = sum(loc.get('choiceCount', 0) for loc in locations)
-
-        if actual_price and (not item.actual_price or Decimal(str(actual_price)) < item.actual_price):
-            item.actual_price = actual_price
-
-        item.save()
-        return item
+        item.save(update_fields=['metadata'])
 
     def _handle_regular_add(self, cart, product, quantity, price_type, actual_price, metadata):
         """Handle adding regular (non-tutorial) items with variation logic."""
@@ -335,7 +509,17 @@ class CartService:
             return False
 
     def _is_tutorial_product(self, cart_item):
-        """Check if cart item is a tutorial product."""
+        """Check if cart item is a tutorial product. Prefers the relational
+        CartTutorialChoice rows; falls back to legacy metadata for old rows
+        that pre-date the relational migration."""
+        # Relational check (only meaningful for persisted rows). Wrapped
+        # in its own try so an unsaved CartItem (no PK → manager raises)
+        # falls through to the metadata/code checks below.
+        try:
+            if cart_item.pk and cart_item.tutorial_choices.exists():
+                return True
+        except Exception:
+            pass
         try:
             metadata = cart_item.metadata or {}
             if metadata.get('type') == 'tutorial':
@@ -343,7 +527,8 @@ class CartService:
             if cart_item.product:
                 product = cart_item.product.product
                 if product and hasattr(product, 'code'):
-                    if product.code in ['T', 'TUT'] or 'tutorial' in product.fullname.lower():
+                    if (product.code in ['T', 'TUT']
+                            or 'tutorial' in product.fullname.lower()):
                         return True
             return False
         except Exception:

@@ -754,94 +754,6 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
 
     # ── add_item variations ──
     @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
-    def test_add_item_tutorial_without_subject(self, mock_vat):
-        """Tutorial add without subjectCode falls back to simple creation."""
-        with patch.object(self.service, '_resolve_product', return_value=self.store_product):
-            item, error = self.service.add_item(
-                self.cart, self.store_product.id, quantity=1,
-                metadata={'type': 'tutorial'},  # no subjectCode or newLocation
-            )
-        self.assertIsNone(error)
-        self.assertIsNotNone(item)
-
-    @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
-    def test_add_item_tutorial_with_existing_merge(self, mock_vat):
-        """Tutorial add merges locations into existing item."""
-        with patch.object(self.service, '_resolve_product', return_value=self.store_product):
-            # First add
-            self.service.add_item(
-                self.cart, self.store_product.id, quantity=1,
-                actual_price=Decimal('100.00'),
-                metadata={
-                    'type': 'tutorial',
-                    'subjectCode': 'TST',
-                    'newLocation': {
-                        'location': 'London',
-                        'choices': [{'variationId': 1, 'eventId': 100}],
-                        'choiceCount': 1,
-                    },
-                },
-            )
-            # Second add with same subject but new location
-            item, error = self.service.add_item(
-                self.cart, self.store_product.id, quantity=1,
-                actual_price=Decimal('80.00'),
-                metadata={
-                    'type': 'tutorial',
-                    'subjectCode': 'TST',
-                    'newLocation': {
-                        'location': 'Manchester',
-                        'choices': [{'variationId': 2, 'eventId': 200}],
-                        'choiceCount': 1,
-                    },
-                },
-            )
-        self.assertIsNone(error)
-        # Should have merged into one item with 2 locations
-        self.assertEqual(self.cart.items.count(), 1)
-        locations = self.cart.items.first().metadata.get('locations', [])
-        self.assertEqual(len(locations), 2)
-
-    @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
-    def test_add_item_tutorial_merge_existing_location(self, mock_vat):
-        """Tutorial add merges choices into existing location."""
-        with patch.object(self.service, '_resolve_product', return_value=self.store_product):
-            # First add
-            self.service.add_item(
-                self.cart, self.store_product.id, quantity=1,
-                actual_price=Decimal('100.00'),
-                metadata={
-                    'type': 'tutorial',
-                    'subjectCode': 'TST',
-                    'newLocation': {
-                        'location': 'London',
-                        'choices': [{'variationId': 1, 'eventId': 100}],
-                        'choiceCount': 1,
-                    },
-                },
-            )
-            # Second add with same location, new choice
-            item, error = self.service.add_item(
-                self.cart, self.store_product.id, quantity=1,
-                actual_price=Decimal('80.00'),
-                metadata={
-                    'type': 'tutorial',
-                    'subjectCode': 'TST',
-                    'newLocation': {
-                        'location': 'London',
-                        'choices': [{'variationId': 3, 'eventId': 300}],
-                        'choiceCount': 1,
-                    },
-                },
-            )
-        self.assertIsNone(error)
-        item_obj = self.cart.items.first()
-        london = [l for l in item_obj.metadata['locations'] if l['location'] == 'London'][0]
-        self.assertEqual(len(london['choices']), 2)
-        # Price should be lower (80 < 100)
-        self.assertEqual(item_obj.actual_price, Decimal('80.00'))
-
-    @patch('cart.services.cart_service.cart_service._trigger_vat_calculation')
     def test_add_item_regular_existing_no_variation(self, mock_vat):
         """Adding same product without variationId increments quantity."""
         CartItem.objects.create(
@@ -1079,11 +991,6 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
             cart=self.cart, product=self.store_product,
             item_type='product', metadata={},
         )
-        self.assertFalse(self.service._is_tutorial_product(item))
-
-    def test_is_tutorial_product_exception(self):
-        item = MagicMock()
-        type(item).metadata = PropertyMock(side_effect=Exception("error"))
         self.assertFalse(self.service._is_tutorial_product(item))
 
     # ── _is_material_product ──

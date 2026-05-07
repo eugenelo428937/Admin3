@@ -140,3 +140,239 @@ class OrderBuilderTest(TestCase):
         self.assertEqual(order.vat_amount, Decimal('0.00'))
         for item in order.items.all():
             self.assertTrue(item.is_vat_exempt)
+
+
+class TransferFeesHardFailTests(TestCase):
+    """`_transfer_fees` raises a clear app error when FEE_GENERIC is
+    missing AND the cart actually has fees. No fees → no error."""
+
+    def setUp(self):
+        from store.models import Purchasable
+
+        self.user = User.objects.create_user(username='hardfail',
+                                             email='hf@t.com')
+        self.cart = Cart.objects.create(user=self.user)
+        # Remove FEE_GENERIC if present
+        Purchasable.objects.filter(code='FEE_GENERIC').delete()
+        self.builder = OrderBuilder(
+            cart=self.cart, user=self.user,
+            vat_result={'totals': {'net': '0.00', 'vat': '0.00',
+                                   'gross': '0.00'},
+                        'items': [], 'region': 'GB'},
+        )
+        self.CartFee = CartFee
+
+    def test_no_fees_no_error_even_if_fee_generic_missing(self):
+        order = self.builder._create_order()
+        self.builder._transfer_fees(order)  # should not raise
+
+    def test_with_fees_missing_fee_generic_raises_runtime_error(self):
+        from decimal import Decimal
+        order = self.builder._create_order()
+        self.CartFee.objects.create(
+            cart=self.cart, fee_type='tutorial_booking_fee',
+            name='Tutorial Booking Fee', amount=Decimal('1.00'),
+            currency='GBP',
+        )
+        with self.assertRaises(RuntimeError) as ctx:
+            self.builder._transfer_fees(order)
+        self.assertIn('FEE_GENERIC', str(ctx.exception))
+        self.assertIn('migrate store', str(ctx.exception))
+
+    def test_build_rolls_back_order_when_fee_generic_missing(self):
+        from decimal import Decimal
+        from orders.models import Order
+        # Add a fee so _transfer_fees actually runs and raises.
+        self.CartFee.objects.create(
+            cart=self.cart, fee_type='tutorial_booking_fee',
+            name='Tutorial Booking Fee', amount=Decimal('1.00'),
+            currency='GBP',
+        )
+        order_count_before = Order.objects.count()
+        with self.assertRaises(RuntimeError):
+            self.builder.build()
+        self.assertEqual(Order.objects.count(), order_count_before,
+                         "Order should be rolled back when fee transfer fails")
+
+
+class TransferTutorialChoicesTests(TestCase):
+    """OrderBuilder copies CartTutorialChoice rows into TutorialChoice
+    rows on the new OrderItem, 1-to-1, inside the existing atomic
+    transaction."""
+
+    def setUp(self):
+        from datetime import date, timedelta
+        from django.contrib.auth.models import User
+        from django.utils import timezone
+        from cart.models import Cart, CartItem
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        from students.models import Student
+        from tutorials.models import CartTutorialChoice, TutorialEvents
+
+        self.user = User.objects.create_user(username='c', email='c@t.com')
+        self.student = Student.objects.create(user=self.user)
+        self.cart = Cart.objects.create(user=self.user)
+
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='CM2',
+            defaults={'description': 'CM2', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'Tutorial - Live',
+                      'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess, product_product_variation=ppv,
+            product_code='CM2/Live/LO_6H/25')
+        sp.save()
+        self.event_a = TutorialEvents.objects.create(
+            code='CM2-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+        self.event_b = TutorialEvents.objects.create(
+            code='CM2-02-25A', store_product=sp,
+            start_date=date(2025, 1, 8), end_date=date(2025, 2, 8))
+        self.cart_item = CartItem.objects.create(
+            cart=self.cart, purchasable=sp.purchasable_ptr,
+            actual_price='10.00', quantity=1)
+        CartTutorialChoice.objects.create(
+            cart_item=self.cart_item, student=self.student,
+            tutorial_event=self.event_a, choice_rank=1)
+        CartTutorialChoice.objects.create(
+            cart_item=self.cart_item, student=self.student,
+            tutorial_event=self.event_b, choice_rank=2)
+
+    def test_choices_copied_to_order_item(self):
+        from orders.services.order_builder import OrderBuilder
+        from tutorials.models import TutorialChoice
+        builder = OrderBuilder(
+            cart=self.cart, user=self.user,
+            vat_result={'totals': {'net': '10.00', 'vat': '0.00',
+                                   'gross': '10.00'},
+                        'items': [], 'region': 'GB'})
+        order = builder.build()
+        order_item = order.items.first()
+        choices = TutorialChoice.objects.filter(order_item=order_item)
+        self.assertEqual(choices.count(), 2)
+        self.assertEqual(
+            sorted(choices.values_list('choice_rank',
+                                       'tutorial_event_id')),
+            sorted([(1, self.event_a.id), (2, self.event_b.id)]))
+
+    def test_no_choices_no_op(self):
+        from orders.services.order_builder import OrderBuilder
+        from tutorials.models import TutorialChoice
+        from tutorials.models import CartTutorialChoice
+        # Wipe existing cart choices and re-test that build is a no-op
+        # for tutorial choices on a non-tutorial cart_item.
+        CartTutorialChoice.objects.filter(
+            cart_item=self.cart_item).delete()
+        builder = OrderBuilder(
+            cart=self.cart, user=self.user,
+            vat_result={'totals': {'net': '10.00', 'vat': '0.00',
+                                   'gross': '10.00'},
+                        'items': [], 'region': 'GB'})
+        order = builder.build()
+        self.assertEqual(
+            TutorialChoice.objects.filter(
+                order_item__order=order).count(), 0)
+
+
+class TutorialCheckoutAuthGateTests(TestCase):
+    """OrderBuilder enforces the moved auth gate: a cart with tutorial
+    choices cannot be built into an order unless cart.user is
+    authenticated. The Student row itself is NOT required (Q1)."""
+
+    def _seed_cart_with_tutorial(self, user=None, session_key=None):
+        from datetime import date, timedelta
+        from cart.models import Cart, CartItem
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        from tutorials.models import CartTutorialChoice, TutorialEvents
+
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='CM2',
+            defaults={'description': 'CM2', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess, product_product_variation=ppv,
+            product_code='CM2/Live/LO_6H/25')
+        sp.save()
+        ev = TutorialEvents.objects.create(
+            code='CM2-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+
+        cart = Cart.objects.create(user=user, session_key=session_key)
+        cart_item = CartItem.objects.create(
+            cart=cart, purchasable=sp.purchasable_ptr,
+            actual_price='10.00', quantity=1)
+        CartTutorialChoice.objects.create(
+            cart_item=cart_item, student=None,
+            tutorial_event=ev, choice_rank=1)
+        return cart
+
+    def test_anonymous_cart_with_tutorial_blocked(self):
+        from django.contrib.auth.models import AnonymousUser
+        from django.core.exceptions import ValidationError
+        cart = self._seed_cart_with_tutorial(session_key='guest-z')
+        before = Order.objects.count()
+        builder = OrderBuilder(
+            cart=cart, user=AnonymousUser(),
+            vat_result={'totals': {'net': '10.00', 'vat': '0.00',
+                                   'gross': '10.00'},
+                        'items': [], 'region': 'GB'})
+        with self.assertRaises(ValidationError) as ctx:
+            builder.build()
+        self.assertIn('logged-in', str(ctx.exception).lower())
+        # No order persisted by this build.
+        self.assertEqual(Order.objects.count(), before)
+
+    def test_authenticated_user_without_student_can_check_out(self):
+        from tutorials.models import TutorialChoice
+        user = User.objects.create_user(
+            username='nostud', email='ns@t.com', password='x')
+        cart = self._seed_cart_with_tutorial(user=user)
+        builder = OrderBuilder(
+            cart=cart, user=user,
+            vat_result={'totals': {'net': '10.00', 'vat': '0.00',
+                                   'gross': '10.00'},
+                        'items': [], 'region': 'GB'})
+        order = builder.build()
+        # Choice was carried across with student=None.
+        tc = TutorialChoice.objects.get(order_item__order=order)
+        self.assertIsNone(tc.student_id)
