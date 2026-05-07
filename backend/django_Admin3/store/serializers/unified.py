@@ -224,8 +224,11 @@ class UnifiedBundleSerializer(serializers.ModelSerializer):
 
     def get_components(self, obj):
         """Get the products included in this bundle."""
+        from store.models import Purchasable
+        available_purchasable_ids = Purchasable.objects.available_now().values('pk')
         bundle_products = obj.bundle_products.filter(
-            is_active=True
+            is_active=True,
+            product_id__in=available_purchasable_ids,
         ).select_related(
             'product__product_product_variation__product',
             'product__product_product_variation__product_variation',
