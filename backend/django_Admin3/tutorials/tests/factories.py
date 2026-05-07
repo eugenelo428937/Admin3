@@ -7,9 +7,13 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
+from staff.models import Staff
 from store.models import Product as StoreProduct
 from students.models import Student
-from tutorials.models import TutorialEvents, TutorialSessions
+from tutorials.models import (
+    TutorialEvents, TutorialInstructor, TutorialLocation, TutorialSessions,
+    TutorialVenue,
+)
 
 
 _STUDENT_COUNTER = {'n': 0}
@@ -88,3 +92,30 @@ def make_student(username=None):
         username = f'student{_STUDENT_COUNTER["n"]}'
     user = User.objects.create_user(username=username, email=f'{username}@test.com')
     return Student.objects.create(user=user)
+
+
+_INSTRUCTOR_COUNTER = {'n': 0}
+
+
+def make_location(name='London', code='LON'):
+    loc, _ = TutorialLocation.objects.get_or_create(
+        name=name, defaults={'code': code, 'is_active': True},
+    )
+    return loc
+
+
+def make_venue(name='BPP Centre', location=None):
+    return TutorialVenue.objects.create(name=name, location=location)
+
+
+def make_instructor(first_name='Karen', last_name='Smith'):
+    _INSTRUCTOR_COUNTER['n'] += 1
+    n = _INSTRUCTOR_COUNTER['n']
+    user = User.objects.create_user(
+        username=f'instr{n}',
+        first_name=first_name,
+        last_name=last_name,
+        email=f'instr{n}@test.com',
+    )
+    staff = Staff.objects.create(user=user)
+    return TutorialInstructor.objects.create(staff=staff, is_active=True)
