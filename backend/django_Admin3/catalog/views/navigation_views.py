@@ -327,7 +327,7 @@ def fuzzy_search(request):
         matched_catalog_products = [p for p, _ in catalog_products_with_scores[:5]]
 
         # Get all active store products with prefetched data
-        store_products_queryset = StoreProduct.objects.filter(
+        store_products_queryset = StoreProduct.available_now().filter(
             is_active=True
         ).select_related(
             'exam_session_subject__subject',
@@ -468,7 +468,7 @@ def advanced_product_search(request):
     if subject_codes:
         subjects = Subject.objects.filter(code__in=subject_codes)
         # Get catalog.Product IDs through store.Product's product_product_variation FK
-        filtered_product_ids = StoreProduct.objects.filter(
+        filtered_product_ids = StoreProduct.available_now().filter(
             exam_session_subject__subject__in=subjects
         ).values_list('product_product_variation__product_id', flat=True).distinct()
 

@@ -59,9 +59,11 @@ def create_exam_session(session_code='2026-04', start_date=None, end_date=None, 
     Uses get_or_create to avoid duplicate key errors with --keepdb.
     """
     if start_date is None:
-        start_date = timezone.now() + timedelta(days=30)
+        # Default to a current-and-active window so fixtures represent a
+        # session that is open today (matches available_now() predicate).
+        start_date = timezone.now() - timedelta(days=14)
     if end_date is None:
-        end_date = start_date + timedelta(days=14)
+        end_date = start_date + timedelta(days=180)
 
     session, _ = ExamSession.objects.get_or_create(
         session_code=session_code,
