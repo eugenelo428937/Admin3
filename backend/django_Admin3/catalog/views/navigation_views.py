@@ -41,7 +41,7 @@ def navigation_data(request):
     Returns all navigation data with 5-minute cache.
 
     Cache:
-        - Key: navigation_data_v2
+        - Key: navigation_data_v3
         - TTL: 300 seconds (5 minutes)
 
     Returns:
@@ -54,8 +54,30 @@ def navigation_data(request):
     """
     # Import FilterGroup from products (stays in products app)
     from filtering.models import FilterGroup
+    from django.db.models import Exists, OuterRef
+    from store.models import Purchasable
 
-    cache_key = 'navigation_data_v2'
+    def _has_available_store_product_for_catalog_product():
+        """Subquery: True iff at least one available Purchasable points (via PPV)
+        at the outer catalog.Product."""
+        return Exists(
+            Purchasable.objects.available_now().filter(
+                kind='product',
+                product__product_product_variation__product_id=OuterRef('pk'),
+            )
+        )
+
+    def _has_available_store_product_for_variation():
+        """Subquery: True iff at least one available Purchasable points (via PPV)
+        at the outer ProductVariation."""
+        return Exists(
+            Purchasable.objects.available_now().filter(
+                kind='product',
+                product__product_product_variation__product_variation_id=OuterRef('pk'),
+            )
+        )
+
+    cache_key = 'navigation_data_v3'  # bumped from v2 — adds availability filter
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
@@ -101,7 +123,7 @@ def navigation_data(request):
                         }
                         for p in Product.objects.filter(
                                 productproductvariation__product_groups__product_group=group
-                            ).distinct()
+                            ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
                 })
             else:
@@ -125,7 +147,7 @@ def navigation_data(request):
                         }
                         for p in Product.objects.filter(
                                 productproductvariation__product_groups__product_group=group
-                            ).distinct()
+                            ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
                 })
             else:
@@ -140,7 +162,10 @@ def navigation_data(request):
             location_products = list(Product.objects.filter(
                 is_active=True,
                 productproductvariation__product_groups__product_group=tutorial_group,
-            ).distinct().order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
+            ).filter(_has_available_store_product_for_catalog_product())
+              .distinct()
+              .order_by('shortname')
+              .values('id', 'shortname', 'fullname', 'code'))
         else:
             location_products = []
         mid_point = (len(location_products) + 1) // 2
@@ -168,7 +193,10 @@ def navigation_data(request):
         if online_classroom_group:
             online_classroom_data = list(ProductVariation.objects.filter(
                 productproductvariation__product_groups__product_group=online_classroom_group
-            ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description'))
+            ).filter(_has_available_store_product_for_variation())
+              .distinct()
+              .order_by('description')
+              .values('id', 'name', 'variation_type', 'description'))
         else:
             online_classroom_data = []
 

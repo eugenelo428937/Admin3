@@ -216,7 +216,7 @@ class TestNavigationDataCacheHit(CatalogAPITestCase):
             'distance_learning_dropdown': {'results': []},
             'tutorial_dropdown': {'results': {}}
         }
-        cache.set('navigation_data_v2', cached, 300)
+        cache.set('navigation_data_v3', cached, 300)
 
         response = self.client.get('/api/catalog/navigation-data/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -354,6 +354,55 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
         ProductProductGroup.objects.create(
             product_product_variation=self.ppv_core_printed,
             product_group=self.ocr_group,
+        )
+
+        # Create an available store.Product backing ppv_core_ebook so the
+        # availability filter (Task 8) keeps it visible in navbar dropdowns.
+        from datetime import timedelta
+        from django.utils import timezone as _tz
+        from catalog.models import ExamSessionSubject
+        from catalog.exam_session.models import ExamSession
+        from store.models import Product as StoreProduct, Purchasable
+
+        # Ensure upstream is_active flags are True (fixture defaults from
+        # CatalogTestDataMixin may be stale under --keepdb).
+        self.ppv_core_ebook.is_active = True
+        self.ppv_core_ebook.save(update_fields=['is_active'])
+        self.variation_ebook.is_active = True
+        self.variation_ebook.save(update_fields=['is_active'])
+
+        now = _tz.now()
+        active_session, _ = ExamSession.objects.get_or_create(
+            session_code='AVAIL-NOW',
+            defaults={
+                'start_date': now - timedelta(days=1),
+                'end_date': now + timedelta(days=30),
+                'is_active': True,
+            },
+        )
+        # Force window/active in case row was stale from prior --keepdb run
+        active_session.start_date = now - timedelta(days=1)
+        active_session.end_date = now + timedelta(days=30)
+        active_session.is_active = True
+        active_session.save()
+
+        ess, _ = ExamSessionSubject.objects.get_or_create(
+            exam_session=active_session,
+            subject=self.subject_cm2,
+            defaults={'is_active': True},
+        )
+        ess.is_active = True
+        ess.save(update_fields=['is_active'])
+
+        StoreProduct.objects.get_or_create(
+            exam_session_subject=ess,
+            product_product_variation=self.ppv_core_ebook,
+            defaults={
+                'kind': Purchasable.Kind.PRODUCT,
+                'is_active': True,
+                'name': 'CSM-AVAIL',
+                'product_code': 'CSM-AVAIL-CODE',
+            },
         )
 
     def test_navbar_groups_with_data(self):
