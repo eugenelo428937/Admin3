@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import TutorialEventsViewSet, TutorialEventListView, TutorialProductListView, TutorialProductVariationListView, TutorialProductListAllView, TutorialViewSet, get_all_tutorial_products, get_tutorial_product_variations, clear_tutorial_cache, TutorialComprehensiveDataView
-from .admin_views import AdminTutorialEventViewSet
+from .admin_views import AdminTutorialEventViewSet, AdminTutorialAttendanceView
 
 router = DefaultRouter()
 router.register(r'events', TutorialEventsViewSet)
@@ -19,5 +19,6 @@ urlpatterns = [
     path('products/<int:product_id>/variations/', TutorialProductVariationListView.as_view(), name='tutorial-product-variations'),
     path('data/comprehensive/', TutorialComprehensiveDataView.as_view(), name='tutorial-comprehensive-data'),
     path('cache/clear/', clear_tutorial_cache, name='tutorial-cache-clear'),
+    path('admin/sessions/<int:session_id>/attendance/', AdminTutorialAttendanceView.as_view(), name='admin-tutorial-attendance'),
     path('admin/', include(admin_router.urls)),
 ] + router.urls

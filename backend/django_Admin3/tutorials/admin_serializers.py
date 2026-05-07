@@ -11,6 +11,7 @@ from tutorials.models import (
     TutorialEvents,
     TutorialInstructor,
     TutorialLocation,
+    TutorialRegistration,
     TutorialSessions,
     TutorialVenue,
 )
@@ -120,3 +121,55 @@ class FilterOptionsSerializer(serializers.Serializer):
     venues = _VenueMiniSerializer(many=True, read_only=True)
     instructors = _InstructorMiniSerializer(many=True, read_only=True)
     sittings = _SittingMiniSerializer(many=True, read_only=True)
+
+
+class _StudentMiniSerializer(serializers.Serializer):
+    student_ref = serializers.IntegerField(read_only=True)
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
+    def get_first_name(self, obj):
+        return obj.user.first_name if obj.user_id else ''
+
+    def get_last_name(self, obj):
+        return obj.user.last_name if obj.user_id else ''
+
+
+class _SessionDetailSerializer(serializers.ModelSerializer):
+    venue = _VenueMiniSerializer(read_only=True)
+    tutorial_event = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TutorialSessions
+        fields = ['id', 'title', 'start_date', 'end_date', 'venue', 'tutorial_event']
+
+    def get_tutorial_event(self, obj):
+        return {'id': obj.tutorial_event_id, 'code': obj.tutorial_event.code}
+
+
+class AdminRosterRowSerializer(serializers.Serializer):
+    registration_id = serializers.IntegerField(source='id', read_only=True)
+    student = serializers.SerializerMethodField()
+    current_status = serializers.SerializerMethodField()
+    current_reason = serializers.SerializerMethodField()
+
+    def get_student(self, reg):
+        return _StudentMiniSerializer(reg.student).data
+
+    def get_current_status(self, reg):
+        try:
+            return reg.attendance.status
+        except AttributeError:
+            return None
+
+    def get_current_reason(self, reg):
+        try:
+            return reg.attendance.reason
+        except AttributeError:
+            return ''
+
+
+class AdminAttendanceGetSerializer(serializers.Serializer):
+    session = _SessionDetailSerializer(read_only=True)
+    attendance_enabled = serializers.BooleanField(read_only=True)
+    registrations = AdminRosterRowSerializer(many=True, read_only=True)

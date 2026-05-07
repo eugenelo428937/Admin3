@@ -4,16 +4,20 @@ All endpoints require ``IsSuperUser``. See
 ``docs/superpowers/specs/2026-05-07-tutorial-event-admin-design.md``.
 """
 from django.db.models import Count, Prefetch, Q
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from catalog.exam_session.models import ExamSession
 from catalog.permissions import IsSuperUser
 from catalog.subject.models import Subject
 from tutorials.admin_filters import apply_event_filters
 from tutorials.admin_serializers import (
+    AdminAttendanceGetSerializer,
     AdminTutorialEventListSerializer,
     FilterOptionsSerializer,
 )
@@ -21,6 +25,7 @@ from tutorials.models import (
     TutorialEvents,
     TutorialInstructor,
     TutorialLocation,
+    TutorialRegistration,
     TutorialSessions,
     TutorialVenue,
 )
@@ -107,3 +112,42 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
             'sittings': sittings,
         }).data
         return Response(data)
+
+
+class AdminTutorialAttendanceView(APIView):
+    """GET /api/tutorials/admin/sessions/<id>/attendance/."""
+
+    permission_classes = [IsSuperUser]
+
+    def _get_session(self, session_id):
+        return get_object_or_404(
+            TutorialSessions.objects
+            .select_related('venue', 'tutorial_event')
+            .filter(tutorial_event__cancelled=False),
+            id=session_id,
+        )
+
+    def _attendance_enabled(self, session):
+        today = timezone.now().date()
+        start = session.start_date
+        if hasattr(start, 'date'):
+            start = start.date()
+        return today >= start
+
+    def _build_payload(self, session):
+        registrations = (
+            TutorialRegistration.objects
+            .filter(tutorial_session=session)
+            .select_related('student__user', 'attendance')
+            .order_by('student__user__last_name', 'student__user__first_name')
+        )
+        data = AdminAttendanceGetSerializer({
+            'session': session,
+            'attendance_enabled': self._attendance_enabled(session),
+            'registrations': registrations,
+        }).data
+        return data
+
+    def get(self, request, session_id: int):
+        session = self._get_session(session_id)
+        return Response(self._build_payload(session))
