@@ -130,6 +130,20 @@ class Product(Purchasable):
     def __str__(self):
         return self.product_code
 
+    @classmethod
+    def available_now(cls, *, at=None):
+        """Subclass-typed convenience: return ``store.Product`` instances that
+        pass the canonical predicate. Equivalent to filtering
+        ``Purchasable.objects.available_now()`` to ``kind='product'`` rows but
+        returns ``store.Product`` rows so callers can access subclass fields
+        (exam_session_subject, product_product_variation, etc.) without a
+        downcast.
+        """
+        from store.models.purchasable import Purchasable
+        return cls.objects.filter(
+            pk__in=Purchasable.objects.available_now(at=at).values('pk')
+        )
+
     # ─────────────────────────────────────────────────────────────────────────
     # Backward-compatible properties for cart/order code migration
     # These allow existing code using item.product.product to work unchanged

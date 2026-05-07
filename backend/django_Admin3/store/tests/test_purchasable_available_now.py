@@ -137,3 +137,67 @@ class AvailableNowTests(TestCase):
         from datetime import datetime
         with self.assertRaises(ValueError):
             list(Purchasable.objects.available_now(at=datetime(2099, 1, 1)))
+
+
+class ProductAvailableNowTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from datetime import timedelta
+        from django.utils import timezone
+        from catalog.exam_session.models import ExamSession
+        from catalog.subject.models import Subject
+        from catalog.models import ExamSessionSubject
+        from catalog.products.models import (
+            Product as CatalogProduct,
+            ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct, Purchasable
+
+        now = timezone.now()
+        session = ExamSession.objects.create(
+            session_code='2099-09', start_date=now - timedelta(days=10),
+            end_date=now + timedelta(days=10), is_active=True,
+        )
+        subject = Subject.objects.create(code='ZP1', description='T', active=True)
+        ess = ExamSessionSubject.objects.create(
+            exam_session=session, subject=subject, is_active=True,
+        )
+        cp = CatalogProduct.objects.create(
+            fullname='P-Avail', shortname='PA', code='PA', is_active=True,
+        )
+        v = ProductVariation.objects.create(
+            variation_type='eBook', name='PA-V', code='PA-EBK', is_active=True,
+        )
+        ppv = ProductProductVariation.objects.create(
+            product=cp, product_variation=v, is_active=True,
+        )
+        cls.active_sp = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv,
+            kind=Purchasable.Kind.PRODUCT, is_active=True,
+            name='P-Avail eBook',
+            product_code='ZP1/PA-EBKPA/2099-09-A',
+            code='ZP1/PA-EBKPA/2099-09-A',
+        )
+        cls.inactive_sp = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv,
+            kind=Purchasable.Kind.PRODUCT, is_active=False,
+            name='P-Inactive eBook', is_addon=True,  # is_addon=True so it can share PPV with active_sp
+            product_code='ZP1/PA-EBKPA/2099-09-B',
+            code='ZP1/PA-EBKPA/2099-09-B',
+        )
+
+    def test_returns_store_product_typed_results(self):
+        from store.models import Product as StoreProduct
+        qs = StoreProduct.available_now()
+        self.assertGreater(qs.count(), 0)
+        # Each result is a store.Product instance (not a base Purchasable)
+        for sp in qs:
+            self.assertIsInstance(sp, StoreProduct)
+            self.assertTrue(sp.is_available_now())
+
+    def test_excludes_inactive_purchasable(self):
+        from store.models import Product as StoreProduct
+        ids = list(StoreProduct.available_now().values_list('pk', flat=True))
+        self.assertIn(self.active_sp.pk, ids)
+        self.assertNotIn(self.inactive_sp.pk, ids)
