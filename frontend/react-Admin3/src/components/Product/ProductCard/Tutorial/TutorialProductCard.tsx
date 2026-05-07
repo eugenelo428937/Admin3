@@ -397,6 +397,11 @@ const TutorialProductCard = React.memo(
                   zIndex: (theme) => theme.zIndex.speedDial - 1,
                 }}
               />
+              <Tooltip
+                title={vm.salesWindowMessage}
+                disableHoverListener={!vm.salesWindowMessage}
+              >
+                <span>
               <SpeedDial
                 ariaLabel="Tutorial Actions"
                 sx={{
@@ -472,6 +477,8 @@ const TutorialProductCard = React.memo(
                   />
                 ))}
               </SpeedDial>
+                </span>
+              </Tooltip>
             </>
           )}
         </Card>
