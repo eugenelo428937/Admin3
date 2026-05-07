@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
 from catalog.permissions import IsSuperUser
+from tutorials.admin_filters import apply_event_filters
 from tutorials.admin_serializers import AdminTutorialEventListSerializer
 from tutorials.models import TutorialEvents, TutorialSessions
 
@@ -37,7 +38,7 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
                 ),
             )
         )
-        return (
+        qs = (
             TutorialEvents.objects
             .filter(cancelled=False)
             .select_related(
@@ -55,3 +56,4 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
             )
             .order_by('start_date')
         )
+        return apply_event_filters(qs, self.request.query_params)
