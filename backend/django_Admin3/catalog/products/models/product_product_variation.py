@@ -32,6 +32,10 @@ class ProductProductVariation(models.Model):
         on_delete=models.CASCADE,
         help_text="The variation type for this product"
     )
+    is_active = models.BooleanField(
+        default=False,
+        help_text="Whether this specific product+variation combo is offered for sale (default off; activate via management command)"
+    )
 
     class Meta:
         db_table = '"acted"."catalog_product_product_variations"'

@@ -61,6 +61,10 @@ class ProductVariation(models.Model):
         null=True,
         help_text="Unique variation code"
     )
+    is_active = models.BooleanField(
+        default=False,
+        help_text="Whether this variation type is offered for sale (default off; activate via management command)"
+    )
 
     def __str__(self):
         return f"{self.get_variation_type_display()}: {self.name}"
