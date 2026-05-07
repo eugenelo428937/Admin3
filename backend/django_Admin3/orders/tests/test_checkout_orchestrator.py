@@ -269,25 +269,33 @@ class CheckoutWithTutorialAndFeeTests(TestCase):
         Student.objects.create(user=user)
         cart = Cart.objects.create(user=user)
 
+        # All upstream is_active flags must be True and the exam-session
+        # window must include "now" for the cart-add availability gate to
+        # accept the product (see Purchasable.objects.available_now()).
+        now = timezone.now()
         es = ExamSession.objects.create(
             session_code='25',
-            start_date=timezone.now(),
-            end_date=timezone.now() + timedelta(days=60))
+            start_date=now - timedelta(days=10),
+            end_date=now + timedelta(days=60),
+            is_active=True)
         subj, _ = Subject.objects.get_or_create(
             code='CP1',
             defaults={'description': 'CP1', 'active': True})
         ess = ExamSessionSubject.objects.create(
-            exam_session=es, subject=subj)
+            exam_session=es, subject=subj, is_active=True)
         cat, _ = CatProduct.objects.get_or_create(
             code='Live',
-            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+            defaults={'fullname': 'T - Live', 'shortname': 'Live',
+                      'is_active': True})
         pv, _ = ProductVariation.objects.get_or_create(
             code='LO_6H',
             defaults={'name': 'LO_6H', 'description': '',
                       'description_short': 'LO_6H',
-                      'variation_type': 'Tutorial'})
+                      'variation_type': 'Tutorial',
+                      'is_active': True})
         ppv, _ = ProductProductVariation.objects.get_or_create(
-            product=cat, product_variation=pv)
+            product=cat, product_variation=pv,
+            defaults={'is_active': True})
         sp = StoreProduct(
             exam_session_subject=ess, product_product_variation=ppv,
             product_code='CP1/Live/LO_6H/25')
