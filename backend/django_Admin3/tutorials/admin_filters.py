@@ -41,7 +41,29 @@ def apply_code_icontains(qs, params):
     return qs.filter(code__icontains=code)
 
 
+def apply_start_date_range(qs, params):
+    start_from = params.get('start_from')
+    if start_from:
+        qs = qs.filter(start_date__gte=start_from)
+    start_to = params.get('start_to')
+    if start_to:
+        qs = qs.filter(start_date__lte=start_to)
+    return qs
+
+
+def apply_finalisation_date_range(qs, params):
+    f_from = params.get('finalisation_from')
+    if f_from:
+        qs = qs.filter(finalisation_date__gte=f_from)
+    f_to = params.get('finalisation_to')
+    if f_to:
+        qs = qs.filter(finalisation_date__lte=f_to)
+    return qs
+
+
 def apply_event_filters(qs, params):
     qs = apply_subject_codes(qs, params)
     qs = apply_code_icontains(qs, params)
+    qs = apply_start_date_range(qs, params)
+    qs = apply_finalisation_date_range(qs, params)
     return qs
