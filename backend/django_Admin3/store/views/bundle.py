@@ -71,8 +71,21 @@ class BundleViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def products(self, request, pk=None):
-        """Get all products in a bundle."""
+        """Get all products in a bundle.
+
+        Filters out bundle products whose underlying Purchasable is not
+        currently available (per Purchasable.objects.available_now()).
+        The bundle itself remains listed even if some contents are filtered out.
+        """
+        from store.models import Purchasable
         bundle = self.get_object()
-        bundle_products = bundle.bundle_products.filter(is_active=True).select_related('product')
+        available_purchasable_ids = set(
+            Purchasable.objects.available_now()
+            .values_list('pk', flat=True)
+        )
+        bundle_products = bundle.bundle_products.filter(
+            is_active=True,
+            product_id__in=available_purchasable_ids,
+        ).select_related('product')
         serializer = BundleProductSerializer(bundle_products, many=True)
         return Response(serializer.data)
