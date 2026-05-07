@@ -177,3 +177,51 @@ class AdminAttendancePostTests(APITestCase):
         self.assertIn('session', response.data)
         self.assertIn('registrations', response.data)
         self.assertIn('attendance_enabled', response.data)
+
+
+class AdminAttendancePostExtraTests(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+        self.session = factories.make_session()
+        self.alice = factories.make_student('alice')
+        self.alice_reg = _register(self.alice, self.session)
+
+    def test_returns_409_when_attendance_not_enabled(self):
+        # Session in the future
+        self.session.start_date = timezone.now() + timedelta(days=2)
+        self.session.save()
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.data.get('code'), 'not_yet_open')
+        self.assertEqual(TutorialAttendance.objects.count(), 0)
+
+    def test_recorded_by_from_request_user_not_body(self):
+        self.session.start_date = timezone.now() - timedelta(hours=1)
+        self.session.save()
+        other = User.objects.create_user(username='other', is_superuser=True)
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED',
+             'reason': '', 'recorded_by': other.id},  # spoof attempt
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 200)
+        a = TutorialAttendance.objects.get(registration=self.alice_reg)
+        self.assertEqual(a.recorded_by, self.admin)
+
+    def test_atomic_rollback_on_partial_failure(self):
+        self.session.start_date = timezone.now() - timedelta(hours=1)
+        self.session.save()
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+            {'registration_id': self.alice_reg.id, 'status': 'OTHER', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 400)
+        # First item must NOT have been written.
+        self.assertEqual(TutorialAttendance.objects.count(), 0)

@@ -157,6 +157,14 @@ class AdminTutorialAttendanceView(APIView):
 
     def post(self, request, session_id: int):
         session = self._get_session(session_id)
+        if not self._attendance_enabled(session):
+            return Response(
+                {
+                    'detail': 'Session has not started.',
+                    'code': 'not_yet_open',
+                },
+                status=409,
+            )
         ser = AdminAttendanceSaveSerializer(data=request.data, session=session)
         ser.is_valid(raise_exception=True)
         with transaction.atomic():
