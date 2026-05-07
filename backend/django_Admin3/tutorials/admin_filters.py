@@ -6,6 +6,8 @@ input — fail-closed).
 """
 from __future__ import annotations
 
+from django.db.models import Q
+
 
 def _split_csv(value: str | None) -> list[str]:
     if not value:
@@ -61,9 +63,43 @@ def apply_finalisation_date_range(qs, params):
     return qs
 
 
+def apply_location_ids(qs, params):
+    ids = _split_csv_ints(params.get('location_ids'))
+    if ids is None:
+        return qs.none()
+    if not ids:
+        return qs
+    return qs.filter(location_id__in=ids)
+
+
+def apply_venue_ids(qs, params):
+    ids = _split_csv_ints(params.get('venue_ids'))
+    if ids is None:
+        return qs.none()
+    if not ids:
+        return qs
+    return qs.filter(venue_id__in=ids)
+
+
+def apply_instructor(qs, params):
+    raw = params.get('instructor_id')
+    if not raw:
+        return qs
+    try:
+        instr_id = int(raw)
+    except (TypeError, ValueError):
+        return qs.none()
+    return qs.filter(
+        Q(main_instructor_id=instr_id) | Q(sessions__instructors__id=instr_id),
+    ).distinct()
+
+
 def apply_event_filters(qs, params):
     qs = apply_subject_codes(qs, params)
     qs = apply_code_icontains(qs, params)
     qs = apply_start_date_range(qs, params)
     qs = apply_finalisation_date_range(qs, params)
+    qs = apply_location_ids(qs, params)
+    qs = apply_venue_ids(qs, params)
+    qs = apply_instructor(qs, params)
     return qs

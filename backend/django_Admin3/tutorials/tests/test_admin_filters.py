@@ -272,3 +272,181 @@ class FinalisationDateFilterTests(_AuthedAdminCase):
         )
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-B'])
+
+
+class LocationVenueFilterTests(_AuthedAdminCase):
+    def test_location_ids_csv(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        loc1 = factories.make_location('London', 'LON')
+        loc2 = factories.make_location('Manchester', 'MAN')
+
+        es1 = ExamSession.objects.create(
+            session_code='LV01',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        es2 = ExamSession.objects.create(
+            session_code='LV02',
+            start_date=timezone.now() + timedelta(days=60),
+            end_date=timezone.now() + timedelta(days=90),
+        )
+
+        sp1 = factories.make_store_product(
+            subject=factories.make_subject('LV1'),
+            exam_session=es1,
+            cat_product_code='LV1-LON',
+        )
+        sp2 = factories.make_store_product(
+            subject=factories.make_subject('LV2'),
+            exam_session=es2,
+            cat_product_code='LV2-MAN',
+        )
+
+        e1 = factories.make_event(store_product=sp1, code='E-LON'); e1.location = loc1; e1.save()
+        e2 = factories.make_event(store_product=sp2, code='E-MAN'); e2.location = loc2; e2.save()
+
+        response = self.client.get(self.url, {'location_ids': str(loc1.id)})
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['E-LON'])
+
+    def test_venue_ids_csv_multiple(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        v1 = factories.make_venue('BPP A')
+        v2 = factories.make_venue('BPP B')
+        v3 = factories.make_venue('BPP C')
+
+        es1 = ExamSession.objects.create(
+            session_code='VV01',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        es2 = ExamSession.objects.create(
+            session_code='VV02',
+            start_date=timezone.now() + timedelta(days=60),
+            end_date=timezone.now() + timedelta(days=90),
+        )
+        es3 = ExamSession.objects.create(
+            session_code='VV03',
+            start_date=timezone.now() + timedelta(days=90),
+            end_date=timezone.now() + timedelta(days=120),
+        )
+
+        sp1 = factories.make_store_product(
+            subject=factories.make_subject('VV1'),
+            exam_session=es1,
+            cat_product_code='VV1-A',
+        )
+        sp2 = factories.make_store_product(
+            subject=factories.make_subject('VV2'),
+            exam_session=es2,
+            cat_product_code='VV2-B',
+        )
+        sp3 = factories.make_store_product(
+            subject=factories.make_subject('VV3'),
+            exam_session=es3,
+            cat_product_code='VV3-C',
+        )
+
+        e1 = factories.make_event(store_product=sp1, code='E-A'); e1.venue = v1; e1.save()
+        e2 = factories.make_event(store_product=sp2, code='E-B'); e2.venue = v2; e2.save()
+        e3 = factories.make_event(store_product=sp3, code='E-C'); e3.venue = v3; e3.save()
+
+        response = self.client.get(self.url, {'venue_ids': f'{v1.id},{v3.id}'})
+        codes = sorted(e['code'] for e in response.data['results'])
+        self.assertEqual(codes, ['E-A', 'E-C'])
+
+
+class InstructorUnionFilterTests(_AuthedAdminCase):
+    def test_matches_when_main_instructor(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        karen = factories.make_instructor('Karen', 'Smith')
+        mark = factories.make_instructor('Mark', 'Davis')
+
+        es1 = ExamSession.objects.create(
+            session_code='IN01',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        es2 = ExamSession.objects.create(
+            session_code='IN02',
+            start_date=timezone.now() + timedelta(days=60),
+            end_date=timezone.now() + timedelta(days=90),
+        )
+
+        sp_k = factories.make_store_product(
+            subject=factories.make_subject('IN1'),
+            exam_session=es1,
+            cat_product_code='IN1-K',
+        )
+        sp_m = factories.make_store_product(
+            subject=factories.make_subject('IN2'),
+            exam_session=es2,
+            cat_product_code='IN2-M',
+        )
+
+        e_karen = factories.make_event(store_product=sp_k, code='E-K')
+        e_karen.main_instructor = karen; e_karen.save()
+        e_mark = factories.make_event(store_product=sp_m, code='E-M')
+        e_mark.main_instructor = mark; e_mark.save()
+
+        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['E-K'])
+
+    def test_matches_when_session_instructor_only(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        karen = factories.make_instructor('Karen', 'Smith')
+
+        es = ExamSession.objects.create(
+            session_code='IN03',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+
+        sp = factories.make_store_product(
+            subject=factories.make_subject('IN3'),
+            exam_session=es,
+            cat_product_code='IN3-SESS',
+        )
+
+        e = factories.make_event(store_product=sp, code='E-SESS')
+        s = factories.make_session(event=e, sequence=1, title='E-SESS-1')
+        s.instructors.add(karen)
+
+        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        codes = [r['code'] for r in response.data['results']]
+        self.assertEqual(codes, ['E-SESS'])
+
+    def test_no_duplicate_when_main_and_session(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        karen = factories.make_instructor('Karen', 'Smith')
+
+        es = ExamSession.objects.create(
+            session_code='IN04',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+
+        sp = factories.make_store_product(
+            subject=factories.make_subject('IN4'),
+            exam_session=es,
+            cat_product_code='IN4-BOTH',
+        )
+
+        e = factories.make_event(store_product=sp, code='E-BOTH')
+        e.main_instructor = karen; e.save()
+        s = factories.make_session(event=e, sequence=1, title='E-BOTH-1')
+        s.instructors.add(karen)
+
+        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        self.assertEqual(len(response.data['results']), 1)
