@@ -20,9 +20,14 @@ class CartTutorialChoice(models.Model):
         'cart.CartItem', on_delete=models.CASCADE,
         related_name='tutorial_choices',
     )
+    # student is best-effort: null for guest carts and for logged-in
+    # users without a Student profile. Backfilled on login by
+    # CartService.merge_guest_cart when a Student row exists. The auth
+    # gate now lives in OrderBuilder, not at the cart layer.
     student = models.ForeignKey(
         'students.Student', on_delete=models.PROTECT,
         related_name='cart_tutorial_choices',
+        null=True, blank=True,
     )
     tutorial_event = models.ForeignKey(
         'tutorials.TutorialEvents', on_delete=models.PROTECT,

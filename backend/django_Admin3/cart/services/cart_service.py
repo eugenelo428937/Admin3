@@ -103,7 +103,8 @@ class CartService:
             incoming = (metadata.get('newLocation') or {}).get('choices') or []
             if incoming and item.tutorial_choices.exists():
                 # Tutorial cart line — route through relational upsert.
-                student = self._require_student(cart)
+                # Student is best-effort (None allowed for guest/no-Student).
+                student = self._resolve_student(cart)
                 from django.db import transaction
                 with transaction.atomic():
                     self._upsert_tutorial_choices(item, student, incoming)
@@ -160,6 +161,19 @@ class CartService:
         guest_cart.fees.update(cart=user_cart)
         guest_cart.delete()
 
+        # Best-effort backfill: any tutorial_choices that came across
+        # without a student now get linked to the user's Student row, if
+        # one exists. Choices added while logged-out will have student=
+        # None; choices added later (or if user has no Student) stay
+        # null. Checkout enforces only auth_user, not student-presence.
+        from students.models import Student
+        from tutorials.models import CartTutorialChoice
+        student = Student.objects.filter(user=user).first()
+        if student is not None:
+            CartTutorialChoice.objects.filter(
+                cart_item__cart=user_cart, student__isnull=True,
+            ).update(student=student)
+
         self._update_cart_flags(user_cart)
         self._trigger_vat_calculation(user_cart)
 
@@ -181,29 +195,27 @@ class CartService:
 
         return product
 
-    def _require_student(self, cart):
-        from django.core.exceptions import ValidationError
+    def _resolve_student(self, cart):
+        """Best-effort: return the cart owner's Student row if any.
+        Returns None for guest carts and for authenticated users without
+        a Student profile. The hard auth gate lives at checkout
+        (OrderBuilder), not here — anyone can add a tutorial to cart.
+        """
         from students.models import Student
-
         user = getattr(cart, 'user', None)
         if user is None or not user.is_authenticated:
-            raise ValidationError(
-                "Tutorial purchases require a logged-in user.")
-        student = Student.objects.filter(user=user).first()
-        if student is None:
-            raise ValidationError(
-                "User has no linked student record. "
-                "Tutorial purchases require a student profile.")
-        return student
+            return None
+        return Student.objects.filter(user=user).first()
 
     def _handle_tutorial_add(self, cart, product, quantity, price_type,
                             actual_price, metadata):
         """Add a tutorial product line: one CartItem per (cart, product),
         plus up to 3 CartTutorialChoice rows (rank 1/2/3) per cart_item.
 
-        Auth-gated: requires a logged-in user with a linked Student row.
+        Open to guests and to authenticated users without a Student row;
+        student_id on each choice row is best-effort and may be NULL.
         """
-        student = self._require_student(cart)
+        student = self._resolve_student(cart)
 
         subject_code = metadata.get('subjectCode')
         new_location = metadata.get('newLocation') or {}

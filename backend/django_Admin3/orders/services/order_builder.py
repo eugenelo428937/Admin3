@@ -22,11 +22,35 @@ class OrderBuilder:
 
     def build(self) -> Order:
         """Create order with items and fees within a transaction."""
+        self._enforce_tutorial_auth_gate()
         with transaction.atomic():
             order = self._create_order()
             self._transfer_items(order)
             self._transfer_fees(order)
             return order
+
+    def _enforce_tutorial_auth_gate(self):
+        """A cart with tutorial choices may only be built into an order
+        when an authenticated user is checking out. The Student row is
+        NOT required here — a logged-in user with no student profile may
+        still check out, and TutorialChoice.student will be NULL.
+
+        Defense-in-depth: the frontend already gates the checkout
+        button. This catches programmatic / forged-session bypasses
+        before any rows are written.
+        """
+        from django.core.exceptions import ValidationError
+        # Only check carts that actually carry tutorial choices.
+        from tutorials.models import CartTutorialChoice
+        if not CartTutorialChoice.objects.filter(
+            cart_item__cart=self.cart,
+        ).exists():
+            return
+        user = self.user
+        if user is None or not getattr(user, 'is_authenticated', False):
+            raise ValidationError(
+                "Tutorial purchases require a logged-in user. "
+                "Please sign in before checking out.")
 
     def _create_order(self) -> Order:
         totals = self.vat_result.get('totals', {})

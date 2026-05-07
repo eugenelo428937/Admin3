@@ -2,7 +2,7 @@
 
 Verifies that adding a tutorial product creates relational
 CartTutorialChoice rows (and rebuilds the legacy metadata view).
-Authentication and student-linkage are required.
+Guests CAN add tutorials — the auth gate moved to checkout.
 """
 from datetime import date, timedelta
 
@@ -77,36 +77,110 @@ def _payload(subject_code, choices):
     }
 
 
-class TutorialAddRequiresAuthTests(TestCase):
+class TutorialAddAllowsGuestTests(TestCase):
+    """Guests and logged-in-without-Student users can add tutorials. The
+    auth gate moved to checkout (OrderBuilder)."""
+
     def setUp(self):
         self.sp, self.event_a, _, _ = _seed_tutorial_product()
-        self.cart = Cart.objects.create(session_key='guest-session')
 
-    def test_guest_cart_rejects_tutorial_add(self):
-        with self.assertRaises(ValidationError) as ctx:
-            cart_service.add_item(
-                self.cart, self.sp.id, quantity=1,
-                actual_price='10.00',
-                metadata=_payload('CB1', [
-                    {'choice': '1st', 'eventId': self.event_a.id,
-                     'variationId': 1},
-                ]),
-            )
-        self.assertIn('logged-in', str(ctx.exception).lower())
+    def test_guest_can_add_tutorial(self):
+        cart = Cart.objects.create(session_key='guest-session')
+        item, err = cart_service.add_item(
+            cart, self.sp.id, quantity=1, actual_price='10.00',
+            metadata=_payload('CB1', [
+                {'choice': '1st', 'eventId': self.event_a.id,
+                 'variationId': 1},
+            ]),
+        )
+        self.assertIsNone(err)
+        self.assertEqual(item.tutorial_choices.count(), 1)
+        # No student linkage for guest add.
+        self.assertIsNone(item.tutorial_choices.first().student_id)
 
-    def test_user_without_student_rejects_tutorial_add(self):
+    def test_user_without_student_can_add_tutorial(self):
         user = User.objects.create_user(username='nostudent',
                                         email='ns@t.com')
         cart = Cart.objects.create(user=user)
-        with self.assertRaises(ValidationError) as ctx:
-            cart_service.add_item(
-                cart, self.sp.id, quantity=1, actual_price='10.00',
-                metadata=_payload('CB1', [
-                    {'choice': '1st', 'eventId': self.event_a.id,
-                     'variationId': 1},
-                ]),
-            )
-        self.assertIn('student', str(ctx.exception).lower())
+        item, err = cart_service.add_item(
+            cart, self.sp.id, quantity=1, actual_price='10.00',
+            metadata=_payload('CB1', [
+                {'choice': '1st', 'eventId': self.event_a.id,
+                 'variationId': 1},
+            ]),
+        )
+        self.assertIsNone(err)
+        self.assertEqual(item.tutorial_choices.count(), 1)
+        # No Student row exists, so the choice row carries student=None.
+        self.assertIsNone(item.tutorial_choices.first().student_id)
+
+    def test_authenticated_user_with_student_links_student(self):
+        user = User.objects.create_user(username='alice2',
+                                        email='a2@t.com')
+        student = Student.objects.create(user=user)
+        cart = Cart.objects.create(user=user)
+        item, err = cart_service.add_item(
+            cart, self.sp.id, quantity=1, actual_price='10.00',
+            metadata=_payload('CB1', [
+                {'choice': '1st', 'eventId': self.event_a.id,
+                 'variationId': 1},
+            ]),
+        )
+        self.assertIsNone(err)
+        self.assertEqual(
+            item.tutorial_choices.first().student_id, student.pk,
+        )
+
+
+class MergeGuestCartBackfillsStudentTests(TestCase):
+    """When a guest logs in, their cart's tutorial_choices get the
+    user's Student linked — best-effort. If the user has no Student row,
+    the FK stays null and checkout will still allow it."""
+
+    def test_login_backfills_student_on_tutorial_choices(self):
+        sp, event_a, _, _ = _seed_tutorial_product()
+
+        # Guest adds a tutorial.
+        guest_cart = Cart.objects.create(session_key='guest-1')
+        cart_service.add_item(
+            guest_cart, sp.id, quantity=1, actual_price='10.00',
+            metadata=_payload('CB1', [
+                {'choice': '1st', 'eventId': event_a.id,
+                 'variationId': 1},
+            ]),
+        )
+        self.assertIsNone(
+            CartTutorialChoice.objects.first().student_id,
+        )
+
+        # User logs in — has a Student row.
+        user = User.objects.create_user(username='bob', email='b@t.com')
+        student = Student.objects.create(user=user)
+        cart_service.merge_guest_cart(user, 'guest-1')
+
+        # All tutorial_choices on the user's cart now carry student.
+        for c in CartTutorialChoice.objects.all():
+            self.assertEqual(c.student_id, student.pk)
+
+    def test_login_without_student_leaves_choices_null(self):
+        sp, event_a, _, _ = _seed_tutorial_product()
+        guest_cart = Cart.objects.create(session_key='guest-2')
+        cart_service.add_item(
+            guest_cart, sp.id, quantity=1, actual_price='10.00',
+            metadata=_payload('CB1', [
+                {'choice': '1st', 'eventId': event_a.id,
+                 'variationId': 1},
+            ]),
+        )
+
+        # User logs in but has no Student row. Merge must not crash and
+        # must not raise; choices stay null.
+        user = User.objects.create_user(username='carl', email='c@t.com')
+        cart_service.merge_guest_cart(user, 'guest-2')
+
+        self.assertIsNone(
+            CartTutorialChoice.objects.first().student_id,
+        )
 
 
 class TutorialAddCreatesChoicesTests(TestCase):

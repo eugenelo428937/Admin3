@@ -68,14 +68,11 @@ class TestCartViewSetVatRecalculate(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TutorialAddViewValidationTests(TestCase):
-    """Verifies django.core.exceptions.ValidationError raised from the
-    tutorial cart path is translated to HTTP 400 by the cart views (not
-    a 500). Service-level tests assert the raise; this test asserts the
-    view-layer translation that production users actually see.
-    """
+class TutorialAddViewGuestTests(TestCase):
+    """Guests can add tutorials via the cart view. Auth is enforced at
+    checkout, not at add-to-cart."""
 
-    def test_guest_tutorial_add_returns_400_not_500(self):
+    def test_guest_tutorial_add_succeeds(self):
         from catalog.models import (
             ExamSession, ExamSessionSubject, Subject,
             Product as CatProduct, ProductVariation,
@@ -134,6 +131,5 @@ class TutorialAddViewValidationTests(TestCase):
             },
         }, format='json')
 
-        self.assertEqual(response.status_code, 400)
-        # Body should mention the auth requirement
-        self.assertIn('logged-in', str(response.content).lower())
+        # Guest add succeeds (200/201). Auth is gated at checkout.
+        self.assertIn(response.status_code, (200, 201))

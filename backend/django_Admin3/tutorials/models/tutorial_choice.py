@@ -16,8 +16,12 @@ class TutorialChoice(models.Model):
     order_item = models.ForeignKey(
         'orders.OrderItem', on_delete=models.CASCADE, related_name='tutorial_choices',
     )
+    # Nullable: an authenticated user without a Student profile may
+    # still check out (Q1 — checkout requires only auth_user). The cart
+    # row's student FK is copied across as-is by OrderBuilder.
     student = models.ForeignKey(
         'students.Student', on_delete=models.PROTECT, related_name='tutorial_choices',
+        null=True, blank=True,
     )
     tutorial_event = models.ForeignKey(
         'tutorials.TutorialEvents', on_delete=models.PROTECT, related_name='chosen_by',
