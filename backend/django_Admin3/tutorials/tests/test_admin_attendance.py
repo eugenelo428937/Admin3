@@ -75,7 +75,7 @@ class AdminAttendanceGetTests(APITestCase):
         TutorialAttendance.objects.create(
             registration=reg, status='ATTENDED', recorded_by=self.admin,
             recorded_at=timezone.now(),
-        )
+        )  # recorded_at provided for existing test
         response = self.client.get(_url(session.id))
         rows = response.data['registrations']
         self.assertEqual(len(rows), 1)
@@ -101,3 +101,79 @@ class AdminAttendanceGetTests(APITestCase):
         names = [(r['student']['last_name'], r['student']['first_name'])
                  for r in response.data['registrations']]
         self.assertEqual(names, [('Adams', 'Alice'), ('Lee', 'Bob')])
+
+
+class AdminAttendancePostTests(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+        self.session = factories.make_session()
+        self.session.start_date = timezone.now() - timedelta(hours=2)
+        self.session.save()
+        self.alice = factories.make_student('alice')
+        self.bob = factories.make_student('bob')
+        self.alice_reg = _register(self.alice, self.session)
+        self.bob_reg = _register(self.bob, self.session)
+
+    def test_creates_attendance_rows(self):
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+            {'registration_id': self.bob_reg.id,   'status': 'ABSENT',   'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(TutorialAttendance.objects.count(), 2)
+        a = TutorialAttendance.objects.get(registration=self.alice_reg)
+        self.assertEqual(a.status, 'ATTENDED')
+
+    def test_updates_existing_attendance(self):
+        TutorialAttendance.objects.create(
+            registration=self.alice_reg, status='ABSENT', recorded_by=self.admin,
+            recorded_at=timezone.now(),
+        )
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TutorialAttendance.objects.count(), 1)
+        a = TutorialAttendance.objects.get(registration=self.alice_reg)
+        self.assertEqual(a.status, 'ATTENDED')
+
+    def test_rejects_other_with_blank_reason(self):
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'OTHER', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('reason', str(response.data).lower())
+        self.assertEqual(TutorialAttendance.objects.count(), 0)
+
+    def test_rejects_invalid_status(self):
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'BOGUS', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_rejects_registration_from_other_session(self):
+        other_sp = factories.make_store_product(subject=factories.make_subject('SA1'))
+        other_event = factories.make_event(code='OTHER-EVT', store_product=other_sp)
+        other_session = factories.make_session(event=other_event, sequence=99)
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+        ]}
+        response = self.client.post(_url(other_session.id), body, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('do not belong', str(response.data).lower())
+
+    def test_returns_refreshed_get_shape(self):
+        body = {'items': [
+            {'registration_id': self.alice_reg.id, 'status': 'ATTENDED', 'reason': ''},
+        ]}
+        response = self.client.post(_url(self.session.id), body, format='json')
+        self.assertIn('session', response.data)
+        self.assertIn('registrations', response.data)
+        self.assertIn('attendance_enabled', response.data)

@@ -3,6 +3,7 @@
 All endpoints require ``IsSuperUser``. See
 ``docs/superpowers/specs/2026-05-07-tutorial-event-admin-design.md``.
 """
+from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -18,10 +19,12 @@ from catalog.subject.models import Subject
 from tutorials.admin_filters import apply_event_filters
 from tutorials.admin_serializers import (
     AdminAttendanceGetSerializer,
+    AdminAttendanceSaveSerializer,
     AdminTutorialEventListSerializer,
     FilterOptionsSerializer,
 )
 from tutorials.models import (
+    TutorialAttendance,
     TutorialEvents,
     TutorialInstructor,
     TutorialLocation,
@@ -150,4 +153,22 @@ class AdminTutorialAttendanceView(APIView):
 
     def get(self, request, session_id: int):
         session = self._get_session(session_id)
+        return Response(self._build_payload(session))
+
+    def post(self, request, session_id: int):
+        session = self._get_session(session_id)
+        ser = AdminAttendanceSaveSerializer(data=request.data, session=session)
+        ser.is_valid(raise_exception=True)
+        with transaction.atomic():
+            for item in ser.validated_data['items']:
+                TutorialAttendance.objects.update_or_create(
+                    registration_id=item['registration_id'],
+                    defaults={
+                        'status': item['status'],
+                        'reason': item['reason'],
+                        'recorded_by': request.user,
+                        'recorded_at': timezone.now(),
+                    },
+                )
+        session.refresh_from_db()
         return Response(self._build_payload(session))

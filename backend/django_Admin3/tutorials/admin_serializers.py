@@ -173,3 +173,43 @@ class AdminAttendanceGetSerializer(serializers.Serializer):
     session = _SessionDetailSerializer(read_only=True)
     attendance_enabled = serializers.BooleanField(read_only=True)
     registrations = AdminRosterRowSerializer(many=True, read_only=True)
+
+
+class _AdminAttendanceItemSerializer(serializers.Serializer):
+    registration_id = serializers.IntegerField()
+    status = serializers.ChoiceField(
+        choices=['ATTENDED', 'ABSENT', 'LATE', 'OTHER'],
+    )
+    reason = serializers.CharField(allow_blank=True, default='')
+
+    def validate(self, attrs):
+        if attrs['status'] == 'OTHER' and not attrs.get('reason', '').strip():
+            raise serializers.ValidationError({
+                'reason': 'Required when status is OTHER.',
+            })
+        return attrs
+
+
+class AdminAttendanceSaveSerializer(serializers.Serializer):
+    """Save body for POST attendance. ``session`` injected by the view."""
+    items = _AdminAttendanceItemSerializer(many=True)
+
+    def __init__(self, *args, session=None, **kwargs):
+        self._session = session
+        super().__init__(*args, **kwargs)
+
+    def validate_items(self, items):
+        if self._session is None:
+            return items
+        ids = [item['registration_id'] for item in items]
+        valid_ids = set(
+            TutorialRegistration.objects
+            .filter(tutorial_session=self._session, id__in=ids)
+            .values_list('id', flat=True)
+        )
+        bad = [i for i in ids if i not in valid_ids]
+        if bad:
+            raise serializers.ValidationError(
+                f'registration(s) {bad} do not belong to this session',
+            )
+        return items
