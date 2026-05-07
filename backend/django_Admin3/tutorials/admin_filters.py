@@ -94,6 +94,30 @@ def apply_instructor(qs, params):
     ).distinct()
 
 
+def apply_sitting(qs, params):
+    raw = params.get('sitting_id')
+    if raw == 'all':
+        return qs
+
+    if raw:
+        try:
+            sitting_id = int(raw)
+        except (TypeError, ValueError):
+            return qs.none()
+        return qs.filter(
+            store_product__exam_session_subject__exam_session_id=sitting_id,
+        )
+
+    # No param → default to latest sitting by start_date desc.
+    from catalog.exam_session.models import ExamSession
+    latest = ExamSession.objects.order_by('-start_date').first()
+    if latest is None:
+        return qs
+    return qs.filter(
+        store_product__exam_session_subject__exam_session_id=latest.id,
+    )
+
+
 def apply_event_filters(qs, params):
     qs = apply_subject_codes(qs, params)
     qs = apply_code_icontains(qs, params)
@@ -102,4 +126,5 @@ def apply_event_filters(qs, params):
     qs = apply_location_ids(qs, params)
     qs = apply_venue_ids(qs, params)
     qs = apply_instructor(qs, params)
+    qs = apply_sitting(qs, params)
     return qs

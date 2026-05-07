@@ -45,7 +45,7 @@ class SubjectCodeFilterTests(_AuthedAdminCase):
         factories.make_event(store_product=sp_cm2, code='EV-CM2')
         factories.make_event(store_product=sp_sa1, code='EV-SA1')
 
-        response = self.client.get(self.url, {'subject_codes': 'CM2'})
+        response = self.client.get(self.url, {'subject_codes': 'CM2', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-CM2'])
 
@@ -88,7 +88,7 @@ class SubjectCodeFilterTests(_AuthedAdminCase):
         factories.make_event(store_product=sp_sa1, code='EV-SA1')
         factories.make_event(store_product=sp_cb1, code='EV-CB1')
 
-        response = self.client.get(self.url, {'subject_codes': 'CM2,SA1'})
+        response = self.client.get(self.url, {'subject_codes': 'CM2,SA1', 'sitting_id': 'all'})
         codes = sorted(e['code'] for e in response.data['results'])
         self.assertEqual(codes, ['EV-CM2', 'EV-SA1'])
 
@@ -121,7 +121,7 @@ class CodeIcontainsFilterTests(_AuthedAdminCase):
         )
         factories.make_event(store_product=sp1, code='CP1-01-24A')
         factories.make_event(store_product=sp2, code='CM2-02-24S')
-        response = self.client.get(self.url, {'code': 'CP1'})
+        response = self.client.get(self.url, {'code': 'CP1', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['CP1-01-24A'])
 
@@ -141,7 +141,7 @@ class CodeIcontainsFilterTests(_AuthedAdminCase):
             cat_product_code='CI3CP1',
         )
         factories.make_event(store_product=sp1, code='CP1-01-24A')
-        response = self.client.get(self.url, {'code': 'cp1'})
+        response = self.client.get(self.url, {'code': 'cp1', 'sitting_id': 'all'})
         self.assertEqual(len(response.data['results']), 1)
 
 
@@ -179,7 +179,7 @@ class StartDateRangeFilterTests(_AuthedAdminCase):
         e2 = factories.make_event(store_product=sp2, code='EV-CURR')
         e2.start_date = date(2026, 6, 1); e2.end_date = date(2026, 6, 2); e2.save()
 
-        response = self.client.get(self.url, {'start_from': '2026-06-01'})
+        response = self.client.get(self.url, {'start_from': '2026-06-01', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-CURR'])
 
@@ -216,7 +216,7 @@ class StartDateRangeFilterTests(_AuthedAdminCase):
         e2 = factories.make_event(store_product=sp2, code='EV-CURR2')
         e2.start_date = date(2026, 6, 1); e2.end_date = date(2026, 6, 2); e2.save()
 
-        response = self.client.get(self.url, {'start_to': '2026-01-31'})
+        response = self.client.get(self.url, {'start_to': '2026-01-31', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-PAST2'])
 
@@ -268,7 +268,7 @@ class FinalisationDateFilterTests(_AuthedAdminCase):
         e3.save()
 
         response = self.client.get(
-            self.url, {'finalisation_from': '2026-05-15', 'finalisation_to': '2026-05-25'},
+            self.url, {'finalisation_from': '2026-05-15', 'finalisation_to': '2026-05-25', 'sitting_id': 'all'},
         )
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-B'])
@@ -307,7 +307,7 @@ class LocationVenueFilterTests(_AuthedAdminCase):
         e1 = factories.make_event(store_product=sp1, code='E-LON'); e1.location = loc1; e1.save()
         e2 = factories.make_event(store_product=sp2, code='E-MAN'); e2.location = loc2; e2.save()
 
-        response = self.client.get(self.url, {'location_ids': str(loc1.id)})
+        response = self.client.get(self.url, {'location_ids': str(loc1.id), 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['E-LON'])
 
@@ -355,7 +355,7 @@ class LocationVenueFilterTests(_AuthedAdminCase):
         e2 = factories.make_event(store_product=sp2, code='E-B'); e2.venue = v2; e2.save()
         e3 = factories.make_event(store_product=sp3, code='E-C'); e3.venue = v3; e3.save()
 
-        response = self.client.get(self.url, {'venue_ids': f'{v1.id},{v3.id}'})
+        response = self.client.get(self.url, {'venue_ids': f'{v1.id},{v3.id}', 'sitting_id': 'all'})
         codes = sorted(e['code'] for e in response.data['results'])
         self.assertEqual(codes, ['E-A', 'E-C'])
 
@@ -395,7 +395,7 @@ class InstructorUnionFilterTests(_AuthedAdminCase):
         e_mark = factories.make_event(store_product=sp_m, code='E-M')
         e_mark.main_instructor = mark; e_mark.save()
 
-        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        response = self.client.get(self.url, {'instructor_id': str(karen.id), 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['E-K'])
 
@@ -421,7 +421,7 @@ class InstructorUnionFilterTests(_AuthedAdminCase):
         s = factories.make_session(event=e, sequence=1, title='E-SESS-1')
         s.instructors.add(karen)
 
-        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        response = self.client.get(self.url, {'instructor_id': str(karen.id), 'sitting_id': 'all'})
         codes = [r['code'] for r in response.data['results']]
         self.assertEqual(codes, ['E-SESS'])
 
@@ -448,5 +448,53 @@ class InstructorUnionFilterTests(_AuthedAdminCase):
         s = factories.make_session(event=e, sequence=1, title='E-BOTH-1')
         s.instructors.add(karen)
 
-        response = self.client.get(self.url, {'instructor_id': str(karen.id)})
+        response = self.client.get(self.url, {'instructor_id': str(karen.id), 'sitting_id': 'all'})
         self.assertEqual(len(response.data['results']), 1)
+
+
+class SittingFilterTests(_AuthedAdminCase):
+    def test_default_picks_latest_sitting(self):
+        from datetime import datetime, timezone as tz
+        old = factories.make_exam_session(code='OLD')
+        old.start_date = datetime(2024, 1, 1, tzinfo=tz.utc); old.save()
+        new = factories.make_exam_session(code='NEW')
+        new.start_date = datetime(2026, 4, 1, tzinfo=tz.utc); new.save()
+
+        sp_old = factories.make_store_product(exam_session=old)
+        sp_new = factories.make_store_product(exam_session=new)
+        factories.make_event(store_product=sp_old, code='EV-OLD')
+        factories.make_event(store_product=sp_new, code='EV-NEW')
+
+        response = self.client.get(self.url)  # no sitting_id
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['EV-NEW'])
+
+    def test_explicit_sitting_id_overrides(self):
+        from datetime import datetime, timezone as tz
+        old = factories.make_exam_session(code='OLD')
+        old.start_date = datetime(2024, 1, 1, tzinfo=tz.utc); old.save()
+        new = factories.make_exam_session(code='NEW')
+        new.start_date = datetime(2026, 4, 1, tzinfo=tz.utc); new.save()
+        sp_old = factories.make_store_product(exam_session=old)
+        sp_new = factories.make_store_product(exam_session=new)
+        factories.make_event(store_product=sp_old, code='EV-OLD')
+        factories.make_event(store_product=sp_new, code='EV-NEW')
+
+        response = self.client.get(self.url, {'sitting_id': str(old.id)})
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['EV-OLD'])
+
+    def test_all_sentinel_disables_filter(self):
+        from datetime import datetime, timezone as tz
+        old = factories.make_exam_session(code='OLD')
+        old.start_date = datetime(2024, 1, 1, tzinfo=tz.utc); old.save()
+        new = factories.make_exam_session(code='NEW')
+        new.start_date = datetime(2026, 4, 1, tzinfo=tz.utc); new.save()
+        sp_old = factories.make_store_product(exam_session=old)
+        sp_new = factories.make_store_product(exam_session=new)
+        factories.make_event(store_product=sp_old, code='EV-OLD')
+        factories.make_event(store_product=sp_new, code='EV-NEW')
+
+        response = self.client.get(self.url, {'sitting_id': 'all'})
+        codes = sorted(e['code'] for e in response.data['results'])
+        self.assertEqual(codes, ['EV-NEW', 'EV-OLD'])
