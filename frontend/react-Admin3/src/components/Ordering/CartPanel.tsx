@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   IconButton,
+  Chip,
 } from "@mui/material";
 import { Close as CloseIcon, Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from "@mui/icons-material";
 import { generateProductCode } from "../../utils/productCodeGenerator";
@@ -58,6 +59,14 @@ const CartPanel: React.FC<CartPanelProps> = React.memo(({ show, handleClose }) =
 											</strong>
 											{item.metadata?.variationName && (
 												<>({item.metadata.variationName})</>
+											)}
+											{item.is_available === false && (
+												<Chip
+													label="No longer available — please remove"
+													color="warning"
+													size="small"
+													sx={{ ml: 1 }}
+												/>
 											)}
 											<br />
 											{/* Tutorial-specific display */}
