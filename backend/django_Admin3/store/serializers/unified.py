@@ -28,6 +28,14 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.session_code',
         read_only=True
     )
+    start_date = serializers.DateTimeField(
+        source='exam_session_subject.exam_session.start_date',
+        read_only=True
+    )
+    end_date = serializers.DateTimeField(
+        source='exam_session_subject.exam_session.end_date',
+        read_only=True
+    )
     variation_type = serializers.CharField(
         source='product_product_variation.product_variation.variation_type',
         read_only=True
@@ -56,6 +64,8 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
             'subject_code',
             'subject_name',
             'session_code',
+            'start_date',
+            'end_date',
             'variation_type',
             'variation_name',
             'product_name',
