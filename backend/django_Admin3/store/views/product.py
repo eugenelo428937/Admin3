@@ -41,13 +41,18 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ['product_code']
 
     def get_queryset(self):
-        """Filter to active products for public read, all for admin writes."""
+        """Filter through the canonical predicate for list, but allow
+        retrieve to return inactive products (order history support).
+
+        Admin write actions use the unfiltered queryset.
+        """
         qs = super().get_queryset()
         if self.action == 'retrieve':
-            return qs.filter(
-                is_active=True,
-                product_product_variation__product__is_active=True,
-            )
+            # Order-history exception: return any product, including inactive
+            return qs
+        if self.action == 'list':
+            return Product.available_now()
+        # Other actions (create/update/destroy): unfiltered for admin
         return qs
 
     def get_permissions(self):
@@ -95,14 +100,11 @@ class ProductViewSet(viewsets.ModelViewSet):
             page_size = 50
 
         # Get active products with related data
-        products = Product.objects.select_related(
+        products = Product.available_now().select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
             'product_product_variation__product',
             'product_product_variation__product_variation',
-        ).filter(
-            is_active=True,
-            product_product_variation__product__is_active=True,
         ).order_by('product_code')
 
         # Get active bundles with related data
