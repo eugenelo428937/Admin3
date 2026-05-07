@@ -45,6 +45,12 @@ class CartService:
         if not product:
             return None, f"No Product matches the given query (ID: {product_id})"
 
+        # Server-side availability gate (active flags + date window).
+        # Frontend disables the button for UX, but a stale page or direct
+        # API call must still be rejected here.
+        if not product.is_available_now():
+            return None, "product_unavailable"
+
         # Delegate to tutorial-specific or regular item logic
         if metadata.get('type') == 'tutorial':
             item = self._handle_tutorial_add(cart, product, quantity, price_type, actual_price, metadata)

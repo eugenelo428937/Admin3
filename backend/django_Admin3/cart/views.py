@@ -80,6 +80,12 @@ class CartViewSet(viewsets.ViewSet):
             # configured for django.core.exceptions.ValidationError).
             return Response(_validation_error_payload(exc),
                             status=status.HTTP_400_BAD_REQUEST)
+        if error == "product_unavailable":
+            return Response(
+                {'error': 'product_unavailable',
+                 'detail': 'This product is no longer available for purchase.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if error:
             return Response({'detail': error}, status=status.HTTP_404_NOT_FOUND)
 
