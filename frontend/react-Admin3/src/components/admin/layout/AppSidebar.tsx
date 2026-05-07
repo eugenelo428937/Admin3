@@ -55,26 +55,6 @@ const navGroups = [
       ],
    },
    {
-    label: "Orders",
-    items: [
-       {
-          label: "Orders",
-          path: "/admin/orders",
-          icon: ShoppingCart,
-       },
-    ],
- },
-   {
-      label: "Marking",
-      items: [
-         {
-            label: "Submissions",
-            path: "/admin/marking/submissions",
-            icon: ClipboardCheck,
-         },
-      ],
-   },
-   {
       label: "Current Products",
       items: [
          {
@@ -92,20 +72,6 @@ const navGroups = [
          //     label: "Recommendations",
          //     path: "/admin/recommendations",
          //     icon: Star,
-         //  },
-      ],
-   },
-   {
-      label: "Users",
-      items: [
-         // { label: 'User Profiles', path: '/admin/user-profiles', icon: Users },
-         //
-         { label: "Students", path: "/admin/students", icon: GraduationCap },
-         //  { label: "Markers", path: "/admin/students", icon: GraduationCap },
-         //  {
-         //     label: "Apprentice & StudyPlus",
-         //     path: "/admin/students",
-         //     icon: GraduationCap,
          //  },
       ],
    },

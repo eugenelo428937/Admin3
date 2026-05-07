@@ -5,3 +5,5 @@ from .tutorial_course_template import TutorialCourseTemplate
 from .tutorial_instructor import TutorialInstructor
 from .tutorial_location import TutorialLocation
 from .tutorial_venue import TutorialVenue
+from .tutorial_choice import TutorialChoice
+from .cart_tutorial_choice import CartTutorialChoice

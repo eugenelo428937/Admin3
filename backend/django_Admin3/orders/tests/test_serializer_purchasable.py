@@ -84,3 +84,64 @@ class OrderItemSerializerPurchasableTests(TestCase):
         # Legacy fields still emitted
         self.assertIn('item_type', data)
         self.assertIn('item_name', data)
+
+
+class OrderItemTutorialChoicesSerializerTests(TestCase):
+    def test_serializer_emits_tutorial_choices_array(self):
+        from datetime import date, timedelta
+        from django.contrib.auth.models import User
+        from django.utils import timezone
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        from students.models import Student
+        from orders.models import Order, OrderItem
+        from orders.serializers.order_serializer import (
+            OrderItemSerializer,
+        )
+        from tutorials.models import TutorialChoice, TutorialEvents
+
+        user = User.objects.create_user(username='os', email='os@t.com')
+        student = Student.objects.create(user=user)
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='SP1',
+            defaults={'description': 'SP1', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess, product_product_variation=ppv,
+            product_code='SP1/Live/LO_6H/25')
+        sp.save()
+        event = TutorialEvents.objects.create(
+            code='SP1-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+        order = Order.objects.create(user=user)
+        item = OrderItem.objects.create(
+            order=order, purchasable=sp.purchasable_ptr)
+        TutorialChoice.objects.create(
+            order_item=item, student=student,
+            tutorial_event=event, choice_rank=1)
+
+        data = OrderItemSerializer(item).data
+        self.assertIn('tutorial_choices', data)
+        self.assertEqual(len(data['tutorial_choices']), 1)
+        self.assertEqual(data['tutorial_choices'][0]['choice_rank'], 1)
+        self.assertEqual(
+            data['tutorial_choices'][0]['tutorial_event_id'], event.id)

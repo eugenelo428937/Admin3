@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { PanelLeft, Search, Sun, Moon, Settings, LogIn, LogOut, ExternalLink } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import {
+  PanelLeft, Search, Sun, Moon, Settings, LogIn, LogOut, ExternalLink,
+  GraduationCap, ShoppingCart, ClipboardCheck, BookOpen,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConfig } from '@/contexts/ConfigContext';
 import { useDarkMode } from './DarkModeProvider';
@@ -7,6 +11,14 @@ import { useSidebar } from '@/components/admin/ui/sidebar';
 import { Button } from '@/components/admin/ui/button';
 import { Input } from '@/components/admin/ui/input';
 import { Separator } from '@/components/admin/ui/separator';
+import { cn } from '@/components/admin/styles/cn';
+
+const PRIMARY_NAV = [
+  { label: 'Students', path: '/admin/students', icon: GraduationCap },
+  { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+  { label: 'Marking', path: '/admin/marking/submissions', icon: ClipboardCheck },
+  { label: 'Tutorial', path: '/admin/tutorial', icon: BookOpen },
+];
 
 export function AdminTopBar() {
   const { toggleSidebar } = useSidebar();
@@ -33,7 +45,7 @@ export function AdminTopBar() {
   }, [showUserMenu]);
 
   return (
-    <header className="tw:flex tw:h-12 tw:shrink-0 tw:items-center tw:justify-between tw:border-b tw:border-border tw:px-4">
+    <header className="tw:flex tw:h-16 tw:shrink-0 tw:items-center tw:justify-between tw:border-b tw:border-border tw:px-4 tw:gap-4">
       {/* Left: sidebar toggle */}
       <div className="tw:flex tw:items-center tw:gap-2">
         <Button
@@ -58,6 +70,27 @@ export function AdminTopBar() {
           </a>
         )}
       </div>
+
+      {/* Center: primary navigation (higher hierarchy than sidebar) */}
+      <nav className="tw:flex tw:items-center tw:gap-1">
+        {PRIMARY_NAV.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              cn(
+                'tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:px-4 tw:py-2 tw:text-base tw:font-semibold tw:transition-colors tw:no-underline',
+                isActive
+                  ? 'tw:bg-primary tw:text-primary-foreground tw:shadow-sm'
+                  : 'tw:text-foreground hover:tw:bg-accent hover:tw:text-accent-foreground',
+              )
+            }
+          >
+            <item.icon className="tw:h-5 tw:w-5" />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       {/* Right: search, dark mode, settings, avatar */}
       <div className="tw:flex tw:items-center tw:gap-2">

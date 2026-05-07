@@ -1,7 +1,11 @@
 """Tests for cart API view endpoints."""
+from datetime import date, timedelta
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.utils import timezone
 from unittest.mock import patch
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 from cart.models import Cart, CartItem
 
@@ -62,3 +66,70 @@ class TestCartViewSetVatRecalculate(APITestCase):
         Cart.objects.create(user=self.user)
         response = self.client.post('/api/cart/vat/recalculate/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TutorialAddViewGuestTests(TestCase):
+    """Guests can add tutorials via the cart view. Auth is enforced at
+    checkout, not at add-to-cart."""
+
+    def test_guest_tutorial_add_succeeds(self):
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatProduct, ProductVariation,
+            ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        from tutorials.models import TutorialEvents
+
+        # Build a real tutorial product so the request gets past the
+        # product-resolution step and hits _require_student.
+        es = ExamSession.objects.create(
+            session_code='25',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60))
+        subj, _ = Subject.objects.get_or_create(
+            code='CB1',
+            defaults={'description': 'CB1', 'active': True})
+        ess = ExamSessionSubject.objects.create(
+            exam_session=es, subject=subj)
+        cat, _ = CatProduct.objects.get_or_create(
+            code='Live',
+            defaults={'fullname': 'T - Live', 'shortname': 'Live'})
+        pv, _ = ProductVariation.objects.get_or_create(
+            code='LO_6H',
+            defaults={'name': 'LO_6H', 'description': '',
+                      'description_short': 'LO_6H',
+                      'variation_type': 'Tutorial'})
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=cat, product_variation=pv)
+        sp = StoreProduct(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
+            product_code='CB1/Live/LO_6H/25')
+        sp.save()
+        event = TutorialEvents.objects.create(
+            code='CB1-01-25A', store_product=sp,
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 2, 1))
+
+        client = APIClient()  # Anonymous
+        response = client.post('/api/cart/add/', {
+            'current_product': sp.id,
+            'quantity': 1,
+            'price_type': 'standard',
+            'actual_price': '10.00',
+            'metadata': {
+                'type': 'tutorial',
+                'subjectCode': 'CB1',
+                'newLocation': {
+                    'location': 'London',
+                    'choices': [{'choice': '1st',
+                                 'eventId': event.id,
+                                 'variationId': ppv.id}],
+                    'choiceCount': 1,
+                },
+            },
+        }, format='json')
+
+        # Guest add succeeds (200/201). Auth is gated at checkout.
+        self.assertIn(response.status_code, (200, 201))

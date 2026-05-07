@@ -5,6 +5,22 @@ from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
 
 logger = logging.getLogger(__name__)
 
+
+class CartTutorialChoiceSerializer(serializers.Serializer):
+    """Read-only nested serializer for cart-side tutorial choices."""
+    id = serializers.IntegerField(read_only=True)
+    choice_rank = serializers.IntegerField(read_only=True)
+    student_id = serializers.IntegerField(read_only=True)
+    tutorial_event_id = serializers.IntegerField(read_only=True)
+    event_code = serializers.CharField(
+        source='tutorial_event.code', read_only=True)
+    event_subject_code = serializers.CharField(
+        source=(
+            'tutorial_event.store_product'
+            '.exam_session_subject.subject.code'),
+        read_only=True)
+
+
 class CartItemSerializer(serializers.ModelSerializer):
     # Use SerializerMethodField for fields that need to handle marking vouchers
     subject_code = serializers.SerializerMethodField()
@@ -44,6 +60,12 @@ class CartItemSerializer(serializers.ModelSerializer):
     # Release B (Tasks 22–24) drops the legacy FKs.
     purchasable = PurchasableSerializer(read_only=True)
 
+    # Task 9: nested tutorial choices (cart-side). Dual-emitted alongside the
+    # legacy metadata.locations[].choices[] payload so the frontend can migrate
+    # progressively.
+    tutorial_choices = CartTutorialChoiceSerializer(
+        many=True, read_only=True)
+
     class Meta:
         model = CartItem
         fields = [
@@ -54,6 +76,8 @@ class CartItemSerializer(serializers.ModelSerializer):
             'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount',
             # Task 18: unified purchasable nested object
             'purchasable',
+            # Task 9: nested tutorial choices
+            'tutorial_choices',
         ]
 
     def get_subject_code(self, obj):
