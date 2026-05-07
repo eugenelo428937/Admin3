@@ -133,3 +133,77 @@ class AdminEventListEnrolmentCountsTests(APITestCase):
         ev = response.data['results'][0]
         self.assertEqual(ev['enrolled_distinct'], 0)
         self.assertEqual(ev['sessions'][0]['enrolled_count'], 0)
+
+
+class AdminEventListOrderingTests(APITestCase):
+    def setUp(self):
+        self.url = '/api/tutorials/admin/events/'
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def test_default_ordering_start_date_asc(self):
+        from datetime import date
+        sp1 = factories.make_store_product(cat_product_code='Live1')
+        sp2 = factories.make_store_product(cat_product_code='Live2')
+        e1 = factories.make_event(store_product=sp1, code='EV-LATE')
+        e1.start_date = date(2026, 8, 1); e1.save()
+        e2 = factories.make_event(store_product=sp2, code='EV-EARLY')
+        e2.start_date = date(2026, 6, 1); e2.save()
+
+        response = self.client.get(self.url)
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['EV-EARLY', 'EV-LATE'])
+
+    def test_ordering_param_respected_when_whitelisted(self):
+        from datetime import date
+        sp1 = factories.make_store_product(cat_product_code='Live3')
+        sp2 = factories.make_store_product(cat_product_code='Live4')
+        e1 = factories.make_event(store_product=sp1, code='EV-LATE')
+        e1.start_date = date(2026, 8, 1); e1.save()
+        e2 = factories.make_event(store_product=sp2, code='EV-EARLY')
+        e2.start_date = date(2026, 6, 1); e2.save()
+
+        response = self.client.get(self.url, {'ordering': '-start_date'})
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['EV-LATE', 'EV-EARLY'])
+
+    def test_ordering_param_ignored_when_not_whitelisted(self):
+        from datetime import date
+        sp1 = factories.make_store_product(cat_product_code='Live5')
+        sp2 = factories.make_store_product(cat_product_code='Live6')
+        e1 = factories.make_event(store_product=sp1, code='EV-A')
+        e1.start_date = date(2026, 6, 1); e1.save()
+        e2 = factories.make_event(store_product=sp2, code='EV-B')
+        e2.start_date = date(2026, 8, 1); e2.save()
+
+        # Reject 'unsafe_field' — fall back to default (start_date asc).
+        response = self.client.get(self.url, {'ordering': 'unsafe_field'})
+        codes = [e['code'] for e in response.data['results']]
+        self.assertEqual(codes, ['EV-A', 'EV-B'])
+
+
+class AdminEventListPaginationTests(APITestCase):
+    def setUp(self):
+        self.url = '/api/tutorials/admin/events/'
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def test_page_size_param_respected(self):
+        for i in range(25):
+            sp = factories.make_store_product(cat_product_code=f'Live{i}')
+            factories.make_event(store_product=sp, code=f'EV-{i:03d}')
+        response = self.client.get(self.url, {'page_size': '10'})
+        self.assertEqual(len(response.data['results']), 10)
+        self.assertEqual(response.data['count'], 25)
+
+    def test_page_size_capped_at_max(self):
+        for i in range(5):
+            sp = factories.make_store_product(cat_product_code=f'Live{100+i}')
+            factories.make_event(store_product=sp, code=f'EV-{i:03d}')
+        response = self.client.get(self.url, {'page_size': '999'})
+        # max_page_size=200; we only have 5 events, all returned.
+        self.assertEqual(len(response.data['results']), 5)

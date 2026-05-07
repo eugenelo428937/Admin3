@@ -13,6 +13,13 @@ from tutorials.admin_serializers import AdminTutorialEventListSerializer
 from tutorials.models import TutorialEvents, TutorialSessions
 
 
+ALLOWED_ORDERING = {
+    'start_date', '-start_date',
+    'end_date', '-end_date',
+    'code', '-code',
+}
+
+
 class AdminTutorialEventPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = 'page_size'
@@ -54,6 +61,11 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
                     distinct=True,
                 ),
             )
-            .order_by('start_date')
         )
-        return apply_event_filters(qs, self.request.query_params)
+        qs = apply_event_filters(qs, self.request.query_params)
+        ordering = self.request.query_params.get('ordering')
+        if ordering and ordering in ALLOWED_ORDERING:
+            qs = qs.order_by(ordering)
+        else:
+            qs = qs.order_by('start_date')
+        return qs
