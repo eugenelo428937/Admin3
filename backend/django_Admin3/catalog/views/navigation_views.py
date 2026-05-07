@@ -14,7 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from django.db.models.functions import Coalesce
 from django.db.models import Prefetch
 
@@ -439,7 +439,7 @@ def advanced_product_search(request):
         }
     """
     from django.contrib.postgres.search import TrigramSimilarity
-    from store.models import Product as StoreProduct
+    from store.models import Product as StoreProduct, Purchasable
 
     # Get search parameters
     search_query = request.query_params.get('q', '').strip()
@@ -448,8 +448,18 @@ def advanced_product_search(request):
     variation_ids = request.query_params.getlist('variations')
     product_ids = request.query_params.getlist('products')
 
-    # Start with all active products
-    queryset = Product.objects.filter(is_active=True)
+    # Start with all active catalog products that have at least one available
+    # store-side purchasable backing them. Mirrors the Exists() pattern used
+    # by navigation_data so the canonical predicate is enforced uniformly,
+    # not only when a subject filter is supplied.
+    queryset = Product.objects.filter(is_active=True).filter(
+        Exists(
+            Purchasable.objects.available_now().filter(
+                kind='product',
+                product__product_product_variation__product_id=OuterRef('pk'),
+            )
+        )
+    )
 
     # Apply text search if provided
     if search_query:

@@ -67,11 +67,12 @@ class SearchAvailableTests(TestCase):
         url = reverse('catalog:advanced-search')
         resp = self.client.get(url, {'q': 'SearchableProduct'})
         self.assertEqual(resp.status_code, 200)
-        # advanced_product_search structures responses differently - adapt to
-        # whatever shape the response actually has. Verify the inactive
-        # store_product.pk is NOT present in any product list in the response.
-        for path in ['suggested_products', 'results', 'products']:
-            items = resp.data.get(path, []) if isinstance(resp.data, dict) else []
-            if isinstance(items, list):
-                ids = {item.get('id') for item in items if isinstance(item, dict)}
-                self.assertNotIn(self.sp.pk, ids)
+        # The inactive store product's CATALOG product (cp.pk) should not
+        # appear in any product list. The catalog Product's pk is what
+        # advanced_product_search returns at the top level.
+        # Walk the response: the catalog Product code 'SP01' should NOT
+        # appear anywhere in the products section, since the store-side
+        # product is inactive and there's no other available SKU.
+        import json
+        body = json.dumps(resp.data)
+        self.assertNotIn('SP01', body)
