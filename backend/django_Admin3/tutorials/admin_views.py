@@ -3,7 +3,7 @@
 All endpoints require ``IsSuperUser``. See
 ``docs/superpowers/specs/2026-05-07-tutorial-event-admin-design.md``.
 """
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
@@ -30,6 +30,12 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by('sequence')
             .select_related('venue')
             .prefetch_related('instructors__staff__user')
+            .annotate(
+                enrolled_count=Count(
+                    'registrations',
+                    filter=Q(registrations__is_active=True),
+                ),
+            )
         )
         return (
             TutorialEvents.objects
@@ -40,5 +46,12 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
                 'store_product__exam_session_subject__exam_session',
             )
             .prefetch_related(Prefetch('sessions', queryset=sessions_qs))
+            .annotate(
+                enrolled_distinct=Count(
+                    'sessions__registrations__student',
+                    filter=Q(sessions__registrations__is_active=True),
+                    distinct=True,
+                ),
+            )
             .order_by('start_date')
         )

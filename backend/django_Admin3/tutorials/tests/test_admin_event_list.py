@@ -74,3 +74,62 @@ class AdminEventListShapeTests(APITestCase):
         sessions = response.data['results'][0]['sessions']
         self.assertEqual([s['title'] for s in sessions], ['EV-MULTI-1', 'EV-MULTI-2'])
         self.assertEqual(sessions[0]['sequence'], 1)
+
+
+class AdminEventListEnrolmentCountsTests(APITestCase):
+    def setUp(self):
+        self.url = '/api/tutorials/admin/events/'
+        self.admin = User.objects.create_user(
+            username='admin', password='x', is_superuser=True, is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def test_event_enrolled_distinct_counts_each_student_once(self):
+        event = factories.make_event(code='EV-DIS')
+        s1 = factories.make_session(event=event, sequence=1, title='EV-DIS-1')
+        s2 = factories.make_session(event=event, sequence=2, title='EV-DIS-2')
+        alice = factories.make_student('alice')
+        bob = factories.make_student('bob')
+
+        # Alice in s1+s2, Bob in s2 only.
+        from orders.models import Order, OrderItem
+        a_oi = OrderItem.objects.create(
+            order=Order.objects.create(user=alice.user),
+            purchasable=event.store_product.purchasable_ptr,
+        )
+        b_oi = OrderItem.objects.create(
+            order=Order.objects.create(user=bob.user),
+            purchasable=event.store_product.purchasable_ptr,
+        )
+        from tutorials.models import TutorialRegistration
+        TutorialRegistration.objects.create(student=alice, tutorial_session=s1, order_item=a_oi)
+        TutorialRegistration.objects.create(student=alice, tutorial_session=s2, order_item=a_oi)
+        TutorialRegistration.objects.create(student=bob,   tutorial_session=s2, order_item=b_oi)
+
+        response = self.client.get(self.url)
+        ev = response.data['results'][0]
+        self.assertEqual(ev['enrolled_distinct'], 2)
+        sessions_by_seq = {s['sequence']: s for s in ev['sessions']}
+        self.assertEqual(sessions_by_seq[1]['enrolled_count'], 1)
+        self.assertEqual(sessions_by_seq[2]['enrolled_count'], 2)
+
+    def test_inactive_registrations_excluded_from_counts(self):
+        event = factories.make_event(code='EV-INACT')
+        s1 = factories.make_session(event=event, sequence=1, title='EV-INACT-1')
+        alice = factories.make_student('alice2')
+        from orders.models import Order, OrderItem
+        from tutorials.models import TutorialRegistration
+        oi = OrderItem.objects.create(
+            order=Order.objects.create(user=alice.user),
+            purchasable=event.store_product.purchasable_ptr,
+        )
+        reg = TutorialRegistration.objects.create(
+            student=alice, tutorial_session=s1, order_item=oi,
+        )
+        reg.is_active = False
+        reg.save()
+
+        response = self.client.get(self.url)
+        ev = response.data['results'][0]
+        self.assertEqual(ev['enrolled_distinct'], 0)
+        self.assertEqual(ev['sessions'][0]['enrolled_count'], 0)
