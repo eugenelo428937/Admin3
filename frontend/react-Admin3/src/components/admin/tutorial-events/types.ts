@@ -67,6 +67,7 @@ export interface FilterOptions {
   venues: VenueMini[];
   instructors: InstructorMini[];
   sittings: SittingMini[];
+  event_codes: string[];
 }
 
 export type AttendanceStatus = 'ATTENDED' | 'ABSENT' | 'LATE' | 'OTHER';

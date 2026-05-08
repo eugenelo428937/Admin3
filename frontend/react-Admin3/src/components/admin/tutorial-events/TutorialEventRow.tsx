@@ -44,38 +44,38 @@ export default function TutorialEventRow({ event, expanded, onToggle, onOpenAtte
   return (
     <>
       <TableRow>
-        <TableCell className="w-8">
+        <TableCell className="tw:w-8">
           <Button
             variant="ghost"
             size="icon"
             aria-label={expanded ? 'Collapse' : 'Expand'}
             onClick={onToggle}
           >
-            <Chev className="h-4 w-4" />
+            <Chev className="tw:h-4 tw:w-4" />
           </Button>
         </TableCell>
-        <TableCell className="font-mono">{event.code}</TableCell>
-        <TableCell>{formatDate(event.start_date)}</TableCell>
-        <TableCell>{formatDate(event.end_date)}</TableCell>
-        <TableCell>{event.venue?.name ?? '—'}</TableCell>
-        <TableCell>{formatInstructorList(event)}</TableCell>
-        <TableCell className="text-right">{event.enrolled_distinct}</TableCell>
+        <TableCell className="tw:font-mono tw:text-center">{event.code}</TableCell>
+        <TableCell className="tw:text-center">{formatDate(event.start_date)}</TableCell>
+        <TableCell className="tw:text-center">{formatDate(event.end_date)}</TableCell>
+        <TableCell className="tw:text-center">{event.venue?.name ?? '—'}</TableCell>
+        <TableCell className="tw:text-center">{formatInstructorList(event)}</TableCell>
+        <TableCell className="tw:text-center">{event.enrolled_distinct}</TableCell>
       </TableRow>
       {expanded && (
         <TableRow>
-          <TableCell colSpan={COL_COUNT} className="bg-muted/40">
+          <TableCell colSpan={COL_COUNT} className="tw:bg-muted/40 tw:p-0">
             {event.sessions.length === 0 ? (
-              <div className="p-4 text-sm text-muted-foreground">No sessions scheduled.</div>
+              <div className="tw:p-4 tw:text-sm tw:text-muted-foreground">No sessions scheduled.</div>
             ) : (
-              <table className="w-full text-sm">
+              <table className="tw:w-full tw:text-sm tw:table-fixed">
                 <thead>
-                  <tr className="text-left">
-                    <th className="px-2 py-1">Title</th>
-                    <th className="px-2 py-1">Start</th>
-                    <th className="px-2 py-1">End</th>
-                    <th className="px-2 py-1">Venue</th>
-                    <th className="px-2 py-1 text-right">Enrolled</th>
-                    <th className="w-8"></th>
+                  <tr>
+                    <th className="tw:px-3 tw:py-2 tw:text-center">Title</th>
+                    <th className="tw:px-3 tw:py-2 tw:text-center">Start</th>
+                    <th className="tw:px-3 tw:py-2 tw:text-center">End</th>
+                    <th className="tw:px-3 tw:py-2 tw:text-center">Venue</th>
+                    <th className="tw:px-3 tw:py-2 tw:text-center">Enrolled</th>
+                    <th className="tw:w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -84,16 +84,16 @@ export default function TutorialEventRow({ event, expanded, onToggle, onOpenAtte
                     const enabled = !Number.isNaN(start.getTime()) && start.getTime() <= Date.now();
                     return (
                       <tr key={s.id}>
-                        <td className="px-2 py-1">{s.title}</td>
-                        <td className="px-2 py-1">{formatDate(s.start_date)}</td>
-                        <td className="px-2 py-1">{formatDate(s.end_date)}</td>
-                        <td className="px-2 py-1">{s.venue?.name ?? '—'}</td>
-                        <td className="px-2 py-1 text-right">{s.enrolled_count}</td>
-                        <td>
+                        <td className="tw:px-3 tw:py-2 tw:text-center">{s.title}</td>
+                        <td className="tw:px-3 tw:py-2 tw:text-center">{formatDate(s.start_date)}</td>
+                        <td className="tw:px-3 tw:py-2 tw:text-center">{formatDate(s.end_date)}</td>
+                        <td className="tw:px-3 tw:py-2 tw:text-center">{s.venue?.name ?? '—'}</td>
+                        <td className="tw:px-3 tw:py-2 tw:text-center">{s.enrolled_count}</td>
+                        <td className="tw:px-3 tw:py-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" aria-label="More actions">
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontal className="tw:h-4 tw:w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">

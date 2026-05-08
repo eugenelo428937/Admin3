@@ -34,16 +34,16 @@ export default function TutorialEventList() {
       )}
 
       <div className="tw:rounded-[10px] tw:bg-card tw:py-2 tw:px-6">
-        <Table>
+        <Table className="tw:w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="tw:w-8"></TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Start</TableHead>
-              <TableHead>End</TableHead>
-              <TableHead>Venue</TableHead>
-              <TableHead>Instructor</TableHead>
-              <TableHead className="tw:text-right">Enrolled</TableHead>
+              <TableHead className="tw:text-center">Code</TableHead>
+              <TableHead className="tw:text-center">Start</TableHead>
+              <TableHead className="tw:text-center">End</TableHead>
+              <TableHead className="tw:text-center">Venue</TableHead>
+              <TableHead className="tw:text-center">Instructor</TableHead>
+              <TableHead className="tw:text-center">Enrolled</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -106,6 +106,13 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
             .select_related('staff__user')
         )
         sittings = ExamSession.objects.order_by('-start_date')
+        # Distinct event codes for the typeahead combobox in the filter bar.
+        event_codes = list(
+            TutorialEvents.objects
+            .order_by('code')
+            .values_list('code', flat=True)
+            .distinct()
+        )
 
         data = FilterOptionsSerializer({
             'subjects': subjects,
@@ -113,6 +120,7 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
             'venues': venues,
             'instructors': instructors,
             'sittings': sittings,
+            'event_codes': event_codes,
         }).data
         return Response(data)
 

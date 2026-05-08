@@ -28,8 +28,27 @@ class FilterOptionsTests(APITestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        for key in ('subjects', 'locations', 'venues', 'instructors', 'sittings'):
+        for key in (
+            'subjects', 'locations', 'venues', 'instructors',
+            'sittings', 'event_codes',
+        ):
             self.assertIn(key, response.data)
+
+    def test_event_codes_distinct_and_sorted(self):
+        # Codes should be returned sorted ascending, with no duplicates.
+        # (TutorialEvents.code is already unique at the DB level.)
+        sp1 = factories.make_store_product(subject=factories.make_subject('CP1'))
+        sp2 = factories.make_store_product(subject=factories.make_subject('SA1'))
+        sp3 = factories.make_store_product(subject=factories.make_subject('CB1'))
+        factories.make_event(store_product=sp1, code='CP1-A1')
+        factories.make_event(store_product=sp2, code='SA1-Z9')
+        factories.make_event(store_product=sp3, code='CB1-A2')
+
+        response = self.client.get(self.url)
+        codes = response.data['event_codes']
+        self.assertEqual(codes, sorted(codes))
+        self.assertEqual(set(codes), {'CP1-A1', 'SA1-Z9', 'CB1-A2'})
+        self.assertEqual(len(codes), len(set(codes)))
 
     def test_subject_shape(self):
         factories.make_event()

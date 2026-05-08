@@ -24,6 +24,7 @@ beforeEach(() => {
   mock.listEvents.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
   mock.filterOptions.mockResolvedValue({
     subjects: [], locations: [], venues: [], instructors: [], sittings: [],
+    event_codes: [],
   });
 });
 afterEach(() => vi.clearAllMocks());

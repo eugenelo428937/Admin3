@@ -121,6 +121,9 @@ class FilterOptionsSerializer(serializers.Serializer):
     venues = _VenueMiniSerializer(many=True, read_only=True)
     instructors = _InstructorMiniSerializer(many=True, read_only=True)
     sittings = _SittingMiniSerializer(many=True, read_only=True)
+    event_codes = serializers.ListField(
+        child=serializers.CharField(), read_only=True,
+    )
 
 
 class _StudentMiniSerializer(serializers.Serializer):

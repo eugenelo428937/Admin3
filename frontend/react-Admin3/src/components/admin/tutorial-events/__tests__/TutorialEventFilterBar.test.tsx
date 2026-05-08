@@ -10,6 +10,7 @@ const FILTER_OPTIONS: FilterOptions = {
   venues: [{ id: 5, name: 'BPP Centre' }],
   instructors: [{ id: 7, name: 'Karen Smith' }],
   sittings: [{ id: 17, session_code: '2024S', start_date: '', end_date: '' }],
+  event_codes: ['CP1-A1', 'CB1-A2'],
 };
 
 const baseVm = {
@@ -24,25 +25,46 @@ const baseVm = {
 };
 
 describe('TutorialEventFilterBar', () => {
-  it('renders code text input that calls setFilter("code")', async () => {
+  it('renders code typeahead input that calls setFilter("code")', async () => {
     const setFilter = vi.fn();
     render(<TutorialEventFilterBar vm={{ ...baseVm, setFilter } as any} />);
-    const input = screen.getByLabelText(/code/i);
+    const input = screen.getByLabelText(/tutorial event code/i);
     await userEvent.type(input, 'CP1');
     expect(setFilter).toHaveBeenCalled();
     const lastCall = setFilter.mock.calls.at(-1);
     expect(lastCall?.[0]).toBe('code');
   });
 
-  it('renders Clear filters button that calls clearFilters', async () => {
+  it('renders Clear button that calls clearFilters', async () => {
     const clearFilters = vi.fn();
     render(<TutorialEventFilterBar vm={{ ...baseVm, clearFilters } as any} />);
-    await userEvent.click(screen.getByRole('button', { name: /clear filters/i }));
+    await userEvent.click(screen.getByRole('button', { name: /clear/i }));
     expect(clearFilters).toHaveBeenCalled();
   });
 
-  it('renders nothing for the dropdowns while filterOptions is null', () => {
+  it('hides dropdown rows while filterOptions is null but still shows the code input', () => {
     render(<TutorialEventFilterBar vm={{ ...baseVm, filterOptions: null } as any} />);
-    expect(screen.queryByRole('combobox', { name: /subject/i })).not.toBeInTheDocument();
+    // The Code typeahead is always present.
+    expect(screen.getByLabelText(/tutorial event code/i)).toBeInTheDocument();
+    // The Combobox-popover triggers (rendered as buttons) should not appear.
+    expect(
+      screen.queryByRole('button', { name: /any subject/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /any location/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /any venue/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /any instructor/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders a datalist option per known event code', () => {
+    const { container } = render(<TutorialEventFilterBar vm={baseVm as any} />);
+    const options = container.querySelectorAll('datalist option');
+    const values = Array.from(options).map((o) => (o as HTMLOptionElement).value);
+    expect(values).toEqual(expect.arrayContaining(['CP1-A1', 'CB1-A2']));
   });
 });

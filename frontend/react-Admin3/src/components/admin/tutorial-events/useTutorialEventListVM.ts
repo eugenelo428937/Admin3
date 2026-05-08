@@ -59,11 +59,23 @@ export default function useTutorialEventListVM() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initial fetch of filter options.
+  // Initial fetch of filter options. Once we know the available sittings,
+  // default the sitting filter to the latest one (backend returns sittings
+  // ordered by `-start_date`, so index 0 is the latest).
   useEffect(() => {
     let cancelled = false;
     service.filterOptions().then(opts => {
-      if (!cancelled) setFilterOptions(opts);
+      if (cancelled) return;
+      setFilterOptions(opts);
+      const latest = opts.sittings[0];
+      if (latest) {
+        setFilters(prev =>
+          prev.sitting_id === null ? { ...prev, sitting_id: latest.id } : prev,
+        );
+        setAppliedFilters(prev =>
+          prev.sitting_id === null ? { ...prev, sitting_id: latest.id } : prev,
+        );
+      }
     }).catch(() => { /* filter bar will fall back to no dropdown options */ });
     return () => { cancelled = true; };
   }, []);
@@ -111,9 +123,15 @@ export default function useTutorialEventListVM() {
   );
 
   const clearFilters = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
+    // Clearing reverts to "latest sitting" rather than "no sitting", to keep
+    // the UI consistent with the initial-load default.
+    const latest = filterOptions?.sittings?.[0];
+    setFilters({
+      ...DEFAULT_FILTERS,
+      sitting_id: latest ? latest.id : null,
+    });
     setPagination(p => ({ page: 1, pageSize: p.pageSize }));
-  }, []);
+  }, [filterOptions]);
 
   const toggleExpanded = useCallback((id: number) => {
     setExpandedIds(prev => {
