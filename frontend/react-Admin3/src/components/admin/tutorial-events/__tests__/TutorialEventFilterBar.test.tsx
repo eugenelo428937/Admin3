@@ -59,10 +59,11 @@ describe('TutorialEventFilterBar', () => {
     expect(screen.queryByRole('combobox', { name: /^sitting$/i })).not.toBeInTheDocument();
   });
 
-  it('caps the code suggestion list at 5 items and matches by substring', async () => {
+  it('caps the code suggestion list at 10 items and matches by substring', async () => {
+    // Seed 12 matches so the cap kicks in.
     const many: FilterOptions = {
       ...FILTER_OPTIONS,
-      event_codes: ['CP1-A1', 'CP1-A2', 'CP1-B1', 'CP1-B2', 'CP1-C1', 'CP1-C2'],
+      event_codes: Array.from({ length: 12 }, (_, i) => `CP1-${String(i).padStart(2, '0')}`),
     };
     render(
       <TutorialEventFilterBar
@@ -74,7 +75,33 @@ describe('TutorialEventFilterBar', () => {
     await userEvent.click(input);
 
     const options = await screen.findAllByRole('option');
-    expect(options).toHaveLength(5);
+    expect(options).toHaveLength(10);
+  });
+
+  it('shows a "…more" row when filtered results exceed the cap; clicking it reveals the rest', async () => {
+    const many: FilterOptions = {
+      ...FILTER_OPTIONS,
+      event_codes: Array.from({ length: 12 }, (_, i) => `CP1-${String(i).padStart(2, '0')}`),
+    };
+    render(
+      <TutorialEventFilterBar
+        vm={{ ...baseVm, filterOptions: many, filters: { ...baseVm.filters, code: 'CP1' } } as any}
+      />,
+    );
+
+    const input = screen.getByRole('combobox', { name: /tutorial event code/i });
+    await userEvent.click(input);
+
+    // 12 - 10 = 2 hidden ⇒ row reads "…more (2)".
+    const more = await screen.findByText(/…more \(2\)/);
+    expect(more).toBeInTheDocument();
+
+    await userEvent.click(more);
+
+    const options = await screen.findAllByRole('option');
+    expect(options).toHaveLength(12);
+    // No more "…more" row now that everything is visible.
+    expect(screen.queryByText(/…more/)).not.toBeInTheDocument();
   });
 
   it('clicking a code suggestion sets the value and closes the popover', async () => {

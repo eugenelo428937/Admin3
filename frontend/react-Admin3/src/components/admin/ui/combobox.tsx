@@ -57,6 +57,10 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [activeIndex, setActiveIndex] = React.useState(-1)
+  // When the filtered list exceeds `maxVisible`, we show a single
+  // "Show all" row at the bottom that the user can click (or press
+  // Enter on) to reveal the rest. This state controls that toggle.
+  const [expanded, setExpanded] = React.useState(false)
 
   // What the input should display when not actively being edited.
   const displayValue = React.useMemo(() => {
@@ -71,22 +75,38 @@ export function Combobox({
     setInputValue(displayValue)
   }, [displayValue])
 
-  // Filter visible options by the typed substring. Skip filtering when
-  // the typed text exactly matches the currently selected label
-  // (otherwise opening a popover with a value already chosen would
-  // narrow the list to that single item).
-  const visible = React.useMemo(() => {
+  // Full filtered list (un-capped). Skip filtering when the typed text
+  // exactly matches the currently selected label (otherwise opening a
+  // popover with a value already chosen would narrow the list to that
+  // single item).
+  const filtered = React.useMemo(() => {
     const q = inputValue.trim().toLowerCase()
-    let list = options
     if (q && q !== displayValue.toLowerCase()) {
-      list = options.filter((o) => o.label.toLowerCase().includes(q))
-    } else if (q && freeText) {
+      return options.filter((o) => o.label.toLowerCase().includes(q))
+    }
+    if (q && freeText) {
       // In freeText mode, filter even when q === value, because there's
       // no "current selection" to special-case.
-      list = options.filter((o) => o.label.toLowerCase().includes(q))
+      return options.filter((o) => o.label.toLowerCase().includes(q))
     }
-    return maxVisible != null ? list.slice(0, maxVisible) : list
-  }, [options, inputValue, maxVisible, freeText, displayValue])
+    return options
+  }, [options, inputValue, freeText, displayValue])
+
+  // Visible slice — capped to `maxVisible` unless the user has clicked
+  // "Show all", or `maxVisible` isn't set.
+  const visible = React.useMemo(() => {
+    if (maxVisible == null || expanded) return filtered
+    return filtered.slice(0, maxVisible)
+  }, [filtered, maxVisible, expanded])
+
+  // Whether to render the trailing "Show all" row.
+  const showMoreRow =
+    !expanded && maxVisible != null && filtered.length > maxVisible
+  const moreCount = filtered.length - (maxVisible ?? 0)
+  // Index of the "Show all" row inside the listbox (after the visible
+  // options). -1 when not rendered.
+  const moreIndex = showMoreRow ? visible.length : -1
+  const lastIndex = visible.length - 1 + (showMoreRow ? 1 : 0)
 
   const selectOption = (opt: ComboboxOption) => {
     if (freeText) {
@@ -99,6 +119,7 @@ export function Combobox({
     }
     setOpen(false)
     setActiveIndex(-1)
+    setExpanded(false)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +127,9 @@ export function Combobox({
     setInputValue(next)
     if (!open) setOpen(true)
     setActiveIndex(0)
+    // A new search starts collapsed; users see the top-N before deciding
+    // they want everything.
+    setExpanded(false)
     if (freeText) {
       onValueChange(next)
     } else if (next === "") {
@@ -114,11 +138,23 @@ export function Combobox({
     }
   }
 
+  // Collapse again whenever the popover closes so the next open shows
+  // the top-N first.
+  React.useEffect(() => {
+    if (!open) setExpanded(false)
+  }, [open])
+
   const handleBlur = () => {
     // Revert stale typing in constrained mode if no option was picked.
     if (!freeText && inputValue !== displayValue) {
       setInputValue(displayValue)
     }
+  }
+
+  const expandAll = () => {
+    setExpanded(true)
+    // Park the highlight on the first newly-revealed item.
+    setActiveIndex(maxVisible ?? 0)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -129,11 +165,16 @@ export function Combobox({
         setActiveIndex(0)
         return
       }
-      setActiveIndex((prev) => Math.min(visible.length - 1, prev + 1))
+      setActiveIndex((prev) => Math.min(lastIndex, prev + 1))
     } else if (e.key === "ArrowUp") {
       e.preventDefault()
       setActiveIndex((prev) => Math.max(0, prev - 1))
     } else if (e.key === "Enter") {
+      if (open && activeIndex === moreIndex && moreIndex >= 0) {
+        e.preventDefault()
+        expandAll()
+        return
+      }
       if (open && activeIndex >= 0 && visible[activeIndex]) {
         e.preventDefault()
         selectOption(visible[activeIndex])
@@ -238,6 +279,23 @@ export function Combobox({
                 </li>
               )
             })}
+            {showMoreRow && (
+              <li
+                key="__show_all__"
+                id={`${listboxId}-more`}
+                role="presentation"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={expandAll}
+                onMouseEnter={() => setActiveIndex(moreIndex)}
+                className={cn(
+                  "tw:flex tw:items-center tw:gap-2 tw:px-3 tw:py-2 tw:text-sm tw:cursor-pointer tw:text-muted-foreground tw:font-medium tw:border-t tw:border-border",
+                  activeIndex === moreIndex && "tw:bg-accent tw:text-accent-foreground",
+                )}
+              >
+                <span className="tw:w-4 tw:shrink-0" aria-hidden />
+                <span>…more ({moreCount})</span>
+              </li>
+            )}
           </ul>
         )}
       </PopoverContent>

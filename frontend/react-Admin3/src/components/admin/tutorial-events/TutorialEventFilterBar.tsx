@@ -13,7 +13,7 @@ interface VM {
 }
 
 const ALL_SITTINGS_SENTINEL = '__all__';
-const MAX_VISIBLE = 5;
+const MAX_VISIBLE = 10;
 
 export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
   const { filters, filterOptions, setFilter, clearFilters } = vm;
