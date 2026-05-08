@@ -67,7 +67,7 @@ class TestCatalogTablesExist(TestCase):
             """)
             columns = [row[0] for row in cursor.fetchall()]
 
-        expected_columns = ['id', 'code', 'description', 'active', 'created_at', 'updated_at']
+        expected_columns = ['id', 'code', 'description', 'subject_type', 'active', 'created_at', 'updated_at']
         for col in expected_columns:
             with self.subTest(column=col):
                 self.assertIn(col, columns, f"Column '{col}' should exist in acted.catalog_subjects")
