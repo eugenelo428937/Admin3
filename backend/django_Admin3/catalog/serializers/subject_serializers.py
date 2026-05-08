@@ -31,7 +31,9 @@ class SubjectSerializer(serializers.ModelSerializer):
         subject_type (str): One of 'UK', 'SA', 'CAA', 'PMS'
         subject_type_display (str): Read-only human label
     """
+    # Frontend compatibility: name aliases description
     name = serializers.CharField(source='description', read_only=True)
+    # Human-readable label for the subject_type enum (e.g. 'UK Exam')
     subject_type_display = serializers.CharField(
         source='get_subject_type_display', read_only=True
     )
