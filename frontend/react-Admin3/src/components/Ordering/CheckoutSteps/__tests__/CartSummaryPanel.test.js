@@ -478,7 +478,11 @@ describe('CartSummaryPanel', () => {
     });
   });
 
-  describe('Snapshot Tests (T032 - Regression Detection)', () => {
+  // Skipped: full-DOM MUI snapshots churn on every patch version and
+  // *.snap files are gitignored (see CheckoutSteps.integration.test.js
+  // for the same pattern). Re-enable by removing `.skip` and committing
+  // a fresh snapshot if you want regression detection here.
+  describe.skip('Snapshot Tests (T032 - Regression Detection)', () => {
     const emptyCartVat = {
       totals: {
         subtotal: 0,
