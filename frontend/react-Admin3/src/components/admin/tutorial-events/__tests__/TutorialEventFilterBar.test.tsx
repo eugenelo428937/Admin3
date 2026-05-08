@@ -25,11 +25,18 @@ const baseVm = {
 };
 
 describe('TutorialEventFilterBar', () => {
-  it('renders code typeahead input that calls setFilter("code")', async () => {
+  it('renders code typeahead combobox; typing in popover calls setFilter("code")', async () => {
     const setFilter = vi.fn();
     render(<TutorialEventFilterBar vm={{ ...baseVm, setFilter } as any} />);
-    const input = screen.getByLabelText(/tutorial event code/i);
+
+    // The trigger is the Combobox-style button labeled "Tutorial event code".
+    const trigger = screen.getByRole('combobox', { name: /tutorial event code/i });
+    await userEvent.click(trigger);
+
+    // CommandInput inside the popover handles typing.
+    const input = screen.getByPlaceholderText(/type code/i);
     await userEvent.type(input, 'CP1');
+
     expect(setFilter).toHaveBeenCalled();
     const lastCall = setFilter.mock.calls.at(-1);
     expect(lastCall?.[0]).toBe('code');
@@ -42,11 +49,13 @@ describe('TutorialEventFilterBar', () => {
     expect(clearFilters).toHaveBeenCalled();
   });
 
-  it('hides dropdown rows while filterOptions is null but still shows the code input', () => {
+  it('hides dropdown rows while filterOptions is null but still shows the code combobox', () => {
     render(<TutorialEventFilterBar vm={{ ...baseVm, filterOptions: null } as any} />);
     // The Code typeahead is always present.
-    expect(screen.getByLabelText(/tutorial event code/i)).toBeInTheDocument();
-    // The Combobox-popover triggers (rendered as buttons) should not appear.
+    expect(
+      screen.getByRole('combobox', { name: /tutorial event code/i }),
+    ).toBeInTheDocument();
+    // The other Combobox triggers should not be rendered.
     expect(
       screen.queryByRole('button', { name: /any subject/i }),
     ).not.toBeInTheDocument();
@@ -59,12 +68,27 @@ describe('TutorialEventFilterBar', () => {
     expect(
       screen.queryByRole('button', { name: /any instructor/i }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /all sittings/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('renders a datalist option per known event code', () => {
-    const { container } = render(<TutorialEventFilterBar vm={baseVm as any} />);
-    const options = container.querySelectorAll('datalist option');
-    const values = Array.from(options).map((o) => (o as HTMLOptionElement).value);
-    expect(values).toEqual(expect.arrayContaining(['CP1-A1', 'CB1-A2']));
+  it('caps the typeahead suggestion list at 5 items and matches by substring', async () => {
+    const many: FilterOptions = {
+      ...FILTER_OPTIONS,
+      event_codes: ['CP1-A1', 'CP1-A2', 'CP1-B1', 'CP1-B2', 'CP1-C1', 'CP1-C2'],
+    };
+    render(
+      <TutorialEventFilterBar
+        vm={{ ...baseVm, filterOptions: many, filters: { ...baseVm.filters, code: 'CP1' } } as any}
+      />,
+    );
+
+    const trigger = screen.getByRole('combobox', { name: /tutorial event code/i });
+    await userEvent.click(trigger);
+
+    // Suggestion items render as role="option" inside the Command list.
+    const options = await screen.findAllByRole('option');
+    expect(options).toHaveLength(5);
   });
 });

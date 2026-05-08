@@ -30,6 +30,13 @@ interface ComboboxProps {
   searchPlaceholder?: string
   emptyMessage?: string
   className?: string
+  /**
+   * When set, replaces cmdk's auto-filter with a case-insensitive substring
+   * filter and slices the visible list to this many entries. Use this to
+   * keep long option lists (instructors, subjects) compact in dense filter
+   * panels.
+   */
+  maxVisible?: number
 }
 
 export function Combobox({
@@ -40,8 +47,20 @@ export function Combobox({
   searchPlaceholder = "Search...",
   emptyMessage = "No results found.",
   className,
+  maxVisible,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+
+  const useManualFilter = maxVisible != null
+
+  const visible = React.useMemo(() => {
+    if (!useManualFilter) return options
+    const q = search.trim().toLowerCase()
+    let list = options
+    if (q) list = options.filter((o) => o.label.toLowerCase().includes(q))
+    return list.slice(0, maxVisible)
+  }, [options, search, maxVisible, useManualFilter])
 
   const selectedLabel = React.useMemo(
     () => options.find((opt) => opt.value === value)?.label,
@@ -68,12 +87,20 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="tw:w-[--radix-popover-trigger-width] tw:p-0">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command shouldFilter={!useManualFilter}>
+          {useManualFilter ? (
+            <CommandInput
+              placeholder={searchPlaceholder}
+              value={search}
+              onValueChange={setSearch}
+            />
+          ) : (
+            <CommandInput placeholder={searchPlaceholder} />
+          )}
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {visible.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}

@@ -1,10 +1,9 @@
-import * as React from 'react';
 import { X } from 'lucide-react';
 import { Input } from '@/components/admin/ui/input';
 import { Label } from '@/components/admin/ui/label';
 import { Button } from '@/components/admin/ui/button';
 import { Combobox } from '@/components/admin/ui/combobox';
-import { AdminSelect } from '@/components/admin/composed/AdminSelect';
+import TypeaheadCombobox from './TypeaheadCombobox';
 import type { EventFilters, FilterOptions } from './types';
 
 interface VM {
@@ -15,43 +14,7 @@ interface VM {
 }
 
 const ALL_SITTINGS_SENTINEL = '__all__';
-
-/**
- * Free-text combobox for the Code field: an Input wired to a native
- * `<datalist>` of known event codes. The user can pick a suggestion or type
- * an arbitrary substring; the value submitted to the backend is whatever is
- * typed (substring match preserved).
- */
-function CodeTypeahead({
-  value,
-  options,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  const datalistId = React.useId();
-  return (
-    <>
-      <Input
-        id="filter-code"
-        list={datalistId}
-        autoComplete="off"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-      <datalist id={datalistId}>
-        {options.map((code) => (
-          <option key={code} value={code} />
-        ))}
-      </datalist>
-    </>
-  );
-}
+const MAX_VISIBLE = 5;
 
 export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
   const { filters, filterOptions, setFilter, clearFilters } = vm;
@@ -118,12 +81,16 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
       {/* Row 1: Code (always shown) / Subject / Sitting */}
       <div className="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:lg:grid-cols-4 tw:gap-4">
         <div className="tw:space-y-1.5">
-          <Label htmlFor="filter-code">Tutorial event code</Label>
-          <CodeTypeahead
+          <Label>Tutorial event code</Label>
+          <TypeaheadCombobox
             value={filters.code}
+            onValueChange={(v) => setFilter('code', v)}
             options={eventCodeOptions}
-            onChange={(v) => setFilter('code', v)}
             placeholder="e.g. CP1"
+            searchPlaceholder="Type code…"
+            emptyMessage="No matching codes."
+            maxVisible={MAX_VISIBLE}
+            ariaLabel="Tutorial event code"
           />
         </div>
 
@@ -138,19 +105,27 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
                 placeholder="Any subject"
                 searchPlaceholder="Search subject…"
                 emptyMessage="No subjects found."
+                maxVisible={MAX_VISIBLE}
               />
             </div>
 
             <div className="tw:space-y-1.5">
               <Label>Sitting</Label>
-              <AdminSelect
+              <Combobox
                 options={sittingOptions}
                 value={sittingValue || ALL_SITTINGS_SENTINEL}
-                onChange={(v) => {
-                  if (v === ALL_SITTINGS_SENTINEL) return setFilter('sitting_id', 'all');
+                onValueChange={(v) => {
+                  // Combobox returns '' when an item is re-selected (toggle off).
+                  // Treat that and the "All sittings" sentinel the same way.
+                  if (!v || v === ALL_SITTINGS_SENTINEL) {
+                    return setFilter('sitting_id', 'all');
+                  }
                   setFilter('sitting_id', Number(v));
                 }}
                 placeholder="All sittings"
+                searchPlaceholder="Search sitting…"
+                emptyMessage="No sittings found."
+                maxVisible={MAX_VISIBLE}
               />
             </div>
           </>
@@ -169,6 +144,7 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               placeholder="Any location"
               searchPlaceholder="Search location…"
               emptyMessage="No locations found."
+              maxVisible={MAX_VISIBLE}
             />
           </div>
 
@@ -181,6 +157,7 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               placeholder="Any venue"
               searchPlaceholder="Search venue…"
               emptyMessage="No venues found."
+              maxVisible={MAX_VISIBLE}
             />
           </div>
 
@@ -193,12 +170,13 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               placeholder="Any instructor"
               searchPlaceholder="Search instructor…"
               emptyMessage="No instructors found."
+              maxVisible={MAX_VISIBLE}
             />
           </div>
         </div>
       )}
 
-      {/* Row 3: Start date range */}
+      {/* Row 3: Date ranges */}
       <div className="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:lg:grid-cols-4 tw:gap-4">
         <div className="tw:space-y-1.5">
           <Label>Start date</Label>
