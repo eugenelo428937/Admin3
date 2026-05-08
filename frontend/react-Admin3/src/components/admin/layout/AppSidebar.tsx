@@ -75,6 +75,16 @@ const navGroups = [
          //  },
       ],
    },
+  //  {
+  //     label: "Tutorials",
+  //     items: [
+  //        {
+  //           label: "Tutorial Events",
+  //           path: "/admin/tutorial-events",
+  //           icon: ClipboardCheck,
+  //        },
+  //     ],
+  //  },
    {
       label: "Email System",
       items: [

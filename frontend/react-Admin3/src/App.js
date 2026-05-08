@@ -116,6 +116,9 @@ const LegacyOrderList = React.lazy(() => import("./components/admin/legacy-order
 const AdminOrderList = React.lazy(() => import("./components/admin/orders/OrderList.tsx"));
 const AdminOrderDetail = React.lazy(() => import("./components/admin/orders/OrderDetail.tsx"));
 
+// Admin: Tutorial Events
+const TutorialEventList = React.lazy(() => import("./components/admin/tutorial-events/TutorialEventList"));
+
 const system = createSystem(defaultConfig);
 
 const LazyFallback = () => (
@@ -352,6 +355,9 @@ function App() {
 									{/* Admin: Orders */}
 									<Route path="/admin/orders" element={<AdminOrderList />} />
 									<Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
+
+									{/* Admin: Tutorial Events */}
+									<Route path="/admin/tutorial-events" element={<TutorialEventList />} />
 
 									{/* Admin: Legacy Product Archive */}
 									<Route path="/admin/legacy-products" element={<LegacyProductList />} />

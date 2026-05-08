@@ -331,3 +331,50 @@ class TestProductBundleSerializer(CatalogTestDataMixin, TestCase):
 
         self.assertIn('created_at', read_only_fields)
         self.assertIn('updated_at', read_only_fields)
+
+
+class TestSubjectSerializerSubjectType(CatalogTestDataMixin, TestCase):
+    """TDD RED: SubjectSerializer exposes subject_type and subject_type_display."""
+
+    def setUp(self):
+        super().setUp()
+        self.setup_catalog_test_data()
+
+    def test_serializer_includes_subject_type(self):
+        """Serialized output contains subject_type and subject_type_display."""
+        from catalog.serializers import SubjectSerializer
+        data = SubjectSerializer(self.subject_cm2).data
+        self.assertIn('subject_type', data)
+        self.assertIn('subject_type_display', data)
+
+    def test_serializer_default_subject_type_is_uk(self):
+        """A subject created without subject_type serializes as 'UK' / 'UK Exam'."""
+        from catalog.serializers import SubjectSerializer
+        data = SubjectSerializer(self.subject_cm2).data
+        self.assertEqual(data['subject_type'], 'UK')
+        self.assertEqual(data['subject_type_display'], 'UK Exam')
+
+    def test_serializer_writable_subject_type(self):
+        """Deserializing valid input persists subject_type."""
+        from catalog.serializers import SubjectSerializer
+        serializer = SubjectSerializer(data={
+            'code': 'ZZ9',
+            'description': 'serializer write test',
+            'subject_type': 'SA',
+            'active': True,
+        })
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        instance = serializer.save()
+        self.assertEqual(instance.subject_type, 'SA')
+
+    def test_serializer_rejects_invalid_subject_type(self):
+        """Deserializing invalid subject_type fails validation on that field."""
+        from catalog.serializers import SubjectSerializer
+        serializer = SubjectSerializer(data={
+            'code': 'ZZ8',
+            'description': 'invalid type',
+            'subject_type': 'XX',
+            'active': True,
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('subject_type', serializer.errors)

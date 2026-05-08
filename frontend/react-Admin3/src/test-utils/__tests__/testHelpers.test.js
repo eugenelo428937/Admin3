@@ -378,13 +378,15 @@ describe('Test Helpers Module', () => {
       expect(duration).toBeLessThan(50);
     });
 
-    it('mockProductsApi should complete in < 10ms', () => {
+    it('mockProductsApi should complete in < 25ms', () => {
       const start = performance.now();
 
       mockProductsApi();
 
       const duration = performance.now() - start;
-      expect(duration).toBeLessThan(10);
+      // 10ms was too tight for noisy CI runners (intermittently saw 10.1–11ms);
+      // 25ms still catches order-of-magnitude regressions in the mock.
+      expect(duration).toBeLessThan(25);
     });
   });
 });

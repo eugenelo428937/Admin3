@@ -88,14 +88,14 @@ class TestSubjectViewSet(CatalogAPITestCase):
             )
 
     def test_list_subjects_cached(self):
-        """List endpoint should use caching with key 'subjects_list_v1' (T025)."""
+        """List endpoint should use caching with key 'subjects_list_v2:type=all' (T025)."""
         # First request - should populate cache
         response1 = self.client.get('/api/catalog/subjects/')
         self.assertEqual(response1.status_code, status.HTTP_200_OK)
 
         # Cache should be populated
-        cached_data = cache.get('subjects_list_v1')
-        self.assertIsNotNone(cached_data, "subjects_list_v1 cache key should be set")
+        cached_data = cache.get('subjects_list_v2:type=all')
+        self.assertIsNotNone(cached_data, "subjects_list_v2:type=all cache key should be set")
 
         # Create a new subject - should not affect cached response
         create_subject(code='TEST', description='Test Subject')
@@ -122,6 +122,10 @@ class TestSubjectViewSet(CatalogAPITestCase):
         data = response.json()
         self.assertEqual(data['code'], 'CM2')
         self.assertEqual(data['description'], 'Financial Mathematics')
+        # Confirm subject_type fields are surfaced via retrieve, not just list
+        self.assertIn('subject_type', data)
+        self.assertEqual(data['subject_type'], 'UK')
+        self.assertEqual(data['subject_type_display'], 'UK Exam')
 
     def test_create_subject_requires_superuser(self):
         """Create endpoint should require superuser permission (T026)."""
@@ -196,6 +200,62 @@ class TestSubjectViewSet(CatalogAPITestCase):
         data = response.json()
         self.assertIn('errors', data)
         self.assertGreater(len(data['errors']), 0)
+
+    def test_list_subjects_filtered_by_subject_type(self):
+        """GET /api/catalog/subjects/?subject_type=SA returns only SA subjects."""
+        from catalog.models import Subject
+
+        # Promote one fixture subject to SA, leave the rest as default UK
+        sa_subject = Subject.objects.filter(active=True).order_by('code').first()
+        sa_subject.subject_type = 'SA'
+        sa_subject.save()
+
+        # Bust the cache so the filtered request goes through the live query
+        cache.clear()
+
+        # Filter to SA: should return exactly the one SA subject
+        response = self.client.get('/api/catalog/subjects/?subject_type=SA')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        codes = [s['code'] for s in data]
+        self.assertEqual(codes, [sa_subject.code])
+
+        # Filter to UK: should NOT include the SA subject we just promoted
+        cache.clear()
+        response = self.client.get('/api/catalog/subjects/?subject_type=UK')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        uk_codes = [s['code'] for s in response.json()]
+        self.assertNotIn(sa_subject.code, uk_codes)
+        # And every returned row should carry the new fields
+        for s in response.json():
+            self.assertIn('subject_type', s)
+            self.assertIn('subject_type_display', s)
+            self.assertEqual(s['subject_type'], 'UK')
+            self.assertEqual(s['subject_type_display'], 'UK Exam')
+
+    def test_list_subjects_invalid_filter_does_not_poison_cache(self):
+        """An unknown subject_type filter must not corrupt the unfiltered cache.
+
+        Regression test for cache-key collision: ?subject_type=all (or any
+        value outside the enum) was previously sharing the unfiltered
+        cache slot, causing empty results for up to 5 minutes.
+        """
+        # Sanity: unfiltered request gets a non-empty list and seeds cache
+        cache.clear()
+        response = self.client.get('/api/catalog/subjects/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        initial_codes = [s['code'] for s in response.json()]
+        self.assertGreater(len(initial_codes), 0)
+
+        # Issue an invalid filter — must not cache empty under the unfiltered key
+        response = self.client.get('/api/catalog/subjects/?subject_type=all')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Unfiltered request must still return the original active subjects
+        response = self.client.get('/api/catalog/subjects/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        codes = [s['code'] for s in response.json()]
+        self.assertEqual(sorted(codes), sorted(initial_codes))
 
 
 class TestExamSessionViewSet(CatalogAPITestCase):
