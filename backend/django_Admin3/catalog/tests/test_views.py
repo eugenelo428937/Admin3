@@ -88,14 +88,14 @@ class TestSubjectViewSet(CatalogAPITestCase):
             )
 
     def test_list_subjects_cached(self):
-        """List endpoint should use caching with key 'subjects_list_v1' (T025)."""
+        """List endpoint should use caching with key 'subjects_list_v2:type=all' (T025)."""
         # First request - should populate cache
         response1 = self.client.get('/api/catalog/subjects/')
         self.assertEqual(response1.status_code, status.HTTP_200_OK)
 
         # Cache should be populated
-        cached_data = cache.get('subjects_list_v1')
-        self.assertIsNotNone(cached_data, "subjects_list_v1 cache key should be set")
+        cached_data = cache.get('subjects_list_v2:type=all')
+        self.assertIsNotNone(cached_data, "subjects_list_v2:type=all cache key should be set")
 
         # Create a new subject - should not affect cached response
         create_subject(code='TEST', description='Test Subject')

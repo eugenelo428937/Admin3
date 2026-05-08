@@ -5,7 +5,8 @@ Location: catalog/views/subject_views.py
 Model: catalog.models.Subject
 
 Features:
-- Cached list endpoint (5-minute TTL, key: subjects_list_v1)
+- Cached list endpoint (5-minute TTL, key: subjects_list_v2:type=<filter>)
+- Optional subject_type filter (UK, SA, CAA, PMS)
 - Only returns active subjects in list
 - Bulk import action for batch creation
 - Permission: AllowAny for reads, IsSuperUser for writes (FR-013)
@@ -33,7 +34,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
         - create, update, destroy, bulk_import: IsSuperUser
 
     Cache:
-        - Key: subjects_list_v1
+        - Key: subjects_list_v2:type=<filter> (one entry per subject_type value + "all")
         - TTL: 300 seconds (5 minutes)
     """
     queryset = Subject.objects.all()
@@ -54,25 +55,35 @@ class SubjectViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        List all active subjects with caching.
+        List active subjects with caching, optionally filtered by subject_type.
 
-        OPTIMIZED: Cache subjects list for 5 minutes.
+        OPTIMIZED: Cache subjects list for 5 minutes per filter value.
         Subjects rarely change and are fetched on every navigation menu load.
 
+        Query params:
+            subject_type (optional): One of 'UK', 'SA', 'CAA', 'PMS'.
+
         Returns:
-            List of subjects with id, code, description, name (alias for description)
+            List of subjects with id, code, description, name, active,
+            subject_type, subject_type_display.
         """
-        cache_key = 'subjects_list_v1'
+        subject_type = request.query_params.get('subject_type')
+        cache_key = f'subjects_list_v2:type={subject_type or "all"}'
         cached_data = cache.get(cache_key)
         if cached_data:
             return Response(cached_data)
 
-        # Only fetch active subjects, use lightweight .values() query
-        subjects = Subject.objects.filter(active=True).order_by('code').values(
-            'id', 'code', 'description', 'active'
+        qs = Subject.objects.filter(active=True)
+        if subject_type:
+            qs = qs.filter(subject_type=subject_type)
+
+        subjects = qs.order_by('code').values(
+            'id', 'code', 'description', 'active', 'subject_type'
         )
 
-        # Format to match serializer output (add 'name' alias for 'description')
+        # Build a code->label lookup once per request
+        type_label_map = dict(Subject.SubjectType.choices)
+
         result = [
             {
                 'id': s['id'],
@@ -80,6 +91,8 @@ class SubjectViewSet(viewsets.ModelViewSet):
                 'description': s['description'],
                 'name': s['description'],  # Frontend compatibility alias
                 'active': s['active'],
+                'subject_type': s['subject_type'],
+                'subject_type_display': type_label_map.get(s['subject_type'], ''),
             }
             for s in subjects
         ]
@@ -115,8 +128,15 @@ class SubjectViewSet(viewsets.ModelViewSet):
                 if serializer.is_valid():
                     serializer.save()
                     created_subjects.append(serializer.data)
-                    # Invalidate cache when new subjects are created
-                    cache.delete('subjects_list_v1')
+                    # Invalidate cache when new subjects are created.
+                    # Multiple entries exist (one per subject_type filter), so
+                    # use delete_pattern when available, else delete known keys.
+                    if hasattr(cache, 'delete_pattern'):
+                        cache.delete_pattern('subjects_list_v2:*')
+                    else:
+                        cache.delete('subjects_list_v2:type=all')
+                        for code, _ in Subject.SubjectType.choices:
+                            cache.delete(f'subjects_list_v2:type={code}')
                 else:
                     errors.append({
                         'code': subject_data.get('code'),
