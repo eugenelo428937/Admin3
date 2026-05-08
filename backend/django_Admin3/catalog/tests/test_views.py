@@ -122,6 +122,10 @@ class TestSubjectViewSet(CatalogAPITestCase):
         data = response.json()
         self.assertEqual(data['code'], 'CM2')
         self.assertEqual(data['description'], 'Financial Mathematics')
+        # Confirm subject_type fields are surfaced via retrieve, not just list
+        self.assertIn('subject_type', data)
+        self.assertEqual(data['subject_type'], 'UK')
+        self.assertEqual(data['subject_type_display'], 'UK Exam')
 
     def test_create_subject_requires_superuser(self):
         """Create endpoint should require superuser permission (T026)."""
