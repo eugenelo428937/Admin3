@@ -197,6 +197,38 @@ class TestSubjectViewSet(CatalogAPITestCase):
         self.assertIn('errors', data)
         self.assertGreater(len(data['errors']), 0)
 
+    def test_list_subjects_filtered_by_subject_type(self):
+        """GET /api/catalog/subjects/?subject_type=SA returns only SA subjects."""
+        from catalog.models import Subject
+
+        # Promote one fixture subject to SA, leave the rest as default UK
+        sa_subject = Subject.objects.filter(active=True).order_by('code').first()
+        sa_subject.subject_type = 'SA'
+        sa_subject.save()
+
+        # Bust the cache so the filtered request goes through the live query
+        cache.clear()
+
+        # Filter to SA: should return exactly the one SA subject
+        response = self.client.get('/api/catalog/subjects/?subject_type=SA')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        codes = [s['code'] for s in data]
+        self.assertEqual(codes, [sa_subject.code])
+
+        # Filter to UK: should NOT include the SA subject we just promoted
+        cache.clear()
+        response = self.client.get('/api/catalog/subjects/?subject_type=UK')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        uk_codes = [s['code'] for s in response.json()]
+        self.assertNotIn(sa_subject.code, uk_codes)
+        # And every returned row should carry the new fields
+        for s in response.json():
+            self.assertIn('subject_type', s)
+            self.assertIn('subject_type_display', s)
+            self.assertEqual(s['subject_type'], 'UK')
+            self.assertEqual(s['subject_type_display'], 'UK Exam')
+
 
 class TestExamSessionViewSet(CatalogAPITestCase):
     """Test ExamSessionViewSet CRUD operations (T027)."""
