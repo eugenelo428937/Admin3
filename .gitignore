@@ -57,6 +57,8 @@ backup.sql
 
 # Test artifacts
 pacts/*.json
+**/__snapshots__/*.snap
+*.snap
 
 # Binaries not for version control
 *.mp4
@@ -89,3 +91,4 @@ docs/UI/Reference/IMG_7834.JPG
 docs/UI/Reference/IMG_7835.JPG
 docs/UI/Reference/IMG_7837.JPG
 docs/UI/Reference/IMG_7838.JPG
+vitest-output.txt

@@ -14,10 +14,14 @@ import { Separator } from '@/components/admin/ui/separator';
 import { cn } from '@/components/admin/styles/cn';
 
 const PRIMARY_NAV = [
-  { label: 'Students', path: '/admin/students', icon: GraduationCap },
-  { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-  { label: 'Marking', path: '/admin/marking/submissions', icon: ClipboardCheck },
-  { label: 'Tutorial', path: '/admin/tutorial', icon: BookOpen },
+   { label: "Students", path: "/admin/students", icon: GraduationCap },
+   { label: "Orders", path: "/admin/orders", icon: ShoppingCart },
+   {
+      label: "Marking",
+      path: "/admin/marking/submissions",
+      icon: ClipboardCheck,
+   },
+   { label: "Tutorial", path: "/admin/tutorial-events", icon: BookOpen },
 ];
 
 export function AdminTopBar() {
