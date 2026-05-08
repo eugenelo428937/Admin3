@@ -91,3 +91,62 @@ class HappyPathTests(TestCase):
         self.assertIsNotNone(batch.committed_at)
         self.assertEqual(batch.unmatched_count, 0)
         self.assertEqual(batch.report['warnings'], [])
+
+
+class NullChoiceTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='importer', email='i@t.com')
+        self.student = factories.make_student()
+        self.sp = factories.make_store_product()
+        self.event = factories.make_event(store_product=self.sp)
+        self.session = factories.make_session(event=self.event)
+
+    def test_creates_registration_with_null_choice_when_no_match(self):
+        # No TutorialChoice exists for this student/event.
+        csv = _csv_with_one_row(self.session.title, [self.student.student_ref])
+
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+
+        self.assertEqual(result.created, 1)
+        self.assertEqual(result.unlinked, 1)
+        self.assertEqual(result.linked_to_choice, 0)
+        self.assertEqual(result.multi_match_warnings, 0)
+        self.assertEqual(result.warnings, [])
+
+        reg = TutorialRegistration.objects.get(
+            student=self.student, tutorial_session=self.session,
+        )
+        self.assertIsNone(reg.tutorial_choice)
+
+    def test_creates_registration_with_null_choice_on_multi_match_and_warns(self):
+        oi1 = _make_order_item(self.student, self.sp)
+        oi2 = _make_order_item(self.student, self.sp)
+        TutorialChoice.objects.create(
+            order_item=oi1, student=self.student,
+            tutorial_event=self.event, choice_rank=2,
+        )
+        TutorialChoice.objects.create(
+            order_item=oi2, student=self.student,
+            tutorial_event=self.event, choice_rank=1,
+        )
+        csv = _csv_with_one_row(self.session.title, [self.student.student_ref])
+
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+
+        self.assertEqual(result.created, 1)
+        self.assertEqual(result.unlinked, 1)
+        self.assertEqual(result.multi_match_warnings, 1)
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn('multiple', result.warnings[0].lower())
+
+        reg = TutorialRegistration.objects.get(
+            student=self.student, tutorial_session=self.session,
+        )
+        self.assertIsNone(reg.tutorial_choice)
+
+        batch = TutorialEnrolmentImport.objects.get(pk=result.batch_id)
+        self.assertEqual(len(batch.report['warnings']), 1)
