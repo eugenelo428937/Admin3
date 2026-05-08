@@ -195,7 +195,9 @@ export function Combobox({
       </PopoverAnchor>
       <PopoverContent
         align="start"
-        className="tw:w-[--radix-popover-trigger-width] tw:p-0"
+        // Popover is at least as wide as the input but free to grow when
+        // option labels are longer than the trigger.
+        className="tw:min-w-[--radix-popover-trigger-width] tw:p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {visible.length === 0 ? (
