@@ -223,3 +223,49 @@ class TestJunctionModels(TestCase):
         self.assertIn('is_active', field_names)
         self.assertIn('created_at', field_names)
         self.assertIn('updated_at', field_names)
+
+
+class TestSubjectSubjectType(TestCase):
+    """TDD RED: Subject.subject_type field with TextChoices enum."""
+
+    def test_subject_has_subject_type_field(self):
+        """Subject model has a `subject_type` CharField with max_length=4."""
+        from catalog.models import Subject
+        field = Subject._meta.get_field('subject_type')
+        from django.db import models as djmodels
+        self.assertIsInstance(field, djmodels.CharField)
+        self.assertEqual(field.max_length, 4)
+
+    def test_subject_type_default_is_uk(self):
+        """A newly-created Subject defaults `subject_type` to 'UK'."""
+        from catalog.models import Subject
+        s = Subject.objects.create(code='ZZ1', description='Test default')
+        self.assertEqual(s.subject_type, 'UK')
+
+    def test_subject_type_choices_are_complete(self):
+        """SubjectType.choices contains exactly the four required pairs."""
+        from catalog.models import Subject
+        expected = {
+            ('UK', 'UK Exam'),
+            ('SA', 'South Africa Exam'),
+            ('CAA', 'Actuarial Analyst Courses'),
+            ('PMS', 'Pure Maths and Statistics for Actuarial Studies'),
+        }
+        self.assertEqual(set(Subject.SubjectType.choices), expected)
+
+    def test_subject_type_invalid_value_raises_validation_error(self):
+        """full_clean() rejects values outside the enum."""
+        from django.core.exceptions import ValidationError
+        from catalog.models import Subject
+        s = Subject(code='ZZ2', description='bad type', subject_type='XX')
+        with self.assertRaises(ValidationError):
+            s.full_clean()
+
+    def test_get_subject_type_display_returns_human_label(self):
+        """get_subject_type_display() returns the configured label."""
+        from catalog.models import Subject
+        s = Subject.objects.create(code='ZZ3', description='pms', subject_type='PMS')
+        self.assertEqual(
+            s.get_subject_type_display(),
+            'Pure Maths and Statistics for Actuarial Studies',
+        )
