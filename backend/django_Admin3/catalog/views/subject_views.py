@@ -67,7 +67,13 @@ class SubjectViewSet(viewsets.ModelViewSet):
             List of subjects with id, code, description, name, active,
             subject_type, subject_type_display.
         """
-        subject_type = request.query_params.get('subject_type')
+        # Read and validate the subject_type filter. Unknown values
+        # (including the literal "all", which would collide with our
+        # unfiltered cache key) are clamped to None so they never
+        # produce a poisoned cache entry.
+        raw_subject_type = request.query_params.get('subject_type')
+        valid_codes = {code for code, _ in Subject.SubjectType.choices}
+        subject_type = raw_subject_type if raw_subject_type in valid_codes else None
         cache_key = f'subjects_list_v2:type={subject_type or "all"}'
         cached_data = cache.get(cache_key)
         if cached_data:
@@ -129,8 +135,13 @@ class SubjectViewSet(viewsets.ModelViewSet):
                     serializer.save()
                     created_subjects.append(serializer.data)
                     # Invalidate cache when new subjects are created.
-                    # Multiple entries exist (one per subject_type filter), so
-                    # use delete_pattern when available, else delete known keys.
+                    # Multiple entries exist (one per subject_type filter).
+                    # delete_pattern is provided by django-redis (used in
+                    # production/staging). In dev/test/CI/UAT — which use
+                    # LocMemCache or DatabaseCache — delete_pattern is absent,
+                    # so the fallback loop below is the only path that runs.
+                    # Keep both paths in sync if Subject.SubjectType gains
+                    # new members.
                     if hasattr(cache, 'delete_pattern'):
                         cache.delete_pattern('subjects_list_v2:*')
                     else:

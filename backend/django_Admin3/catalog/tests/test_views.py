@@ -229,6 +229,30 @@ class TestSubjectViewSet(CatalogAPITestCase):
             self.assertEqual(s['subject_type'], 'UK')
             self.assertEqual(s['subject_type_display'], 'UK Exam')
 
+    def test_list_subjects_invalid_filter_does_not_poison_cache(self):
+        """An unknown subject_type filter must not corrupt the unfiltered cache.
+
+        Regression test for cache-key collision: ?subject_type=all (or any
+        value outside the enum) was previously sharing the unfiltered
+        cache slot, causing empty results for up to 5 minutes.
+        """
+        # Sanity: unfiltered request gets a non-empty list and seeds cache
+        cache.clear()
+        response = self.client.get('/api/catalog/subjects/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        initial_codes = [s['code'] for s in response.json()]
+        self.assertGreater(len(initial_codes), 0)
+
+        # Issue an invalid filter — must not cache empty under the unfiltered key
+        response = self.client.get('/api/catalog/subjects/?subject_type=all')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Unfiltered request must still return the original active subjects
+        response = self.client.get('/api/catalog/subjects/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        codes = [s['code'] for s in response.json()]
+        self.assertEqual(sorted(codes), sorted(initial_codes))
+
 
 class TestExamSessionViewSet(CatalogAPITestCase):
     """Test ExamSessionViewSet CRUD operations (T027)."""
