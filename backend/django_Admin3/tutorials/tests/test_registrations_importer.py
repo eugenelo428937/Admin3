@@ -242,3 +242,27 @@ class DuplicateHandlingTests(TestCase):
         # Whole transaction rolled back on strict failure.
         self.assertEqual(TutorialRegistration.objects.count(), 0)
         self.assertEqual(TutorialEnrolmentImport.objects.count(), 0)
+
+
+class DryRunTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='importer', email='i@t.com')
+        self.student = factories.make_student()
+        self.session = factories.make_session()
+
+    def test_dry_run_rolls_back_everything(self):
+        csv = _csv_with_one_row(self.session.title, [self.student.student_ref])
+
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+            dry_run=True,
+        )
+
+        # Counters reflect what *would* have been written.
+        self.assertEqual(result.total_csv_rows, 1)
+        self.assertEqual(result.created, 1)
+        self.assertEqual(result.unlinked, 1)
+        # But nothing persisted.
+        self.assertIsNone(result.batch_id)
+        self.assertEqual(TutorialRegistration.objects.count(), 0)
+        self.assertEqual(TutorialEnrolmentImport.objects.count(), 0)
