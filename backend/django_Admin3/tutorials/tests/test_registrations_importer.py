@@ -150,3 +150,54 @@ class NullChoiceTests(TestCase):
 
         batch = TutorialEnrolmentImport.objects.get(pk=result.batch_id)
         self.assertEqual(len(batch.report['warnings']), 1)
+
+
+class SkipCategoryTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='importer', email='i@t.com')
+        self.student = factories.make_student()
+        self.session = factories.make_session()
+
+    def test_skips_cancelled_csv_rows(self):
+        # Build a CSV row with Is Cancelled=True directly (helper assumes False).
+        csv = (
+            '"Title","Subject","Is Cancelled","Sitting","Enrolled",'
+            '"ActEd Student Numbers","Swaps In ActEd Student Numbers",'
+            '"Swaps out","Custom: Swaps out ActEd Student Numbers (Event)"\n'
+            f'"{self.session.title}","CM2",True,"2024A",0,'
+            f'"{self.student.student_ref}","","",""\n'
+        )
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+        self.assertEqual(result.created, 0)
+        self.assertEqual(result.skipped_cancelled, 1)
+        self.assertEqual(TutorialRegistration.objects.count(), 0)
+
+    def test_skips_unknown_students_and_records_unmatched(self):
+        # Refs include one valid + one nonexistent.
+        csv = _csv_with_one_row(
+            self.session.title,
+            [self.student.student_ref, 999999],
+        )
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+        self.assertEqual(result.created, 1)  # The valid ref imported.
+        self.assertEqual(result.skipped_unknown_student, 1)
+
+    def test_links_import_batch_on_every_created_row(self):
+        s2 = factories.make_student()
+        csv = _csv_with_one_row(
+            self.session.title,
+            [self.student.student_ref, s2.student_ref],
+        )
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+        self.assertEqual(result.created, 2)
+        regs = TutorialRegistration.objects.filter(
+            tutorial_session=self.session,
+        )
+        for reg in regs:
+            self.assertEqual(reg.import_batch_id, result.batch_id)
