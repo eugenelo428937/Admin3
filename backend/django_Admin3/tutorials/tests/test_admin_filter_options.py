@@ -56,6 +56,29 @@ class FilterOptionsTests(APITestCase):
         self.assertEqual(set(response.data['subjects'][0].keys()),
                          {'code', 'description'})
 
+    def test_subjects_only_returns_active_uk(self):
+        from catalog.subject.models import Subject
+        # UK + active -> included
+        Subject.objects.create(code='CB1', description='Business',
+                               subject_type=Subject.SubjectType.UK, active=True)
+        # UK + inactive -> excluded
+        Subject.objects.create(code='CB2', description='Inactive',
+                               subject_type=Subject.SubjectType.UK, active=False)
+        # SA + active -> excluded
+        Subject.objects.create(code='SA-CB1', description='SA variant',
+                               subject_type=Subject.SubjectType.SA, active=True)
+        # CAA + active -> excluded
+        Subject.objects.create(code='CAA-A', description='CAA',
+                               subject_type=Subject.SubjectType.CAA, active=True)
+        factories.make_event()  # ensures at least one event exists
+
+        response = self.client.get(self.url)
+        codes = {s['code'] for s in response.data['subjects']}
+        self.assertIn('CB1', codes)
+        self.assertNotIn('CB2', codes)       # inactive
+        self.assertNotIn('SA-CB1', codes)    # not UK
+        self.assertNotIn('CAA-A', codes)     # not UK
+
     def test_instructor_uses_full_name(self):
         factories.make_instructor(first_name='Karen', last_name='Smith')
         factories.make_event()

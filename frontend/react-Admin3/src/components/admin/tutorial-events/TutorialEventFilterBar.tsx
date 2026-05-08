@@ -3,7 +3,6 @@ import { Input } from '@/components/admin/ui/input';
 import { Label } from '@/components/admin/ui/label';
 import { Button } from '@/components/admin/ui/button';
 import { Combobox } from '@/components/admin/ui/combobox';
-import TypeaheadCombobox from './TypeaheadCombobox';
 import type { EventFilters, FilterOptions } from './types';
 
 interface VM {
@@ -82,14 +81,14 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
       <div className="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:lg:grid-cols-4 tw:gap-4">
         <div className="tw:space-y-1.5">
           <Label>Tutorial event code</Label>
-          <TypeaheadCombobox
+          <Combobox
+            options={eventCodeOptions.map((c) => ({ value: c, label: c }))}
             value={filters.code}
             onValueChange={(v) => setFilter('code', v)}
-            options={eventCodeOptions}
             placeholder="e.g. CP1"
-            searchPlaceholder="Type code…"
             emptyMessage="No matching codes."
             maxVisible={MAX_VISIBLE}
+            freeText
             ariaLabel="Tutorial event code"
           />
         </div>
@@ -103,9 +102,9 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
                 value={subjectValue}
                 onValueChange={(v) => setFilter('subject_codes', v ? [v] : [])}
                 placeholder="Any subject"
-                searchPlaceholder="Search subject…"
                 emptyMessage="No subjects found."
                 maxVisible={MAX_VISIBLE}
+                ariaLabel="Subject"
               />
             </div>
 
@@ -123,9 +122,9 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
                   setFilter('sitting_id', Number(v));
                 }}
                 placeholder="All sittings"
-                searchPlaceholder="Search sitting…"
                 emptyMessage="No sittings found."
                 maxVisible={MAX_VISIBLE}
+                ariaLabel="Sitting"
               />
             </div>
           </>
@@ -142,9 +141,9 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               value={locationValue}
               onValueChange={(v) => setFilter('location_ids', v ? [Number(v)] : [])}
               placeholder="Any location"
-              searchPlaceholder="Search location…"
               emptyMessage="No locations found."
               maxVisible={MAX_VISIBLE}
+              ariaLabel="Location"
             />
           </div>
 
@@ -155,9 +154,9 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               value={venueValue}
               onValueChange={(v) => setFilter('venue_ids', v ? [Number(v)] : [])}
               placeholder="Any venue"
-              searchPlaceholder="Search venue…"
               emptyMessage="No venues found."
               maxVisible={MAX_VISIBLE}
+              ariaLabel="Venue"
             />
           </div>
 
@@ -168,9 +167,9 @@ export default function TutorialEventFilterBar({ vm }: { vm: VM }) {
               value={instructorValue}
               onValueChange={(v) => setFilter('instructor_id', v ? Number(v) : null)}
               placeholder="Any instructor"
-              searchPlaceholder="Search instructor…"
               emptyMessage="No instructors found."
               maxVisible={MAX_VISIBLE}
+              ariaLabel="Instructor"
             />
           </div>
         </div>

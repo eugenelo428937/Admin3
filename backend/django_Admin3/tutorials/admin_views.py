@@ -93,9 +93,11 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='filter-options')
     def filter_options(self, request):
+        # Tutorial events are part of the UK programme, so the subject
+        # picker only offers UK subjects that are still active.
         subjects = (
             Subject.objects
-            .filter(active=True)
+            .filter(active=True, subject_type=Subject.SubjectType.UK)
             .order_by('code')
         )
         locations = TutorialLocation.objects.filter(is_active=True).order_by('name')
