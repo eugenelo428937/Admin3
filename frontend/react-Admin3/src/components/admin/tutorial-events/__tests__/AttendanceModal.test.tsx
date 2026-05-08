@@ -145,4 +145,37 @@ describe('AttendanceModal', () => {
     await waitFor(() => expect(mock.saveAttendance).toHaveBeenCalled());
     expect(onSaved).toHaveBeenCalled();
   });
+
+  it('closes the modal on 409 not_yet_open', async () => {
+    const onClose = vi.fn();
+    mock.saveAttendance.mockRejectedValueOnce({
+      response: {
+        status: 409,
+        data: { code: 'not_yet_open', detail: 'Session has not started.' },
+      },
+    });
+    render(<AttendanceModal session={SESSION} onClose={onClose} onSaved={vi.fn()} />);
+    await screen.findByText('Smith, Alice (5001)');
+    const select = screen.getAllByRole('combobox')[0];
+    await userEvent.selectOptions(select, 'ATTENDED');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  it('shows inline error under offending row when items[idx] has an error', async () => {
+    mock.saveAttendance.mockRejectedValueOnce({
+      response: {
+        status: 400,
+        data: { items: [{ reason: 'Required when status is OTHER.' }] },
+      },
+    });
+    render(<AttendanceModal session={SESSION} onClose={vi.fn()} onSaved={vi.fn()} />);
+    await screen.findByText('Smith, Alice (5001)');
+    const select = screen.getAllByRole('combobox')[0];
+    await userEvent.selectOptions(select, 'ATTENDED');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/required when status is other/i)).toBeInTheDocument()
+    );
+  });
 });

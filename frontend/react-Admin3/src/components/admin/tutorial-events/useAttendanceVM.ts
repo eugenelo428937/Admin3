@@ -4,6 +4,17 @@ import type {
   AttendancePayload, AttendanceStatus, RosterRowDTO,
 } from './types';
 
+export class AttendanceSaveError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string | null,
+    public readonly rowErrors: Record<number, string>,
+  ) {
+    super(message);
+    this.name = 'AttendanceSaveError';
+  }
+}
+
 export interface RosterRow {
   registration_id: number;
   student: RosterRowDTO['student'];
@@ -39,6 +50,8 @@ export default function useAttendanceVM(sessionId: number) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastErrorCode, setLastErrorCode] = useState<string | null>(null);
+  const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
 
   const applyPayload = useCallback((p: AttendancePayload) => {
     setSession(p.session);
@@ -67,6 +80,12 @@ export default function useAttendanceVM(sessionId: number) {
       next.dirty = isDirty(next);
       return next;
     }));
+    setRowErrors(prev => {
+      if (!(regId in prev)) return prev;
+      const next = { ...prev };
+      delete next[regId];
+      return next;
+    });
   }, []);
 
   const setReason = useCallback((regId: number, reason: string) => {
@@ -76,11 +95,19 @@ export default function useAttendanceVM(sessionId: number) {
       next.dirty = isDirty(next);
       return next;
     }));
+    setRowErrors(prev => {
+      if (!(regId in prev)) return prev;
+      const next = { ...prev };
+      delete next[regId];
+      return next;
+    });
   }, []);
 
   const save = useCallback(async () => {
     setIsSaving(true);
     setError(null);
+    setLastErrorCode(null);
+    setRowErrors({});
     try {
       const items = roster
         .filter(r => r.status !== '')
@@ -92,13 +119,47 @@ export default function useAttendanceVM(sessionId: number) {
       const updated = await service.saveAttendance(sessionId, items);
       applyPayload(updated);
     } catch (e: any) {
-      const code = e?.response?.data?.code;
+      const data = e?.response?.data;
+      const code = data?.code;
       if (code === 'not_yet_open') {
+        setLastErrorCode('not_yet_open');
         setError('Session has not started yet.');
-      } else {
-        setError(e?.response?.data?.detail || 'Save failed — please try again.');
+        throw new AttendanceSaveError('Session has not started yet.', 'not_yet_open', {});
       }
-      throw e;
+      // 400 with per-item errors
+      if (data?.items && Array.isArray(data.items)) {
+        const sentItems = roster
+          .filter(r => r.status !== '')
+          .map(r => ({
+            registration_id: r.registration_id,
+            status: r.status as AttendanceStatus,
+            reason: r.status === 'OTHER' ? r.reason : '',
+          }));
+        const indexToId: Record<number, number> = {};
+        sentItems.forEach((it, i) => { indexToId[i] = it.registration_id; });
+        const errs: Record<number, string> = {};
+        (data.items as any[]).forEach((entry: any, idx: number) => {
+          if (!entry || (typeof entry === 'object' && Object.keys(entry).length === 0)) return;
+          const regId = indexToId[idx];
+          if (regId === undefined) return;
+          let msg: string;
+          if (typeof entry === 'string') {
+            msg = entry;
+          } else {
+            const firstField = Object.values(entry)[0];
+            msg = Array.isArray(firstField) ? String(firstField[0]) : String(firstField);
+          }
+          errs[regId] = msg;
+        });
+        if (Object.keys(errs).length > 0) {
+          setRowErrors(errs);
+          setError('Some entries are invalid.');
+          throw new AttendanceSaveError('Some entries are invalid.', null, errs);
+        }
+      }
+      const msg = data?.detail || 'Save failed — please try again.';
+      setError(msg);
+      throw new AttendanceSaveError(msg, null, {});
     } finally {
       setIsSaving(false);
     }
@@ -127,6 +188,8 @@ export default function useAttendanceVM(sessionId: number) {
     isLoading,
     isSaving,
     error,
+    lastErrorCode,
+    rowErrors,
     hasDirty,
     hasInvalidOther,
     setStatus,

@@ -10,15 +10,16 @@ interface Props {
   onStatusChange: (status: AttendanceStatus) => void;
   onReasonChange: (reason: string) => void;
   disabled?: boolean;
+  error?: string;
 }
 
 export default function AttendanceRosterRow({
-  row, onStatusChange, onReasonChange, disabled,
+  row, onStatusChange, onReasonChange, disabled, error,
 }: Props) {
   const showReason = row.status === 'OTHER';
   const invalidReason = showReason && !row.reason.trim();
   return (
-    <div className="grid grid-cols-12 items-center gap-2 border-b py-2">
+    <div className={`grid grid-cols-12 items-center gap-2 border-b py-2${error ? ' border-destructive' : ''}`}>
       <div className="col-span-5 text-sm">
         {row.student.last_name}, {row.student.first_name} ({row.student.student_ref})
       </div>
@@ -51,6 +52,11 @@ export default function AttendanceRosterRow({
           />
         )}
       </div>
+      {error && (
+        <div className="col-span-12 -mt-1 mb-1 text-xs text-destructive">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

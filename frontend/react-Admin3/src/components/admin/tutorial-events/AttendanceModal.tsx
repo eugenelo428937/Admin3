@@ -3,7 +3,7 @@ import {
 } from '@/components/admin/ui/dialog';
 import { Button } from '@/components/admin/ui/button';
 import { toast } from 'sonner';
-import useAttendanceVM from './useAttendanceVM';
+import useAttendanceVM, { AttendanceSaveError } from './useAttendanceVM';
 import AttendanceRosterRow from './AttendanceRosterRow';
 
 interface SessionLite {
@@ -38,7 +38,20 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
       await vm.save();
       toast.success('Attendance saved');
       onSaved();
-    } catch {
+    } catch (e) {
+      if (e instanceof AttendanceSaveError) {
+        if (e.code === 'not_yet_open') {
+          toast.error('Session not started yet.');
+          onClose();
+          return;
+        }
+        if (Object.keys(e.rowErrors).length > 0) {
+          toast.error('Some entries are invalid.');
+          return;
+        }
+        toast.error(e.message || 'Save failed — please try again.');
+        return;
+      }
       if (vm.error) toast.error(vm.error);
       else toast.error('Save failed — please try again.');
     }
@@ -64,7 +77,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
             </div>
           )}
 
-          {!vm.isLoading && vm.error && (
+          {!vm.isLoading && vm.error && vm.roster.length === 0 && (
             <div className="p-4 text-sm text-destructive">{vm.error}</div>
           )}
 
@@ -74,7 +87,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
             </div>
           )}
 
-          {!vm.isLoading && !vm.error && vm.roster.length > 0 && (
+          {!vm.isLoading && vm.roster.length > 0 && (
             <div className="px-2">
               {vm.roster.map(row => (
                 <AttendanceRosterRow
@@ -83,6 +96,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
                   disabled={!vm.attendanceEnabled || vm.isSaving}
                   onStatusChange={s => vm.setStatus(row.registration_id, s)}
                   onReasonChange={r => vm.setReason(row.registration_id, r)}
+                  error={vm.rowErrors[row.registration_id]}
                 />
               ))}
             </div>
