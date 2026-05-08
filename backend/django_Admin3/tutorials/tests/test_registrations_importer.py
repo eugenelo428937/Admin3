@@ -201,3 +201,44 @@ class SkipCategoryTests(TestCase):
         )
         for reg in regs:
             self.assertEqual(reg.import_batch_id, result.batch_id)
+
+
+class DuplicateHandlingTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='importer', email='i@t.com')
+        self.student = factories.make_student()
+        self.session = factories.make_session()
+
+    def _two_row_csv(self, ref):
+        # Two CSV rows pointing at the same session+student → duplicate
+        # would violate uniq_active_reg_per_student_session.
+        return (
+            '"Title","Subject","Is Cancelled","Sitting","Enrolled",'
+            '"ActEd Student Numbers","Swaps In ActEd Student Numbers",'
+            '"Swaps out","Custom: Swaps out ActEd Student Numbers (Event)"\n'
+            f'"{self.session.title}","CM2",False,"2024A",0,'
+            f'"{ref}","","",""\n'
+            f'"{self.session.title}","CM2",False,"2024A",0,'
+            f'"{ref}","","",""\n'
+        )
+
+    def test_non_strict_skips_duplicate_and_continues(self):
+        csv = self._two_row_csv(self.student.student_ref)
+        result = import_registrations_csv(
+            io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+        )
+        self.assertEqual(result.created, 1)
+        self.assertEqual(result.skipped_duplicate_in_db, 1)
+        self.assertEqual(TutorialRegistration.objects.count(), 1)
+
+    def test_strict_aborts_on_duplicate_in_csv(self):
+        csv = self._two_row_csv(self.student.student_ref)
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            import_registrations_csv(
+                io.StringIO(csv), uploaded_by=self.user, filename='legacy.csv',
+                strict=True,
+            )
+        # Whole transaction rolled back on strict failure.
+        self.assertEqual(TutorialRegistration.objects.count(), 0)
+        self.assertEqual(TutorialEnrolmentImport.objects.count(), 0)

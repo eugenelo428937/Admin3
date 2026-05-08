@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from students.models import Student
 from tutorials.models import (
@@ -93,12 +93,20 @@ def import_registrations_csv(
                     result.warnings.append(resolution.warning)
                     result.multi_match_warnings += 1
 
-                TutorialRegistration.objects.create(
-                    student=student,
-                    tutorial_session=session,
-                    tutorial_choice=resolution.choice,
-                    import_batch=batch,
-                )
+                try:
+                    with transaction.atomic():
+                        TutorialRegistration.objects.create(
+                            student=student,
+                            tutorial_session=session,
+                            tutorial_choice=resolution.choice,
+                            import_batch=batch,
+                        )
+                except IntegrityError:
+                    if strict:
+                        raise
+                    result.skipped_duplicate_in_db += 1
+                    continue
+
                 result.created += 1
                 if resolution.choice is not None:
                     result.linked_to_choice += 1
