@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
-from orders.models import Order, OrderItem
 from tutorials.models import TutorialAttendance, TutorialRegistration
 from tutorials.tests import factories
 
@@ -15,12 +14,8 @@ def _url(session_id):
 
 
 def _register(student, session):
-    oi = OrderItem.objects.create(
-        order=Order.objects.create(user=student.user),
-        purchasable=session.tutorial_event.store_product.purchasable_ptr,
-    )
     return TutorialRegistration.objects.create(
-        student=student, tutorial_session=session, order_item=oi,
+        student=student, tutorial_session=session,
     )
 
 

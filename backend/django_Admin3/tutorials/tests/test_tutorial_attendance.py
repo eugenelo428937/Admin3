@@ -12,9 +12,6 @@ from django.utils import timezone
 
 from tutorials.models import TutorialAttendance, TutorialRegistration
 from tutorials.tests import factories
-from tutorials.tests.test_tutorial_choice import _make_order_item
-
-
 class TutorialAttendanceTests(TestCase):
     def setUp(self):
         self.student = factories.make_student()
@@ -22,10 +19,8 @@ class TutorialAttendanceTests(TestCase):
         self.sp = factories.make_store_product()
         self.event = factories.make_event(store_product=self.sp)
         self.session = factories.make_session(event=self.event)
-        self.order_item = _make_order_item(self.student, self.sp)
         self.reg = TutorialRegistration.objects.create(
             student=self.student, tutorial_session=self.session,
-            order_item=self.order_item,
         )
 
     def test_creates_attendance_with_attended_status(self):
