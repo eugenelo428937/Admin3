@@ -19,6 +19,12 @@ class Subject(models.Model):
         sessions = subject.exam_session_subjects.all()
     """
 
+    class SubjectType(models.TextChoices):
+        UK = 'UK', 'UK Exam'
+        SA = 'SA', 'South Africa Exam'
+        CAA = 'CAA', 'Actuarial Analyst Courses'
+        PMS = 'PMS', 'Pure Maths and Statistics for Actuarial Studies'
+
     code = models.CharField(
         max_length=10,
         unique=True,
@@ -28,6 +34,12 @@ class Subject(models.Model):
         blank=True,
         null=True,
         help_text="Full description of the subject"
+    )
+    subject_type = models.CharField(
+        max_length=4,
+        choices=SubjectType.choices,
+        default=SubjectType.UK,
+        help_text="Programme classification (UK/SA/CAA/PMS)",
     )
     active = models.BooleanField(
         default=True,
