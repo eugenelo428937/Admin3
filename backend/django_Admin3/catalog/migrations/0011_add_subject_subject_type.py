@@ -7,7 +7,7 @@ RunSQL is used for the database operation because the Subject model was removed
 from the catalog app state in migration 0010 (moved to catalog_subjects app),
 so AddField cannot resolve the model in the catalog state context.
 """
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -23,11 +23,11 @@ class Migration(migrations.Migration):
                 migrations.RunSQL(
                     sql="""
                         ALTER TABLE "acted"."catalog_subjects"
-                        ADD COLUMN IF NOT EXISTS "subject_type" VARCHAR(4) NOT NULL DEFAULT 'UK';
+                        ADD COLUMN "subject_type" VARCHAR(4) NOT NULL DEFAULT 'UK';
                     """,
                     reverse_sql="""
                         ALTER TABLE "acted"."catalog_subjects"
-                        DROP COLUMN IF EXISTS "subject_type";
+                        DROP COLUMN "subject_type";
                     """,
                 ),
             ],
