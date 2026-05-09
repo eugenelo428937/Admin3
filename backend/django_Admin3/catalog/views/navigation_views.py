@@ -58,20 +58,23 @@ def navigation_data(request):
     from store.models import Purchasable
 
     def _has_available_store_product_for_catalog_product():
-        """Subquery: True iff at least one available Purchasable points (via PPV)
-        at the outer catalog.Product."""
+        """Subquery: True iff at least one listing-visible Purchasable
+        points (via PPV) at the outer catalog.Product. Uses the listing
+        predicate (7 conditions, no date window) so navbar dropdowns show
+        products for upcoming sessions too."""
         return Exists(
-            Purchasable.objects.available_now().filter(
+            Purchasable.objects.available_for_listing().filter(
                 kind='product',
                 product__product_product_variation__product_id=OuterRef('pk'),
             )
         )
 
     def _has_available_store_product_for_variation():
-        """Subquery: True iff at least one available Purchasable points (via PPV)
-        at the outer ProductVariation."""
+        """Subquery: True iff at least one listing-visible Purchasable
+        points (via PPV) at the outer ProductVariation. See sibling
+        helper for predicate choice rationale."""
         return Exists(
-            Purchasable.objects.available_now().filter(
+            Purchasable.objects.available_for_listing().filter(
                 kind='product',
                 product__product_product_variation__product_variation_id=OuterRef('pk'),
             )
@@ -326,8 +329,10 @@ def fuzzy_search(request):
         catalog_products_with_scores.sort(key=lambda x: x[1], reverse=True)
         matched_catalog_products = [p for p, _ in catalog_products_with_scores[:5]]
 
-        # Get all active store products with prefetched data
-        store_products_queryset = StoreProduct.available_now().filter(
+        # Listing-side fuzzy search: include out-of-window items so the
+        # frontend can disable Add-to-cart for them. The cart-add gate
+        # uses the 8-condition predicate to reject direct purchases.
+        store_products_queryset = StoreProduct.available_for_listing().filter(
             is_active=True
         ).select_related(
             'exam_session_subject__subject',
@@ -448,13 +453,14 @@ def advanced_product_search(request):
     variation_ids = request.query_params.getlist('variations')
     product_ids = request.query_params.getlist('products')
 
-    # Start with all active catalog products that have at least one available
-    # store-side purchasable backing them. Mirrors the Exists() pattern used
-    # by navigation_data so the canonical predicate is enforced uniformly,
-    # not only when a subject filter is supplied.
+    # Start with all active catalog products that have at least one
+    # listing-visible store-side purchasable backing them. Mirrors the
+    # Exists() pattern used by navigation_data — listing predicate (7
+    # conditions) so out-of-window products still surface; cart-add
+    # rejects direct purchase via the 8-condition predicate.
     queryset = Product.objects.filter(is_active=True).filter(
         Exists(
-            Purchasable.objects.available_now().filter(
+            Purchasable.objects.available_for_listing().filter(
                 kind='product',
                 product__product_product_variation__product_id=OuterRef('pk'),
             )
@@ -477,8 +483,9 @@ def advanced_product_search(request):
     # Apply subject filter (use store.Product to find catalog.Product IDs for subjects)
     if subject_codes:
         subjects = Subject.objects.filter(code__in=subject_codes)
-        # Get catalog.Product IDs through store.Product's product_product_variation FK
-        filtered_product_ids = StoreProduct.available_now().filter(
+        # Get catalog.Product IDs through store.Product's product_product_variation FK.
+        # Listing predicate keeps the result aligned with the navbar/list views.
+        filtered_product_ids = StoreProduct.available_for_listing().filter(
             exam_session_subject__subject__in=subjects
         ).values_list('product_product_variation__product_id', flat=True).distinct()
 

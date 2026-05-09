@@ -53,9 +53,13 @@ Existing flags are unchanged: `catalog_subjects.active`, `catalog_exam_session_s
 
 Existing flags default to `True` because the data behind them is curated and live. Flipping those defaults retroactively would re-blackout everything. New fields with no curated data yet default to `False` so they require a deliberate activation pass — this is the audit gate the team asked for.
 
-## The "Available Now" Predicate
+## The Listing vs Purchase Predicate Split
 
-A purchasable is considered available iff **all 8** conditions hold:
+Two predicates expose **different views of "available"** depending on use:
+
+### Listing predicate — `available_for_listing()` (7 conditions)
+
+A purchasable is **listing-visible** iff:
 
 ```
 purchasable.is_active                                              ✓ existing
@@ -65,10 +69,25 @@ product_product_variation.product_variation.is_active              ⚡ NEW
 exam_session_subject.is_active                                     ✓ existing
 exam_session_subject.subject.active                                ✓ existing
 exam_session_subject.exam_session.is_active                        ⚡ NEW
+```
+
+Used by every customer-facing **list/search/navbar** surface. The exam-session date window is intentionally **NOT** part of this predicate so customers can browse products from upcoming and recently-closed sessions.
+
+### Purchase predicate — `available_now()` (8 conditions)
+
+A purchasable is **purchasable now** iff it is listing-visible **AND**:
+
+```
 today() BETWEEN exam_session.start_date AND exam_session.end_date  ⚡ NEW
 ```
 
-Non-`Product` Purchasables (vouchers, charges) check only `purchasable.is_active` — they don't have an exam-session chain to AND against. The `kind` discriminator on `Purchasable` selects the branch.
+Used by the **cart-add server-side gate** and the per-cart-item `is_available` flag. The frontend independently checks the same date window to disable the Add-to-cart button (UX), but the server is authoritative.
+
+Non-`Product` Purchasables (vouchers, charges) check only `purchasable.is_active` in both predicates — they don't have an exam-session chain to AND against. The `kind` discriminator on `Purchasable` selects the branch.
+
+### Why split, not a single 8-condition predicate?
+
+A single 8-condition predicate would hide products from upcoming sessions entirely — customers wouldn't even know the materials exist. Splitting puts the date window where it actually drives UX (button disable + cart gate) while keeping the broader list available to browse.
 
 ### Implementation: manager method on `Purchasable`
 
@@ -81,33 +100,42 @@ from django.utils import timezone
 
 
 class PurchasableQuerySet(models.QuerySet):
-    def available_now(self, *, at=None):
-        """
-        Filter to purchasables currently available for sale.
+    # Listing-side conditions for store products. Date window NOT included
+    # — that's the listing/purchase split.
+    _LISTING_PRODUCT_CONDITIONS = dict(
+        kind='product',
+        product__product_product_variation__is_active=True,
+        product__product_product_variation__product__is_active=True,
+        product__product_product_variation__product_variation__is_active=True,
+        product__exam_session_subject__is_active=True,
+        product__exam_session_subject__subject__active=True,
+        product__exam_session_subject__exam_session__is_active=True,
+    )
 
-        Customer-facing queries only. Admin/internal queries should NOT
-        use this — they need to see inactive items.
-
-        Args:
-            at: datetime to evaluate against (defaults to timezone.now()).
-                Used by tests to evaluate windows without freezing the clock.
-        """
-        now = at or timezone.now()
-
+    def available_for_listing(self):
+        """7-condition listing predicate. Used by all list/search/navbar
+        surfaces. Out-of-window products are kept visible — the frontend
+        disables Add-to-cart and the server cart-add gate uses the
+        purchase predicate to reject direct purchases."""
         return self.filter(
             Q(is_active=True) & (
-                # Generic purchasables (vouchers, charges) — leaf flag only.
                 ~Q(kind='product')
                 |
-                # Store products — full 8-condition chain.
+                Q(**self._LISTING_PRODUCT_CONDITIONS)
+            )
+        )
+
+    def available_now(self, *, at=None):
+        """8-condition purchase predicate (listing + date window). Used
+        by the cart-add server-side gate and the per-item is_available
+        flag. NOT used for listing — see `available_for_listing()`."""
+        now = at or timezone.now()
+        return self.filter(
+            Q(is_active=True) & (
+                ~Q(kind='product')
+                |
                 Q(
-                    kind='product',
-                    product__product_product_variation__is_active=True,
-                    product__product_product_variation__product__is_active=True,
-                    product__product_product_variation__product_variation__is_active=True,
-                    product__exam_session_subject__is_active=True,
-                    product__exam_session_subject__subject__active=True,
-                    product__exam_session_subject__exam_session__is_active=True,
+                    **self._LISTING_PRODUCT_CONDITIONS,
                     product__exam_session_subject__exam_session__start_date__lte=now,
                     product__exam_session_subject__exam_session__end_date__gte=now,
                 )
@@ -120,19 +148,26 @@ class Purchasable(models.Model):
     objects = PurchasableQuerySet.as_manager()
 
     def is_available_now(self, *, at=None):
-        """Scalar form of `available_now()`. Used by cart-add validation
-        and by the cart serializer's per-item `is_available` flag."""
+        """Scalar form of `available_now()` (purchase predicate). Used
+        by cart-add validation and by the cart serializer's per-item
+        `is_available` flag."""
         return type(self).objects.available_now(at=at).filter(pk=self.pk).exists()
 ```
 
 ### `store.Product` helper
 
-`Product` inherits the manager via MTI, so `Product.objects.available_now()` works directly. A small wrapper keeps call sites clean:
+`Product` inherits the manager via MTI. Two thin wrappers keep call sites typed and clean:
 
 ```python
 # backend/django_Admin3/store/models/product.py
 class Product(Purchasable):
     # ... existing ...
+
+    @classmethod
+    def available_for_listing(cls):
+        return cls.objects.filter(
+            pk__in=Purchasable.objects.available_for_listing().values('pk')
+        )
 
     @classmethod
     def available_now(cls, *, at=None):
@@ -147,19 +182,24 @@ Cart and order lines FK to `Purchasable`, not to `store.Product`. Putting the pr
 
 ## Call Sites
 
-Customer-facing queries route through the predicate. Admin queries do not.
+Customer-facing queries route through one of the two predicates. Admin queries do not.
 
-| # | Surface | File | Change |
+**Listing surfaces** use `available_for_listing()` (7 conditions).
+**Purchase surfaces** use `available_now()` / `is_available_now()` (8 conditions).
+
+| # | Surface | File | Predicate |
 |---|---|---|---|
-| 1 | Products list | `store/views/` (Product viewset) | Apply `.available_now()` to base queryset |
-| 2 | Fuzzy search | `catalog/views/navigation_views.py::fuzzy_search` | Filter result `store.Product` IDs through `Product.available_now()` |
-| 2 | Advanced search | `catalog/views/navigation_views.py::advanced_product_search` | Same |
-| 3 | Navbar dropdowns | `catalog/views/navigation_views.py::navigation_data` | For Tutorial-Location products and Online-Classroom variations, include only those with at least one available `store.Product` (via `Exists()` subquery — keeps existing query shape) |
-| 4 | Bundle list | `store/views/` (Bundle viewset) | Bundle visibility unchanged |
-| 4 | Bundle contents | `store/views/` + bundle serializer | `bundle.bundle_products` returns only items where `Purchasable.is_available_now()` |
-| 5 | Direct `/api/store/products/{id}` | `store/views/` | **Unchanged** — returns inactive products too (order history support) |
-| 6 | Cart contents | `cart/serializers.py` | Each cart item gets a computed field `is_available: bool` |
-| — | Cart-add | `cart/views.py` | Reject `POST /api/cart/add/` if `purchasable.is_available_now() == False` → 400 `{"error": "product_unavailable"}` |
+| 1 | Products list | `store/views/product.py::ProductViewSet.list` | `Product.available_for_listing()` |
+| 2 | Fuzzy search (catalog) | `catalog/views/navigation_views.py::fuzzy_search` | `StoreProduct.available_for_listing()` |
+| 2 | Advanced search (catalog) | `catalog/views/navigation_views.py::advanced_product_search` | `Purchasable.objects.available_for_listing()` (Exists subquery) |
+| 2 | Unified search + fuzzy/advanced/default-data (search app) | `search/services/search_service.py::_build_optimized_queryset` | `StoreProduct.available_for_listing()` |
+| 2 | Search-side bundle helpers | `search/services/search_service.py::_get_bundles`, `_get_bundle_matching_product_ids`, `_get_filtered_bundle_count` | `Purchasable.objects.available_for_listing()` |
+| 3 | Navbar dropdowns | `catalog/views/navigation_views.py::navigation_data` | `Purchasable.objects.available_for_listing()` (Exists subquery, no row multiplication) |
+| 4 | Bundle list | `store/views/bundle.py` (Bundle viewset list) | Bundle visibility unchanged (`is_active` only) |
+| 4 | Bundle contents | `store/views/bundle.py::products` action + `store/serializers/unified.py::get_components` | `Purchasable.objects.available_for_listing()` |
+| 5 | Direct `/api/store/products/{id}` | `store/views/product.py::ProductViewSet.retrieve` | **Unchanged** — returns inactive products too (order history support) |
+| 6 | Cart contents | `cart/serializers.py` | Each cart item gets `is_available: bool` via `purchasable.is_available_now()` (purchase predicate) |
+| — | Cart-add | `cart/services/cart_service.py` | Reject `POST /api/cart/add/` if `product.is_available_now() == False` (purchase predicate) → 400 `{"error": "product_unavailable"}` |
 | — | Admin endpoints | (admin viewsets) | **Unchanged** |
 
 ### Frontend changes
@@ -184,15 +224,18 @@ TDD per CLAUDE.md, ≥80% coverage on new code.
 | Layer | Test | Verifies |
 |---|---|---|
 | Schema | `makemigrations` + `migrate --check` adds 3 columns with `default=False` | Migration shape |
-| QuerySet | `Purchasable.objects.available_now()` includes a fully-active product | Happy path |
-| QuerySet | Each of 8 conditions individually false → product excluded (parametrized, 8 cases) | Every flag is wired in |
-| QuerySet | `today < start_date` and `today > end_date` cases (uses `at=` arg) | Date-window logic |
-| QuerySet | Non-product Purchasable with `is_active=True` is included even with no chain | Discriminator branch |
-| Per-instance | `purchasable.is_available_now()` matches queryset on the same fixture | Helper consistency |
-| API | `/api/store/products/` excludes inactive | Surface 1 |
-| API | `/api/catalog/search/` and `/api/catalog/advanced-search/` exclude inactive | Surface 2 |
-| API | `/api/catalog/navigation-data/` excludes navbar entries with no available `store.Product` | Surface 3 |
-| API | `/api/store/bundles/{id}/products/` returns only available items | Surface 4 |
+| QuerySet | `Purchasable.objects.available_for_listing()` includes a fully-active product | Listing happy path |
+| QuerySet | Each of the 7 listing-side `is_active` flags individually false → product excluded | Listing flag wiring |
+| QuerySet | `available_for_listing()` **includes** out-of-window products | Listing/purchase split — listing side |
+| QuerySet | `Purchasable.objects.available_now()` (purchase) **excludes** out-of-window products | Listing/purchase split — purchase side |
+| QuerySet | `today < start_date` and `today > end_date` excluded only by `available_now()`, not `available_for_listing()` | Date-window logic & split |
+| QuerySet | Non-product Purchasable with `is_active=True` is included by both predicates | Discriminator branch |
+| Per-instance | `purchasable.is_available_now()` (purchase) matches queryset on the same fixture | Helper consistency |
+| API | `/api/store/products/` excludes inactive but **includes** out-of-window products | Surface 1 (listing) |
+| API | `/api/catalog/search/` and `/api/catalog/advanced-search/` exclude inactive but include out-of-window | Surface 2 (listing) |
+| API | `/api/search/unified/` (search app) excludes inactive but includes out-of-window | Surface 2 (listing — search app) |
+| API | `/api/catalog/navigation-data/` excludes navbar entries with no listing-visible `store.Product` | Surface 3 (listing) |
+| API | `/api/store/bundles/{id}/products/` returns only listing-visible components | Surface 4 (listing) |
 | API | `GET /api/store/products/{inactive_id}` returns 200 | Order-history exception |
 | API | `POST /api/cart/add/` for inactive product → 400 `product_unavailable` | Server-side gate |
 | API | Cart serializer sets `is_available: false` for items that became inactive after being added | Cart flag |

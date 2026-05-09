@@ -1651,13 +1651,30 @@ class TestFuzzySearchWithStoreProducts(CatalogAPITestCase):
 
     def setUp(self):
         super().setUp()
+        from datetime import timedelta
+        from django.utils import timezone
+        from catalog.exam_session.models import ExamSession
         from catalog.models import ExamSessionSubject
         from store.models import Product as StoreProduct
         cache.clear()
 
+        # The default session_april in setup_catalog_test_data starts
+        # 30 days in the future (outside the available_now() date window).
+        # This test asserts the store product is *visible* via fuzzy
+        # search, so we need an in-window session.
+        now = timezone.now()
+        in_window_session, _ = ExamSession.objects.get_or_create(
+            session_code='2026-FUZZY',
+            defaults={
+                'start_date': now - timedelta(days=14),
+                'end_date': now + timedelta(days=180),
+                'is_active': True,
+            },
+        )
+
         # Create ExamSessionSubject
         self.ess, _ = ExamSessionSubject.objects.get_or_create(
-            exam_session=self.session_april,
+            exam_session=in_window_session,
             subject=self.subject_cm2,
         )
 
@@ -1666,7 +1683,7 @@ class TestFuzzySearchWithStoreProducts(CatalogAPITestCase):
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_core_ebook,
             defaults={
-                'product_code': 'CM2/CSM-EBOOK/2026-04-FUZZY',
+                'product_code': 'CM2/CSM-EBOOK/2026-FUZZY',
                 'is_active': True,
             }
         )

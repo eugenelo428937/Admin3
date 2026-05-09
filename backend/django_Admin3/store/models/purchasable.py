@@ -11,18 +11,72 @@ from django.utils import timezone
 
 
 class PurchasableQuerySet(models.QuerySet):
-    """QuerySet for Purchasable with the canonical "available now" predicate."""
+    """QuerySet for Purchasable with the canonical availability predicates.
+
+    Two predicates are exposed:
+
+    - :meth:`available_for_listing` — 7-condition listing predicate. Drops
+      the exam-session date window so customers can browse products from
+      upcoming and recently-closed sessions. Used by every list/search/
+      navbar surface.
+    - :meth:`available_now` — 8-condition purchase predicate (listing
+      conditions ANDed with ``start_date <= now <= end_date``). Used only
+      by the cart-add gate and the per-item ``is_available`` flag. The
+      frontend uses the same window check to disable Add-to-cart while
+      keeping the product visible.
+    """
+
+    # Listing-side conditions for store products. Date window NOT included
+    # — that's the listing/purchase split. See class docstring.
+    _LISTING_PRODUCT_CONDITIONS = dict(
+        kind='product',
+        product__product_product_variation__is_active=True,
+        product__product_product_variation__product__is_active=True,
+        product__product_product_variation__product_variation__is_active=True,
+        product__exam_session_subject__is_active=True,
+        product__exam_session_subject__subject__active=True,
+        product__exam_session_subject__exam_session__is_active=True,
+    )
+
+    def available_for_listing(self):
+        """Filter to purchasables that should appear in customer listings.
+
+        ANDs every upstream ``is_active`` flag for store-product
+        purchasables, but does NOT require the exam-session date window
+        to include today. A product whose session opens in 30 days is
+        still visible — the frontend disables Add-to-cart for that case
+        and the cart server-side gate (:meth:`available_now`) rejects
+        any direct attempt to purchase.
+
+        Non-product purchasables (vouchers, charges) check only
+        ``is_active``.
+
+        Use for: store products list, fuzzy/advanced search, navbar
+        dropdowns, bundle component listings.
+        """
+        return self.filter(
+            Q(is_active=True) & (
+                # Generic purchasables (vouchers, charges) — leaf flag only.
+                ~Q(kind='product')
+                |
+                # Store products — 7-condition listing chain (no date window).
+                Q(**self._LISTING_PRODUCT_CONDITIONS)
+            )
+        )
 
     def available_now(self, *, at=None):
-        """Filter to purchasables currently available for sale.
+        """Filter to purchasables currently available for **purchase**.
 
-        ANDs all upstream is_active flags + the exam-session date window
-        for store-product purchasables. Non-product purchasables (vouchers,
-        charges) check only ``is_active``.
+        ANDs the listing predicate with the exam-session date window
+        (``start_date <= now <= end_date``). Non-product purchasables
+        check only ``is_active``.
 
-        Use this in customer-facing queries (product list, search, navbar,
-        bundle contents). Admin queries should NOT use this — they must
-        see inactive items too.
+        Use for: cart-add server-side gate, per-cart-item
+        ``is_available`` flag. Listing surfaces must use
+        :meth:`available_for_listing` instead — gating the list on the
+        date window hides products from upcoming sessions, which is bad
+        UX (customers don't know they can pre-order or that materials
+        are coming).
 
         Args:
             at: datetime to evaluate against (defaults to ``timezone.now()``).
@@ -43,15 +97,9 @@ class PurchasableQuerySet(models.QuerySet):
                 # Generic purchasables (vouchers, charges) — leaf flag only.
                 ~Q(kind='product')
                 |
-                # Store products — full 8-condition chain.
+                # Store products — listing chain + date window (8 conditions).
                 Q(
-                    kind='product',
-                    product__product_product_variation__is_active=True,
-                    product__product_product_variation__product__is_active=True,
-                    product__product_product_variation__product_variation__is_active=True,
-                    product__exam_session_subject__is_active=True,
-                    product__exam_session_subject__subject__active=True,
-                    product__exam_session_subject__exam_session__is_active=True,
+                    **self._LISTING_PRODUCT_CONDITIONS,
                     product__exam_session_subject__exam_session__start_date__lte=now,
                     product__exam_session_subject__exam_session__end_date__gte=now,
                 )

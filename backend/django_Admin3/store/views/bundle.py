@@ -74,13 +74,17 @@ class BundleViewSet(viewsets.ModelViewSet):
         """Get all products in a bundle.
 
         Filters out bundle products whose underlying Purchasable is not
-        currently available (per Purchasable.objects.available_now()).
-        The bundle itself remains listed even if some contents are filtered out.
+        listing-visible (per ``Purchasable.objects.available_for_listing()``,
+        7 conditions). Out-of-window components are still listed so the
+        frontend can render them with Add-to-cart disabled; the cart-add
+        gate uses the 8-condition purchase predicate to reject direct
+        purchase attempts. The bundle itself remains listed even if some
+        contents are filtered out.
         """
         from store.models import Purchasable
         bundle = self.get_object()
         available_purchasable_ids = set(
-            Purchasable.objects.available_now()
+            Purchasable.objects.available_for_listing()
             .values_list('pk', flat=True)
         )
         bundle_products = bundle.bundle_products.filter(
