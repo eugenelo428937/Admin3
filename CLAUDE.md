@@ -405,6 +405,12 @@ python manage.py import_subjects
 python manage.py sync_course_templates
 python manage.py process_email_queue
 
+# Tutorial registrations legacy bulk import (one-shot)
+python manage.py import_tutorial_registrations \
+    --file docs/misc/tutorial_registrations.csv \
+    --user <admin-username> \
+    [--dry-run] [--strict]
+
 # Rules Engine and JSON Content Setup
 python setup_tc_rules.py                  # Setup Terms & Conditions rules
 python update_tc_template_to_json.py      # Convert T&C template to JSON
@@ -441,6 +447,7 @@ npm test
 - **Cart/CartItems**: Shopping cart functionality
 - **Orders/OrderItems**: Order management
 - **ActedOrderTermsAcceptance**: Terms & conditions acceptance tracking with audit trail
+- **TutorialRegistration**: Session-level enrolment record, owned exclusively by the registrations CSV importer. `order_item` is a derived `@property` (returns `tutorial_choice.order_item` or `None` for legacy unmatched rows). Schema lives in the `acted` schema as `tutorial_registrations`. See `docs/superpowers/specs/2026-05-08-tutorial-registrations-legacy-import-design.md`.
 
 ### Rules Engine Models
 - **RuleEntryPoint**: Predefined execution points (home_page_mount, checkout_terms, etc.)
