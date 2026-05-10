@@ -116,6 +116,11 @@ def import_registrations_csv(
         # Finalise the batch row.
         batch.total_rows = result.total_csv_rows
         batch.created_count = result.created
+        # unmatched_count aggregates several skip categories with different
+        # units (per-row, per-token, per-insert). It is a rough
+        # "things the importer did not place" metric for at-a-glance admin
+        # display; the `report` JSON below carries each counter separately
+        # for precise analysis.
         batch.unmatched_count = (
             result.skipped_unknown_session
             + result.skipped_unknown_student
