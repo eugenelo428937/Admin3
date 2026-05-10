@@ -1,4 +1,4 @@
-"""Schema introspection test for the drop-order_item migration.
+"""Schema introspection test for the 0021_tutorial_registration_drop_order_item migration.
 
 Verifies that after migrate:
 - `acted.tutorial_registrations` has no `order_item_id` column.
@@ -9,7 +9,7 @@ from django.db import connection
 from django.test import TestCase
 
 
-class Migration0017SchemaTests(TestCase):
+class Migration0021SchemaTests(TestCase):
     def test_order_item_id_column_does_not_exist(self):
         with connection.cursor() as cur:
             cur.execute(
