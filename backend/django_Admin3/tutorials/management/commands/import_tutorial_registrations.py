@@ -88,18 +88,28 @@ class Command(BaseCommand):
 
     def _print_summary(self, result, *, dry_run: bool):
         mode = 'DRY RUN' if dry_run else 'COMMITTED'
+
+        # Percentage helper for per-row counters. Per-token counters
+        # (skipped_unknown_student, skipped_paren_suffix) and per-insert
+        # counters (skipped_duplicate_in_db) intentionally omit the % since
+        # their denominator differs from total_csv_rows.
+        def pct(n):
+            if not result.total_csv_rows:
+                return ''
+            return f' ({100 * n / result.total_csv_rows:.1f}% of CSV rows)'
+
         self.stdout.write(self.style.SUCCESS(f'Tutorial registrations import — {mode}'))
         self.stdout.write(f'  batch_id:                {result.batch_id}')
         self.stdout.write(f'  total_csv_rows:          {result.total_csv_rows}')
         self.stdout.write(f'  created:                 {result.created}')
         self.stdout.write(f'    linked_to_choice:      {result.linked_to_choice}')
-        self.stdout.write(f'    unlinked:              {result.unlinked}')
+        self.stdout.write(f'    unlinked:              {result.unlinked}{pct(result.unlinked)}')
         self.stdout.write(f'  multi_match_warnings:    {result.multi_match_warnings}')
-        self.stdout.write(f'  skipped_cancelled:       {result.skipped_cancelled}')
-        self.stdout.write(f'  skipped_unknown_session: {result.skipped_unknown_session}')
+        self.stdout.write(f'  skipped_cancelled:       {result.skipped_cancelled}{pct(result.skipped_cancelled)}')
+        self.stdout.write(f'  skipped_unknown_session: {result.skipped_unknown_session}{pct(result.skipped_unknown_session)}')
         self.stdout.write(f'  skipped_unknown_student: {result.skipped_unknown_student}')
         self.stdout.write(f'  skipped_paren_suffix:    {result.skipped_paren_suffix}')
-        self.stdout.write(f'  skipped_empty:           {result.skipped_empty}')
+        self.stdout.write(f'  skipped_empty:           {result.skipped_empty}{pct(result.skipped_empty)}')
         self.stdout.write(f'  skipped_duplicate_in_db: {result.skipped_duplicate_in_db}')
 
         if result.warnings:
