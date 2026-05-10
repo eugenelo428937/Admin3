@@ -33,6 +33,8 @@ A separate observation: with `tutorial_registrations.tutorial_choice_id` set, th
 
 ### 3.1 Migration `tutorials/0017_tutorial_registration_drop_order_item`
 
+> **Erratum (post-implementation):** the actual migration filename on the branch is `0021_tutorial_registration_drop_order_item.py`. The plan assumed `0017` as the next sequence number; the dev branch had additional merge migrations (0017–0020) ahead of this work. The schema operation and dependency are otherwise as specified.
+
 Single forward operation: `migrations.RemoveField('tutorialregistration', 'order_item')`.
 
 Reverse op recreates the FK as nullable (data cannot be reconstructed; this is acknowledged in the migration's docstring).
