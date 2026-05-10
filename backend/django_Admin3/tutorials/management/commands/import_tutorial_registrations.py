@@ -41,7 +41,10 @@ from tutorials.services.registrations_importer import import_registrations_csv
 class Command(BaseCommand):
     help = (
         'One-shot bulk import of the legacy registrations CSV into '
-        'tutorial_registrations. Refuses to run if the table is non-empty.'
+        'tutorial_registrations. Refuses to run if the table is non-empty. '
+        'To redo a load: from Django shell, '
+        'TutorialRegistration.objects_all.all().delete(); '
+        'TutorialEnrolmentImport.objects.all().delete(); then re-run.'
     )
 
     def add_arguments(self, parser):

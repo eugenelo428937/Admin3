@@ -248,6 +248,24 @@ Replace `test_picks_lowest_rank_when_multiple_matches_and_warns` with `test_retu
 - Backfilling `tutorial_choice` on already-imported `null` rows after the fact.
 - Any UI work — there is no admin screen for triggering this importer; it is a management command only.
 
+### 8.3 Recovery path (re-running after a bad live load)
+
+The importer's one-shot guard (`TutorialRegistration.objects_all.exists()` → `RuntimeError`) blocks re-runs *including the case where the operator commits a load, discovers a problem (e.g. high `skipped_unknown_session` count due to missing parent records), and wants to redo it*.
+
+To redo the load:
+
+1. From a Django shell on the target DB:
+   ```python
+   from tutorials.models import TutorialRegistration, TutorialEnrolmentImport
+   TutorialRegistration.objects_all.all().delete()   # also wipes attendance via CASCADE
+   TutorialEnrolmentImport.objects.all().delete()    # optional: keeps the table clean
+   ```
+2. Re-run `python manage.py import_tutorial_registrations --file ... --user ...`.
+
+`TutorialAttendance` rows are deleted by the `on_delete=CASCADE` on `TutorialAttendance.registration`. There is no other downstream FK on `TutorialRegistration`. The legacy CSV is the source of truth, so a re-import fully reconstructs state.
+
+Operators should always do a `--dry-run` first to validate the skip-counter ratios before re-committing.
+
 ## 9. Verification before declaring done
 
 1. `python manage.py test tutorials.tests.test_registrations_importer` — all green.
