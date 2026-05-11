@@ -63,7 +63,26 @@ export default function InstructorAttendancePage() {
           location={vm.session.location?.name}
         />
       )}
-      <AttendanceRosterPanel vm={vm} />
+      <AttendanceRosterPanel
+        vm={vm}
+        onUploadXlsx={async (file) => {
+          try {
+            const refreshed = await service.uploadXlsx(file);
+            vm.replaceFromServer(refreshed);
+            const s = refreshed.upload_summary;
+            const errSuffix = s.errors?.length
+              ? ` (${s.errors.length} row error${s.errors.length === 1 ? '' : 's'})`
+              : '';
+            toast.success(`Uploaded — ${s.rows_applied} rows applied${errSuffix}`);
+          } catch (e: any) {
+            const code = e?.response?.data?.code;
+            if (code === 'too_large') toast.error('File too large (max 2 MB).');
+            else if (code === 'wrong_mime') toast.error('Not a valid xlsx file.');
+            else if (code === 'token_expired') toast.error('Link expired.');
+            else toast.error('Upload failed — please try again.');
+          }
+        }}
+      />
       <div className="tw:mt-4 tw:flex tw:justify-end">
         <Button disabled={!vm.canSave} onClick={handleSave}>
           {vm.isSaving ? 'Saving…' : 'Save attendance'}

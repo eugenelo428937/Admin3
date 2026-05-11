@@ -1,5 +1,6 @@
 import { Input } from '../../admin/ui/input';
 import AttendanceStatusSelect from './AttendanceStatusSelect';
+import XlsxUploadButton from '../../instructor/attendance/XlsxUploadButton';
 import type useAttendanceVM from './useAttendanceVM';
 
 interface Props {
@@ -19,14 +20,10 @@ export default function AttendanceRosterPanel({ vm, onUploadXlsx, disabled }: Pr
     <div>
       {onUploadXlsx && (
         <div className="tw:flex tw:justify-end tw:mb-2">
-          {/* Real upload UI wired in Task 19. */}
-          <button
-            type="button"
-            disabled
-            className="tw:rounded-md tw:border tw:px-3 tw:py-1 tw:text-sm tw:opacity-60"
-          >
-            Upload xlsx
-          </button>
+          <XlsxUploadButton
+            onUpload={onUploadXlsx}
+            disabled={disabled || vm.isSaving}
+          />
         </div>
       )}
 
