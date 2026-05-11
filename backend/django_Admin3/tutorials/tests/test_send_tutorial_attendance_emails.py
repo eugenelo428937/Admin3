@@ -1,0 +1,139 @@
+"""End-to-end tests for the daily attendance email cron command."""
+from datetime import timedelta
+from io import StringIO
+from unittest import mock
+
+from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.test import TestCase
+from django.utils import timezone
+
+from staff.models import Staff
+from tutorials.models import (
+    TutorialAttendanceEmailLog, TutorialEvents, TutorialInstructor,
+    TutorialSessions,
+)
+from tutorials.tests.factories import make_event, make_session, make_instructor, make_store_product
+
+
+class SendTutorialAttendanceEmailsTests(TestCase):
+    """
+    Tests for ``send_tutorial_attendance_emails`` management command.
+
+    Adaptations from spec:
+    - ``make_event`` does not accept ``cancelled=`` kwarg; we set it manually
+      after creation.
+    - ``make_session`` does not accept ``start_date=`` kwarg; we override
+      ``start_date`` on the returned instance and call ``.save()``.
+    - The mock target uses ``email_queue_service.queue_email`` (the singleton
+      instance method) rather than a bare module-level ``queue_email`` function,
+      because no such function exists in ``queue_service.py``.
+    - ``make_store_product`` uses a deterministic product code that clashes across
+      test classes; we pass unique ``variation_code`` / ``cat_product_code`` values
+      to avoid the ``purchasables_code_key`` unique constraint violation.
+    """
+
+    _MOCK_TARGET = (
+        'tutorials.management.commands.send_tutorial_attendance_emails'
+        '.queue_service.email_queue_service.queue_email'
+    )
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.tomorrow = timezone.localdate() + timedelta(days=1)
+        cls.day_after = timezone.localdate() + timedelta(days=2)
+
+        # Use a unique variation_code to avoid product-code clashes with other tests.
+        sp_ok = make_store_product(variation_code='CMDOK', cat_product_code='CmdLive')
+        sp_cx = make_store_product(variation_code='CMDCX', cat_product_code='CmdCxLive')
+
+        # Session starting tomorrow — event NOT cancelled.
+        cls.event_ok = make_event(code='UT-CMD-1', store_product=sp_ok)
+        cls.session_tomorrow = make_session(event=cls.event_ok, title='Session Tomorrow')
+        # Override start_date to tomorrow (factory sets it to now()).
+        cls.session_tomorrow.start_date = timezone.make_aware(
+            timezone.datetime.combine(cls.tomorrow, timezone.datetime.min.time())
+        )
+        cls.session_tomorrow.save(update_fields=['start_date'])
+
+        # Session day-after — used by --session-id override test.
+        cls.session_day_after = make_session(
+            event=cls.event_ok, title='Session Day-After', sequence=2,
+        )
+        cls.session_day_after.start_date = timezone.make_aware(
+            timezone.datetime.combine(cls.day_after, timezone.datetime.min.time())
+        )
+        cls.session_day_after.save(update_fields=['start_date'])
+
+        # Cancelled event — must be skipped even if start is tomorrow.
+        cls.event_cx = make_event(code='UT-CMD-2', store_product=sp_cx)
+        cls.event_cx.cancelled = True
+        cls.event_cx.save(update_fields=['cancelled'])
+        cls.session_cancelled = make_session(
+            event=cls.event_cx, title='Cancelled Session',
+        )
+        cls.session_cancelled.start_date = cls.session_tomorrow.start_date
+        cls.session_cancelled.save(update_fields=['start_date'])
+
+        # Instructor with a valid email (via Staff → User).
+        u = User.objects.create_user(
+            username='tutor1', email='tutor1@example.com',
+            first_name='Tina', last_name='Tutor',
+        )
+        cls.staff = Staff.objects.create(user=u)
+        cls.instructor_ok = TutorialInstructor.objects.create(staff=cls.staff)
+        cls.session_tomorrow.instructors.add(cls.instructor_ok)
+        cls.session_day_after.instructors.add(cls.instructor_ok)
+        cls.session_cancelled.instructors.add(cls.instructor_ok)
+
+        # Instructor with no staff/email — must be skipped with a warning.
+        cls.instructor_noemail = TutorialInstructor.objects.create()  # no staff FK
+        cls.session_tomorrow.instructors.add(cls.instructor_noemail)
+
+    def _run(self, **opts):
+        out = StringIO()
+        call_command('send_tutorial_attendance_emails', stdout=out, stderr=out, **opts)
+        return out.getvalue()
+
+    @mock.patch(_MOCK_TARGET)
+    def test_picks_up_only_tomorrows_sessions(self, mock_queue):
+        mock_queue.return_value = None  # email_queue FK is nullable; None is valid in tests
+        self._run(for_date=self.tomorrow.isoformat())
+        # Only the OK session+instructor pair gets an email;
+        # cancelled event and no-email instructor are skipped.
+        self.assertEqual(mock_queue.call_count, 1)
+        log = TutorialAttendanceEmailLog.objects.get()
+        self.assertEqual(log.session_id, self.session_tomorrow.id)
+        self.assertEqual(log.instructor_id, self.instructor_ok.id)
+
+    @mock.patch(_MOCK_TARGET)
+    def test_idempotent_on_rerun(self, mock_queue):
+        mock_queue.return_value = None  # email_queue FK is nullable; None is valid in tests
+        self._run(for_date=self.tomorrow.isoformat())
+        self.assertEqual(mock_queue.call_count, 1)
+        self._run(for_date=self.tomorrow.isoformat())
+        # Second run must not call queue_email again.
+        self.assertEqual(mock_queue.call_count, 1)
+        self.assertEqual(TutorialAttendanceEmailLog.objects.count(), 1)
+
+    @mock.patch(_MOCK_TARGET)
+    def test_dry_run_does_not_write(self, mock_queue):
+        mock_queue.return_value = None  # email_queue FK is nullable; None is valid in tests
+        self._run(for_date=self.tomorrow.isoformat(), dry_run=True)
+        mock_queue.assert_not_called()
+        self.assertEqual(TutorialAttendanceEmailLog.objects.count(), 0)
+
+    @mock.patch(_MOCK_TARGET)
+    def test_session_id_override(self, mock_queue):
+        mock_queue.return_value = None  # email_queue FK is nullable; None is valid in tests
+        # Force-run against the day-after session even though it's not "tomorrow".
+        self._run(session_id=self.session_day_after.id)
+        self.assertEqual(mock_queue.call_count, 1)
+
+    @mock.patch(_MOCK_TARGET)
+    def test_skips_instructor_with_no_email(self, mock_queue):
+        mock_queue.return_value = None  # email_queue FK is nullable; None is valid in tests
+        output = self._run(for_date=self.tomorrow.isoformat())
+        # The no-email instructor should be logged and skipped — only 1 email.
+        self.assertEqual(mock_queue.call_count, 1)
+        self.assertIn('instructor has no email', output.lower())
