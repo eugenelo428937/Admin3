@@ -45,24 +45,34 @@ class CartTestDataMixin:
 
     @classmethod
     def _create_store_fixtures(cls):
-        cls.subject = Subject.objects.create(code='TST')
+        # All upstream is_active flags must be True and the exam-session
+        # window must include "now" for the cart-add availability gate to
+        # accept the product (see Purchasable.objects.available_now()).
+        from datetime import timedelta as _td
+        now = timezone.now()
+        cls.subject = Subject.objects.create(code='TST', active=True)
         cls.exam_session = ExamSession.objects.create(
             session_code='2025-04',
-            start_date=timezone.now(),
-            end_date=timezone.now(),
+            start_date=now - _td(days=10),
+            end_date=now + _td(days=10),
+            is_active=True,
         )
         cls.ess = ExamSessionSubject.objects.create(
             exam_session=cls.exam_session,
             subject=cls.subject,
+            is_active=True,
         )
         cls.cat_product = CatalogProduct.objects.create(
             fullname='Test Material', shortname='TM', code='TM01',
+            is_active=True,
         )
         cls.variation = ProductVariation.objects.create(
             variation_type='eBook', name='Standard eBook',
+            is_active=True,
         )
         cls.ppv = ProductProductVariation.objects.create(
             product=cls.cat_product, product_variation=cls.variation,
+            is_active=True,
         )
         cls.store_product = StoreProduct.objects.create(
             exam_session_subject=cls.ess,

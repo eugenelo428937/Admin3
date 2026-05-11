@@ -560,14 +560,14 @@ class TestNavigationDataView(CatalogAPITestCase):
         self.assertNotIn('CB1', subject_codes)  # Inactive
 
     def test_navigation_data_cached(self):
-        """navigation-data should use caching with key 'navigation_data_v2'."""
+        """navigation-data should use caching with key 'navigation_data_v3'."""
         # First request - should populate cache
         response1 = self.client.get('/api/catalog/navigation-data/')
         self.assertEqual(response1.status_code, status.HTTP_200_OK)
 
         # Cache should be populated
-        cached_data = cache.get('navigation_data_v2')
-        self.assertIsNotNone(cached_data, "navigation_data_v2 cache key should be set")
+        cached_data = cache.get('navigation_data_v3')
+        self.assertIsNotNone(cached_data, "navigation_data_v3 cache key should be set")
 
     def test_navigation_data_allows_anonymous(self):
         """navigation-data should allow anonymous access."""

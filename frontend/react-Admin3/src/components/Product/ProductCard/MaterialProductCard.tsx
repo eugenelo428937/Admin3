@@ -84,6 +84,8 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
       handleAddToCart,
       handleBuyBothEbook,
       handleBuyWithRecommended,
+      isWithinSalesWindow,
+      salesWindowMessage,
     } = vm;
 
     const {
@@ -383,39 +385,44 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
                       zIndex: (t: any) => t.zIndex.speedDial - 1,
                     }}
                   />
-                  <SpeedDial
-                    variant={'product-card-speeddial' as any}
-                    ariaLabel="Speed Dial for add to cart"
-                    className="add-to-cart-speed-dial"
-                    icon={
-                      <SpeedDialIcon
-                        icon={<AddShoppingCart />}
-                        openIcon={<Close />}
-                      />
-                    }
-                    onClose={() => setSpeedDialOpen(false)}
-                    onOpen={() => setSpeedDialOpen(true)}
-                    open={speedDialOpen}
-                    direction="up"
-                    sx={{
-                      position: 'absolute',
-                      bottom: 10,
-                      right: 5,
-                      '& .MuiFab-root': {
-                        backgroundColor:
-                          (theme.palette as any).productCards?.material?.button,
-                        '&:hover': {
+                  <Tooltip
+                    title={salesWindowMessage}
+                    disableHoverListener={!salesWindowMessage}
+                  >
+                    <SpeedDial
+                      variant={'product-card-speeddial' as any}
+                      ariaLabel="Speed Dial for add to cart"
+                      className="add-to-cart-speed-dial"
+                      icon={
+                        <SpeedDialIcon
+                          icon={<AddShoppingCart />}
+                          openIcon={<Close />}
+                        />
+                      }
+                      onClose={() => setSpeedDialOpen(false)}
+                      onOpen={() => setSpeedDialOpen(true)}
+                      open={speedDialOpen && isWithinSalesWindow}
+                      direction="up"
+                      FabProps={{ disabled: !isWithinSalesWindow }}
+                      sx={{
+                        position: 'absolute',
+                        bottom: 10,
+                        right: 5,
+                        '& .MuiFab-root': {
                           backgroundColor:
-                            (theme.palette as any).productCards?.material?.buttonHover,
-                        },
-                        '& .MuiSpeedDialIcon-root': {
-                          '& .MuiSvgIcon-root': {
-                            fontSize: '1.6rem',
+                            (theme.palette as any).productCards?.material?.button,
+                          '&:hover': {
+                            backgroundColor:
+                              (theme.palette as any).productCards?.material?.buttonHover,
+                          },
+                          '& .MuiSpeedDialIcon-root': {
+                            '& .MuiSvgIcon-root': {
+                              fontSize: '1.6rem',
+                            },
                           },
                         },
-                      },
-                    }}
-                  >
+                      }}
+                    >
                     {/* Add to Cart - Current Selected Variation */}
                     <SpeedDialAction
                       icon={<AddShoppingCart />}
@@ -491,7 +498,8 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
                       aria-label="Buy Both (Printed + eBook)"
                       onClick={handleBuyBothEbook}
                     />
-                  </SpeedDial>
+                    </SpeedDial>
+                  </Tooltip>
                 </>
               ) : currentVariation?.recommended_product ? (
                 // Tier 2: Recommended Product SpeedDial
@@ -504,22 +512,27 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
                       zIndex: (t: any) => t.zIndex.speedDial - 1,
                     }}
                   />
-                  <SpeedDial
-                    ariaLabel="Speed Dial for add to cart"
-                    className="add-to-cart-speed-dial"
-                    variant={'product-card-speeddial' as any}
-                    icon={
-                      <SpeedDialIcon
-                        icon={<AddShoppingCart />}
-                        openIcon={<Close />}
-                      />
-                    }
-                    onClose={() => setSpeedDialOpen(false)}
-                    onOpen={() => setSpeedDialOpen(true)}
-                    open={speedDialOpen}
-                    direction="up"
-                    sx={{
-                      position: 'absolute',
+                  <Tooltip
+                    title={salesWindowMessage}
+                    disableHoverListener={!salesWindowMessage}
+                  >
+                    <SpeedDial
+                      ariaLabel="Speed Dial for add to cart"
+                      className="add-to-cart-speed-dial"
+                      variant={'product-card-speeddial' as any}
+                      icon={
+                        <SpeedDialIcon
+                          icon={<AddShoppingCart />}
+                          openIcon={<Close />}
+                        />
+                      }
+                      onClose={() => setSpeedDialOpen(false)}
+                      onOpen={() => setSpeedDialOpen(true)}
+                      open={speedDialOpen && isWithinSalesWindow}
+                      direction="up"
+                      FabProps={{ disabled: !isWithinSalesWindow }}
+                      sx={{
+                        position: 'absolute',
                       bottom: 10,
                       right: 5,
                       '& .MuiFab-root': {
@@ -614,19 +627,27 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
                       aria-label="Buy with Recommended"
                       onClick={handleBuyWithRecommended}
                     />
-                  </SpeedDial>
+                    </SpeedDial>
+                  </Tooltip>
                 </>
               ) : (
                 // Tier 3: Standard Add to Cart button (fallback)
-                <Button
-                  variant="contained"
-                  className="add-to-cart-button"
-                  aria-label="Add to cart"
-                  onClick={handleAddToCart}
-                  disabled={!currentVariation}
+                <Tooltip
+                  title={salesWindowMessage}
+                  disableHoverListener={!salesWindowMessage}
                 >
-                  <AddShoppingCart />
-                </Button>
+                  <span>
+                    <Button
+                      variant="contained"
+                      className="add-to-cart-button"
+                      aria-label="Add to cart"
+                      onClick={handleAddToCart}
+                      disabled={!currentVariation || !isWithinSalesWindow}
+                    >
+                      <AddShoppingCart />
+                    </Button>
+                  </span>
+                </Tooltip>
               )}
             </Box>
           </Box>

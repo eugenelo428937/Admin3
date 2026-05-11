@@ -71,6 +71,8 @@ export interface TutorialProductCardVM {
   flattenedEvents: FlattenedTutorialEvent[];
   summaryInfo: SummaryInfo;
   speedDialActions: SpeedDialActionItem[];
+  isWithinSalesWindow: boolean;
+  salesWindowMessage: string;
 
   // Actions
   handleDialogClose: () => void;
@@ -449,6 +451,25 @@ const useTutorialProductCardVM = (
     setPriceInfoOpen(false);
   }, []);
 
+  // Check whether the product is within its exam-session sales window.
+  // Defaults to true when start_date/end_date are not provided so legacy
+  // products without these fields continue to allow adding to cart.
+  const { isWithinSalesWindow, salesWindowMessage } = useMemo(() => {
+    const start = (product as any)?.start_date ? new Date((product as any).start_date) : null;
+    const end = (product as any)?.end_date ? new Date((product as any).end_date) : null;
+    if (!start || !end) {
+      return { isWithinSalesWindow: true, salesWindowMessage: '' };
+    }
+    const now = new Date();
+    const within = now >= start && now <= end;
+    return {
+      isWithinSalesWindow: within,
+      salesWindowMessage: within
+        ? ''
+        : `Sales for ${(product as any)?.session_code ?? 'this session'} are not currently open`,
+    };
+  }, [(product as any)?.start_date, (product as any)?.end_date, (product as any)?.session_code]);
+
   // SpeedDial actions configuration - memoized to prevent unnecessary re-renders
   // Uses icon factory if provided, otherwise returns placeholder actions
   const speedDialActions = useMemo(
@@ -458,8 +479,8 @@ const useTutorialProductCardVM = (
         {
           key: 'addToCart',
           icon: iconFactory.addShoppingCart,
-          name: 'Add to Cart',
-          show: hasChoices,
+          name: isWithinSalesWindow ? 'Add to Cart' : salesWindowMessage,
+          show: hasChoices && isWithinSalesWindow,
           onClick: handleAddToCart,
         },
         {
@@ -487,6 +508,8 @@ const useTutorialProductCardVM = (
       handleSelectTutorial,
       handleViewSelections,
       iconFactory,
+      isWithinSalesWindow,
+      salesWindowMessage,
     ]
   );
 
@@ -570,6 +593,8 @@ const useTutorialProductCardVM = (
     flattenedEvents,
     summaryInfo,
     speedDialActions,
+    isWithinSalesWindow,
+    salesWindowMessage,
     handleDialogClose,
     handleDialogOpen,
     handleSpeedDialOpen,

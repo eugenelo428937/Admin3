@@ -311,14 +311,21 @@ const OnlineClassroomProductCard = React.memo<OnlineClassroomProductCardProps>(
                   {product.vat_status_display || 'Price includes VAT'}
                 </Typography>
               </Box>
-              <Button
-                variant="contained"
-                className="add-to-cart-button"
-                onClick={vm.handleAddToCart}
-                disabled={!vm.currentVariation}
+              <Tooltip
+                title={vm.salesWindowMessage}
+                disableHoverListener={!vm.salesWindowMessage}
               >
-                <AddShoppingCart />
-              </Button>
+                <span>
+                  <Button
+                    variant="contained"
+                    className="add-to-cart-button"
+                    onClick={vm.handleAddToCart}
+                    disabled={!vm.currentVariation || !vm.isWithinSalesWindow}
+                  >
+                    <AddShoppingCart />
+                  </Button>
+                </span>
+              </Tooltip>
             </Box>
           </Box>
         </CardActions>

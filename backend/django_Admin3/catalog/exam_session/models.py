@@ -32,6 +32,10 @@ class ExamSession(models.Model):
         null=False,
         help_text="End date of the exam session period"
     )
+    is_active = models.BooleanField(
+        default=False,
+        help_text="Whether this exam session is active for sale (default off; activate via management command)"
+    )
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 

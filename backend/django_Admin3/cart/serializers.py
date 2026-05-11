@@ -30,6 +30,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     product_type = serializers.SerializerMethodField()
     current_product = serializers.SerializerMethodField()
     product_id = serializers.SerializerMethodField()
+    is_available = serializers.SerializerMethodField()
 
     # Task 23: legacy `product` / `marking_voucher` / `item_type` are now
     # @properties on the model, derived from the unified `purchasable` FK.
@@ -72,6 +73,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             'id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code',
             'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
             'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
+            'is_available',  # NEW: per-item availability flag
             # Phase 5: VAT fields
             'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount',
             # Task 18: unified purchasable nested object
@@ -191,6 +193,17 @@ class CartItemSerializer(serializers.ModelSerializer):
             return 'marking'
 
         return 'material'
+
+    def get_is_available(self, obj):
+        """Whether the item's underlying purchasable is currently available
+        for sale. Frontend uses this to render a 'no longer available' badge.
+
+        Returns True for fee items (which don't have a purchasable FK).
+        """
+        purchasable = obj.purchasable
+        if purchasable is None:
+            return True
+        return purchasable.is_available_now()
 
 class CartFeeSerializer(serializers.ModelSerializer):
     class Meta:

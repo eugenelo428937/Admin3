@@ -20,7 +20,8 @@ import {
   Typography,
   CircularProgress,
   ButtonGroup,
-  Button
+  Button,
+  Chip
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -122,6 +123,15 @@ const CartItemWithVAT: React.FC<CartItemWithVATProps> = ({
             primaryTypographyProps={{ variant: 'h6', gutterBottom: true }}
             secondaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
           />
+
+          {item.is_available === false && (
+            <Chip
+              label="No longer available — please remove"
+              color="warning"
+              size="small"
+              sx={{ mt: 0.5, mb: 0.5 }}
+            />
+          )}
 
           {/* Quantity Controls */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>

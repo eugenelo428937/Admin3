@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.db import SessionStore
@@ -24,16 +25,30 @@ class CartServiceTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser', email='test@example.com', password='testpass123'
         )
-        # Create store product fixture for check constraint
-        subject = Subject.objects.create(code='CM2')
+        # Create store product fixture for check constraint.
+        # All upstream is_active flags must be True and the exam session
+        # window must include "now" so the cart-add availability gate accepts
+        # the product (see Purchasable.objects.available_now()).
+        now = timezone.now()
+        subject = Subject.objects.create(code='CM2', active=True)
         exam_session = ExamSession.objects.create(
             session_code='2025-04',
-            start_date=timezone.now(), end_date=timezone.now()
+            start_date=now - timedelta(days=10),
+            end_date=now + timedelta(days=10),
+            is_active=True,
         )
-        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
-        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
-        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
-        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        ess = ExamSessionSubject.objects.create(
+            exam_session=exam_session, subject=subject, is_active=True
+        )
+        cat_product = CatalogProduct.objects.create(
+            fullname='Test Product', shortname='TP', code='TP01', is_active=True
+        )
+        variation = ProductVariation.objects.create(
+            variation_type='eBook', name='Standard eBook', is_active=True
+        )
+        ppv = ProductProductVariation.objects.create(
+            product=cat_product, product_variation=variation, is_active=True
+        )
         self.store_product = StoreProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv
         )

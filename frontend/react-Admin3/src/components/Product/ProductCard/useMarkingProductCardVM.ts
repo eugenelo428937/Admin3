@@ -41,6 +41,8 @@ export interface MarkingProductCardVM {
 	// Cart / theme
 	userRegion: string;
 	theme: Theme;
+	isWithinSalesWindow: boolean;
+	salesWindowMessage: string;
 
 	// Variation info
 	hasVariations: boolean;
@@ -92,6 +94,25 @@ const useMarkingProductCardVM = (
 
 	// Get user's VAT region from cart data
 	const userRegion = (cartData as any)?.vat_calculations?.region_info?.region || "UK";
+
+	// Check whether the product is within its exam-session sales window.
+	// Defaults to true when start_date/end_date are not provided so legacy
+	// products without these fields continue to allow adding to cart.
+	const { isWithinSalesWindow, salesWindowMessage } = useMemo(() => {
+		const start = (product as any)?.start_date ? new Date((product as any).start_date) : null;
+		const end = (product as any)?.end_date ? new Date((product as any).end_date) : null;
+		if (!start || !end) {
+			return { isWithinSalesWindow: true, salesWindowMessage: "" };
+		}
+		const now = new Date();
+		const within = now >= start && now <= end;
+		return {
+			isWithinSalesWindow: within,
+			salesWindowMessage: within
+				? ""
+				: `Sales for ${(product as any)?.session_code ?? "this session"} are not currently open`,
+		};
+	}, [(product as any)?.start_date, (product as any)?.end_date, (product as any)?.session_code]);
 
 	// Memoize variation calculations for performance
 	const variationInfo = useMemo(() => {
@@ -473,6 +494,8 @@ const useMarkingProductCardVM = (
 		// Cart / theme
 		userRegion,
 		theme,
+		isWithinSalesWindow,
+		salesWindowMessage,
 
 		// Variation info
 		hasVariations,

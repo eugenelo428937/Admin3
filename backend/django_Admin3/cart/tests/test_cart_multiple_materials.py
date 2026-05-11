@@ -34,71 +34,84 @@ class TestCartMultipleMaterialsBug(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
-        # Create exam session
+        # Create exam session. The cart-add availability gate requires
+        # is_active=True and a window that includes "now"; ensure all
+        # upstream is_active flags are True too (see Purchasable.objects.available_now()).
         now = timezone.now()
         self.exam_session = ExamSession.objects.create(
             session_code='TEST2024',
-            start_date=now,
-            end_date=now + timedelta(days=90)
+            start_date=now - timedelta(days=10),
+            end_date=now + timedelta(days=90),
+            is_active=True,
         )
 
         # Create subjects
         self.subject1 = Subject.objects.create(
             code='CB1',
-            description='Business Finance'
+            description='Business Finance',
+            active=True,
         )
 
         self.subject2 = Subject.objects.create(
             code='CB2',
-            description='Business Economics'
+            description='Business Economics',
+            active=True,
         )
 
         # Create exam session subjects
         self.ess1 = ExamSessionSubject.objects.create(
             exam_session=self.exam_session,
-            subject=self.subject1
+            subject=self.subject1,
+            is_active=True,
         )
 
         self.ess2 = ExamSessionSubject.objects.create(
             exam_session=self.exam_session,
-            subject=self.subject2
+            subject=self.subject2,
+            is_active=True,
         )
 
         # Create products (Course Notes and The Vault)
         self.product1 = Product.objects.create(
             code='CN',
             fullname='Course Notes',
-            shortname='CN'
+            shortname='CN',
+            is_active=True,
         )
 
         self.product2 = Product.objects.create(
             code='TV',
             fullname='The Vault',
-            shortname='TV'
+            shortname='TV',
+            is_active=True,
         )
 
         # Create product variations (must have unique combination of variation_type + name)
         self.variation1 = ProductVariation.objects.create(
             name='Printed CN',
             variation_type='Printed',
-            description='Printed Course Notes'
+            description='Printed Course Notes',
+            is_active=True,
         )
 
         self.variation2 = ProductVariation.objects.create(
             name='Printed TV',
             variation_type='Printed',
-            description='Printed The Vault'
+            description='Printed The Vault',
+            is_active=True,
         )
 
         # Link products to variations (ProductProductVariation is just a junction table)
         self.ppv1 = ProductProductVariation.objects.create(
             product=self.product1,
-            product_variation=self.variation1
+            product_variation=self.variation1,
+            is_active=True,
         )
 
         self.ppv2 = ProductProductVariation.objects.create(
             product=self.product2,
-            product_variation=self.variation2
+            product_variation=self.variation2,
+            is_active=True,
         )
 
         # Create store products (purchasable items linking ESS to PPV)

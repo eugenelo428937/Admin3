@@ -130,6 +130,37 @@ class Product(Purchasable):
     def __str__(self):
         return self.product_code
 
+    @classmethod
+    def available_for_listing(cls):
+        """Subclass-typed convenience: return ``store.Product`` instances
+        that should appear in customer listings (browse/search/navbar).
+
+        Wraps ``Purchasable.objects.available_for_listing()`` so callers
+        can access subclass fields (exam_session_subject,
+        product_product_variation, ...) without a downcast. Drops the
+        exam-session date window — see :meth:`available_now` for the
+        purchase-side counterpart.
+        """
+        from store.models.purchasable import Purchasable
+        return cls.objects.filter(
+            pk__in=Purchasable.objects.available_for_listing().values('pk')
+        )
+
+    @classmethod
+    def available_now(cls, *, at=None):
+        """Subclass-typed convenience: return ``store.Product`` instances
+        that are currently available for **purchase** (8-condition
+        predicate including the exam-session date window).
+
+        Equivalent to filtering ``Purchasable.objects.available_now()``
+        to ``kind='product'`` rows. Use for cart/checkout server-side
+        gating, not for listing — see :meth:`available_for_listing`.
+        """
+        from store.models.purchasable import Purchasable
+        return cls.objects.filter(
+            pk__in=Purchasable.objects.available_now(at=at).values('pk')
+        )
+
     # ─────────────────────────────────────────────────────────────────────────
     # Backward-compatible properties for cart/order code migration
     # These allow existing code using item.product.product to work unchanged

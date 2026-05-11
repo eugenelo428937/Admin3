@@ -47,11 +47,14 @@ class StoreAPITestCase(APITestCase):
             active=False
         )
 
-        # Create exam session
+        # Create exam session. Sales-window predicate requires is_active=True
+        # and a window that includes "now" (see Purchasable.objects.available_now()).
+        now = timezone.now()
         cls.exam_session = ExamSession.objects.create(
             session_code='2025-04',
-            start_date=timezone.now(),
-            end_date=timezone.now() + timezone.timedelta(days=90)
+            start_date=now - timezone.timedelta(days=10),
+            end_date=now + timezone.timedelta(days=90),
+            is_active=True,
         )
 
         # Create exam session subject
@@ -82,26 +85,31 @@ class StoreAPITestCase(APITestCase):
             is_active=False  # Inactive catalog template
         )
 
-        # Create product variations
+        # Create product variations. is_active=True required for the sales-window predicate.
         cls.variation_printed = ProductVariation.objects.create(
             variation_type='Printed',
             name='Printed',
-            code='P'
+            code='P',
+            is_active=True,
         )
         cls.variation_ebook = ProductVariation.objects.create(
             variation_type='eBook',
             name='eBook',
-            code='E'
+            code='E',
+            is_active=True,
         )
 
-        # Create PPV (junction between Product and ProductVariation)
+        # Create PPV (junction between Product and ProductVariation).
+        # is_active=True required for the sales-window predicate.
         cls.ppv_printed = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_printed
+            product_variation=cls.variation_printed,
+            is_active=True,
         )
         cls.ppv_ebook = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_ebook
+            product_variation=cls.variation_ebook,
+            is_active=True,
         )
 
         # Create store products
@@ -297,11 +305,18 @@ class TestProductViewSet(StoreAPITestCase):
         self.assertEqual(data['product_name'], 'Core Study Material CM2')
         self.assertTrue(data['is_active'])
 
-    def test_retrieve_inactive_product_returns_404(self):
-        """Retrieve endpoint should return 404 for inactive products."""
+    def test_retrieve_inactive_product_returns_200(self):
+        """Retrieve endpoint should return 200 for inactive products.
+
+        The list endpoint filters through Purchasable.objects.available_now(),
+        but retrieve is intentionally unfiltered to support order-history
+        viewing — customers must be able to view a product they've ordered
+        even after it's been deactivated. See store/views/product.py
+        ProductViewSet.get_queryset().
+        """
         response = self.client.get(f'/api/store/products/{self.store_product_inactive.id}/')
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_fr012_hides_products_with_inactive_catalog_template(self):
         """FR-012: Products with inactive catalog template should be hidden from list."""
@@ -321,14 +336,20 @@ class TestProductViewSet(StoreAPITestCase):
             "Product with inactive catalog template should be hidden"
         )
 
-    def test_fr012_retrieve_inactive_template_product_returns_404(self):
-        """FR-012: Retrieve should return 404 for products with inactive catalog template."""
+    def test_retrieve_inactive_template_product_returns_200(self):
+        """Retrieve should return 200 for products with inactive catalog
+        template (replaces the old FR-012 retrieve assertion).
+
+        Retrieve is intentionally unfiltered so order-history pages can
+        render products whose catalog template was later deactivated.
+        See store/views/product.py ProductViewSet.get_queryset().
+        """
         response = self.client.get(f'/api/store/products/{self.store_product_inactive_template.id}/')
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_404_NOT_FOUND,
-            "Product with inactive catalog template should not be retrievable"
+            status.HTTP_200_OK,
+            "Retrieve must return inactive products to support order history"
         )
 
     def test_product_prices_action(self):

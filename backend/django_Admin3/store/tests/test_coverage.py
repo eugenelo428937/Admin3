@@ -42,11 +42,13 @@ class StoreCoverageTestDataMixin:
             active=True
         )
 
-        # Create exam session
+        # Create exam session (is_active defaults to False; required True for
+        # Purchasable.objects.available_now() in bundle component filtering).
         cls.exam_session = ExamSession.objects.create(
             session_code='2025-09',
             start_date=timezone.now(),
-            end_date=timezone.now() + timezone.timedelta(days=90)
+            end_date=timezone.now() + timezone.timedelta(days=90),
+            is_active=True,
         )
 
         # Create exam session subject
@@ -65,21 +67,25 @@ class StoreCoverageTestDataMixin:
             buy_both=True,
         )
 
-        # Create product variations
+        # Create product variations (is_active defaults to False; needs True
+        # for Purchasable.objects.available_now() chain).
         cls.variation_printed = ProductVariation.objects.create(
             variation_type='Printed',
             name='Printed',
-            code='P'
+            code='P',
+            is_active=True,
         )
         cls.variation_ebook = ProductVariation.objects.create(
             variation_type='eBook',
             name='eBook',
-            code='E'
+            code='E',
+            is_active=True,
         )
         cls.variation_marking = ProductVariation.objects.create(
             variation_type='Marking',
             name='Mock Exam Marking',
-            code='M01'
+            code='M01',
+            is_active=True,
         )
         cls.variation_tutorial = ProductVariation.objects.create(
             variation_type='Tutorial',
@@ -87,24 +93,29 @@ class StoreCoverageTestDataMixin:
             code='LON',
             description='London face-to-face tutorial',
             description_short='London Tutorial',
+            is_active=True,
         )
 
-        # Create PPVs
+        # Create PPVs (is_active defaults to False; needs True for available_now()).
         cls.ppv_printed = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_printed
+            product_variation=cls.variation_printed,
+            is_active=True,
         )
         cls.ppv_ebook = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_ebook
+            product_variation=cls.variation_ebook,
+            is_active=True,
         )
         cls.ppv_marking = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_marking
+            product_variation=cls.variation_marking,
+            is_active=True,
         )
         cls.ppv_tutorial = ProductProductVariation.objects.create(
             product=cls.catalog_product,
-            product_variation=cls.variation_tutorial
+            product_variation=cls.variation_tutorial,
+            is_active=True,
         )
 
         # Create store products

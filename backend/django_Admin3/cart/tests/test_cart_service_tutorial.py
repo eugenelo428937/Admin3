@@ -23,29 +23,50 @@ from tutorials.models import CartTutorialChoice, TutorialEvents
 
 
 def _seed_tutorial_product(subject_code='CB1', sitting='24'):
+    # All upstream is_active flags must be True and the exam-session window
+    # must include "now" for the cart-add availability gate to accept the
+    # product (see Purchasable.objects.available_now()).
+    now = timezone.now()
     es = ExamSession.objects.create(
         session_code=sitting,
-        start_date=timezone.now(),
-        end_date=timezone.now() + timedelta(days=60),
+        start_date=now - timedelta(days=10),
+        end_date=now + timedelta(days=60),
+        is_active=True,
     )
     subj, _ = Subject.objects.get_or_create(
         code=subject_code,
         defaults={'description': f'{subject_code} subject', 'active': True},
     )
-    ess = ExamSessionSubject.objects.create(exam_session=es, subject=subj)
+    ess = ExamSessionSubject.objects.create(
+        exam_session=es, subject=subj, is_active=True,
+    )
     cat, _ = CatProduct.objects.get_or_create(
         code='Live',
-        defaults={'fullname': 'Tutorial - Live Online', 'shortname': 'Live'},
+        defaults={'fullname': 'Tutorial - Live Online', 'shortname': 'Live',
+                  'is_active': True},
     )
     pv, _ = ProductVariation.objects.get_or_create(
         code='LO_6H',
         defaults={'name': 'LO_6H', 'description': '',
                   'description_short': 'LO_6H',
-                  'variation_type': 'Tutorial'},
+                  'variation_type': 'Tutorial',
+                  'is_active': True},
     )
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat, product_variation=pv,
+        defaults={'is_active': True},
     )
+    # ``get_or_create`` won't flip is_active on a pre-existing row, so make
+    # sure the leaf flag is True regardless of who created it.
+    if not ppv.is_active:
+        ppv.is_active = True
+        ppv.save(update_fields=['is_active'])
+    if not pv.is_active:
+        pv.is_active = True
+        pv.save(update_fields=['is_active'])
+    if not cat.is_active:
+        cat.is_active = True
+        cat.save(update_fields=['is_active'])
     sp = StoreProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject_code}/Live/LO_6H/{sitting}',
