@@ -136,3 +136,107 @@ class PublicAttendanceView(_TokenAuthMixin, APIView):
         )
         session.refresh_from_db()
         return Response(self._build_payload(session, instructor))
+
+
+# ---- Upload endpoint (Task 17) ----
+
+from rest_framework.parsers import MultiPartParser  # noqa: E402
+
+MAX_UPLOAD_BYTES = 2 * 1024 * 1024  # 2 MB
+XLSX_MAGIC = b'PK'  # xlsx is a zip file starting with PK\x03\x04
+
+
+class PublicAttendanceUploadView(_TokenAuthMixin, APIView):
+    """POST a filled xlsx to update attendance for the magic-link's session.
+
+    Per-row upsert: blank Attendance cells are skipped, foreign student_refs
+    are reported as soft row errors. Returns the refreshed roster plus an
+    ``upload_summary`` block ``{rows_applied, skipped_blank, errors}``.
+    """
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, token: str):
+        result = self._verify(token, request)
+        if isinstance(result, Response):
+            return result
+        payload: AttendanceLinkPayload = result
+        session = get_object_or_404(TutorialSessions, id=payload.session_id)
+        instructor = get_object_or_404(TutorialInstructor, id=payload.instructor_id)
+
+        f = request.FILES.get('file')
+        if f is None:
+            return Response({'detail': 'file is required'}, status=400)
+
+        size = getattr(f, 'size', None) or 0
+        if size > MAX_UPLOAD_BYTES:
+            _log_access(
+                session_id=session.id, instructor_id=instructor.id,
+                action='reject', request=request,
+                detail={'reason': 'too_large', 'size': size},
+            )
+            return Response({'code': 'too_large'}, status=413)
+
+        # Magic-byte check — xlsx files start with the zip header PK\x03\x04.
+        head = f.read(2)
+        f.seek(0)
+        if head != XLSX_MAGIC:
+            _log_access(
+                session_id=session.id, instructor_id=instructor.id,
+                action='reject', request=request,
+                detail={'reason': 'wrong_mime'},
+            )
+            return Response({'code': 'wrong_mime'}, status=415)
+
+        # Parse. Local import keeps the parser optional at module load.
+        from tutorials.services.attendance_xlsx_parser import parse_attendance_xlsx
+        parsed = parse_attendance_xlsx(f, session)
+
+        items = [
+            {
+                'registration_id': parsed.ref_to_registration_id[row.student_ref],
+                'status': row.status,
+                'reason': row.reason or '',
+            }
+            for row in parsed.rows
+        ]
+
+        recorded_by = (
+            instructor.staff.user
+            if instructor.staff_id and instructor.staff.user_id
+            else None
+        )
+        if items:
+            try:
+                save_attendance_items(
+                    session=session, recorded_by=recorded_by, items=items,
+                )
+            except CrossSessionRegistration as exc:
+                # Parser already filters these; defence in depth.
+                _log_access(
+                    session_id=session.id, instructor_id=instructor.id,
+                    action='reject', request=request,
+                    detail={'reason': 'cross_session', 'message': str(exc)},
+                )
+                return Response(
+                    {'code': 'cross_session', 'detail': str(exc)}, status=400,
+                )
+
+        _log_access(
+            session_id=session.id, instructor_id=instructor.id,
+            action='upload', request=request,
+            detail={
+                'rows_applied': len(items),
+                'skipped_blank': parsed.skipped_blank,
+                'error_count': len(parsed.errors),
+            },
+        )
+
+        view = PublicAttendanceView()
+        body = view._build_payload(session, instructor)
+        body['upload_summary'] = {
+            'rows_applied': len(items),
+            'skipped_blank': parsed.skipped_blank,
+            'errors': parsed.errors,
+        }
+        return Response(body)

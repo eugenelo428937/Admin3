@@ -108,3 +108,120 @@ class PublicAttendanceViewsTests(TestCase):
             format='json',
         )
         self.assertTrue(TutorialAttendanceLinkAccess.objects.filter(action='save').exists())
+
+
+class PublicAttendanceUploadTests(TestCase):
+    """Tests for POST /api/tutorials/public/attendance/<token>/upload-xlsx/."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.event = make_event(code='UT-UPL-1')
+        cls.session = make_session(event=cls.event, title='Up Session', sequence=1)
+        cls.session.start_date = timezone.now() - timedelta(hours=1)
+        cls.session.end_date = timezone.now() + timedelta(hours=1)
+        cls.session.save(update_fields=['start_date', 'end_date'])
+
+        u = User.objects.create_user(
+            username='upins', email='upins@example.com',
+            first_name='Up', last_name='In',
+        )
+        cls.staff = Staff.objects.create(user=u)
+        cls.instructor = TutorialInstructor.objects.create(staff=cls.staff)
+        cls.session.instructors.add(cls.instructor)
+
+        su = User.objects.create_user(username='upstu', first_name='Up', last_name='Stu')
+        cls.student = Student.objects.create(user=su)
+        cls.reg = TutorialRegistration.objects.create(
+            student=cls.student, tutorial_session=cls.session,
+        )
+
+    def setUp(self):
+        self.client = APIClient()
+        signer = AttendanceLinkSigner()
+        self.token, _ = signer.sign(self.session.id, self.instructor.id)
+
+    def _xlsx(self, rows):
+        from io import BytesIO
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.append([
+            'Title', 'First Name', 'Last Name', 'Student Ref', 'Email', 'Company', 'Attendance',
+        ])
+        for r in rows:
+            ws.append(list(r))
+        buf = BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = 'attendance.xlsx'
+        return buf
+
+    def _url(self):
+        return f'/api/tutorials/public/attendance/{self.token}/upload-xlsx/'
+
+    def test_successful_upload_creates_attendance(self):
+        xlsx = self._xlsx([
+            ('', 'Up', 'Stu', self.student.student_ref, '', '', 'ATTENDED'),
+        ])
+        resp = self.client.post(self._url(), data={'file': xlsx}, format='multipart')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertEqual(
+            TutorialAttendance.objects.get(registration=self.reg).status,
+            'ATTENDED',
+        )
+        body = resp.json()
+        self.assertEqual(body['upload_summary']['rows_applied'], 1)
+        self.assertEqual(body['upload_summary']['skipped_blank'], 0)
+        self.assertEqual(body['upload_summary']['errors'], [])
+
+    def test_skipped_blank_rows_reported_not_failed(self):
+        xlsx = self._xlsx([
+            ('', 'Up', 'Stu', self.student.student_ref, '', '', ''),
+        ])
+        resp = self.client.post(self._url(), data={'file': xlsx}, format='multipart')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        body = resp.json()
+        self.assertEqual(body['upload_summary']['rows_applied'], 0)
+        self.assertEqual(body['upload_summary']['skipped_blank'], 1)
+
+    def test_foreign_student_ref_surfaces_as_row_error(self):
+        xlsx = self._xlsx([
+            ('', 'X', 'Y', 9999999, '', '', 'ATTENDED'),
+        ])
+        resp = self.client.post(self._url(), data={'file': xlsx}, format='multipart')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        body = resp.json()
+        self.assertEqual(body['upload_summary']['rows_applied'], 0)
+        self.assertEqual(len(body['upload_summary']['errors']), 1)
+
+    def test_oversized_returns_413(self):
+        from io import BytesIO
+        big = BytesIO(b'\x00' * (3 * 1024 * 1024))
+        big.name = 'big.xlsx'
+        resp = self.client.post(self._url(), data={'file': big}, format='multipart')
+        self.assertEqual(resp.status_code, 413)
+
+    def test_wrong_mime_returns_415(self):
+        from io import BytesIO
+        not_xlsx = BytesIO(b'hello world')
+        not_xlsx.name = 'fake.xlsx'
+        resp = self.client.post(self._url(), data={'file': not_xlsx}, format='multipart')
+        self.assertIn(resp.status_code, (400, 415))
+
+    def test_upload_writes_audit_row(self):
+        xlsx = self._xlsx([
+            ('', 'Up', 'Stu', self.student.student_ref, '', '', 'ATTENDED'),
+        ])
+        self.client.post(self._url(), data={'file': xlsx}, format='multipart')
+        rows = TutorialAttendanceLinkAccess.objects.filter(action='upload')
+        self.assertEqual(rows.count(), 1)
+
+    def test_expired_token_returns_410(self):
+        xlsx = self._xlsx([
+            ('', 'Up', 'Stu', self.student.student_ref, '', '', 'ATTENDED'),
+        ])
+        with mock.patch.object(AttendanceLinkSigner, 'MAX_AGE', 0):
+            resp = self.client.post(
+                self._url(), data={'file': xlsx}, format='multipart',
+            )
+        self.assertEqual(resp.status_code, 410)

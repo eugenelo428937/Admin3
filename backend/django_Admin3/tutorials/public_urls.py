@@ -4,8 +4,17 @@ Mounted under ``/api/tutorials/public/`` from ``tutorials.urls``.
 """
 from django.urls import path
 
-from .public_views import PublicAttendanceView
+from .public_views import PublicAttendanceView, PublicAttendanceUploadView
 
 urlpatterns = [
-    path('attendance/<str:token>/', PublicAttendanceView.as_view(), name='public-attendance'),
+    path(
+        'attendance/<str:token>/',
+        PublicAttendanceView.as_view(),
+        name='public-attendance',
+    ),
+    path(
+        'attendance/<str:token>/upload-xlsx/',
+        PublicAttendanceUploadView.as_view(),
+        name='public-attendance-upload',
+    ),
 ]
