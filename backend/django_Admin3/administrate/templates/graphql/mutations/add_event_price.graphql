@@ -1,0 +1,26 @@
+mutation addEventPriceLevel(
+   $amount: Decimal!
+   $eventId: ID!
+   $financialUnitId: ID!
+   $priceLevelId: ID!
+) {
+   event {
+      addPrices(
+         input: {
+            amount: $amount
+            eventId: $eventId
+            financialUnitId: $financialUnitId
+            priceLevelId: $priceLevelId
+         }
+      ) {
+         prices {
+            id
+         }
+         errors {
+            label
+            message
+            value
+         }
+      }
+   }
+}
