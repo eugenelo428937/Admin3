@@ -63,13 +63,23 @@ def setup_catalog_foundation():
         defaults={'description': 'CM2 - Models', 'active': True},
     )
 
-    exam_session, _ = ExamSession.objects.get_or_create(
+    # Note: ExamSession / ProductVariation / ProductProductVariation gained
+    # an is_active flag that defaults to False at the model level (audit gate
+    # for production rollout). Pact fixtures must opt in so the canonical
+    # available_for_listing() / available_now() predicates pass — otherwise
+    # search / nav / list endpoints return empty arrays and the contract
+    # body checks fail with "Expected [] to have minimum size of 1".
+    exam_session, es_created = ExamSession.objects.get_or_create(
         session_code='2025-04',
         defaults={
             'start_date': timezone.now(),
             'end_date': timezone.now() + timezone.timedelta(days=90),
+            'is_active': True,
         },
     )
+    if not es_created and not exam_session.is_active:
+        exam_session.is_active = True
+        exam_session.save(update_fields=['is_active'])
 
     ess, _ = ExamSessionSubject.objects.get_or_create(
         exam_session=exam_session,
@@ -86,20 +96,28 @@ def setup_catalog_foundation():
         },
     )
 
-    variation, _ = ProductVariation.objects.get_or_create(
+    variation, var_created = ProductVariation.objects.get_or_create(
         code='PCSM01P',
         defaults={
             'variation_type': 'Printed',
             'name': 'Printed Combined Study Material',
             'description': 'Full printed study material',
             'description_short': 'Printed material',
+            'is_active': True,
         },
     )
+    if not var_created and not variation.is_active:
+        variation.is_active = True
+        variation.save(update_fields=['is_active'])
 
-    ppv, _ = ProductProductVariation.objects.get_or_create(
+    ppv, ppv_created = ProductProductVariation.objects.get_or_create(
         product=catalog_product,
         product_variation=variation,
+        defaults={'is_active': True},
     )
+    if not ppv_created and not ppv.is_active:
+        ppv.is_active = True
+        ppv.save(update_fields=['is_active'])
 
     return subject, exam_session, ess, catalog_product, variation, ppv
 
@@ -541,20 +559,28 @@ def setup_tutorial_catalog_product():
         },
     )
 
-    tutorial_variation, _ = ProductVariation.objects.get_or_create(
+    tutorial_variation, tv_created = ProductVariation.objects.get_or_create(
         code='TLONCM2',
         defaults={
             'variation_type': 'Tutorial',
             'name': 'London Face-to-Face Tutorial',
             'description': 'Face-to-face tutorial in London',
             'description_short': 'London tutorial',
+            'is_active': True,
         },
     )
+    if not tv_created and not tutorial_variation.is_active:
+        tutorial_variation.is_active = True
+        tutorial_variation.save(update_fields=['is_active'])
 
-    tutorial_ppv, _ = ProductProductVariation.objects.get_or_create(
+    tutorial_ppv, tppv_created = ProductProductVariation.objects.get_or_create(
         product=tutorial_product,
         product_variation=tutorial_variation,
+        defaults={'is_active': True},
     )
+    if not tppv_created and not tutorial_ppv.is_active:
+        tutorial_ppv.is_active = True
+        tutorial_ppv.save(update_fields=['is_active'])
 
     tutorial_store_product, _ = StoreProduct.objects.get_or_create(
         exam_session_subject=ess,
