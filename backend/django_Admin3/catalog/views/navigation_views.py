@@ -102,8 +102,13 @@ def navigation_data(request):
         ]
 
         # === PRODUCT GROUPS (batch load all needed groups in ONE query) ===
+        # NOTE: names below must match FilterGroup.name in the DB exactly
+        # (case-insensitive via name__in). 'Online Classroom' was previously
+        # 'Online Classroom Recording' here, which did not exist in DB and
+        # caused the tutorial_dropdown['Online Classroom'] section to render
+        # empty. See catalog/tests/test_navigation_online_classroom_lookup.py.
         all_group_names = [
-            'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom Recording'
+            'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom'
         ]
         groups = FilterGroup.objects.filter(name__in=all_group_names)
         groups_dict = {g.name: g for g in groups}
@@ -158,7 +163,7 @@ def navigation_data(request):
 
         # === TUTORIAL DROPDOWN ===
         tutorial_group = groups_dict.get('Tutorial')
-        online_classroom_group = groups_dict.get('Online Classroom Recording')
+        online_classroom_group = groups_dict.get('Online Classroom')
 
         # Location products
         if tutorial_group:
