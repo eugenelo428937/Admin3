@@ -1,0 +1,29 @@
+/* Attendance status color tokens.
+   Light theme defaults; dark-mode variants follow if/when needed. */
+:root {
+  --attendance-attended-bg: #e8f5e9; /* green 50  */
+  --attendance-attended-fg: #1b5e20; /* green 900 */
+  --attendance-absent-bg:   #ffebee; /* red   50  */
+  --attendance-absent-fg:   #b71c1c; /* red   900 */
+  --attendance-late-bg:     #fff3e0; /* orange 50 */
+  --attendance-late-fg:     #e65100; /* orange 900*/
+  --attendance-other-bg:    #fffde7; /* yellow 50 */
+  --attendance-other-fg:    #f57f17; /* yellow 900*/
+}
+
+[data-status="ATTENDED"] { background: var(--attendance-attended-bg) !important; color: var(--attendance-attended-fg); }
+[data-status="ABSENT"]   { background: var(--attendance-absent-bg)   !important; color: var(--attendance-absent-fg); }
+[data-status="LATE"]     { background: var(--attendance-late-bg)     !important; color: var(--attendance-late-fg); }
+[data-status="OTHER"]    { background: var(--attendance-other-bg)    !important; color: var(--attendance-other-fg); }
+
+[data-attendance-option="ATTENDED"]::before,
+[data-attendance-option="ABSENT"]::before,
+[data-attendance-option="LATE"]::before,
+[data-attendance-option="OTHER"]::before {
+  content: ''; display: inline-block; width: 0.5rem; height: 0.5rem;
+  border-radius: 50%; margin-right: 0.5rem; vertical-align: middle;
+}
+[data-attendance-option="ATTENDED"]::before { background: var(--attendance-attended-fg); }
+[data-attendance-option="ABSENT"]::before   { background: var(--attendance-absent-fg); }
+[data-attendance-option="LATE"]::before     { background: var(--attendance-late-fg); }
+[data-attendance-option="OTHER"]::before    { background: var(--attendance-other-fg); }
