@@ -58,3 +58,10 @@ class SaveAttendanceItemsTests(TestCase):
                 session=self.session, recorded_by=self.recorder,
                 items=[{'registration_id': foreign_reg.id, 'status': 'ATTENDED', 'reason': ''}],
             )
+
+    def test_empty_items_no_op(self):
+        result = save_attendance_items(
+            session=self.session, recorded_by=self.recorder, items=[],
+        )
+        self.assertEqual(result, [])
+        self.assertFalse(TutorialAttendance.objects.exists())
