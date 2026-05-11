@@ -65,3 +65,12 @@ const tutorialEventsAdminService = {
 };
 
 export default tutorialEventsAdminService;
+
+import type { AttendanceService } from '../../components/shared/attendance/types';
+
+export function makeAdminAttendanceService(sessionId: number): AttendanceService {
+  return {
+    get: () => tutorialEventsAdminService.getAttendance(sessionId),
+    save: (items) => tutorialEventsAdminService.saveAttendance(sessionId, items),
+  };
+}

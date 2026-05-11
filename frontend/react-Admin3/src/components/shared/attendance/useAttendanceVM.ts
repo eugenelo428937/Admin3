@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import service from '../../../services/admin/tutorialEventsAdminService';
 import type {
-  AttendancePayload, AttendanceStatus, RosterRowDTO,
+  AttendancePayload, AttendanceService, AttendanceStatus, RosterRowDTO,
 } from './types';
 
 export class AttendanceSaveError extends Error {
@@ -43,35 +42,47 @@ function isDirty(row: RosterRow): boolean {
   return false;
 }
 
-export default function useAttendanceVM(sessionId: number) {
+export default function useAttendanceVM(service: AttendanceService) {
   const [session, setSession] = useState<AttendancePayload['session'] | null>(null);
+  const [instructor, setInstructor] = useState<AttendancePayload['instructor'] | null>(null);
   const [attendanceEnabled, setAttendanceEnabled] = useState(false);
   const [roster, setRoster] = useState<RosterRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastErrorCode, setLastErrorCode] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<'expired' | 'invalid' | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
 
   const applyPayload = useCallback((p: AttendancePayload) => {
     setSession(p.session);
+    setInstructor(p.instructor || null);
     setAttendanceEnabled(p.attendance_enabled);
     setRoster(p.registrations.map(rowFromDTO));
   }, []);
+
+  const replaceFromServer = useCallback((p: AttendancePayload) => {
+    applyPayload(p);
+  }, [applyPayload]);
 
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
     setError(null);
-    service.getAttendance(sessionId).then(p => {
+    setTokenError(null);
+    service.get().then(p => {
       if (!cancelled) applyPayload(p);
     }).catch((e: any) => {
-      if (!cancelled) setError(e?.response?.data?.detail || 'Failed to load roster.');
+      if (cancelled) return;
+      const code = e?.response?.data?.code;
+      if (code === 'token_expired') setTokenError('expired');
+      else if (code === 'invalid_token') setTokenError('invalid');
+      else setError(e?.response?.data?.detail || 'Failed to load roster.');
     }).finally(() => {
       if (!cancelled) setIsLoading(false);
     });
     return () => { cancelled = true; };
-  }, [sessionId, applyPayload]);
+  }, [service, applyPayload]);
 
   const setStatus = useCallback((regId: number, status: AttendanceStatus) => {
     setRoster(prev => prev.map(r => {
@@ -116,7 +127,7 @@ export default function useAttendanceVM(sessionId: number) {
           status: r.status as AttendanceStatus,
           reason: r.status === 'OTHER' ? r.reason : '',
         }));
-      const updated = await service.saveAttendance(sessionId, items);
+      const updated = await service.save(items);
       applyPayload(updated);
     } catch (e: any) {
       const data = e?.response?.data;
@@ -128,13 +139,7 @@ export default function useAttendanceVM(sessionId: number) {
       }
       // 400 with per-item errors
       if (data?.items && Array.isArray(data.items)) {
-        const sentItems = roster
-          .filter(r => r.status !== '')
-          .map(r => ({
-            registration_id: r.registration_id,
-            status: r.status as AttendanceStatus,
-            reason: r.status === 'OTHER' ? r.reason : '',
-          }));
+        const sentItems = roster.filter(r => r.status !== '');
         const indexToId: Record<number, number> = {};
         sentItems.forEach((it, i) => { indexToId[i] = it.registration_id; });
         const errs: Record<number, string> = {};
@@ -163,7 +168,7 @@ export default function useAttendanceVM(sessionId: number) {
     } finally {
       setIsSaving(false);
     }
-  }, [roster, sessionId, applyPayload]);
+  }, [roster, service, applyPayload]);
 
   const reset = useCallback(() => {
     setRoster(prev => prev.map(r => ({
@@ -180,21 +185,13 @@ export default function useAttendanceVM(sessionId: number) {
   );
 
   const hasDirty = useMemo(() => roster.some(r => r.dirty), [roster]);
+  const canSave = attendanceEnabled && hasDirty && !hasInvalidOther && !isSaving;
 
   return {
-    session,
-    attendanceEnabled,
-    roster,
-    isLoading,
-    isSaving,
-    error,
-    lastErrorCode,
-    rowErrors,
-    hasDirty,
-    hasInvalidOther,
-    setStatus,
-    setReason,
-    save,
-    reset,
+    session, instructor, attendanceEnabled,
+    roster, isLoading, isSaving,
+    error, lastErrorCode, tokenError, rowErrors,
+    hasDirty, hasInvalidOther, canSave,
+    setStatus, setReason, save, reset, replaceFromServer,
   };
 }

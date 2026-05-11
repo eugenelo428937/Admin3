@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/admin/ui/dialog';
 import { Button } from '@/components/admin/ui/button';
 import { toast } from 'sonner';
-import useAttendanceVM, { AttendanceSaveError } from './useAttendanceVM';
+import useAttendanceVM, { AttendanceSaveError } from '../../shared/attendance/useAttendanceVM';
+import { makeAdminAttendanceService } from '../../../services/admin/tutorialEventsAdminService';
 import AttendanceRosterRow from './AttendanceRosterRow';
 
 interface SessionLite {
@@ -29,9 +31,8 @@ function formatDateRange(start: string, end: string): string {
 }
 
 export default function AttendanceModal({ session, onClose, onSaved }: Props) {
-  const vm = useAttendanceVM(session.id);
-
-  const canSave = vm.attendanceEnabled && vm.hasDirty && !vm.hasInvalidOther && !vm.isSaving;
+  const service = useMemo(() => makeAdminAttendanceService(session.id), [session.id]);
+  const vm = useAttendanceVM(service);
 
   async function handleSave() {
     try {
@@ -59,7 +60,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
 
   return (
     <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="tw:sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{session.title}</DialogTitle>
           <DialogDescription>
@@ -88,7 +89,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
           )}
 
           {!vm.isLoading && vm.roster.length > 0 && (
-            <div className="px-2">
+            <div className="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-x-4 tw:px-2">
               {vm.roster.map(row => (
                 <AttendanceRosterRow
                   key={row.registration_id}
@@ -106,7 +107,7 @@ export default function AttendanceModal({ session, onClose, onSaved }: Props) {
         <DialogFooter className="flex justify-between">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           {vm.roster.length > 0 && (
-            <Button disabled={!canSave} onClick={handleSave}>
+            <Button disabled={!vm.canSave} onClick={handleSave}>
               {vm.isSaving ? 'Saving…' : 'Save'}
             </Button>
           )}
