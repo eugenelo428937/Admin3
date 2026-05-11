@@ -22,6 +22,8 @@ export interface OnlineClassroomProductCardVM {
   userRegion: string;
   displayPrice: string;
   priceLevelText: string;
+  isWithinSalesWindow: boolean;
+  salesWindowMessage: string;
 
   // Handlers
   handleVariationChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -98,6 +100,25 @@ const useOnlineClassroomProductCardVM = (
     return '\u00A30.00';
   }, [currentVariation, selectedPriceType]);
 
+  // Check whether the product is within its exam-session sales window.
+  // Defaults to true when start_date/end_date are not provided so legacy
+  // products without these fields continue to allow adding to cart.
+  const { isWithinSalesWindow, salesWindowMessage } = useMemo(() => {
+    const start = (product as any)?.start_date ? new Date((product as any).start_date) : null;
+    const end = (product as any)?.end_date ? new Date((product as any).end_date) : null;
+    if (!start || !end) {
+      return { isWithinSalesWindow: true, salesWindowMessage: '' };
+    }
+    const now = new Date();
+    const within = now >= start && now <= end;
+    return {
+      isWithinSalesWindow: within,
+      salesWindowMessage: within
+        ? ''
+        : `Sales for ${(product as any)?.session_code ?? 'this session'} are not currently open`,
+    };
+  }, [(product as any)?.start_date, (product as any)?.end_date, (product as any)?.session_code]);
+
   // Compute price level text
   const priceLevelText = useMemo((): string => {
     if (selectedPriceType === 'retaker') return 'Retaker discount applied';
@@ -151,6 +172,8 @@ const useOnlineClassroomProductCardVM = (
     userRegion,
     displayPrice,
     priceLevelText,
+    isWithinSalesWindow,
+    salesWindowMessage,
     handleVariationChange,
     handleMouseEnter,
     handleMouseLeave,

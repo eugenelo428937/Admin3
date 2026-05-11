@@ -176,12 +176,20 @@ class SearchService:
         return result
 
     def _build_optimized_queryset(self):
-        """Build queryset with optimized prefetches."""
+        """Build queryset with optimized prefetches.
+
+        Routes through the **listing** predicate
+        (``StoreProduct.available_for_listing()``), which ANDs the 7
+        upstream ``is_active`` flags but intentionally drops the
+        exam-session date window. Customers see products from upcoming
+        and recently-closed sessions; the frontend disables Add-to-cart
+        for out-of-window items, and the cart-add gate uses the
+        purchase predicate (``Purchasable.objects.available_now()``,
+        8 conditions) to reject direct purchase attempts.
+        """
         from catalog.models import ProductVariationRecommendation
 
-        return StoreProduct.objects.filter(
-            is_active=True
-        ).select_related(
+        return StoreProduct.available_for_listing().select_related(
             'exam_session_subject__subject',
             'exam_session_subject__exam_session',
             'product_product_variation__product',
@@ -326,9 +334,20 @@ class SearchService:
         if no_fuzzy_results and not bundle_filter_active:
             return []
 
+        # Bundles are surfaced only if they (a) are themselves active and
+        # (b) contain at least one component whose Purchasable passes the
+        # listing predicate (available_for_listing — 7 conditions, drops
+        # the date window). A bundle whose components are all flagged
+        # inactive renders as an empty card, so hide it from the list.
+        # Out-of-window components are still visible here; the cart-add
+        # gate (8-condition available_now()) blocks the actual purchase.
+        from store.models import Purchasable
+        available_purchasable_ids = Purchasable.objects.available_for_listing().values('pk')
         bundles_queryset = StoreBundle.objects.filter(
-            is_active=True
-        ).select_related(
+            is_active=True,
+            bundle_products__is_active=True,
+            bundle_products__product_id__in=available_purchasable_ids,
+        ).distinct().select_related(
             'bundle_template__subject',
             'exam_session_subject__exam_session',
             'exam_session_subject__subject'
@@ -490,8 +509,10 @@ class SearchService:
         if not has_non_subject_filters:
             return None  # No filtering needed
 
-        # Start with all active store products
-        product_qs = StoreProduct.objects.filter(is_active=True)
+        # Start with the listing-visible store products. Aligns with the
+        # individual-product filtering used elsewhere in this service
+        # (available_for_listing — 7 conditions, no date window).
+        product_qs = StoreProduct.available_for_listing()
         q_filter = Q()
 
         # Product ID filter
@@ -542,7 +563,17 @@ class SearchService:
         Returns:
             Count of matching active bundles.
         """
-        bundles_qs = StoreBundle.objects.filter(is_active=True)
+        # Match the visibility rules used by _get_bundles: bundle must be
+        # active AND contain at least one component whose Purchasable passes
+        # available_for_listing(). Otherwise the count would over-report
+        # bundles that are filtered out of the actual list.
+        from store.models import Purchasable
+        available_purchasable_ids = Purchasable.objects.available_for_listing().values('pk')
+        bundles_qs = StoreBundle.objects.filter(
+            is_active=True,
+            bundle_products__is_active=True,
+            bundle_products__product_id__in=available_purchasable_ids,
+        ).distinct()
 
         # Apply subject filter at bundle level
         if filters.get('subjects'):

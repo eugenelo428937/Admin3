@@ -326,6 +326,10 @@ const MarkingProductCard: React.FC<ProductCardProps> = React.memo(
 												zIndex: (theme) => theme.zIndex.speedDial - 1,
 											}}
 										/>
+										<Tooltip
+											title={vm.salesWindowMessage}
+											disableHoverListener={!vm.salesWindowMessage}
+										>
 										<SpeedDial
 											ariaLabel="Buy with Recommended"
 											className="add-to-cart-speed-dial"
@@ -337,11 +341,12 @@ const MarkingProductCard: React.FC<ProductCardProps> = React.memo(
 											}
 											onClose={() => vm.setSpeedDialOpen(false)}
 											onOpen={() => vm.setSpeedDialOpen(true)}
-											open={vm.speedDialOpen}
+											open={vm.speedDialOpen && vm.isWithinSalesWindow}
 											direction="up"
 											FabProps={{
 												disabled:
 													vm.allExpired ||
+													!vm.isWithinSalesWindow ||
 													(vm.hasVariations &&
 														!vm.singleVariation &&
 														vm.selectedVariations.length === 0),
@@ -440,22 +445,31 @@ const MarkingProductCard: React.FC<ProductCardProps> = React.memo(
 												onClick={vm.handleBuyWithRecommended}
 											/>
 										</SpeedDial>
+										</Tooltip>
 									</>
 								) : (
 									// Tier 3: Standard Add to Cart Button (existing code)
-									<Button
-										variant="contained"
-										className="add-to-cart-button"
-										onClick={vm.handleAddToCart}
-										disabled={
-											vm.allExpired ||
-											(vm.hasVariations &&
-												!vm.singleVariation &&
-												vm.selectedVariations.length === 0)
-										}
-										sx={{ alignSelf: "stretch" }}>
-										<AddShoppingCart />
-									</Button>
+									<Tooltip
+										title={vm.salesWindowMessage}
+										disableHoverListener={!vm.salesWindowMessage}
+									>
+										<span>
+											<Button
+												variant="contained"
+												className="add-to-cart-button"
+												onClick={vm.handleAddToCart}
+												disabled={
+													vm.allExpired ||
+													!vm.isWithinSalesWindow ||
+													(vm.hasVariations &&
+														!vm.singleVariation &&
+														vm.selectedVariations.length === 0)
+												}
+												sx={{ alignSelf: "stretch" }}>
+												<AddShoppingCart />
+											</Button>
+										</span>
+									</Tooltip>
 								)}
 							</Box>
 						</Box>
@@ -542,27 +556,34 @@ const MarkingProductCard: React.FC<ProductCardProps> = React.memo(
 							onClick={() => vm.setShowModal(false)}>
 							Close
 						</Button>
-						<Button
-							variant="contained"
-							color="success"
-							disabled={vm.allExpired}
-							onClick={() => {
-								if (vm.expired.length > 0 && !vm.allExpired) {
-									vm.setShowExpiredWarning(true);
-									vm.setShowModal(false);
-								} else {
-									vm.addToCartConfirmed();
-									vm.setShowModal(false);
-								}
-							}}
-							sx={{
-								display: "flex",
-								alignItems: "center",
-								gap: 1,
-							}}>
-							<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
-							Add to Cart
-						</Button>
+						<Tooltip
+							title={vm.salesWindowMessage}
+							disableHoverListener={!vm.salesWindowMessage}
+						>
+							<span>
+								<Button
+									variant="contained"
+									color="success"
+									disabled={vm.allExpired || !vm.isWithinSalesWindow}
+									onClick={() => {
+										if (vm.expired.length > 0 && !vm.allExpired) {
+											vm.setShowExpiredWarning(true);
+											vm.setShowModal(false);
+										} else {
+											vm.addToCartConfirmed();
+											vm.setShowModal(false);
+										}
+									}}
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 1,
+									}}>
+									<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
+									Add to Cart
+								</Button>
+							</span>
+						</Tooltip>
 					</DialogActions>
 				</Dialog>
 
@@ -592,12 +613,20 @@ const MarkingProductCard: React.FC<ProductCardProps> = React.memo(
 							onClick={() => vm.setShowExpiredWarning(false)}>
 							Cancel
 						</Button>
-						<Button
-							variant="contained"
-							color="warning"
-							onClick={vm.addToCartConfirmed}>
-							Add to Cart Anyway
-						</Button>
+						<Tooltip
+							title={vm.salesWindowMessage}
+							disableHoverListener={!vm.salesWindowMessage}
+						>
+							<span>
+								<Button
+									variant="contained"
+									color="warning"
+									disabled={!vm.isWithinSalesWindow}
+									onClick={vm.addToCartConfirmed}>
+									Add to Cart Anyway
+								</Button>
+							</span>
+						</Tooltip>
 					</DialogActions>
 				</Dialog>
 			</>

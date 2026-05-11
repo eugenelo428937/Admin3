@@ -58,6 +58,7 @@ export interface CartItem {
   price_type?: string;         // 'standard', 'retaker', 'additional', 'reduced'
   product_type?: string;       // 'tutorial', 'marking_voucher', etc.
   variation_name?: string;
+  is_available?: boolean;      // false when the product is no longer purchasable (Task 11)
   metadata?: CartItemMetadata;
   // CartItemWithVAT component props
   product?: {

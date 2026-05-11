@@ -13,6 +13,7 @@ import {
   Box,
   IconButton,
   Collapse,
+  Chip,
   useMediaQuery,
   useTheme
 } from '@mui/material';
@@ -124,6 +125,14 @@ const CartSummaryPanel: React.FC<CartSummaryPanelProps> = ({
                     <Typography variant="body2" fontWeight="bold">
                       {item.product_name}
                     </Typography>
+                    {item.is_available === false && (
+                      <Chip
+                        label="No longer available — please remove"
+                        color="warning"
+                        size="small"
+                        sx={{ mt: 0.5, mb: 0.5 }}
+                      />
+                    )}
                     <Typography variant="caption" color="text.secondary">
                       {item.subject_code} • {item.metadata?.variationName || item.variation_name}
                     </Typography>

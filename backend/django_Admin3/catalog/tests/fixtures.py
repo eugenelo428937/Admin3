@@ -56,14 +56,21 @@ def create_subject(code='CM2', description='Financial Mathematics', active=True,
 def create_exam_session(session_code='2026-04', start_date=None, end_date=None, **kwargs):
     """Create or retrieve a test ExamSession instance.
 
+    Defaults the new ``is_active`` flag (model default=False) to True so
+    fixtures default to visible-via-available_now(). Override by passing
+    ``is_active=False`` for tests that exercise the inactive path.
+
     Uses get_or_create to avoid duplicate key errors with --keepdb.
     """
     if start_date is None:
-        start_date = timezone.now() + timedelta(days=30)
+        # Default to a current-and-active window so fixtures represent a
+        # session that is open today (matches available_now() predicate).
+        start_date = timezone.now() - timedelta(days=14)
     if end_date is None:
-        end_date = start_date + timedelta(days=14)
+        end_date = start_date + timedelta(days=180)
 
-    session, _ = ExamSession.objects.get_or_create(
+    kwargs.setdefault('is_active', True)
+    session, created = ExamSession.objects.get_or_create(
         session_code=session_code,
         defaults={
             'start_date': start_date,
@@ -71,6 +78,11 @@ def create_exam_session(session_code='2026-04', start_date=None, end_date=None, 
             **kwargs,
         }
     )
+    # When --keepdb hands back a pre-existing row, ensure is_active matches
+    # the requested value so tests don't see stale state from earlier runs.
+    if not created and session.is_active != kwargs['is_active']:
+        session.is_active = kwargs['is_active']
+        session.save(update_fields=['is_active'])
     return session
 
 
@@ -84,12 +96,16 @@ def create_product_variation(
 ):
     """Create or retrieve a test ProductVariation instance.
 
+    Defaults the new ``is_active`` flag (model default=False) to True so
+    fixtures default to visible-via-available_now().
+
     Uses get_or_create keyed on code to avoid duplicate key errors with --keepdb.
     """
     if code is None:
         code = f'{variation_type}-{name}'.replace(' ', '-').upper()
 
-    variation, _ = ProductVariation.objects.get_or_create(
+    kwargs.setdefault('is_active', True)
+    variation, created = ProductVariation.objects.get_or_create(
         code=code,
         defaults={
             'variation_type': variation_type,
@@ -99,6 +115,9 @@ def create_product_variation(
             **kwargs,
         }
     )
+    if not created and variation.is_active != kwargs['is_active']:
+        variation.is_active = kwargs['is_active']
+        variation.save(update_fields=['is_active'])
     return variation
 
 
@@ -142,15 +161,21 @@ def create_product(
 def create_product_product_variation(product, product_variation, **kwargs):
     """Create or retrieve a ProductProductVariation junction record.
 
-    Note: ProductProductVariation does not have an is_active field.
-    Active status is determined by the Product's is_active field.
+    The ``is_active`` flag (added in catalog_products.0004, default=False)
+    is defaulted to True here so fixtures pass the canonical
+    ``available_now()`` predicate without each test having to opt in.
+
     Uses get_or_create to avoid duplicate key errors with --keepdb.
     """
-    ppv, _ = ProductProductVariation.objects.get_or_create(
+    kwargs.setdefault('is_active', True)
+    ppv, created = ProductProductVariation.objects.get_or_create(
         product=product,
         product_variation=product_variation,
         defaults=kwargs,
     )
+    if not created and ppv.is_active != kwargs['is_active']:
+        ppv.is_active = kwargs['is_active']
+        ppv.save(update_fields=['is_active'])
     return ppv
 
 

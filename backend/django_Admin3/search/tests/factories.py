@@ -51,13 +51,19 @@ def create_subject(code='CM2', **kwargs):
 
 
 def create_exam_session(session_code='2025-04', **kwargs):
-    """Create a catalog ExamSession."""
+    """Create a catalog ExamSession.
+
+    Defaults the new ``is_active`` flag (model default=False) to True so
+    fixtures default to visible-via-available_now(). Override by passing
+    ``is_active=False`` when a test explicitly asserts the inactive path.
+    """
     from django.utils import timezone
     now = timezone.now()
     defaults = {
         'session_code': session_code,
         'start_date': now,
         'end_date': now + timezone.timedelta(days=90),
+        'is_active': True,
     }
     defaults.update(kwargs)
     return ExamSession.objects.create(**defaults)
@@ -87,18 +93,29 @@ def create_catalog_product(fullname, shortname, code, **kwargs):
 
 
 def create_product_variation(variation_type='Printed', name='Standard Printed', **kwargs):
-    """Create a catalog ProductVariation."""
+    """Create a catalog ProductVariation.
+
+    Defaults ``is_active=True`` (model default=False) so factory output
+    is visible through Purchasable.objects.available_now() without each
+    test having to opt in.
+    """
     defaults = {
         'variation_type': variation_type,
         'name': name,
         'code': kwargs.pop('code', None),
+        'is_active': True,
     }
     defaults.update(kwargs)
     return ProductVariation.objects.create(**defaults)
 
 
 def create_product_product_variation(product, variation, **kwargs):
-    """Create a catalog ProductProductVariation (template + variation combo)."""
+    """Create a catalog ProductProductVariation (template + variation combo).
+
+    Defaults ``is_active=True`` (model default=False) so factory output
+    is visible through Purchasable.objects.available_now().
+    """
+    kwargs.setdefault('is_active', True)
     return ProductProductVariation.objects.create(
         product=product,
         product_variation=variation,
@@ -109,7 +126,9 @@ def create_product_product_variation(product, variation, **kwargs):
 def create_store_product(exam_session_subject, catalog_product, variation, product_code=None, **kwargs):
     """Create a store Product (purchasable item).
 
-    Automatically creates the ProductProductVariation if needed.
+    Automatically creates (or fetches) the ProductProductVariation. The
+    auto-created PPV is forced to ``is_active=True`` so factory output
+    passes the canonical available_now() predicate by default.
 
     Args:
         exam_session_subject: ExamSessionSubject instance.
@@ -121,10 +140,16 @@ def create_store_product(exam_session_subject, catalog_product, variation, produ
     Returns:
         store.Product instance.
     """
-    ppv, _ = ProductProductVariation.objects.get_or_create(
+    ppv, created = ProductProductVariation.objects.get_or_create(
         product=catalog_product,
         product_variation=variation,
+        defaults={'is_active': True},
     )
+    if not created and not ppv.is_active:
+        # An existing PPV (e.g., default-False from a prior call) needs
+        # flipping so the predicate passes.
+        ppv.is_active = True
+        ppv.save(update_fields=['is_active'])
 
     if product_code is None:
         subject_code = exam_session_subject.subject.code

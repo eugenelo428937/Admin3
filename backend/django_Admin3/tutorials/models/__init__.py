@@ -10,3 +10,6 @@ from .tutorial_registration import TutorialRegistration
 from .tutorial_attendance import TutorialAttendance
 from .tutorial_enrolment_import import TutorialEnrolmentImport
 from .cart_tutorial_choice import CartTutorialChoice
+from .tutorial_registration import TutorialRegistration
+from .tutorial_attendance import TutorialAttendance
+from .tutorial_enrolment_import import TutorialEnrolmentImport

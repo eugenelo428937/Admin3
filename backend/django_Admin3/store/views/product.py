@@ -41,13 +41,24 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ['product_code']
 
     def get_queryset(self):
-        """Filter to active products for public read, all for admin writes."""
+        """Filter through the listing predicate for list, but allow
+        retrieve to return inactive products (order history support).
+
+        The list endpoint uses ``Product.available_for_listing()`` (7
+        conditions, no date window) so customers see products from
+        upcoming/recently-closed sessions; the frontend disables the
+        Add-to-cart button for those, and the cart-add gate uses the
+        purchase predicate to reject direct purchase attempts.
+
+        Admin write actions use the unfiltered queryset.
+        """
         qs = super().get_queryset()
         if self.action == 'retrieve':
-            return qs.filter(
-                is_active=True,
-                product_product_variation__product__is_active=True,
-            )
+            # Order-history exception: return any product, including inactive
+            return qs
+        if self.action == 'list':
+            return Product.available_for_listing()
+        # Other actions (create/update/destroy): unfiltered for admin
         return qs
 
     def get_permissions(self):
@@ -94,15 +105,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             page_size = 50
 
-        # Get active products with related data
-        products = Product.objects.select_related(
+        # Get listing-visible products with related data (7-cond predicate;
+        # the date window is enforced at cart-add, not in the list).
+        products = Product.available_for_listing().select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
             'product_product_variation__product',
             'product_product_variation__product_variation',
-        ).filter(
-            is_active=True,
-            product_product_variation__product__is_active=True,
         ).order_by('product_code')
 
         # Get active bundles with related data

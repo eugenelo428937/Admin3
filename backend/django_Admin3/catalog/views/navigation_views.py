@@ -14,7 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from django.db.models.functions import Coalesce
 from django.db.models import Prefetch
 
@@ -41,7 +41,7 @@ def navigation_data(request):
     Returns all navigation data with 5-minute cache.
 
     Cache:
-        - Key: navigation_data_v2
+        - Key: navigation_data_v3
         - TTL: 300 seconds (5 minutes)
 
     Returns:
@@ -54,8 +54,33 @@ def navigation_data(request):
     """
     # Import FilterGroup from products (stays in products app)
     from filtering.models import FilterGroup
+    from django.db.models import Exists, OuterRef
+    from store.models import Purchasable
 
-    cache_key = 'navigation_data_v2'
+    def _has_available_store_product_for_catalog_product():
+        """Subquery: True iff at least one listing-visible Purchasable
+        points (via PPV) at the outer catalog.Product. Uses the listing
+        predicate (7 conditions, no date window) so navbar dropdowns show
+        products for upcoming sessions too."""
+        return Exists(
+            Purchasable.objects.available_for_listing().filter(
+                kind='product',
+                product__product_product_variation__product_id=OuterRef('pk'),
+            )
+        )
+
+    def _has_available_store_product_for_variation():
+        """Subquery: True iff at least one listing-visible Purchasable
+        points (via PPV) at the outer ProductVariation. See sibling
+        helper for predicate choice rationale."""
+        return Exists(
+            Purchasable.objects.available_for_listing().filter(
+                kind='product',
+                product__product_product_variation__product_variation_id=OuterRef('pk'),
+            )
+        )
+
+    cache_key = 'navigation_data_v3'  # bumped from v2 — adds availability filter
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
@@ -101,7 +126,7 @@ def navigation_data(request):
                         }
                         for p in Product.objects.filter(
                                 productproductvariation__product_groups__product_group=group
-                            ).distinct()
+                            ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
                 })
             else:
@@ -125,7 +150,7 @@ def navigation_data(request):
                         }
                         for p in Product.objects.filter(
                                 productproductvariation__product_groups__product_group=group
-                            ).distinct()
+                            ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
                 })
             else:
@@ -140,7 +165,10 @@ def navigation_data(request):
             location_products = list(Product.objects.filter(
                 is_active=True,
                 productproductvariation__product_groups__product_group=tutorial_group,
-            ).distinct().order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
+            ).filter(_has_available_store_product_for_catalog_product())
+              .distinct()
+              .order_by('shortname')
+              .values('id', 'shortname', 'fullname', 'code'))
         else:
             location_products = []
         mid_point = (len(location_products) + 1) // 2
@@ -168,7 +196,10 @@ def navigation_data(request):
         if online_classroom_group:
             online_classroom_data = list(ProductVariation.objects.filter(
                 productproductvariation__product_groups__product_group=online_classroom_group
-            ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description'))
+            ).filter(_has_available_store_product_for_variation())
+              .distinct()
+              .order_by('description')
+              .values('id', 'name', 'variation_type', 'description'))
         else:
             online_classroom_data = []
 
@@ -298,8 +329,10 @@ def fuzzy_search(request):
         catalog_products_with_scores.sort(key=lambda x: x[1], reverse=True)
         matched_catalog_products = [p for p, _ in catalog_products_with_scores[:5]]
 
-        # Get all active store products with prefetched data
-        store_products_queryset = StoreProduct.objects.filter(
+        # Listing-side fuzzy search: include out-of-window items so the
+        # frontend can disable Add-to-cart for them. The cart-add gate
+        # uses the 8-condition predicate to reject direct purchases.
+        store_products_queryset = StoreProduct.available_for_listing().filter(
             is_active=True
         ).select_related(
             'exam_session_subject__subject',
@@ -411,7 +444,7 @@ def advanced_product_search(request):
         }
     """
     from django.contrib.postgres.search import TrigramSimilarity
-    from store.models import Product as StoreProduct
+    from store.models import Product as StoreProduct, Purchasable
 
     # Get search parameters
     search_query = request.query_params.get('q', '').strip()
@@ -420,8 +453,19 @@ def advanced_product_search(request):
     variation_ids = request.query_params.getlist('variations')
     product_ids = request.query_params.getlist('products')
 
-    # Start with all active products
-    queryset = Product.objects.filter(is_active=True)
+    # Start with all active catalog products that have at least one
+    # listing-visible store-side purchasable backing them. Mirrors the
+    # Exists() pattern used by navigation_data — listing predicate (7
+    # conditions) so out-of-window products still surface; cart-add
+    # rejects direct purchase via the 8-condition predicate.
+    queryset = Product.objects.filter(is_active=True).filter(
+        Exists(
+            Purchasable.objects.available_for_listing().filter(
+                kind='product',
+                product__product_product_variation__product_id=OuterRef('pk'),
+            )
+        )
+    )
 
     # Apply text search if provided
     if search_query:
@@ -439,8 +483,9 @@ def advanced_product_search(request):
     # Apply subject filter (use store.Product to find catalog.Product IDs for subjects)
     if subject_codes:
         subjects = Subject.objects.filter(code__in=subject_codes)
-        # Get catalog.Product IDs through store.Product's product_product_variation FK
-        filtered_product_ids = StoreProduct.objects.filter(
+        # Get catalog.Product IDs through store.Product's product_product_variation FK.
+        # Listing predicate keeps the result aligned with the navbar/list views.
+        filtered_product_ids = StoreProduct.available_for_listing().filter(
             exam_session_subject__subject__in=subjects
         ).values_list('product_product_variation__product_id', flat=True).distinct()
 

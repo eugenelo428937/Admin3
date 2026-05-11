@@ -28,6 +28,14 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.session_code',
         read_only=True
     )
+    start_date = serializers.DateTimeField(
+        source='exam_session_subject.exam_session.start_date',
+        read_only=True
+    )
+    end_date = serializers.DateTimeField(
+        source='exam_session_subject.exam_session.end_date',
+        read_only=True
+    )
     variation_type = serializers.CharField(
         source='product_product_variation.product_variation.variation_type',
         read_only=True
@@ -56,6 +64,8 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
             'subject_code',
             'subject_name',
             'session_code',
+            'start_date',
+            'end_date',
             'variation_type',
             'variation_name',
             'product_name',
@@ -213,9 +223,19 @@ class UnifiedBundleSerializer(serializers.ModelSerializer):
         return obj.bundle_products.filter(is_active=True).count()
 
     def get_components(self, obj):
-        """Get the products included in this bundle."""
+        """Get the products included in this bundle.
+
+        Uses the listing predicate (7 conditions, no date window) so
+        components from upcoming/recently-closed sessions still appear.
+        The frontend disables Add-to-cart for out-of-window components,
+        and the cart-add gate (8-condition predicate) rejects direct
+        purchase attempts.
+        """
+        from store.models import Purchasable
+        available_purchasable_ids = Purchasable.objects.available_for_listing().values('pk')
         bundle_products = obj.bundle_products.filter(
-            is_active=True
+            is_active=True,
+            product_id__in=available_purchasable_ids,
         ).select_related(
             'product__product_product_variation__product',
             'product__product_product_variation__product_variation',
