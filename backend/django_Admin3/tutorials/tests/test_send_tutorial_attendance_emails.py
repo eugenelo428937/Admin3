@@ -5,7 +5,7 @@ from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from staff.models import Staff
@@ -137,6 +137,51 @@ class SendTutorialAttendanceEmailsTests(TestCase):
         # The no-email instructor should be logged and skipped — only 1 email.
         self.assertEqual(mock_queue.call_count, 1)
         self.assertIn('instructor has no email', output.lower())
+
+    @mock.patch(_MOCK_TARGET)
+    @override_settings(
+        SERVER_NAME='attendance.example.com',
+        STOREFRONT_PORT='3000',
+        SERVER_SCHEME='http',
+    )
+    def test_magic_link_uses_server_name_and_storefront_port(self, mock_queue):
+        """The magic link host must come from ``settings.SERVER_NAME``, not
+        a hardcoded ``localhost``. Port comes from ``STOREFRONT_PORT``;
+        scheme from ``SERVER_SCHEME`` (defaults to http).
+        """
+        mock_queue.return_value = None
+        self._run(for_date=self.tomorrow.isoformat())
+
+        self.assertEqual(mock_queue.call_count, 1)
+        _, kwargs = mock_queue.call_args
+        link = kwargs['context']['magic_link']
+        self.assertTrue(
+            link.startswith('http://attendance.example.com:3000/'),
+            f'expected scheme://server_name:port prefix, got {link!r}',
+        )
+        # Path segment must still embed the signed token.
+        self.assertIn('/instructor/attendance/', link)
+        # And must NOT contain the historical localhost hardcode.
+        self.assertNotIn('localhost', link)
+
+    @mock.patch(_MOCK_TARGET)
+    @override_settings(
+        SERVER_NAME='attendance.example.com',
+        STOREFRONT_PORT='',  # production — no port (80/443 implied)
+        SERVER_SCHEME='https',
+    )
+    def test_magic_link_no_port_when_storefront_port_empty(self, mock_queue):
+        """Production-shape config: empty STOREFRONT_PORT → no ``:port`` in URL.
+        Lets ops point at ``https://host/...`` without juggling default-port
+        formatting.
+        """
+        mock_queue.return_value = None
+        self._run(for_date=self.tomorrow.isoformat())
+        link = mock_queue.call_args.kwargs['context']['magic_link']
+        self.assertTrue(
+            link.startswith('https://attendance.example.com/instructor/'),
+            f'expected scheme://host/path with no port, got {link!r}',
+        )
 
     @mock.patch(_MOCK_TARGET)
     def test_passes_xlsx_as_attachment_not_context_blob(self, mock_queue):

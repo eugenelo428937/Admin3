@@ -126,8 +126,7 @@ class Command(BaseCommand):
         token, issued_at = signer.sign(session.id, instructor.id)
         xlsx_bytes = generate_roster_xlsx(session)
         xlsx_filename = self._attachment_filename(session)
-        frontend_base = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
-        magic_link = f'{frontend_base.rstrip("/")}/instructor/attendance/{token}'
+        magic_link = self._build_magic_link(token)
 
         with transaction.atomic():
             queue_row = queue_service.email_queue_service.queue_email(
@@ -169,3 +168,18 @@ class Command(BaseCommand):
             if session.tutorial_event_id else 'session'
         )
         return f'attendance_{event_code}_{date_str}.xlsx'
+
+    def _build_magic_link(self, token: str) -> str:
+        """Compose the public attendance URL from environment-driven settings.
+
+        Host comes from ``SERVER_NAME`` (env var ``SERVER_NAME``); scheme
+        from ``SERVER_SCHEME`` (defaults to ``http``); port from
+        ``STOREFRONT_PORT`` (omitted when empty, e.g. prod on 80/443).
+        Keeping the URL construction in one place means swapping hostname
+        for staging/prod is an env-var change, not a code edit.
+        """
+        host = getattr(settings, 'SERVER_NAME', 'localhost') or 'localhost'
+        scheme = getattr(settings, 'SERVER_SCHEME', 'http') or 'http'
+        port = (getattr(settings, 'STOREFRONT_PORT', '') or '').strip()
+        host_port = f'{host}:{port}' if port else host
+        return f'{scheme}://{host_port}/instructor/attendance/{token}'
