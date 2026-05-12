@@ -2,27 +2,22 @@
 
 Daily cron job: for each TutorialSession starting tomorrow, queue an
 attendance reminder email to each instructor with the generated xlsx
-attached (stored as base64 in the email context) and a signed magic link.
-Idempotent via ``TutorialAttendanceEmailLog`` (one row per (session,
-instructor) pair).
+attached and a signed magic link. Idempotent via
+``TutorialAttendanceEmailLog`` (one row per (session, instructor) pair).
 
 Run at 06:00 server-local time via cron / Task Scheduler.
 
-Attachment note
----------------
-``email_system.services.queue_service.EmailQueueService.queue_email`` does
-NOT accept an ``attachments=`` keyword argument.  The email system's
-attachment mechanism (``EmailAttachment`` / ``EmailTemplateAttachment``)
-is template-wide and file-based, so it cannot carry per-queue-item dynamic
-bytes.  As a pragmatic adaptation, the xlsx bytes are base64-encoded and
-stored in the email context under the key ``xlsx_b64``; the filename is
-stored under ``xlsx_filename``.  The email template and/or a future
-``process_queue_item`` hook can read these keys to materialise the
-attachment at send time.
+Attachment delivery
+-------------------
+The xlsx is attached via the email system's per-queue dynamic attachment
+API (``EmailQueueService.queue_email(..., attachments=[...])``), which
+persists each attachment as an ``EmailQueueAttachment`` row and merges it
+into ``_send_single_email``'s attachment list at delivery time. Previous
+versions of this command base64-encoded the xlsx bytes into
+``email_context['xlsx_b64']`` as a workaround; that workaround is gone.
 """
 from __future__ import annotations
 
-import base64
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
@@ -130,6 +125,7 @@ class Command(BaseCommand):
     def _send_one(self, session, instructor, signer: AttendanceLinkSigner):
         token, issued_at = signer.sign(session.id, instructor.id)
         xlsx_bytes = generate_roster_xlsx(session)
+        xlsx_filename = self._attachment_filename(session)
         frontend_base = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
         magic_link = f'{frontend_base.rstrip("/")}/instructor/attendance/{token}'
 
@@ -146,12 +142,15 @@ class Command(BaseCommand):
                     'session_date': session.start_date,
                     'venue': session.venue.name if session.venue_id else '',
                     'magic_link': magic_link,
-                    # Dynamic attachment: xlsx bytes encoded as base64 so the
-                    # send layer can materialise the file at delivery time.
-                    # (queue_email has no attachments= param; see module docstring.)
-                    'xlsx_b64': base64.b64encode(xlsx_bytes).decode('ascii'),
-                    'xlsx_filename': self._attachment_filename(session),
                 },
+                attachments=[{
+                    'filename': xlsx_filename,
+                    'content': xlsx_bytes,
+                    'mime_type': (
+                        'application/vnd.openxmlformats-officedocument'
+                        '.spreadsheetml.sheet'
+                    ),
+                }],
             )
             TutorialAttendanceEmailLog.objects.create(
                 session=session,

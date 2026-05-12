@@ -137,3 +137,33 @@ class SendTutorialAttendanceEmailsTests(TestCase):
         # The no-email instructor should be logged and skipped — only 1 email.
         self.assertEqual(mock_queue.call_count, 1)
         self.assertIn('instructor has no email', output.lower())
+
+    @mock.patch(_MOCK_TARGET)
+    def test_passes_xlsx_as_attachment_not_context_blob(self, mock_queue):
+        """The cron must use the new ``attachments=`` kwarg with raw xlsx
+        bytes, and MUST NOT smuggle the bytes through ``email_context`` as
+        ``xlsx_b64`` (the v1 stub workaround).
+        """
+        mock_queue.return_value = None
+        self._run(for_date=self.tomorrow.isoformat())
+
+        self.assertEqual(mock_queue.call_count, 1)
+        _, kwargs = mock_queue.call_args
+        attachments = kwargs.get('attachments') or []
+        self.assertEqual(len(attachments), 1, attachments)
+        att = attachments[0]
+        # xlsx filename should embed the event code + tomorrow's date.
+        self.assertTrue(att['filename'].startswith('attendance_'))
+        self.assertTrue(att['filename'].endswith('.xlsx'))
+        self.assertIn(self.tomorrow.isoformat(), att['filename'])
+        # Real xlsx bytes start with the ZIP magic PK\x03\x04.
+        self.assertIsInstance(att['content'], (bytes, bytearray))
+        self.assertTrue(bytes(att['content']).startswith(b'PK\x03\x04'))
+        self.assertEqual(
+            att['mime_type'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        # Defence-in-depth: the legacy base64 keys must NOT leak into context.
+        context = kwargs.get('context') or {}
+        self.assertNotIn('xlsx_b64', context)
+        self.assertNotIn('xlsx_filename', context)

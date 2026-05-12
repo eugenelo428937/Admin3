@@ -60,6 +60,11 @@ To resend for a specific session (e.g., a tutor lost the email):
 - Successful run ends with: `Done. sent=N skipped=M dry_run=False`.
 - Queued emails are picked up by the existing `process_email_queue` daemon — verify that's running.
 
-## Known limitation (as of v1)
+## Attachment delivery
 
-The xlsx roster is queued into the email context but the existing email queue does not currently attach per-queue-row dynamic files to outbound emails (see follow-up: extend `EmailQueueService` with per-row attachments). Until that follow-up lands, recipients receive the magic link only and download the roster from the attendance page if needed.
+The xlsx roster is attached to each outbound email via the
+`EmailQueueAttachment` table (one row per queue item). The cron
+persists raw xlsx bytes through
+`EmailQueueService.queue_email(..., attachments=[...])`; the queue
+processor merges them into the MIME attachment list when the email is
+sent. Recipients receive both the magic link and the xlsx file.
