@@ -65,3 +65,51 @@ class SaveAttendanceItemsTests(TestCase):
         )
         self.assertEqual(result, [])
         self.assertFalse(TutorialAttendance.objects.exists())
+
+
+class SaveAttendanceEnqueuesSyncJobTests(TestCase):
+    """After a successful save, exactly one AttendanceSyncJob row should
+    be enqueued for the session so the cron can push the change up to
+    Administrate. Empty items → no job (no work to sync)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.recorder = User.objects.create_user(username='enq_recorder')
+        cls.event = make_event(code='UT-ENQ-1')
+        cls.session = make_session(event=cls.event, title='Enqueue')
+        u1 = User.objects.create_user(username='enq_s1')
+        cls.student1 = Student.objects.create(student_ref=900, user=u1)
+        cls.reg1 = TutorialRegistration.objects.create(
+            student=cls.student1, tutorial_session=cls.session,
+        )
+        u2 = User.objects.create_user(username='enq_s2')
+        cls.student2 = Student.objects.create(student_ref=901, user=u2)
+        cls.reg2 = TutorialRegistration.objects.create(
+            student=cls.student2, tutorial_session=cls.session,
+        )
+
+    def test_enqueues_one_pending_job_with_payload(self):
+        from tutorials.models import AttendanceSyncJob
+        save_attendance_items(
+            session=self.session, recorded_by=self.recorder,
+            items=[
+                {'registration_id': self.reg1.id, 'status': 'ATTENDED', 'reason': ''},
+                {'registration_id': self.reg2.id, 'status': 'ABSENT', 'reason': ''},
+            ],
+        )
+        job = AttendanceSyncJob.objects.get()
+        self.assertEqual(job.session_id, self.session.id)
+        self.assertEqual(job.status, 'pending')
+        # Payload should carry registration_id + student_ref + status for each item.
+        by_reg = {p['registration_id']: p for p in job.payload}
+        self.assertEqual(by_reg[self.reg1.id]['student_ref'], 900)
+        self.assertEqual(by_reg[self.reg1.id]['status'], 'ATTENDED')
+        self.assertEqual(by_reg[self.reg2.id]['student_ref'], 901)
+        self.assertEqual(by_reg[self.reg2.id]['status'], 'ABSENT')
+
+    def test_empty_items_does_not_enqueue(self):
+        from tutorials.models import AttendanceSyncJob
+        save_attendance_items(
+            session=self.session, recorded_by=self.recorder, items=[],
+        )
+        self.assertEqual(AttendanceSyncJob.objects.count(), 0)
