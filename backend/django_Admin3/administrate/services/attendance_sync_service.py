@@ -60,7 +60,11 @@ class AdministrateAttendanceSyncService:
         * On failure → ``job.mark_failed(error, response)``
         * On first successful title-based lookup → writes external_id
           back to the matching ``adm.Session`` row.
+
+        ``response`` is captured even on unexpected exceptions so ops can
+        inspect the raw GraphQL payload via Django admin / shell.
         """
+        response: Optional[Dict[str, Any]] = None
         try:
             # Fetch event learners + sessions once so we can resolve both
             # session id (if uncached) and the student_ref → learner map
@@ -105,11 +109,14 @@ class AdministrateAttendanceSyncService:
 
         except AdministrateAPIError as exc:
             logger.warning('Administrate API error syncing job %s: %s', job.id, exc)
-            job.mark_failed(f'Administrate API error: {exc}')
+            job.mark_failed(f'Administrate API error: {exc}', response=response)
             return False
         except Exception as exc:  # noqa: BLE001
             logger.exception('Unexpected error syncing attendance job %s', job.id)
-            job.mark_failed(f'Unexpected {type(exc).__name__}: {exc}')
+            job.mark_failed(
+                f'Unexpected {type(exc).__name__}: {exc}',
+                response=response,
+            )
             return False
 
     # ---- helpers -----------------------------------------------------
@@ -269,13 +276,29 @@ class AdministrateAttendanceSyncService:
         )
 
     def _extract_errors(self, response: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return (
+        """Aggregate per-payload errors from the recordAttendances response.
+
+        Administrate returns a **list** of ``RecordAttendancesPayload``
+        objects (one per input item) when the mutation takes a list input.
+        Some other batch mutations return a single dict instead, so we
+        handle both shapes defensively.
+        """
+        payload = (
             response.get('data', {})
             .get('learner', {})
-            .get('recordAttendances', {})
-            .get('errors')
-            or []
+            .get('recordAttendances')
         )
+        if payload is None:
+            return []
+        # Normalise: dict → [dict], list → list
+        payloads = payload if isinstance(payload, list) else [payload]
+        aggregated: List[Dict[str, Any]] = []
+        for entry in payloads:
+            if not isinstance(entry, dict):
+                continue
+            for err in (entry.get('errors') or []):
+                aggregated.append(err)
+        return aggregated
 
     # ---- payload builder (used by callers when enqueuing) ------------
 

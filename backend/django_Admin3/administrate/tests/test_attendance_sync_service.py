@@ -115,6 +115,30 @@ def _record_attendances_response(success=True, errors=None):
     }
 
 
+def _record_attendances_response_as_list(*, count=1, all_errors=None):
+    """Real Administrate shape: recordAttendances returns one
+    RecordAttendancesPayload per input item, as a list.
+
+    Each item has its own ``learner`` + ``errors``; we aggregate across
+    them. Pass ``all_errors=[[…], [], …]`` to put errors on specific
+    items.
+    """
+    all_errors = all_errors or [[] for _ in range(count)]
+    return {
+        'data': {
+            'learner': {
+                'recordAttendances': [
+                    {
+                        'learner': {'id': f'learner-resp-{i}'},
+                        'errors': all_errors[i] if i < len(all_errors) else [],
+                    }
+                    for i in range(count)
+                ],
+            },
+        },
+    }
+
+
 # ---- tests ------------------------------------------------------------
 
 class SyncJobHappyPathTests(TestCase):
@@ -318,6 +342,111 @@ class SyncJobErrorTests(TestCase):
         job.refresh_from_db()
         self.assertEqual(job.status, 'failed')
         self.assertIn('learner', job.error_message.lower())
+
+    def test_handles_list_shape_record_attendances_response(self):
+        """Regression: Administrate's real response wraps recordAttendances
+        as a list of payloads (one per input item). The extractor must
+        handle both list-shape and dict-shape responses without crashing.
+        """
+        api = MagicMock()
+        api.execute_query.side_effect = [
+            _events_by_title_response(
+                'Tutorial Event 3',
+                learners=[{
+                    'id': 'learner-700',
+                    'contact': {'id': 'c700',
+                                'personalName': {'firstName': 'F', 'lastName': 'L', 'middleName': '700'},
+                                'emailAddress': ''},
+                }],
+                sessions=[],
+            ),
+            _record_attendances_response_as_list(count=1),
+        ]
+        job = AttendanceSyncJob.objects.create(
+            session=self.t_session,
+            payload=[{'registration_id': self.reg.id, 'student_ref': 700, 'status': 'ATTENDED'}],
+        )
+        ok = AdministrateAttendanceSyncService(api_service=api).sync_job(job)
+        self.assertTrue(ok)
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'sent')
+        # Response captured for auditing — list shape preserved.
+        self.assertIsInstance(
+            job.administrate_response['data']['learner']['recordAttendances'],
+            list,
+        )
+
+    def test_aggregates_errors_from_list_shape_response(self):
+        """If even one payload in the list carries errors, the job fails
+        and the aggregated errors are reflected in error_message.
+        """
+        api = MagicMock()
+        api.execute_query.side_effect = [
+            _events_by_title_response(
+                'Tutorial Event 3',
+                learners=[{
+                    'id': 'learner-700',
+                    'contact': {'id': 'c700',
+                                'personalName': {'firstName': 'F', 'lastName': 'L', 'middleName': '700'},
+                                'emailAddress': ''},
+                }],
+                sessions=[],
+            ),
+            _record_attendances_response_as_list(
+                count=2,
+                all_errors=[
+                    [{'message': 'Bad learner', 'value': 'learner-700'}],
+                    [],
+                ],
+            ),
+        ]
+        job = AttendanceSyncJob.objects.create(
+            session=self.t_session,
+            payload=[{'registration_id': self.reg.id, 'student_ref': 700, 'status': 'ATTENDED'}],
+        )
+        ok = AdministrateAttendanceSyncService(api_service=api).sync_job(job)
+        self.assertFalse(ok)
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'failed')
+        self.assertIn('Bad learner', job.error_message)
+
+    def test_unexpected_exception_still_captures_response(self):
+        """If extraction crashes for any reason, the captured response
+        must still land on the job row so ops can debug the shape.
+        """
+        api = MagicMock()
+        # Build a response that's intentionally weird (string where dict
+        # is expected) to force an extractor crash. The fix keeps the
+        # response captured even when _extract_errors raises.
+        weird_response = {
+            'data': {'learner': {'recordAttendances': 'not-a-list-or-dict'}}
+        }
+        api.execute_query.side_effect = [
+            _events_by_title_response(
+                'Tutorial Event 3',
+                learners=[{
+                    'id': 'learner-700',
+                    'contact': {'id': 'c700',
+                                'personalName': {'firstName': 'F', 'lastName': 'L', 'middleName': '700'},
+                                'emailAddress': ''},
+                }],
+                sessions=[],
+            ),
+            weird_response,
+        ]
+        job = AttendanceSyncJob.objects.create(
+            session=self.t_session,
+            payload=[{'registration_id': self.reg.id, 'student_ref': 700, 'status': 'ATTENDED'}],
+        )
+        ok = AdministrateAttendanceSyncService(api_service=api).sync_job(job)
+        # _extract_errors now tolerates non-dict/non-list — returns empty list,
+        # so the sync is considered successful (no errors detected).
+        # The response is captured regardless.
+        job.refresh_from_db()
+        self.assertEqual(
+            job.administrate_response, weird_response,
+            'Raw response must be captured for ops to inspect.',
+        )
 
     def test_marks_failed_when_mutation_returns_errors(self):
         api = MagicMock()

@@ -1,5 +1,5 @@
 mutation updateLearnerAttendances(
-    $input: [RecordAttendancesInput!]!
+    $input: [LearnerAttendanceInput!]!
 ) {
     learner {
         recordAttendances(input: $input) {
