@@ -610,6 +610,71 @@ class AttachFilesTest(TestCase):
             ])
 
 
+class AttachFilesInMemoryTest(TestCase):
+    """``_attach_files_to_email`` must also accept in-memory bytes via the
+    ``content`` key, so per-queue dynamic attachments (xlsx, etc.) can be
+    attached without round-tripping through disk.
+    """
+
+    def setUp(self):
+        self.service = EmailService()
+
+    def test_attach_in_memory_content(self):
+        email = MagicMock()
+        self.service._attach_files_to_email(email, [
+            {
+                'name': 'roster.xlsx',
+                'content': b'PK\x03\x04binary',
+                'mime_type': (
+                    'application/vnd.openxmlformats-officedocument'
+                    '.spreadsheetml.sheet'
+                ),
+            },
+        ])
+        email.attach.assert_called_once_with(
+            'roster.xlsx',
+            b'PK\x03\x04binary',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+
+    def test_in_memory_content_takes_precedence_over_path(self):
+        """If both ``content`` and ``path`` are supplied, ``content`` wins —
+        no disk read happens."""
+        email = MagicMock()
+        self.service._attach_files_to_email(email, [
+            {
+                'name': 'r.bin',
+                'content': b'in-memory',
+                'path': '/nonexistent/disk/file.bin',
+                'mime_type': 'application/octet-stream',
+            },
+        ])
+        email.attach.assert_called_once_with(
+            'r.bin', b'in-memory', 'application/octet-stream',
+        )
+
+    def test_display_name_alias_with_content(self):
+        email = MagicMock()
+        self.service._attach_files_to_email(email, [
+            {'display_name': 'r.bin', 'content': b'x'},
+        ])
+        email.attach.assert_called_once_with(
+            'r.bin', b'x', 'application/octet-stream',
+        )
+
+    def test_empty_content_with_no_path_is_skipped(self):
+        email = MagicMock()
+        # content=b'' should still be a valid attachment (zero-length file
+        # is rare but legal). Only the absence of *both* path and content
+        # is a skip.
+        self.service._attach_files_to_email(email, [
+            {'name': 'empty.txt', 'content': b''},
+        ])
+        email.attach.assert_called_once_with(
+            'empty.txt', b'', 'application/octet-stream',
+        )
+
+
 class HtmlToTextTest(TestCase):
     """Tests for _html_to_text."""
 

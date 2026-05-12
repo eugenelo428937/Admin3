@@ -1116,15 +1116,51 @@ class EmailService:
         """
         Attach files to an EmailMultiAlternatives object.
 
+        Each attachment dict may supply either:
+        * ``content`` (bytes-like) for in-memory attachments — used for
+          per-queue dynamic attachments (xlsx, etc.). When present, the
+          bytes are attached directly with no disk I/O.
+        * ``path`` / ``file_path`` for disk-backed attachments — the file
+          is read at send time. ``path`` is resolved relative to
+          ``settings.BASE_DIR`` unless absolute or static-prefixed.
+
+        ``name``/``display_name`` and ``mime_type`` are honored in both
+        modes. If both ``content`` and ``path`` are supplied, ``content``
+        wins (no disk read).
+
         Args:
             email: EmailMultiAlternatives instance
             attachments: List of attachment dictionaries with file info
         """
         for attachment in attachments:
             try:
-                file_path = attachment.get('path') or attachment.get('file_path')
                 display_name = attachment.get('name') or attachment.get('display_name')
-                mime_type = attachment.get('mime_type', 'application/octet-stream')
+                mime_type = attachment.get('mime_type') or 'application/octet-stream'
+
+                # In-memory path: ``content`` (bytes-like) wins over disk path.
+                if 'content' in attachment and attachment['content'] is not None:
+                    if not display_name:
+                        logger.warning(
+                            f"In-memory attachment missing name/display_name: "
+                            f"{ {k: type(v).__name__ for k, v in attachment.items()} }"
+                        )
+                        continue
+                    raw = attachment['content']
+                    if not isinstance(raw, (bytes, bytearray, memoryview)):
+                        logger.warning(
+                            f"Skipping attachment {display_name!r}: "
+                            f"'content' is not bytes-like (got {type(raw).__name__})"
+                        )
+                        if attachment.get('is_required'):
+                            raise TypeError(
+                                f"Required attachment {display_name!r} has non-bytes content"
+                            )
+                        continue
+                    email.attach(display_name, bytes(raw), mime_type)
+                    continue
+
+                # Disk-backed path
+                file_path = attachment.get('path') or attachment.get('file_path')
 
                 if not file_path or not display_name:
                     logger.warning(f"Attachment missing required fields: {attachment}")
