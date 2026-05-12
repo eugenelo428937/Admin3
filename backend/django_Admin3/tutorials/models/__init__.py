@@ -12,3 +12,4 @@ from .tutorial_enrolment_import import TutorialEnrolmentImport
 from .cart_tutorial_choice import CartTutorialChoice
 from .tutorial_attendance_email_log import TutorialAttendanceEmailLog
 from .tutorial_attendance_link_access import TutorialAttendanceLinkAccess
+from .attendance_sync_job import AttendanceSyncJob
