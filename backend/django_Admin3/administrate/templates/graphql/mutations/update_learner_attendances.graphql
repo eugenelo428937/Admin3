@@ -1,0 +1,15 @@
+mutation updateLearnerAttendances(
+    $input: [RecordAttendancesInput!]!
+) {
+    learner {
+        recordAttendances(input: $input) {
+            learner {
+                id
+            }
+            errors {
+                message
+                value
+            }
+        }
+    }
+}
