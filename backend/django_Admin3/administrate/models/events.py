@@ -183,7 +183,17 @@ class Session(models.Model):
     Tutorial Session model representing individual days/sessions within a tutorial event.
     Each session represents a specific date and time when the tutorial takes place.
     """
-    
+
+    # Administrate Integration — opaque Administrate session ID, cached
+    # lazily by the attendance-sync service on first successful lookup
+    # (via either the title-based GraphQL query or a sync_event_sessions
+    # importer). Nullable so legacy rows without an Administrate id are
+    # still valid; unique because each session has at most one
+    # Administrate counterpart.
+    external_id = models.CharField(
+        max_length=50, null=True, blank=True, unique=True,
+    )
+
     # Event relationship
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='sessions')
     
