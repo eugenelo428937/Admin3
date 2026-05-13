@@ -63,3 +63,31 @@ def test_subject_handler_count_path():
     handler = SubjectHandler()
     assert handler.count_path(config=None) == \
         'exam_session_subject__subject__code'
+
+
+def test_subject_type_handler_get_options_returns_text_choices():
+    from filtering.services.filter_handlers import SubjectTypeHandler
+    handler = SubjectTypeHandler()
+    options = handler.get_options(config=None)
+
+    values = {o['value'] for o in options}
+    assert values == {'UK', 'SA', 'CAA', 'PMS'}
+
+    uk = next(o for o in options if o['value'] == 'UK')
+    assert uk['label'] == 'UK Exam'
+
+
+def test_subject_type_handler_build_q():
+    from filtering.services.filter_handlers import SubjectTypeHandler
+    handler = SubjectTypeHandler()
+    q = handler.build_q(config=None, values=['UK', 'SA'])
+    assert q.children == [
+        ('exam_session_subject__subject__subject_type__in', ['UK', 'SA'])
+    ]
+
+
+def test_subject_type_handler_count_path():
+    from filtering.services.filter_handlers import SubjectTypeHandler
+    handler = SubjectTypeHandler()
+    assert handler.count_path(config=None) == \
+        'exam_session_subject__subject__subject_type'

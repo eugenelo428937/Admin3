@@ -62,5 +62,23 @@ class SubjectHandler(FilterHandler):
         return 'exam_session_subject__subject__code'
 
 
+class SubjectTypeHandler(FilterHandler):
+    """Enumerates Subject.SubjectType.choices (UK / SA / CAA / PMS);
+    filters store.Product by Subject.subject_type column."""
+
+    def get_options(self, config):
+        from catalog.subject.models import Subject
+        return [
+            {'value': value, 'label': label}
+            for value, label in Subject.SubjectType.choices
+        ]
+
+    def build_q(self, config, values):
+        return Q(exam_session_subject__subject__subject_type__in=values)
+
+    def count_path(self, config):
+        return 'exam_session_subject__subject__subject_type'
+
+
 # Concrete handlers added in subsequent tasks
 FILTER_HANDLERS: dict[str, FilterHandler] = {}
