@@ -43,3 +43,25 @@ class MarkingTemplateModelTests(TestCase):
             code='OLD', name='Retired Series', is_active=False
         )
         self.assertFalse(t.is_active)
+
+
+class MarkingPaperHasTemplateFKTests(TestCase):
+    """MarkingPaper.marking_template added in Phase 1 (nullable).
+
+    Becomes NOT NULL in Phase 4c after backfill.
+    """
+
+    def test_marking_paper_has_marking_template_field(self):
+        from marking.models import MarkingPaper
+        field = MarkingPaper._meta.get_field('marking_template')
+        self.assertTrue(field.null, "Phase 1: marking_template must be nullable")
+        # related model resolves to MarkingTemplate
+        from marking.models import MarkingTemplate
+        self.assertEqual(field.related_model, MarkingTemplate)
+
+    def test_marking_paper_marking_template_on_delete_protect(self):
+        from marking.models import MarkingPaper
+        from django.db import models as dj_models
+        field = MarkingPaper._meta.get_field('marking_template')
+        # PROTECT prevents accidental cascade deletion of all papers for a series
+        self.assertEqual(field.remote_field.on_delete, dj_models.PROTECT)
