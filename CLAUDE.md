@@ -918,6 +918,69 @@ import { MessageRenderer } from '../Common/MessageRenderer';
 - Django and React servers are typically always running
 - Virtual environment activation: `.\.venv\Scripts\activate`
 
+## Git Workflow
+
+### Branch Naming Convention
+
+PR branches into `main` **must** match this exact regex (enforced by the
+`check-branch-name` CI workflow at `.github/workflows/branch-name-check.yml`):
+
+```
+^(feat|fix|refactor|chore)/[0-9]{8}-[a-z0-9-]+$
+```
+
+Shape: `{type}/{YYYYMMDD}-{kebab-case-description}`
+
+**Critical:** The date is **8 contiguous digits** (`YYYYMMDD`), NOT dashed
+(`YYYY-MM-DD`). Dashed dates fail the regex even though they look right.
+
+| Type | When to use |
+|------|-------------|
+| `feat/` | New feature or enhancement |
+| `fix/` | Bug fix |
+| `refactor/` | Code restructuring with no behaviour change |
+| `chore/` | Build, CI, deps, docs, tooling |
+
+**Valid examples:**
+
+```
+feat/20260317-tutorial-admin
+fix/20260317-cart-validation
+refactor/20260317-store-typescript
+chore/20260317-vite-migration
+```
+
+**Invalid examples (will fail CI):**
+
+```
+feat/2026-03-17-tutorial-admin     ← dashed date, regex wants 8 digits
+feature/20260317-tutorial-admin    ← 'feature' not in allowed types
+feat/20260317-Tutorial-Admin       ← uppercase letters not allowed
+feat/20260317                      ← missing description segment
+```
+
+If you discover an open PR's branch name is wrong, rename via the GitHub
+API rather than push-force (this preserves history but **closes the
+original PR** — you'll need to open a replacement):
+
+```bash
+gh api --method POST \
+  "repos/<owner>/<repo>/branches/<old-url-encoded>/rename" \
+  -f new_name="<new-name>"
+git fetch origin --prune
+git branch -m <old> <new>
+git branch --set-upstream-to=origin/<new>
+gh pr create --base main --head <new> --title "..." --body "..."
+```
+
+### Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+`<type>(<scope>): <subject>`. Scope is the affected app/module (e.g.
+`tutorials`, `administrate`, `email`, `frontend`). End the commit body
+with the project's standard trailer line — `git log` will show you the
+recent style if unsure.
+
 ## Code Style and Conventions
 
 ### Django Backend
