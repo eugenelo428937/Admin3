@@ -86,3 +86,17 @@ class FilterAdminTest(TestCase):
         from django.contrib import admin
         from filtering.models import FilterConfiguration
         self.assertIn(FilterConfiguration, admin.site._registry)
+
+
+import pytest
+from filtering.models import FilterGroup
+
+
+@pytest.mark.django_db
+def test_filter_group_no_parent_field():
+    """FilterGroup is flat — parent_id was removed in migration 0012."""
+    fg = FilterGroup(name='Test', code='test')
+    fg.save()
+    assert not hasattr(fg, 'parent'), \
+        "FilterGroup should no longer have a 'parent' field after migration 0012"
+    assert 'parent_id' not in [f.name for f in fg._meta.get_fields()]
