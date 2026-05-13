@@ -115,10 +115,16 @@ class Purchasable(models.Model):
     """
 
     class Kind(models.TextChoices):
-        PRODUCT = 'product', 'Store Product (ESS-based)'
+        # Specialized product families (Phase 1+) — backfilled from PRODUCT in Phase 2
+        MATERIAL = 'material', 'Material Product'
+        TUTORIAL = 'tutorial', 'Tutorial Product'
+        MARKING = 'marking', 'Marking Product'
+        # Generic non-ESS purchasables
         MARKING_VOUCHER = 'marking_voucher', 'Marking Voucher'
         DOCUMENT_BINDER = 'document_binder', 'Document Binder'
         ADDITIONAL_CHARGE = 'additional_charge', 'Additional Charge'
+        # Legacy — removed in Phase 4e after backfill completes
+        PRODUCT = 'product', 'Legacy Product (pre-split)'
 
     kind = models.CharField(max_length=32, choices=Kind.choices)
     code = models.CharField(max_length=64, unique=True)
