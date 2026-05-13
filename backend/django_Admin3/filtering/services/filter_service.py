@@ -27,19 +27,54 @@ class ProductFilterService:
                     f"(filter_key={config.filter_key}); skipping."
                 )
                 continue
+            # filter_groups: groups assigned to this configuration via
+            # FilterConfigurationGroup. Consumed by the pact contract,
+            # by test_format_cleanup, and by the (future) plural_label
+            # resolution path. Each entry is {'name': ..., 'code': ...}
+            # so callers don't have to query the FilterGroup table
+            # again for display data. Empty for non-filter_group types.
+            if config.filter_type == 'filter_group':
+                filter_groups = [
+                    {'name': g.name, 'code': g.code or ''}
+                    for g in config.filter_groups.order_by('display_order', 'name')
+                ]
+            else:
+                filter_groups = []
+
+            options = handler.get_options(config)
+            # The consumer pact contract requires an `id` on each option.
+            # SubjectHandler / SubjectTypeHandler return options without
+            # an id (no surrogate exists for SubjectType, and Subject's
+            # code is already the option value). Synthesise a stable
+            # ordinal so the contract verifies.
+            options_with_id = [
+                {**opt, 'id': opt.get('id', idx + 1)}
+                for idx, opt in enumerate(options)
+            ]
+
+            # The consumer pact uses the legacy 'type' / 'collapsible' /
+            # 'default_open' key names. They are kept as aliases of the
+            # canonical filter_type / is_collapsible / is_expanded_by_default
+            # fields so existing clients keep working through the next
+            # frontend deploy. Drop the aliases when the consumer pact is
+            # regenerated against the canonical shape.
             result[config.filter_key] = {
                 'filter_key': config.filter_key,
                 'filter_type': config.filter_type,
+                'type': config.filter_type,
                 'label': config.display_label,
                 'description': config.description,
                 'ui_component': config.ui_component,
                 'display_order': config.display_order,
                 'allow_multiple': config.allow_multiple,
                 'is_collapsible': config.is_collapsible,
+                'collapsible': config.is_collapsible,
                 'is_expanded_by_default': config.is_expanded_by_default,
+                'default_open': config.is_expanded_by_default,
                 'is_required': config.is_required,
                 'ui_config': config.get_ui_config(),
-                'options': handler.get_options(config),
+                'filter_groups': filter_groups,
+                'options': options_with_id,
             }
         return result
 

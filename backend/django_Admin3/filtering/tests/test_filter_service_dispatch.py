@@ -56,7 +56,10 @@ def test_get_filter_configuration_response_shape():
     # The removed fields must not appear
     assert 'validation_rules' not in entry
     assert 'dependency_rules' not in entry
-    assert 'filter_groups' not in entry  # junction array no longer needed
+    # filter_groups is back as an empty list for non-filter_group types.
+    # The consumer pact (frontend) expects this key; the array stays
+    # empty unless filter_type='filter_group'. See filter_service.py.
+    assert entry.get('filter_groups') == []
 
 
 @pytest.mark.django_db
