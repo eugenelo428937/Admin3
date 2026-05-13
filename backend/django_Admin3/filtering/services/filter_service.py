@@ -84,6 +84,13 @@ class ProductFilterService:
 
         For each active filter configuration, compute counts against a queryset
         with all OTHER active filters applied (disjunctive faceting).
+
+        For filter_group-type configs, results are partitioned to only the
+        FilterGroup names assigned to that specific configuration. Different
+        filter_group configs (categories, product_types, modes_of_delivery,
+        programme_type) all join the same filter_product_product_groups
+        table, so without partitioning the raw aggregation would mix their
+        values together.
         """
         from django.db.models import Count
         from filtering.services.filter_handlers import FILTER_HANDLERS
@@ -106,12 +113,23 @@ class ProductFilterService:
                 .annotate(count=Count('id', distinct=True))
                 .order_by('-count')
             )
+
+            # For filter_group, restrict to names assigned to THIS config.
+            allowed_names = None
+            if config.filter_type == 'filter_group':
+                allowed_names = set(
+                    config.filter_groups.values_list('name', flat=True)
+                )
+
             bucket = {}
             for row in rows:
                 value = row[path]
                 n = row['count']
-                if value and n > 0:
-                    bucket[value] = {'count': n, 'name': value}
+                if not value or n <= 0:
+                    continue
+                if allowed_names is not None and value not in allowed_names:
+                    continue
+                bucket[value] = {'count': n, 'name': value}
             result[config.filter_key] = bucket
 
         return result

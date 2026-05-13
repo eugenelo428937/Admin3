@@ -97,9 +97,18 @@ class FilterGroupHandler(FilterHandler):
         ]
 
     def build_q(self, config, values):
-        return Q(
+        # Use a subquery (id__in=…) rather than a direct JOIN-based filter.
+        # Multiple filter_group filters all share the same JOIN chain
+        # (product_product_variation → product_groups → product_group); if
+        # we expressed the filter as a JOIN, Django would reuse the same
+        # alias for the disjunctive-faceting GROUP BY, restricting the
+        # count's scope to the filter's WHERE clause. The subquery keeps
+        # the count's JOIN independent.
+        from store.models import Product as StoreProduct
+        matching = StoreProduct.objects.filter(
             product_product_variation__product_groups__product_group__name__in=values
-        )
+        ).values_list('id', flat=True)
+        return Q(id__in=matching)
 
     def count_path(self, config):
         return 'product_product_variation__product_groups__product_group__name'

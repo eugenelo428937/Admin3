@@ -446,49 +446,6 @@ class TestApplyNavbarFilters(TestCase):
         self.assertIsNotNone(result)
 
 
-class TestResolveGroupIdsWithHierarchy(TestCase):
-    """Test _resolve_group_ids_with_hierarchy static method."""
-
-    def test_resolves_group_by_name(self):
-        group = create_filter_group('SRG Test', code='SRG_TST')
-        ids = SearchService._resolve_group_ids_with_hierarchy(['SRG Test'])
-        self.assertIn(group.id, ids)
-
-    def test_resolves_with_children(self):
-        parent = create_filter_group('SRG Par', code='SRG_PAR')
-        child = create_filter_group('SRG Ch', parent=parent, code='SRG_CHD')
-        ids = SearchService._resolve_group_ids_with_hierarchy(['SRG Par'])
-        self.assertIn(parent.id, ids)
-        self.assertIn(child.id, ids)
-
-    def test_excludes_names_in_exclude_list(self):
-        group = create_filter_group('SRG Bdl', code='SRG_BDL')
-        ids = SearchService._resolve_group_ids_with_hierarchy(
-            ['SRG Bdl'], exclude_names=['SRG Bdl']
-        )
-        self.assertNotIn(group.id, ids)
-
-    def test_nonexistent_group_skipped(self):
-        ids = SearchService._resolve_group_ids_with_hierarchy(['NONEXIST_XYZ'])
-        self.assertEqual(ids, set())
-
-    def test_empty_input_returns_empty_set(self):
-        ids = SearchService._resolve_group_ids_with_hierarchy([])
-        self.assertEqual(ids, set())
-
-    def test_exclude_names_none_defaults_to_empty(self):
-        group = create_filter_group('SRG None', code='SRG_NONE')
-        ids = SearchService._resolve_group_ids_with_hierarchy(
-            ['SRG None'], exclude_names=None
-        )
-        self.assertIn(group.id, ids)
-
-    def test_case_insensitive_match(self):
-        group = create_filter_group('SRG CaseTst', code='SRG_CASE')
-        ids = SearchService._resolve_group_ids_with_hierarchy(['srg casetst'])
-        self.assertIn(group.id, ids)
-
-
 class TestApplyFiltersExcluding(TestCase):
     """Test _apply_filters_excluding edge cases."""
 
@@ -1102,14 +1059,18 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
 
     def setUp(self):
         self.service = SearchService()
+        self.subjects_config = create_filter_config(
+            'SFC Subj', 'subjects', 'subject', display_order=0
+        )
         self.categories_config = create_filter_config(
             'SFC Cat', 'categories', 'filter_group', display_order=1
         )
         self.product_types_config = create_filter_config(
             'SFC PT', 'product_types', 'filter_group', display_order=2
         )
+        # NOTE: FilterGroup.parent was dropped in migration 0012 — groups are flat.
         self.material = create_filter_group('SFC Mat', code='SFC_MAT')
-        self.core = create_filter_group('SFC Core', parent=self.material, code='SFC_CORE')
+        self.core = create_filter_group('SFC Core', code='SFC_CORE')
         self.printed_group = create_filter_group('Printed', code='SFC_PRINTED')
         self.ebook_group = create_filter_group('eBook', code='SFC_EBOOK')
         assign_group_to_config(self.categories_config, self.material)
@@ -1153,11 +1114,11 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         counts = self.service.filter_service.generate_filter_counts(base_qs)
         self.assertIn('SFC1', counts['subjects'])
 
-    def test_product_counts(self):
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service.filter_service.generate_filter_counts(base_qs)
-        found = any(d['name'] in ('SFC1 C', 'SFC1 Core') for d in counts['products'].values())
-        self.assertTrue(found)
+    # NOTE: test_product_counts and test_product_without_shortname_uses_fullname
+    # were here. They asserted on counts['products'], but 'products' is no
+    # longer a registered filter_key — the dispatcher only emits buckets for
+    # filter_configurations rows in the DB. Removed (no replacement test
+    # required because the behavior they tested no longer exists).
 
     def test_modes_of_delivery_counts(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
@@ -1165,19 +1126,18 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         self.assertIn('Printed', counts['modes_of_delivery'])
         self.assertIn('eBook', counts['modes_of_delivery'])
 
-    def test_hierarchical_category_rollup(self):
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service.filter_service.generate_filter_counts(base_qs)
-        if 'SFC Mat' in counts['categories']:
-            self.assertGreaterEqual(counts['categories']['SFC Mat']['count'], 0)
+    # NOTE: test_hierarchical_category_rollup was here. It asserted on
+    # parent-rollup behavior (counts['categories']['SFC Mat'] when product
+    # belongs to the child 'SFC Core'). With FilterGroup.parent gone and
+    # the descendant-walking removed in Task 10, this behavior doesn't
+    # exist. Removed.
 
-    def test_zero_count_groups_included(self):
-        empty_group = create_filter_group('SFC Empty', code='SFC_EMP')
-        assign_group_to_config(self.product_types_config, empty_group)
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service.filter_service.generate_filter_counts(base_qs)
-        self.assertIn('SFC Empty', counts['product_types'])
-        self.assertEqual(counts['product_types']['SFC Empty']['count'], 0)
+    # NOTE: test_zero_count_groups_included was here. It asserted that
+    # empty groups appear in counts with count=0. The new
+    # generate_filter_counts only emits buckets with count>0 (see
+    # filter_service.py: `if value and n > 0`). Removed; if zero-count
+    # display is needed in the UI it should be added at the frontend
+    # layer instead of in the count generation.
 
     def test_filter_counts_with_active_filters(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
@@ -1197,16 +1157,6 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         base_qs = StoreProduct.objects.filter(is_active=True)
         counts = self.service.filter_service.generate_filter_counts(base_qs, filters=None)
         self.assertIn('subjects', counts)
-
-    def test_product_without_shortname_uses_fullname(self):
-        cat_ns = create_catalog_product('SFC NoShort', '', 'SFCNS')
-        var = create_product_variation('Printed', 'P NoShrt', code='FCN')
-        create_store_product(self.ess, cat_ns, var, product_code='SFC1/FCN/2025-04')
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service.filter_service.generate_filter_counts(base_qs)
-        pid_str = str(cat_ns.id)
-        if pid_str in counts['products']:
-            self.assertEqual(counts['products'][pid_str]['name'], 'SFC NoShort')
 
 
 class TestSingletonInstance(TestCase):

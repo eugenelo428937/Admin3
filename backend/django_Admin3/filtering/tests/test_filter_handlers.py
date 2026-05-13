@@ -116,14 +116,23 @@ def test_filter_group_handler_get_options_returns_assigned_groups():
     assert options[0]['label'] == 'Alpha'
 
 
+@pytest.mark.django_db
 def test_filter_group_handler_build_q():
+    """build_q produces a subquery-based Q (id__in=<QuerySet>) so the JOIN
+    for filtering doesn't share an alias with the count-path JOIN. See the
+    inline comment in FilterGroupHandler.build_q for why.
+    """
     from filtering.services.filter_handlers import FilterGroupHandler
     handler = FilterGroupHandler()
     q = handler.build_q(config=None, values=['Material', 'Marking'])
-    assert q.children == [
-        ('product_product_variation__product_groups__product_group__name__in',
-         ['Material', 'Marking'])
-    ]
+
+    # One child: id__in with a QuerySet value.
+    assert len(q.children) == 1
+    field, subquery = q.children[0]
+    assert field == 'id__in'
+    # The subquery filters StoreProduct by product_group name.
+    sql = str(subquery.query)
+    assert 'product_group' in sql or 'filter_product_product_groups' in sql.lower()
 
 
 def test_filter_group_handler_count_path():

@@ -149,10 +149,12 @@ class SearchService:
         # Generate filter counts (disjunctive faceting)
         filter_counts = self.filter_service.generate_filter_counts(self._build_optimized_queryset(), filters=filters)
 
-        # Add bundle count (bundle logic stays in SearchService)
+        # Add bundle count (bundle logic stays in SearchService).
+        # Use setdefault because filter_counts only contains keys for which
+        # a FilterConfiguration row exists — 'categories' is not guaranteed.
         bundle_count = self._get_filtered_bundle_count(filters)
         if bundle_count > 0:
-            filter_counts['categories']['Bundle'] = {
+            filter_counts.setdefault('categories', {})['Bundle'] = {
                 'count': bundle_count, 'name': 'Bundle'
             }
 
