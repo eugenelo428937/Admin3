@@ -160,6 +160,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be before CommonMiddleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # Scheduled for removal 2026-06-12 (30 days post-deploy of filter redesign)
+    'filtering.middleware.legacy_url_alias.LegacyFilterURLAliasMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
