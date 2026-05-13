@@ -27,8 +27,16 @@ import { FilterRegistry } from '../store/filters/filterRegistry';
  * Keep keys/labels/orders in sync with the rows in
  * `filtering.filter_configurations` so test behaviour mirrors prod.
  */
+// Dict keys here become each filter's `pluralLabel` (see
+// FilterRegistry.registerFromBackend). The production backend keys its
+// response by snake_case filter_key, so the rendered section titles
+// would actually be snake_case there — that is a separate bug tracked
+// in docs/to-dos/filter-registry-architecture-debt.md, addressed in a
+// follow-up by adding a `plural_label` field to FilterConfiguration.
+// For now we use friendly keys here so the tests assert the same
+// section titles the old static-fallback produced.
 export const FILTER_CONFIGURATION_FIXTURE = {
-  'Programme Type': {
+  'Programmes': {
     filter_key: 'programme_type',
     label: 'Programme',
     display_order: 1,
