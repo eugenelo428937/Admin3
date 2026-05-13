@@ -620,52 +620,46 @@ describe('FilterRegistry', () => {
   });
 
   describe('module initialization (default registrations)', () => {
-    // After the static fallback registrations were removed (Task 29), the
-    // registry is empty at module-load time. Tests must call
-    // FilterRegistry.registerFromBackend(...) to populate it.
-    test('registry is empty after clear() — no auto-registration on import', async () => {
-      // Importing the module no longer self-registers ANY filters.
-      // The boot flow in App.js calls registerFromBackend() to populate it.
+    // This test verifies that the module registers default filters on import.
+    //
+    // 'products' is intentionally absent — there is no PRODUCTS row in
+    // filter_configurations. It used to be registered here as dead code and
+    // kept being re-added during refactors; the FilterPanel rendered an empty
+    // "Products" section as a result. See docs/filter-registry-architecture-debt.md.
+    test('auto-registers default filters on module load', async () => {
+      // Clear to start fresh
       FilterRegistry.clear();
-      expect(FilterRegistry.getAll()).toEqual([]);
-    });
 
-    test('registerFromBackend produces the same filters static fallback used to', async () => {
-      FilterRegistry.clear();
-      FilterRegistry.registerFromBackend({
-        programme_type: { filter_key: 'programme_type', label: 'Programme', display_order: 1, allow_multiple: true },
-        subjects: { filter_key: 'subjects', label: 'Subject', display_order: 2, allow_multiple: true },
-        categories: { filter_key: 'categories', label: 'Category', display_order: 3, allow_multiple: true },
-        product_types: { filter_key: 'product_types', label: 'Product Type', display_order: 4, allow_multiple: true },
-        modes_of_delivery: { filter_key: 'modes_of_delivery', label: 'Mode of Delivery', display_order: 5, allow_multiple: true },
-      });
+      // Re-import the module to trigger registration code
+      vi.resetModules();
+      const _reqmod____filterRegistry = await import('../filterRegistry'); const { FilterRegistry: FreshRegistry } = _reqmod____filterRegistry;
 
-      expect(FilterRegistry.has('programme_type')).toBe(true);
-      expect(FilterRegistry.has('subjects')).toBe(true);
-      expect(FilterRegistry.has('categories')).toBe(true);
-      expect(FilterRegistry.has('product_types')).toBe(true);
-      expect(FilterRegistry.has('modes_of_delivery')).toBe(true);
-      // searchQuery is always re-registered by registerFromBackend
-      expect(FilterRegistry.has('searchQuery')).toBe(true);
+      // Filters that ARE registered as static fallback (mirror DB rows)
+      expect(FreshRegistry.has('programme_type')).toBe(true);
+      expect(FreshRegistry.has('subjects')).toBe(true);
+      expect(FreshRegistry.has('categories')).toBe(true);
+      expect(FreshRegistry.has('product_types')).toBe(true);
+      expect(FreshRegistry.has('modes_of_delivery')).toBe(true);
+      expect(FreshRegistry.has('searchQuery')).toBe(true);
 
       // Filters that must NOT be registered (no DB config exists)
-      expect(FilterRegistry.has('products')).toBe(false);
-      expect(FilterRegistry.has('tutorial_format')).toBe(false);
-      expect(FilterRegistry.has('distance_learning')).toBe(false);
-      expect(FilterRegistry.has('tutorial')).toBe(false);
+      expect(FreshRegistry.has('products')).toBe(false);
+      expect(FreshRegistry.has('tutorial_format')).toBe(false);
+      expect(FreshRegistry.has('distance_learning')).toBe(false);
+      expect(FreshRegistry.has('tutorial')).toBe(false);
 
       // Total count: programme_type + subjects + categories + product_types + modes_of_delivery + searchQuery
-      expect(FilterRegistry.getAll()).toHaveLength(6);
+      expect(FreshRegistry.getAll()).toHaveLength(6);
 
       // Verify specific configurations
-      const subjectsConfig = FilterRegistry.get('subjects');
+      const subjectsConfig = FreshRegistry.get('subjects');
       expect(subjectsConfig.urlFormat).toBe('indexed');
 
-      const programmeConfig = FilterRegistry.get('programme_type');
+      const programmeConfig = FreshRegistry.get('programme_type');
       expect(programmeConfig.urlFormat).toBe('comma-separated');
       expect(programmeConfig.color).toBe('secondary');
 
-      const searchConfig = FilterRegistry.get('searchQuery');
+      const searchConfig = FreshRegistry.get('searchQuery');
       expect(searchConfig.dataType).toBe('string');
       expect(searchConfig.order).toBe(0);
     });
