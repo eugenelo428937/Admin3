@@ -81,7 +81,17 @@ def navigation_data(request):
             )
         )
 
-    cache_key = 'navigation_data_v3'  # bumped from v2 — adds availability filter
+    # Version the cache key by the max FilterConfigurationGroup id so admin
+    # reassignments propagate without a manual cache bump. IDs increase
+    # monotonically on insert (and stay flat on delete; the 300s TTL covers
+    # those rarer cases).
+    from filtering.models import FilterConfigurationGroup
+    from django.db.models import Max as _Max
+    fcg_version = (
+        FilterConfigurationGroup.objects.aggregate(latest=_Max('id'))['latest']
+        or 0
+    )
+    cache_key = f'navigation_data_v4_fcg{fcg_version}'
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
