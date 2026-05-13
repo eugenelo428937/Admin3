@@ -73,6 +73,11 @@ export function renderWithProviders(
     });
   }
 
+  // Normalize filters preloadedState from legacy flat shape to byKey/scalar
+  const normalizedPreloadedState = preloadedState.filters !== undefined
+    ? { ...preloadedState, filters: normalizeFiltersState(preloadedState.filters) }
+    : preloadedState;
+
   // Create store AFTER setting window.location
   if (!store) {
     const api = getCatalogApi();
@@ -129,6 +134,95 @@ export function renderWithProviders(
   };
 }
 
+// Keys that live as arrays in the legacy flat state shape
+const LEGACY_ARRAY_FILTER_KEYS = [
+  'subjects',
+  'categories',
+  'product_types',
+  'programme_type',
+  'products',
+  'modes_of_delivery',
+];
+
+/**
+ * Normalize a filters preloadedState from the legacy flat shape to the new
+ * byKey/scalar bag shape, while preserving any keys already in the new form.
+ *
+ * Callers that pass { subjects: ['CM2'], categories: [] } continue to work:
+ * the values are migrated into byKey and removed from the top-level object.
+ *
+ * @param {Object} filtersState - Partial filters state (legacy or new shape)
+ * @returns {Object} - Normalized filters state with byKey/scalar bags
+ */
+function normalizeFiltersState(filtersState = {}) {
+  // If it already has the new shape, leave it as-is
+  if (filtersState.byKey !== undefined || filtersState.scalar !== undefined) {
+    return filtersState;
+  }
+
+  const byKey = {};
+  const scalar = {};
+
+  for (const key of LEGACY_ARRAY_FILTER_KEYS) {
+    if (filtersState[key] !== undefined) {
+      byKey[key] = filtersState[key];
+    }
+  }
+
+  if (filtersState.searchQuery !== undefined) {
+    if (filtersState.searchQuery) {
+      scalar.searchQuery = filtersState.searchQuery;
+    }
+  }
+
+  // Strip legacy keys from the rest so they don't shadow the new bags
+  const {
+    subjects, categories, product_types, programme_type, products,
+    modes_of_delivery, searchQuery,
+    ...rest
+  } = filtersState;
+
+  return {
+    byKey,
+    scalar,
+    // Keep the legacy flat fields for backward compat (reducer also sets them)
+    subjects: subjects ?? [],
+    categories: categories ?? [],
+    product_types: product_types ?? [],
+    programme_type: programme_type ?? [],
+    products: products ?? [],
+    modes_of_delivery: modes_of_delivery ?? [],
+    searchQuery: searchQuery ?? '',
+    ...rest,
+  };
+}
+
+// Default filters state using the new byKey/scalar shape
+const DEFAULT_FILTERS_STATE = {
+  byKey: {},
+  scalar: {},
+  subjects: [],
+  categories: [],
+  product_types: [],
+  programme_type: [],
+  products: [],
+  modes_of_delivery: [],
+  searchQuery: '',
+  currentPage: 1,
+  pageSize: 20,
+  isFilterPanelOpen: false,
+  isLoading: false,
+  error: null,
+  filterCounts: {},
+  validationErrors: [],
+  appliedFilters: {},
+  lastUpdated: null,
+  searchFilterProductIds: [],
+  filterConfiguration: null,
+  filterConfigurationLoading: false,
+  filterConfigurationError: null,
+};
+
 /**
  * Create mock Redux store for testing
  *
@@ -140,27 +234,22 @@ export function renderWithProviders(
  */
 export function createMockStore(options = {}) {
   const {
-    preloadedState = {
-      filters: {
-        programme_type: [],
-        subjects: [],
-        categories: [],
-        product_types: [],
-        products: [],
-        modes_of_delivery: [],
-        searchQuery: '',
-        currentPage: 1,
-        pageSize: 20,
-        isFilterPanelOpen: false,
-        isLoading: false,
-        error: null,
-        filterCounts: {},
-        validationErrors: [],
-      },
-    },
+    preloadedState: rawPreloadedState = {},
     middleware,
     reducer,
   } = options;
+
+  // Normalize the filters slice state so legacy callers passing
+  // { filters: { subjects: [...] } } continue to work after the byKey refactor
+  const rawFilters = rawPreloadedState.filters;
+  const normalizedFilters = rawFilters !== undefined
+    ? normalizeFiltersState(rawFilters)
+    : DEFAULT_FILTERS_STATE;
+
+  const preloadedState = {
+    ...rawPreloadedState,
+    filters: normalizedFilters,
+  };
 
   const api = getCatalogApi();
 
