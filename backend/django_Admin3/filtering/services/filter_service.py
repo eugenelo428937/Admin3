@@ -145,44 +145,33 @@ class ProductFilterService:
         return options
     
     def get_filter_configuration(self) -> Dict[str, Dict[str, Any]]:
-        """Get complete filter configuration for frontend"""
-        from filtering.serializers import FilterConfigurationGroupSerializer
-
-        configs = FilterConfiguration.objects.filter(
-            is_active=True
-        ).order_by('display_order').prefetch_related(
-            'filter_groups',
-            'filterconfigurationgroup_set__filter_group',
-        )
+        """Build the registry payload by dispatching to handlers per filter_type."""
+        from filtering.services.filter_handlers import FILTER_HANDLERS
 
         result = {}
+        configs = FilterConfiguration.objects.filter(is_active=True).order_by('display_order')
         for config in configs:
-            # Serialize the junction records to get filter_groups with metadata
-            config_groups = config.filterconfigurationgroup_set.select_related(
-                'filter_group'
-            ).order_by('display_order', 'filter_group__name')
-            filter_groups_data = FilterConfigurationGroupSerializer(
-                config_groups, many=True
-            ).data
-
-            result[config.name] = {
-                'type': config.ui_component,
+            handler = FILTER_HANDLERS.get(config.filter_type)
+            if not handler:
+                logger.warning(
+                    f"No handler for filter_type={config.filter_type!r} "
+                    f"(filter_key={config.filter_key}); skipping."
+                )
+                continue
+            result[config.filter_key] = {
+                'filter_key': config.filter_key,
+                'filter_type': config.filter_type,
                 'label': config.display_label,
                 'description': config.description,
+                'ui_component': config.ui_component,
                 'display_order': config.display_order,
-                'collapsible': config.is_collapsible,
-                'default_open': config.is_expanded_by_default,
-                'required': config.is_required,
                 'allow_multiple': config.allow_multiple,
-                'filter_key': config.filter_key,
+                'is_collapsible': config.is_collapsible,
+                'is_expanded_by_default': config.is_expanded_by_default,
+                'is_required': config.is_required,
                 'ui_config': config.get_ui_config(),
-                'options': self.get_filter_options([config.name]).get(config.name, []),
-                'filter_groups': filter_groups_data,
-                # Additional metadata
-                'filter_type': config.filter_type,
-                'group_count': config.filter_groups.count() if config.filter_type == 'filter_group' else 0,
+                'options': handler.get_options(config),
             }
-
         return result
     
     def get_main_category_filter(self) -> Optional[Dict[str, Any]]:

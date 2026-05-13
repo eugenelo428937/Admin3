@@ -251,10 +251,9 @@ class TestProductFilterService(TestCase):
         """Each config entry has all required UI fields."""
         config = self.service.get_filter_configuration()
         required_fields = [
-            'type', 'label', 'description', 'display_order', 'collapsible',
-            'default_open', 'required', 'allow_multiple', 'filter_key',
-            'ui_config', 'options',
-            'filter_groups', 'filter_type', 'group_count',
+            'filter_key', 'filter_type', 'label', 'description', 'ui_component',
+            'display_order', 'allow_multiple', 'is_collapsible', 'is_expanded_by_default',
+            'is_required', 'ui_config', 'options',
         ]
         for name, entry in config.items():
             for field in required_fields:
@@ -262,19 +261,6 @@ class TestProductFilterService(TestCase):
                     field, entry,
                     f"Config '{name}' missing field '{field}'",
                 )
-
-    def test_get_filter_configuration_group_count(self):
-        """group_count reflects actual filter groups for filter_group type."""
-        config = self.service.get_filter_configuration()
-        if 'Categories_SVC' in config:
-            entry = config['Categories_SVC']
-            self.assertEqual(entry['group_count'], 1)  # one assigned group
-
-    def test_get_filter_configuration_non_group_count_zero(self):
-        """group_count is 0 for non-filter_group types."""
-        config = self.service.get_filter_configuration()
-        if 'Subjects' in config:
-            self.assertEqual(config['Subjects']['group_count'], 0)
 
     # --- get_main_category_filter ---------------------------------------------
 
