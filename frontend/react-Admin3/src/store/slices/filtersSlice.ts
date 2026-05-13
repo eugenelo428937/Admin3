@@ -6,7 +6,6 @@ const filtersSlice = createSlice({
   initialState: baseFiltersInitialState,
   reducers: {
     ...baseFiltersReducers,
-    // navSelectFilter added in Task 23
   },
 });
 
@@ -26,6 +25,7 @@ export const {
   setIsFilterPanelOpen,
   setLoading,
   setError,
+  navSelectFilter,
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

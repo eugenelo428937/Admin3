@@ -6,6 +6,7 @@ import filtersReducer, {
   clearFilterKey,
   clearAllFilters,
   setScalar,
+  navSelectFilter,
 } from '../filtersSlice';
 import {
   selectFilterValues,
@@ -92,5 +93,35 @@ describe('filtersSlice generic actions', () => {
     store.dispatch(setFilter({ filterKey: 'categories', values: ['Material'] }));
     store.dispatch(setScalar({ filterKey: 'searchQuery', value: 'exam' }));
     expect(selectActiveFilterCount(store.getState())).toBe(4);
+  });
+
+  it('navSelectFilter sets the target key and clears others except preserved', () => {
+    const store = mkStore();
+    store.dispatch(setFilter({ filterKey: 'subjects', values: ['CB1'] }));
+    store.dispatch(setFilter({ filterKey: 'modes_of_delivery', values: ['eBook'] }));
+
+    store.dispatch(navSelectFilter({
+      filterKey: 'categories', value: 'Material',
+      preserve: ['subjects'],
+    }));
+
+    const s = store.getState().filters;
+    expect(s.byKey.subjects).toEqual(['CB1']);           // preserved
+    expect(s.byKey.categories).toEqual(['Material']);    // newly set
+    expect(s.byKey.modes_of_delivery ?? []).toEqual([]); // cleared
+  });
+
+  it('navSelectFilter with empty preserve clears all other filters', () => {
+    const store = mkStore();
+    store.dispatch(setFilter({ filterKey: 'subjects', values: ['CB1'] }));
+    store.dispatch(setFilter({ filterKey: 'categories', values: ['Material'] }));
+
+    store.dispatch(navSelectFilter({
+      filterKey: 'subjects', value: 'CB2', preserve: [],
+    }));
+
+    const s = store.getState().filters;
+    expect(s.byKey.subjects).toEqual(['CB2']);
+    expect(s.byKey.categories ?? []).toEqual([]);
   });
 });

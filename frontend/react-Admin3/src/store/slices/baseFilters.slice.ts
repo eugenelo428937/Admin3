@@ -151,4 +151,18 @@ export const baseFiltersReducers = {
   setError: (state: BaseFiltersState, action: PayloadAction<string | null>) => {
     state.error = action.payload;
   },
+
+  navSelectFilter: (
+    state: BaseFiltersState,
+    action: PayloadAction<{ filterKey: string; value: string; preserve?: string[] }>,
+  ) => {
+    const { filterKey, value, preserve = [] } = action.payload;
+    const preserveSet = new Set(preserve);
+    // Clear everything except preserved keys
+    for (const k of Object.keys(state.byKey)) {
+      if (!preserveSet.has(k)) state.byKey[k] = [];
+    }
+    state.byKey[filterKey] = [value];
+    stamp(state);
+  },
 };
