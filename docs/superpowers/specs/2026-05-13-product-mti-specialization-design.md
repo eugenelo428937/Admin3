@@ -133,7 +133,7 @@ class MarkingTemplate(models.Model):
     Exam-session-agnostic. Concrete saleable rows live in
     store.MarkingProduct, which links a template to an ExamSessionSubject.
     """
-    code = models.CharField(max_length=10, unique=True)
+    code = models.CharField(max_length=10)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
@@ -143,7 +143,22 @@ class MarkingTemplate(models.Model):
     class Meta:
         db_table = '"acted"."marking_templates"'
         verbose_name = 'Marking Template'
+        constraints = [
+            # `code` is NOT unique by itself — the catalog has multiple
+            # rows sharing the same code with distinct shortnames
+            # (e.g. `M` appears as both 'Mock Exam Marking' and
+            # 'Practice Exam Marking'). We preserve that distinction.
+            models.UniqueConstraint(
+                fields=['code', 'name'],
+                name='uq_marking_template_code_name',
+            ),
+        ]
 ```
+
+**Phase 1 shipped with `code = CharField(unique=True)`** — Phase 2 must
+relax that constraint to the composite `(code, name)` UniqueConstraint
+above before the backfill can run (otherwise rows with duplicate codes
+fail). See Phase 2 plan §3.
 
 `MarkingPaper` gains a nullable `marking_template` FK (Phase 1) which
 becomes non-null in Phase 4c.
@@ -175,35 +190,74 @@ class MaterialProduct(Product):
 # store/models/tutorial_product.py
 class TutorialProduct(Product):
     class Format(models.TextChoices):
-        F2F_1DAY    = 'F2F_1F',  'Face-to-Face 1-day'
-        F2F_3DAY    = 'F2F_3F',  'Face-to-Face 3-day'
-        F2F_5DAY    = 'F2F_5F',  'Face-to-Face 5-day'
-        LIVE_ONLINE = 'LIVE',    'Live Online'
-        RECORDED    = 'REC',     'Recorded'
-        # Concrete values determined by Phase 2 audit of existing
-        # ProductVariation rows with variation_type='Tutorial'.
+        # Phase 2 expanded the enum to match the 23 real codes in
+        # `catalog_product_variations` (variation_type='Tutorial').
+        # Phase 1 shipped 5 placeholder values; Phase 2 dropped
+        # LIVE/REC (no data uses them) and added the 18 missing codes.
+
+        # Face-to-face
+        F2F_1F  = 'F2F_1F',  'Face-to-Face 1 full day'
+        F2F_1PD = 'F2F_1PD', 'Face-to-Face Paper B Preparation Day'
+        F2F_2F  = 'F2F_2F',  'Face-to-Face 2 full days'
+        F2F_3F  = 'F2F_3F',  'Face-to-Face 3 full days'
+        F2F_4F  = 'F2F_4F',  'Face-to-Face 4 full days'
+        F2F_5B  = 'F2F_5B',  'Face-to-Face 5-day bundle'
+        F2F_5F  = 'F2F_5F',  'Face-to-Face 5 full days'
+        F2F_6B  = 'F2F_6B',  'Face-to-Face 6-day bundle'
+        F2F_6H  = 'F2F_6H',  'Face-to-Face 6 half days'
+
+        # Live online
+        LO_10H  = 'LO_10H',  'Live Online 10 half days'
+        LO_1F   = 'LO_1F',   'Live Online 1 full day'
+        LO_1PD  = 'LO_1PD',  'Live Online Paper B Preparation Day'
+        LO_2F   = 'LO_2F',   'Live Online 2 full days'
+        LO_2H   = 'LO_2H',   'Live Online 2 half days'
+        LO_3F   = 'LO_3F',   'Live Online 3 full days'
+        LO_4F   = 'LO_4F',   'Live Online 4 full days'
+        LO_4H   = 'LO_4H',   'Live Online 4 half days'
+        LO_5B   = 'LO_5B',   'Live Online 5-day bundle'
+        LO_5F   = 'LO_5F',   'Live Online 5 full days'
+        LO_6B   = 'LO_6B',   'Live Online 6-day bundle'
+        LO_6H   = 'LO_6H',   'Live Online 6 half days'
+        LO_8H   = 'LO_8H',   'Live Online 8 half days'
+
+        # Online classroom (no physical location — see tutorial_location below)
+        OC      = 'OC',      'Online Classroom'
 
     tutorial_course_template = models.ForeignKey(
         'tutorials.TutorialCourseTemplate',
         on_delete=models.PROTECT,
+        # Nullable in Phase 2 because OC (Online Classroom) products
+        # don't have corresponding `tutorials.TutorialCourseTemplate`
+        # rows (those follow a `{subject}_{format}` naming convention
+        # that doesn't include `OC`). The backfill creates synthetic
+        # OC templates only where data justifies it; rows that can't
+        # match a template stay NULL until operators fix the data.
+        null=True,
+        blank=True,
         related_name='store_tutorial_products',
     )
     tutorial_location = models.ForeignKey(
         'tutorials.TutorialLocation',
         on_delete=models.PROTECT,
+        # Nullable: OC (Online Classroom) products have no physical
+        # venue. ~98 such rows existed pre-refactor; their NULL
+        # location is semantically correct ("online, no venue") and
+        # avoids needing a sentinel TutorialLocation row.
+        null=True,
+        blank=True,
         related_name='store_tutorial_products',
     )
     format = models.CharField(max_length=16, choices=Format.choices)
 
     class Meta:
         db_table = '"acted"."tutorial_products"'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['tutorial_course_template', 'tutorial_location',
-                        'format', 'exam_session_subject'],
-                name='uq_tutorial_product_dimensions',
-            ),
-        ]
+        # Note: Phase 1 dropped the planned
+        # (template, location, format, ESS) UniqueConstraint because
+        # Django MTI raises models.E016 when a child constraint
+        # references a parent-table field. Uniqueness is enforced via
+        # Purchasable.code UNIQUE (auto-generated product_code includes
+        # all four dimensions).
 
     def _generate_product_code(self):
         ess = self.exam_session_subject
@@ -307,24 +361,61 @@ Phase 4 PRs catch these via grep + test.
 
 **Reversible:** drop the four new tables.
 
-### Phase 2 — Backfill (1–2 PRs, data-only)
+### Phase 2 — Backfill (1 PR, foundations + backfill)
 
-- **`marking/migrations/00XX_backfill_marking_templates.py`** — create
-  `MarkingTemplate` rows from `catalog_products.Product` rows referenced
-  by any PPV with `variation_type='Marking'`.
-- **`store/management/commands/split_products_by_kind.py`** — for every
-  `store.Product` row:
-  - If `variation_type ∈ {eBook, Printed, Hub}` → create
-    `MaterialProduct` with `product_ptr_id=product.pk`, copy the PPV
-    FK, set `Purchasable.kind='material'`.
-  - If `variation_type == 'Tutorial'` → resolve location/format from
-    the linked `TutorialEvent`, create `TutorialProduct` with
-    `product_ptr_id=product.pk`, set `Purchasable.kind='tutorial'`.
-  - If `variation_type == 'Marking'` → look up `MarkingTemplate` by
-    code, create `MarkingProduct` with `product_ptr_id=product.pk`,
-    set `Purchasable.kind='marking'`.
-  - Supports `--dry-run` (default) and `--commit`.
-  - Fails loud on unmapped tutorial formats.
+Phase 2 was reshaped during execution after inspecting real data.
+The original design assumed simpler shapes; reality forced three
+schema refinements before the backfill itself could run.
+
+**2A — Schema refinements (3 AlterField migrations):**
+
+1. **Expand `TutorialProduct.Format` to 23 real codes.** Phase 1
+   shipped 5 placeholder values (F2F_1F, F2F_3F, F2F_5F, LIVE, REC).
+   Real `catalog_product_variations` has 23 codes including
+   `F2F_{1F,1PD,2F,3F,4F,5B,5F,6B,6H}`, `LO_{10H,1F,1PD,2F,2H,3F,4F,4H,5B,5F,6B,6H,8H}`,
+   and `OC`. Drop `LIVE`/`REC` (no data).
+2. **Relax `MarkingTemplate.code` UNIQUE → composite `(code, name)` UC.**
+   Phase 1 shipped `code = CharField(unique=True)`. The catalog has
+   rows with duplicate codes and distinct shortnames (`M` appears as
+   both 'Mock Exam Marking' and 'Practice Exam Marking'). The
+   composite UC preserves both while preventing exact-duplicate
+   re-imports.
+3. **Make `TutorialProduct.tutorial_location` nullable.** 98 OC
+   (Online Classroom) tutorial products in the existing data have no
+   `TutorialEvent` and no physical venue. NULL is the semantically
+   correct value; avoids needing a sentinel TutorialLocation row.
+
+**2B — Data migrations / backfill commands:**
+
+4. **`marking/migrations/00XX_backfill_marking_templates.py`** —
+   create one `MarkingTemplate` row per distinct
+   `catalog_products.Product` row referenced by any PPV with
+   `variation_type='Marking'`. Preserves the catalog's
+   (code, shortname) distinctions via the composite UC. Sets
+   `MarkingTemplate.id = catalog.Product.id` so the mapping is 1:1
+   and easy to invert.
+5. **`store/management/commands/split_products_by_kind.py`** — for
+   every `store.Product` row:
+   - If `variation_type ∈ {eBook, Printed, Hub}` → create
+     `MaterialProduct(product_ptr_id=product.pk)` (empty marker
+     subclass; PPV stays on Product through Phase 4), set
+     `Purchasable.kind='material'`.
+   - If `variation_type == 'Tutorial'` → resolve format from
+     `ppv.product_variation.code` (1:1 enum mapping); resolve
+     location from the first linked `TutorialEvent.location`, or
+     leave NULL for OC products; resolve course template by matching
+     `{subject_code}_{format_pattern}` against
+     `tutorials.TutorialCourseTemplate.code`, or leave NULL if no
+     template matches (operator can backfill later); create
+     `TutorialProduct(product_ptr_id=product.pk, ...)`; set
+     `Purchasable.kind='tutorial'`.
+   - If `variation_type == 'Marking'` → look up `MarkingTemplate` by
+     `id=ppv.product_id` (the 1:1 mapping from migration step 4),
+     create `MarkingProduct(product_ptr_id=product.pk,
+     marking_template_id=...)`; set `Purchasable.kind='marking'`.
+   - Supports `--dry-run` (default), `--check` (audit unmapped
+     formats and missing templates), and `--commit`.
+   - Idempotent: re-runs skip rows that already have a subclass row.
 
 **Verification:**
 - `MaterialProduct + TutorialProduct + MarkingProduct row count == Product row count`.
