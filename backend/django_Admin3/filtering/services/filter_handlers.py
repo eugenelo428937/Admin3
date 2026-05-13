@@ -105,5 +105,8 @@ class FilterGroupHandler(FilterHandler):
         return 'product_product_variation__product_groups__product_group__name'
 
 
-# Concrete handlers added in subsequent tasks
-FILTER_HANDLERS: dict[str, FilterHandler] = {}
+FILTER_HANDLERS: dict[str, FilterHandler] = {
+    'subject':       SubjectHandler(),
+    'subject_type':  SubjectTypeHandler(),
+    'filter_group':  FilterGroupHandler(),
+}
