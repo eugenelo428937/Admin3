@@ -3,6 +3,7 @@ from .template import EmailTemplate, EmailAttachment, EmailTemplateAttachment
 from .template_version import EmailTemplateVersion
 from .master_component import EmailMasterComponent
 from .queue import EmailQueue
+from .queue_attachment import EmailQueueAttachment
 from .log import EmailLog
 from .settings import EmailSettings
 from .content_rule import EmailContentRule, EmailTemplateContentRule
@@ -20,6 +21,7 @@ __all__ = [
     'EmailTemplateAttachment',
     'EmailMasterComponent',
     'EmailQueue',
+    'EmailQueueAttachment',
     'EmailLog',
     'EmailSettings',
     'EmailContentRule',

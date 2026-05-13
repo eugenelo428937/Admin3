@@ -5,14 +5,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import AttendanceModal from '../AttendanceModal';
 import service from '../../../../services/admin/tutorialEventsAdminService';
 
-vi.mock('../../../../services/admin/tutorialEventsAdminService', () => ({
-  default: {
+vi.mock('../../../../services/admin/tutorialEventsAdminService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../services/admin/tutorialEventsAdminService')>();
+  const mockDefault = {
+    ...actual.default,
     listEvents: vi.fn(),
     filterOptions: vi.fn(),
     getAttendance: vi.fn(),
     saveAttendance: vi.fn(),
-  },
-}));
+  };
+  return {
+    default: mockDefault,
+    makeAdminAttendanceService: (sessionId: number) => ({
+      get: () => mockDefault.getAttendance(sessionId),
+      save: (items: any) => mockDefault.saveAttendance(sessionId, items),
+    }),
+  };
+});
 
 // Radix UI Select does not open in JSDOM (Portal + pointer-event constraints).
 // We replace it with a native <select> so tests can use userEvent.selectOptions.

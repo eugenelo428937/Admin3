@@ -5,7 +5,10 @@ from typing import Dict, List, Optional, Union
 from django.utils import timezone
 from django.db import transaction
 
-from email_system.models import EmailTemplate, EmailQueue, EmailLog, EmailAttachment, EmailTemplateAttachment, EmailSettings
+from email_system.models import (
+    EmailTemplate, EmailQueue, EmailQueueAttachment, EmailLog,
+    EmailAttachment, EmailTemplateAttachment, EmailSettings,
+)
 from email_system.services.email_service import EmailService
 
 logger = logging.getLogger(__name__)
@@ -40,7 +43,8 @@ class EmailQueueService:
         scheduled_at: timezone.datetime = None,
         expires_at: timezone.datetime = None,
         tags: List[str] = None,
-        user=None
+        user=None,
+        attachments: Optional[List[Dict]] = None,
     ) -> EmailQueue:
         """
         Queue an email for later processing.
@@ -59,10 +63,22 @@ class EmailQueueService:
             expires_at: When the email expires
             tags: Tags for categorization
             user: User who initiated the email
+            attachments: Per-row dynamic attachments. List of dicts with
+                ``filename`` (str), ``content`` (bytes), and optional
+                ``mime_type`` (str, defaults to ``application/octet-stream``).
+                Each entry becomes one ``EmailQueueAttachment`` row tied to
+                the queue item via CASCADE. Distinct from template-wide
+                attachments (``EmailTemplateAttachment``); both are merged
+                at send time.
 
         Returns:
             EmailQueue: Created queue item
         """
+        # Validate attachment shape *before* the broad try/except so callers
+        # get a precise ``ValueError`` rather than the generic wrapper.
+        if attachments:
+            self._validate_dynamic_attachments(attachments)
+
         try:
             # Normalize to_emails to list
             if isinstance(to_emails, str):
@@ -115,7 +131,8 @@ class EmailQueueService:
                     # No version exists yet — create the initial snapshot
                     template_version = template.create_version(user=user, change_note='Auto-created on first queue')
 
-            # Create queue item
+            # Create queue item + dynamic attachments atomically so a
+            # malformed attachment dict rolls the queue row back.
             with transaction.atomic():
                 queue_item = EmailQueue.objects.create(
                     template=template,
@@ -135,11 +152,79 @@ class EmailQueueService:
                     created_by=user
                 )
 
+                if attachments:
+                    self._persist_dynamic_attachments(queue_item, attachments)
+
                 return queue_item
 
         except Exception as e:
             logger.error(f"Failed to queue email: {str(e)}")
             raise Exception(f"Failed to queue email: {str(e)}")
+
+    def _validate_dynamic_attachments(self, attachments: List[Dict]) -> None:
+        """Raise ``ValueError`` if any attachment dict is malformed.
+
+        Each entry must have non-empty ``filename`` (str) and ``content``
+        (bytes-like). ``mime_type`` is optional. Empty list is a no-op.
+        """
+        if not isinstance(attachments, list):
+            raise ValueError(
+                f'attachments must be a list, got {type(attachments).__name__}'
+            )
+        for i, att in enumerate(attachments):
+            if not isinstance(att, dict):
+                raise ValueError(
+                    f'attachment[{i}] must be a dict, got {type(att).__name__}'
+                )
+            filename = att.get('filename')
+            content = att.get('content')
+            if not filename or not isinstance(filename, str):
+                raise ValueError(
+                    f'attachment[{i}] missing or invalid "filename"'
+                )
+            if content is None or not isinstance(content, (bytes, bytearray, memoryview)):
+                raise ValueError(
+                    f'attachment[{i}] missing or invalid "content" '
+                    '(expected bytes)'
+                )
+
+    def _get_dynamic_attachments(self, queue_item: EmailQueue) -> List[Dict]:
+        """Return per-queue dynamic attachments as send-helper dicts.
+
+        Each dict has the keys ``_attach_files_to_email`` expects for the
+        in-memory path: ``name``, ``content`` (bytes), ``mime_type``.
+        Returned in insertion order (FK id ascending) for stable
+        attachment ordering on the outbound email.
+        """
+        rows = queue_item.dynamic_attachments.order_by('id')
+        return [
+            {
+                'name': row.filename,
+                'content': bytes(row.content) if row.content else b'',
+                'mime_type': row.mime_type or 'application/octet-stream',
+            }
+            for row in rows
+        ]
+
+    def _persist_dynamic_attachments(
+        self, queue_item: EmailQueue, attachments: List[Dict],
+    ) -> List[EmailQueueAttachment]:
+        """Persist validated attachments to ``EmailQueueAttachment``.
+
+        Assumes :py:meth:`_validate_dynamic_attachments` has already run.
+        Returns the rows in input order so tests / callers can inspect them.
+        """
+        rows: List[EmailQueueAttachment] = []
+        for att in attachments:
+            rows.append(
+                EmailQueueAttachment.objects.create(
+                    queue_item=queue_item,
+                    filename=att['filename'],
+                    content=bytes(att['content']),
+                    mime_type=att.get('mime_type') or 'application/octet-stream',
+                )
+            )
+        return rows
 
     def _clean_context_for_serialization(self, context: Dict) -> Dict:
         """Clean context by converting non-serializable objects to string representations."""
@@ -298,8 +383,12 @@ class EmailQueueService:
             # Create email log entry
             email_log = self._create_email_log(queue_item, to_email)
 
-            # Get attachments for the template
+            # Get attachments for the template, then merge in any per-queue
+            # dynamic attachments (xlsx generated at enqueue time, etc.).
             attachments = self._get_template_attachments(queue_item.template, queue_item.email_context)
+            dynamic_attachments = self._get_dynamic_attachments(queue_item)
+            if dynamic_attachments:
+                attachments = list(attachments) + dynamic_attachments
 
             # Initialize response data
             response_data = {

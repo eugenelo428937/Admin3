@@ -1,16 +1,23 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { vi, beforeEach, afterEach, describe, it, expect } from 'vitest';
-import useAttendanceVM from '../useAttendanceVM';
-import service from '../../../../services/admin/tutorialEventsAdminService';
+import useAttendanceVM from '../../../shared/attendance/useAttendanceVM';
+import service, { makeAdminAttendanceService } from '../../../../services/admin/tutorialEventsAdminService';
 
-vi.mock('../../../../services/admin/tutorialEventsAdminService', () => ({
-  default: {
+vi.mock('../../../../services/admin/tutorialEventsAdminService', () => {
+  const mockService = {
     listEvents: vi.fn(),
     filterOptions: vi.fn(),
     getAttendance: vi.fn(),
     saveAttendance: vi.fn(),
-  },
-}));
+  };
+  return {
+    default: mockService,
+    makeAdminAttendanceService: vi.fn((sessionId: number) => ({
+      get: () => mockService.getAttendance(sessionId),
+      save: (items: any) => mockService.saveAttendance(sessionId, items),
+    })),
+  };
+});
 
 const mock = vi.mocked(service);
 
@@ -43,16 +50,18 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('useAttendanceVM', () => {
+describe('useAttendanceVM (via makeAdminAttendanceService)', () => {
   it('fetches on mount and populates roster', async () => {
-    const { result } = renderHook(() => useAttendanceVM(1));
+    const svc = makeAdminAttendanceService(1);
+    const { result } = renderHook(() => useAttendanceVM(svc));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.roster).toHaveLength(2);
     expect(result.current.attendanceEnabled).toBe(true);
   });
 
   it('setStatus marks row dirty when changed', async () => {
-    const { result } = renderHook(() => useAttendanceVM(1));
+    const svc = makeAdminAttendanceService(1);
+    const { result } = renderHook(() => useAttendanceVM(svc));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Bob already ATTENDED — setting same value is not dirty
@@ -64,7 +73,8 @@ describe('useAttendanceVM', () => {
   });
 
   it('save() POSTs all items and refreshes state', async () => {
-    const { result } = renderHook(() => useAttendanceVM(1));
+    const svc = makeAdminAttendanceService(1);
+    const { result } = renderHook(() => useAttendanceVM(svc));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => result.current.setStatus(100, 'ATTENDED'));
     await act(async () => { await result.current.save(); });
@@ -76,7 +86,8 @@ describe('useAttendanceVM', () => {
 
   it('save() does not clear local state on failure', async () => {
     mock.saveAttendance.mockRejectedValueOnce({ response: { status: 500 } });
-    const { result } = renderHook(() => useAttendanceVM(1));
+    const svc = makeAdminAttendanceService(1);
+    const { result } = renderHook(() => useAttendanceVM(svc));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => result.current.setStatus(100, 'ATTENDED'));
     await act(async () => { try { await result.current.save(); } catch {} });

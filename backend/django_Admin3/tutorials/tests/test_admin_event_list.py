@@ -92,19 +92,10 @@ class AdminEventListEnrolmentCountsTests(APITestCase):
         bob = factories.make_student('bob')
 
         # Alice in s1+s2, Bob in s2 only.
-        from orders.models import Order, OrderItem
-        a_oi = OrderItem.objects.create(
-            order=Order.objects.create(user=alice.user),
-            purchasable=event.store_product.purchasable_ptr,
-        )
-        b_oi = OrderItem.objects.create(
-            order=Order.objects.create(user=bob.user),
-            purchasable=event.store_product.purchasable_ptr,
-        )
         from tutorials.models import TutorialRegistration
-        TutorialRegistration.objects.create(student=alice, tutorial_session=s1, order_item=a_oi)
-        TutorialRegistration.objects.create(student=alice, tutorial_session=s2, order_item=a_oi)
-        TutorialRegistration.objects.create(student=bob,   tutorial_session=s2, order_item=b_oi)
+        TutorialRegistration.objects.create(student=alice, tutorial_session=s1)
+        TutorialRegistration.objects.create(student=alice, tutorial_session=s2)
+        TutorialRegistration.objects.create(student=bob,   tutorial_session=s2)
 
         response = self.client.get(self.url)
         ev = response.data['results'][0]
@@ -117,14 +108,9 @@ class AdminEventListEnrolmentCountsTests(APITestCase):
         event = factories.make_event(code='EV-INACT')
         s1 = factories.make_session(event=event, sequence=1, title='EV-INACT-1')
         alice = factories.make_student('alice2')
-        from orders.models import Order, OrderItem
         from tutorials.models import TutorialRegistration
-        oi = OrderItem.objects.create(
-            order=Order.objects.create(user=alice.user),
-            purchasable=event.store_product.purchasable_ptr,
-        )
         reg = TutorialRegistration.objects.create(
-            student=alice, tutorial_session=s1, order_item=oi,
+            student=alice, tutorial_session=s1,
         )
         reg.is_active = False
         reg.save()

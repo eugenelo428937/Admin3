@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './index.css';
+import './styles/attendanceColors.css';
 import App from './App.js';
 import reportWebVitals from './reportWebVitals.js';
 import { createRoot } from "react-dom/client";

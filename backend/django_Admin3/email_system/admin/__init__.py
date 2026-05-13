@@ -7,11 +7,31 @@ import json
 
 from email_system.models import (
     EmailTemplate, EmailAttachment, EmailTemplateAttachment,
-    EmailQueue, EmailLog, EmailSettings,
+    EmailQueue, EmailQueueAttachment, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
     ExternalApiKey, EmailBatch,
     EmailVariable,
 )
+
+
+class EmailQueueAttachmentInline(admin.TabularInline):
+    """Inline view of per-queue dynamic attachments on the queue admin."""
+
+    model = EmailQueueAttachment
+    extra = 0
+    can_delete = False
+    fields = ('filename', 'mime_type', 'size_bytes_display', 'created_at')
+    readonly_fields = ('filename', 'mime_type', 'size_bytes_display', 'created_at')
+
+    def size_bytes_display(self, obj):
+        # Avoid materializing large BinaryField blobs in the list display.
+        return obj.size_bytes if obj.pk else 0
+    size_bytes_display.short_description = 'Size (bytes)'
+
+    def has_add_permission(self, request, obj=None):
+        # Attachments are created by code (queue_email); admins shouldn't
+        # hand-craft binary payloads through the form.
+        return False
 
 
 @admin.register(EmailVariable)
@@ -147,6 +167,7 @@ class EmailQueueAdmin(admin.ModelAdmin):
         'queue_id', 'created_at', 'updated_at', 'last_attempt_at',
         'sent_at', 'processing_time_display'
     ]
+    inlines = [EmailQueueAttachmentInline]
 
     fieldsets = (
         ('Queue Information', {

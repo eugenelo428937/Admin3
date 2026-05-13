@@ -6,6 +6,7 @@ import type {
   FilterOptions,
   PaginatedEvents,
 } from '../../components/admin/tutorial-events/types';
+import type { AttendanceService } from '../../components/shared/attendance/types';
 
 function buildEventParams(
   filters: EventFilters,
@@ -63,5 +64,12 @@ const tutorialEventsAdminService = {
       .then(r => r.data);
   },
 };
+
+export function makeAdminAttendanceService(sessionId: number): AttendanceService {
+  return {
+    get: () => tutorialEventsAdminService.getAttendance(sessionId),
+    save: (items) => tutorialEventsAdminService.saveAttendance(sessionId, items),
+  };
+}
 
 export default tutorialEventsAdminService;
