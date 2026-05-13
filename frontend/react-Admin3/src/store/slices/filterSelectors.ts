@@ -1,12 +1,3 @@
-/**
- * Filter Selectors Module (Story 1.14)
- *
- * All selectors for accessing filter state from Redux store.
- * Includes basic selectors, validation selectors, and memoized derived selectors.
- *
- * Contract: specs/007-docs-stories-story/contracts/filterSelectors-module-contract.md
- */
-
 import { createSelector } from '@reduxjs/toolkit';
 
 // Root state type - uses any for filters to avoid circular dependency with store/index.ts
@@ -14,165 +5,29 @@ interface RootStateWithFilters {
   filters: any;
 }
 
-// ========================================
-// Basic Selectors (11 selectors)
-// ========================================
+// === Generic selectors over the byKey/scalar bags ===
 
-/**
- * selectFilters
- * Returns the core filter object (subjects, categories, product_types, products, modes_of_delivery, searchQuery)
- * Memoized to prevent unnecessary re-renders
- */
-export const selectFilters = createSelector(
-  [(state: RootStateWithFilters) => state.filters],
-  (filters: any) => ({
-    subjects: filters.subjects as string[],
-    categories: filters.categories as string[],
-    product_types: filters.product_types as string[],
-    products: filters.products as string[],
-    modes_of_delivery: filters.modes_of_delivery as string[],
-    searchQuery: filters.searchQuery as string
-  })
-);
+export const selectFilterValues = (filterKey: string) => (state: RootStateWithFilters) =>
+  state.filters.byKey[filterKey] ?? [];
 
-/**
- * selectSearchQuery
- * Returns the current search query string
- */
-export const selectSearchQuery = (state: RootStateWithFilters): string => state.filters.searchQuery;
+export const selectFilterScalar = (filterKey: string) => (state: RootStateWithFilters) =>
+  state.filters.scalar[filterKey] ?? null;
 
-/**
- * selectSearchFilterProductIds
- * Returns the ESSP product IDs array from fuzzy search
- * These are ExamSessionSubjectProduct.id values (NOT product.id)
- */
-export const selectSearchFilterProductIds = (state: RootStateWithFilters): number[] => state.filters.searchFilterProductIds;
+export const selectAllFilters = (state: RootStateWithFilters) => state.filters.byKey;
+export const selectAllScalars = (state: RootStateWithFilters) => state.filters.scalar;
+export const selectFilterCounts = (state: RootStateWithFilters) => state.filters.filterCounts;
 
-/**
- * selectCurrentPage
- * Returns the current page number for pagination
- */
-export const selectCurrentPage = (state: RootStateWithFilters): number => state.filters.currentPage;
-
-/**
- * selectPageSize
- * Returns the page size for pagination
- */
-export const selectPageSize = (state: RootStateWithFilters): number => state.filters.pageSize;
-
-/**
- * selectIsFilterPanelOpen
- * Returns whether the filter panel is open
- */
-export const selectIsFilterPanelOpen = (state: RootStateWithFilters): boolean => state.filters.isFilterPanelOpen;
-
-/**
- * selectIsLoading
- * Returns the loading state
- */
-export const selectIsLoading = (state: RootStateWithFilters): boolean => state.filters.isLoading;
-
-/**
- * selectError
- * Returns the current error (null if no error)
- */
-export const selectError = (state: RootStateWithFilters): string | null => state.filters.error;
-
-/**
- * selectFilterCounts
- * Returns the filter counts object from API responses
- */
-export const selectFilterCounts = (state: RootStateWithFilters): any => state.filters.filterCounts;
-
-/**
- * selectAppliedFilters
- * Returns the cached snapshot of applied filters
- */
-export const selectAppliedFilters = (state: RootStateWithFilters): any => state.filters.appliedFilters;
-
-/**
- * selectLastUpdated
- * Returns the timestamp of last filter update
- */
-export const selectLastUpdated = (state: RootStateWithFilters): number | null => state.filters.lastUpdated;
-
-// ========================================
-// Validation Selectors (2 selectors)
-// ========================================
-
-/**
- * selectValidationErrors
- * Returns the array of validation errors (Story 1.16 - safe default)
- */
-export const selectValidationErrors = (state: RootStateWithFilters): any[] => state.filters.validationErrors || [];
-
-/**
- * selectHasValidationErrors
- * Returns true if there are any validation errors with severity='error'
- * Does NOT count warnings (Story 1.16 - safe default)
- */
-export const selectHasValidationErrors = (state: RootStateWithFilters): boolean => {
-  const errors = state.filters.validationErrors || [];
-  return errors.some((error: any) => error.severity === 'error');
-};
-
-// ========================================
-// Derived Selectors (3 memoized selectors)
-// ========================================
-
-/**
- * selectHasActiveFilters
- * Returns true if any filter is active (including search query)
- * Memoized - only recomputes when filter values change
- */
-export const selectHasActiveFilters = createSelector(
-  [selectFilters, selectSearchQuery],
-  (filters, searchQuery) => (
-    filters.subjects.length > 0 ||
-    filters.categories.length > 0 ||
-    filters.product_types.length > 0 ||
-    filters.products.length > 0 ||
-    filters.modes_of_delivery.length > 0 ||
-    searchQuery.trim().length > 0
-  )
-);
-
-/**
- * selectActiveFilterCount
- * Returns the total count of active filter values
- * Memoized - only recomputes when filter values change
- */
 export const selectActiveFilterCount = createSelector(
-  [selectFilters, selectSearchQuery],
-  (filters, searchQuery) => {
-    let count = 0;
-    count += filters.subjects.length;
-    count += filters.categories.length;
-    count += filters.product_types.length;
-    count += filters.products.length;
-    count += filters.modes_of_delivery.length;
-    if (searchQuery.trim().length > 0) count += 1;
-
-    return count;
-  }
+  [selectAllFilters, selectAllScalars],
+  (byKey: Record<string, string[]>, scalar: Record<string, any>) =>
+    Object.values(byKey).reduce((n: number, v: string[]) => n + v.length, 0) +
+    Object.values(scalar).filter((v: any) => v !== null && v !== '').length,
 );
 
-/**
- * selectActiveFilterSummary
- * Returns a comprehensive summary of all active filters
- * Includes filter values, total count, and hasFilters flag
- * Memoized - only recomputes when filter values change
- */
-export const selectActiveFilterSummary = createSelector(
-  [selectFilters, selectSearchQuery, selectActiveFilterCount, selectHasActiveFilters],
-  (filters, searchQuery, totalCount, hasFilters) => ({
-    subjects: filters.subjects,
-    categories: filters.categories,
-    product_types: filters.product_types,
-    products: filters.products,
-    modes_of_delivery: filters.modes_of_delivery,
-    searchQuery: searchQuery,
-    totalCount: totalCount,
-    hasFilters: hasFilters
-  })
-);
+// === UI / pagination passthroughs ===
+
+export const selectCurrentPage = (state: RootStateWithFilters): number => state.filters.currentPage;
+export const selectPageSize = (state: RootStateWithFilters): number => state.filters.pageSize;
+export const selectIsLoading = (state: RootStateWithFilters): boolean => state.filters.isLoading;
+export const selectError = (state: RootStateWithFilters): string | null => state.filters.error;
+export const selectIsFilterPanelOpen = (state: RootStateWithFilters): boolean => state.filters.isFilterPanelOpen;

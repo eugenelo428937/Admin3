@@ -1,3 +1,4 @@
+import { configureStore } from '@reduxjs/toolkit';
 import filtersReducer, {
   setFilter,
   toggleFilter,
@@ -6,6 +7,11 @@ import filtersReducer, {
   clearAllFilters,
   setScalar,
 } from '../filtersSlice';
+import {
+  selectFilterValues,
+  selectAllFilters,
+  selectActiveFilterCount,
+} from '../filterSelectors';
 
 describe('filtersSlice generic actions', () => {
   let state;
@@ -65,5 +71,26 @@ describe('filtersSlice generic actions', () => {
     state = { ...state, currentPage: 5 };
     state = filtersReducer(state, setFilter({ filterKey: 'subjects', values: ['CB1'] }));
     expect(state.currentPage).toBe(1);
+  });
+
+  const mkStore = () => configureStore({ reducer: { filters: filtersReducer } });
+
+  it('selectFilterValues returns [] for unknown key', () => {
+    const store = mkStore();
+    expect(selectFilterValues('unknown')(store.getState())).toEqual([]);
+  });
+
+  it('selectFilterValues returns the array for the key', () => {
+    const store = mkStore();
+    store.dispatch(setFilter({ filterKey: 'subjects', values: ['CB1'] }));
+    expect(selectFilterValues('subjects')(store.getState())).toEqual(['CB1']);
+  });
+
+  it('selectActiveFilterCount counts byKey values + scalar entries', () => {
+    const store = mkStore();
+    store.dispatch(setFilter({ filterKey: 'subjects', values: ['CB1', 'CB2'] }));
+    store.dispatch(setFilter({ filterKey: 'categories', values: ['Material'] }));
+    store.dispatch(setScalar({ filterKey: 'searchQuery', value: 'exam' }));
+    expect(selectActiveFilterCount(store.getState())).toBe(4);
   });
 });
