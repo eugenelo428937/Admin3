@@ -176,8 +176,6 @@ class ProductFilterService:
                 'allow_multiple': config.allow_multiple,
                 'filter_key': config.filter_key,
                 'ui_config': config.get_ui_config(),
-                'validation_rules': config.validation_rules,
-                'dependency_rules': config.dependency_rules,
                 'options': self.get_filter_options([config.name]).get(config.name, []),
                 'filter_groups': filter_groups_data,
                 # Additional metadata

@@ -1,7 +1,7 @@
 """Tests to improve filtering coverage to 98%.
 
 Covers missing lines in:
-- filter_configuration.py: __str__, get_ui_config, get_filter_groups_tree, is_dependent_on, FilterConfigurationGroup.__str__
+- filter_configuration.py: __str__, get_ui_config, get_filter_groups_tree, FilterConfigurationGroup.__str__
 - filter_preset.py: __str__, increment_usage
 - views.py: line 50 (recursive descendant traversal), line 82 (filter types)
 """
@@ -67,29 +67,6 @@ class TestFilterConfigurationGetUiConfig(TestCase):
         result = config.get_ui_config()
         self.assertFalse(result['collapsible'])
         self.assertTrue(result['expanded'])
-
-
-class TestFilterConfigurationIsDependentOn(TestCase):
-    """Test FilterConfiguration.is_dependent_on (lines 176-179)."""
-
-    def test_is_dependent_on_true(self):
-        config = create_filter_config('Dependent', 'dependent', 'subject')
-        config.dependency_rules = {'depends_on': ['OtherFilter']}
-        config.save()
-        other = create_filter_config('OtherFilter', 'other_filter', 'subject')
-        self.assertTrue(config.is_dependent_on(other))
-
-    def test_is_dependent_on_false(self):
-        config = create_filter_config('NotDependent', 'not_dep', 'subject')
-        config.dependency_rules = {'depends_on': ['SomeFilter']}
-        config.save()
-        other = create_filter_config('AnotherFilter', 'another', 'subject')
-        self.assertFalse(config.is_dependent_on(other))
-
-    def test_is_dependent_on_empty_rules(self):
-        config = create_filter_config('EmptyDep', 'empty_dep', 'subject')
-        other = create_filter_config('AnyFilter', 'any_filter', 'subject')
-        self.assertFalse(config.is_dependent_on(other))
 
 
 class TestFilterConfigurationGroupStr(TestCase):

@@ -102,3 +102,24 @@ class FilterAdminTest(TestCase):
         self.assertIn(FilterConfiguration, admin.site._registry)
 
 
+class FilterConfigurationMigration0013Test(TestCase):
+    """Regression tests for migration 0013 changes."""
+
+    def test_no_dead_jsonfields(self):
+        """validation_rules + dependency_rules dropped in migration 0013."""
+        from filtering.models import FilterConfiguration
+        fc = FilterConfiguration(
+            name='TEST_FILTER', filter_key='test', filter_type='subject',
+            display_label='Test',
+        )
+        self.assertFalse(hasattr(fc, 'dependency_rules'))
+        self.assertFalse(hasattr(fc, 'validation_rules'))
+        self.assertFalse(hasattr(fc, 'is_dependent_on'))
+
+    def test_subject_type_choice_allowed(self):
+        """'subject_type' added to FILTER_TYPE_CHOICES in migration 0013."""
+        from filtering.models import FilterConfiguration
+        choices = dict(FilterConfiguration._meta.get_field('filter_type').choices)
+        self.assertIn('subject_type', choices)
+
+

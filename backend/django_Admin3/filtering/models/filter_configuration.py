@@ -26,6 +26,7 @@ class FilterConfiguration(models.Model):
     """
     FILTER_TYPE_CHOICES = [
         ('subject', 'Subject'),
+        ('subject_type', 'Subject Type'),
         ('filter_group', 'Filter Group'),
         ('product_variation', 'Product Variation'),
         ('tutorial_format', 'Tutorial Format'),
@@ -98,16 +99,6 @@ class FilterConfiguration(models.Model):
         blank=True,
         help_text='UI-specific configuration'
     )
-    validation_rules = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text='Validation rules'
-    )
-    dependency_rules = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text='Dependencies on other filters'
-    )
 
     # Filter Groups (Many-to-Many relationship)
     filter_groups = models.ManyToManyField(
@@ -149,11 +140,6 @@ class FilterConfiguration(models.Model):
         config = defaults.copy()
         config.update(self.ui_config)
         return config
-
-    def is_dependent_on(self, other_filter):
-        """Check if this filter depends on another filter."""
-        depends_on = self.dependency_rules.get('depends_on', [])
-        return other_filter.name in depends_on
 
 
 class FilterConfigurationGroup(models.Model):

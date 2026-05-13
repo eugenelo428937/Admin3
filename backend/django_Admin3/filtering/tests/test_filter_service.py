@@ -253,7 +253,7 @@ class TestProductFilterService(TestCase):
         required_fields = [
             'type', 'label', 'description', 'display_order', 'collapsible',
             'default_open', 'required', 'allow_multiple', 'filter_key',
-            'ui_config', 'validation_rules', 'dependency_rules', 'options',
+            'ui_config', 'options',
             'filter_groups', 'filter_type', 'group_count',
         ]
         for name, entry in config.items():

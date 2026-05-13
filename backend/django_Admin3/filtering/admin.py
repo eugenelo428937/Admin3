@@ -45,7 +45,7 @@ class FilterConfigurationAdmin(admin.ModelAdmin):
         }),
         ('Advanced (JSON)', {
             'classes': ['collapse'],
-            'fields': ['ui_config', 'validation_rules', 'dependency_rules']
+            'fields': ['ui_config']
         }),
         ('Metadata', {
             'classes': ['collapse'],
