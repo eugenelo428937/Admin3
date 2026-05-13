@@ -56,6 +56,33 @@ export const selectIsFilterPanelOpen = (state: RootStateWithFilters): boolean =>
   state.filters.isFilterPanelOpen ?? false;
 
 // =========================================================
+// Filter configuration boot gate
+// =========================================================
+// The registry no longer self-registers at module load (see
+// docs/to-dos/filter-registry-architecture-debt.md). App.js fetches
+// /api/products/filter-configuration/ on mount and calls
+// FilterRegistry.registerFromBackend(...). UI that depends on the
+// registry (FilterPanel, ProductList) renders a spinner until the
+// boot is complete — either success or error.
+export const selectFilterConfigurationLoading = (state: RootStateWithFilters): boolean =>
+  state.filters.filterConfigurationLoading ?? false;
+
+export const selectFilterConfigurationError = (state: RootStateWithFilters): string | null =>
+  state.filters.filterConfigurationError ?? null;
+
+export const selectFilterConfiguration = (state: RootStateWithFilters): any =>
+  state.filters.filterConfiguration ?? null;
+
+/**
+ * True once the backend boot has either succeeded (filterConfiguration set)
+ * or failed (filterConfigurationError set). The UI uses this as the gate to
+ * render filter-dependent components.
+ */
+export const selectFilterConfigurationLoaded = (state: RootStateWithFilters): boolean =>
+  state.filters.filterConfiguration !== null
+  || state.filters.filterConfigurationError !== null;
+
+// =========================================================
 // Deprecated per-dimension selectors (shims)
 // These read from the legacy flat fields (with byKey/scalar fallback).
 // Deletable in a follow-up PR once all call sites are migrated to

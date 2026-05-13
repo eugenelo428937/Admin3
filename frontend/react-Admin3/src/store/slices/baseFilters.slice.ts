@@ -604,4 +604,31 @@ export const baseFiltersReducers = {
     // This action exists for backward compatibility only
     state.validationErrors = [];
   },
+
+  // =========================================================
+  // Filter configuration (backend boot)
+  // =========================================================
+  // App.js dispatches these while loading /api/products/filter-configuration/.
+  // The boot gate in App.js renders a spinner until either
+  // filterConfiguration or filterConfigurationError is set.
+  setFilterConfiguration: (state: BaseFiltersState, action: PayloadAction<any>) => {
+    state.filterConfiguration = action.payload;
+    state.filterConfigurationLoading = false;
+    state.filterConfigurationError = null;
+  },
+
+  setFilterConfigurationLoading: (
+    state: BaseFiltersState,
+    action: PayloadAction<boolean>,
+  ) => {
+    state.filterConfigurationLoading = action.payload;
+  },
+
+  setFilterConfigurationError: (
+    state: BaseFiltersState,
+    action: PayloadAction<string | null>,
+  ) => {
+    state.filterConfigurationError = action.payload;
+    state.filterConfigurationLoading = false;
+  },
 };

@@ -59,6 +59,11 @@ export const {
   clearFilterType,
   clearValidationErrors,
   validateFilters,
+
+  // === Filter configuration (backend boot) ===
+  setFilterConfiguration,
+  setFilterConfigurationLoading,
+  setFilterConfigurationError,
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;
@@ -92,6 +97,11 @@ export {
   selectFilters,
   selectHasActiveFilters,
   selectActiveFilterSummary,
+  // Boot gate
+  selectFilterConfiguration,
+  selectFilterConfigurationLoading,
+  selectFilterConfigurationError,
+  selectFilterConfigurationLoaded,
 } from './filterSelectors';
 
 // Legacy shim re-exports — deletable in a follow-up PR

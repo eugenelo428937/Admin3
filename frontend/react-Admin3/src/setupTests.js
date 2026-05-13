@@ -429,3 +429,18 @@ if (typeof performance !== 'undefined') {
 // Mock scrollIntoView (not implemented in JSDOM)
 Element.prototype.scrollIntoView = vi.fn();
 
+// =============================================================================
+// FILTER REGISTRY BOOTSTRAP
+// =============================================================================
+// Replaces the (now-removed) static module-load registrations in
+// filterRegistry.ts. Production boots the registry from the backend on App
+// mount; tests bootstrap it here once before any test file runs. Individual
+// tests that need a clean slate can still call FilterRegistry.clear() in
+// their own beforeEach (see filterRegistry.test.js).
+import { beforeAll } from 'vitest';
+import { bootstrapFilterRegistryForTests } from './test-utils/filterRegistryBootstrap';
+
+beforeAll(() => {
+  bootstrapFilterRegistryForTests();
+});
+
