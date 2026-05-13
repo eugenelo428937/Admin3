@@ -47,7 +47,6 @@ class OnlineClassroomLookupTests(TestCase):
         self.oc_group = FilterGroup.objects.create(
             name='Online Classroom',  # ← canonical DB name, not '... Recording'
             code='online_classroom',
-            parent=self.tutorial_group,
             is_active=True,
         )
 
