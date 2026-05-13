@@ -36,7 +36,9 @@ python manage.py test store marking     # confirm baseline green
 | `backend/django_Admin3/store/tests/test_tutorial_product_model.py` | TDD tests for `TutorialProduct`. |
 | `backend/django_Admin3/store/tests/test_marking_product_model.py` | TDD tests for `MarkingProduct`. |
 | `backend/django_Admin3/marking/migrations/0017_add_marking_template_and_paper_fk.py` | Creates `marking_templates` table; adds nullable `MarkingPaper.marking_template` FK. |
-| `backend/django_Admin3/store/migrations/0016_add_kind_values_and_subclasses.py` | Extends `Purchasable.Kind`; creates three new MTI subclass tables. |
+| `backend/django_Admin3/store/migrations/0016_create_material_products.py` | Creates `acted.material_products` MTI subclass table. |
+| `backend/django_Admin3/store/migrations/0017_create_tutorial_products.py` | Creates `acted.tutorial_products` MTI subclass table (with unique constraint). |
+| `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` | Creates `acted.marking_products` MTI subclass table + extends `Purchasable.Kind` enum. |
 
 ### Files to modify
 
@@ -864,41 +866,75 @@ __all__ = [
 ]
 ```
 
-- [ ] **Step 5.5: Run tests (still no migration; expect import-time green, DB-time fail)**
+- [ ] **Step 5.5: Generate and apply the migration**
+
+Same reasoning as Task 4 Step 4.5: declaring `TutorialProduct` adds a reverse `product.tutorialproduct` accessor that Django's DELETE Collector traverses. The table must exist whenever the class is defined.
 
 ```bash
-python manage.py test store.tests.test_tutorial_product_model.TutorialProductImportTests \
-                       store.tests.test_tutorial_product_model.TutorialProductMTITests \
-                       store.tests.test_tutorial_product_model.TutorialProductFieldsTests \
-                       store.tests.test_tutorial_product_model.TutorialProductConstraintsTests -v 2
+python manage.py makemigrations store --name create_tutorial_products
 ```
 
-Expected: All 7 tests PASS (these test model metadata only, no DB).
+Expected output: `Migrations for 'store': store/migrations/0017_create_tutorial_products.py - Create model TutorialProduct`
 
-- [ ] **Step 5.6: Commit**
+Open the generated migration and verify:
+1. Exactly one `CreateModel` operation for `TutorialProduct`.
+2. `db_table='"acted"."tutorial_products"'`.
+3. Local fields: `product_ptr` (parent_link), `tutorial_course_template` (FK with on_delete=PROTECT), `tutorial_location` (FK with on_delete=PROTECT), `format` (CharField with choices).
+4. `bases=('store.product',)`.
+5. The `uq_tutorial_product_dimensions` UniqueConstraint is present.
+6. The `dependencies` list includes `('tutorials', ...)` for the FK targets.
+
+Apply:
+
+```bash
+python manage.py migrate store
+```
+
+Expected: `Applying store.0017_create_tutorial_products... OK`
+
+- [ ] **Step 5.6: Run tests — all 9 should pass**
+
+```bash
+python manage.py test store.tests.test_tutorial_product_model -v 2
+```
+
+Expected: All 9 tests PASS (2 import + 2 MTI + 3 fields + 1 constraint = 8 from spec, plus the import-test class adds 2 small tests, total 9 — adjust if your count differs).
+
+Confirm no store regressions:
+
+```bash
+python manage.py test store -v 1
+```
+
+- [ ] **Step 5.7: Commit**
 
 ```bash
 git add backend/django_Admin3/store/models/tutorial_product.py \
-       backend/django_Admin3/store/tests/test_tutorial_product_model.py
+       backend/django_Admin3/store/models/__init__.py \
+       backend/django_Admin3/store/tests/test_tutorial_product_model.py \
+       backend/django_Admin3/store/migrations/0017_create_tutorial_products.py
 git commit -m "feat(store): TutorialProduct MTI subclass + Format enum
 
 Phase 1 of Product MTI specialization. TutorialProduct owns tutorial
 course template, location, and format directly — bypassing
 catalog_product_variations. The Format enum replaces the legacy
-ProductVariation(variation_type='Tutorial') rows. Migration emitted
-in Task 6."
+ProductVariation(variation_type='Tutorial') rows.
+
+Migration created here (not deferred) because Django's DELETE Collector
+traverses the implicit reverse accessor; declaring the subclass without
+its table crashes any Product DELETE with UndefinedTable."
 ```
 
 ---
 
-## Task 6: Create `store.MarkingProduct` MTI subclass + emit the store migration
+## Task 6: Create `store.MarkingProduct` MTI subclass + final store migration
 
 **Files:**
 - Create: `backend/django_Admin3/store/models/marking_product.py`
-- Create: `backend/django_Admin3/store/migrations/0016_add_kind_values_and_subclasses.py` (generated)
+- Create: `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` (generated)
 - Test: `backend/django_Admin3/store/tests/test_marking_product_model.py`
 
-This is the final subclass model, and it triggers emission of the combined `store` migration that creates all three subclass tables.
+This is the final subclass model. Its migration also picks up the deferred `Purchasable.Kind` `AlterField` operation (the enum values were extended in Task 1's Python code but no DB migration shipped — Django's `makemigrations` rolls it into the next pending store migration).
 
 - [ ] **Step 6.1: Write the failing test**
 
@@ -1055,33 +1091,32 @@ __all__ = [
 ]
 ```
 
-- [ ] **Step 6.5: Generate the combined store migration**
+- [ ] **Step 6.5: Generate the final store migration**
 
 ```bash
-python manage.py makemigrations store --name add_kind_values_and_subclasses
+python manage.py makemigrations store --name create_marking_products_and_kind
 ```
 
 Expected output:
 
 ```
 Migrations for 'store':
-  store/migrations/0016_add_kind_values_and_subclasses.py
+  store/migrations/0018_create_marking_products_and_kind.py
     - Alter field kind on purchasable
-    - Create model MaterialProduct
-    - Create model TutorialProduct
     - Create model MarkingProduct
 ```
 
-Open `backend/django_Admin3/store/migrations/0016_add_kind_values_and_subclasses.py` and verify:
+Open `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` and verify:
 
-1. `AlterField` on `purchasable.kind` lists all seven choices (MATERIAL, TUTORIAL, MARKING, MARKING_VOUCHER, DOCUMENT_BINDER, ADDITIONAL_CHARGE, PRODUCT).
-2. Three `CreateModel` operations with `bases=('store.product',)` (MTI bases).
-3. Each new model's `db_table` is `'"acted"."material_products"'`, `'"acted"."tutorial_products"'`, `'"acted"."marking_products"'` respectively.
-4. Each model has a `product_ptr` OneToOneField as `parent_link=True, primary_key=True`.
-5. `TutorialProduct` has the `uq_tutorial_product_dimensions` constraint.
-6. `MarkingProduct` has the `uq_marking_product_per_template_ess` constraint.
+1. Exactly two operations: `AlterField` on `purchasable.kind` + `CreateModel MarkingProduct`. (Tasks 4 and 5 already migrated MaterialProduct and TutorialProduct.)
+2. `AlterField` on `purchasable.kind` lists all seven choices (MATERIAL, TUTORIAL, MARKING, MARKING_VOUCHER, DOCUMENT_BINDER, ADDITIONAL_CHARGE, PRODUCT).
+3. `CreateModel MarkingProduct` with `bases=('store.product',)` (MTI base).
+4. `db_table='"acted"."marking_products"'`.
+5. `product_ptr` OneToOneField as `parent_link=True, primary_key=True`.
+6. Local fields include `marking_template` (FK to `marking.MarkingTemplate` with `on_delete=PROTECT`) and `paper_count` (PositiveSmallIntegerField, nullable).
+7. `uq_marking_product_per_template_ess` UniqueConstraint is present.
 
-If any of these are missing, stop and investigate — do not commit a malformed migration.
+If the migration includes operations beyond the two expected (e.g. stale MaterialProduct/TutorialProduct CreateModel ops because Tasks 4/5 didn't migrate), stop and investigate — Tasks 4 and 5 should have already migrated their subclasses.
 
 - [ ] **Step 6.6: Confirm migration dependency graph**
 
@@ -1089,13 +1124,13 @@ If any of these are missing, stop and investigate — do not commit a malformed 
 python manage.py showmigrations store marking | tail -10
 ```
 
-Expected: store's `0016_add_kind_values_and_subclasses` is unapplied; marking's `0017_add_marking_template_and_paper_fk` is applied. `MarkingProduct.marking_template` references `marking.MarkingTemplate`, so the auto-generated migration should list `('marking', '0017_add_marking_template_and_paper_fk')` in its `dependencies`. Verify by reading the dependencies list at the top of the new migration file.
+Expected: store's `0018_create_marking_products_and_kind` is unapplied; marking's `0017_add_marking_template_and_paper_fk` is applied; store's `0016_create_material_products` and `0017_create_tutorial_products` are applied. The auto-generated migration should list `('marking', '0017_add_marking_template_and_paper_fk')` in its `dependencies` because `MarkingProduct.marking_template` references `marking.MarkingTemplate`. Verify by reading the dependencies list at the top of the new migration file.
 
 If missing, add manually:
 
 ```python
 dependencies = [
-    ('store', '0015_ensure_fee_generic_exists'),
+    ('store', '0017_create_tutorial_products'),
     ('marking', '0017_add_marking_template_and_paper_fk'),
 ]
 ```
@@ -1106,7 +1141,7 @@ dependencies = [
 python manage.py migrate store
 ```
 
-Expected: `Applying store.0016_add_kind_values_and_subclasses... OK`
+Expected: `Applying store.0018_create_marking_products_and_kind... OK`
 
 - [ ] **Step 6.8: Run all Phase 1 model tests**
 
@@ -1124,17 +1159,21 @@ Expected: All tests PASS.
 
 ```bash
 git add backend/django_Admin3/store/models/marking_product.py \
-       backend/django_Admin3/store/migrations/0016_add_kind_values_and_subclasses.py \
+       backend/django_Admin3/store/models/__init__.py \
+       backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py \
        backend/django_Admin3/store/tests/test_marking_product_model.py
-git commit -m "feat(store): MarkingProduct MTI subclass + combined Phase 1 migration
+git commit -m "feat(store): MarkingProduct MTI subclass + Kind AlterField (Phase 1 close)
 
 Phase 1 of Product MTI specialization. The migration:
+  - Creates acted.marking_products as MTI subclass of store.Product
   - Extends Purchasable.Kind choices with MATERIAL/TUTORIAL/MARKING
-  - Creates acted.material_products, acted.tutorial_products,
-    acted.marking_products as MTI subclasses of store.Product
-  - Each subclass shares its PK with the parent Product row
+    (TextChoices-level AlterField; no DB constraint change)
 
-Empty tables — Phase 2 backfills from existing Product rows."
+Phase 1 migrations now ship across three store files
+(0016 material_products, 0017 tutorial_products, 0018 marking_products
++ kind) instead of one combined file. Splitting by subclass keeps each
+task's commit self-contained and avoids the Collector regression
+described in Task 4."
 ```
 
 ---
