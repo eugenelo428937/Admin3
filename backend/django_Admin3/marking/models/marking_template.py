@@ -19,8 +19,11 @@ class MarkingTemplate(models.Model):
 
     code = models.CharField(
         max_length=10,
-        unique=True,
-        help_text="Series code (e.g., 'X', 'MM1', 'Y').",
+        help_text=(
+            "Series code (e.g., 'X', 'MM1', 'Y'). NOT unique by itself — "
+            "catalog has duplicates with distinct names. Uniqueness "
+            "enforced over composite (code, name)."
+        ),
     )
     name = models.CharField(
         max_length=255,
@@ -34,9 +37,15 @@ class MarkingTemplate(models.Model):
     class Meta:
         app_label = 'marking'
         db_table = '"acted"."marking_templates"'
-        ordering = ['code']
+        ordering = ['code', 'name']
         verbose_name = 'Marking Template'
         verbose_name_plural = 'Marking Templates'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['code', 'name'],
+                name='uq_marking_template_code_name',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.code}: {self.name}"

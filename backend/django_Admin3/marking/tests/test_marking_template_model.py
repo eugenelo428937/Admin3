@@ -1,4 +1,4 @@
-"""Tests for marking.MarkingTemplate (Phase 1 of MTI specialization)."""
+"""Tests for marking.MarkingTemplate (MTI specialization, Phases 1–2)."""
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
@@ -25,12 +25,32 @@ class MarkingTemplateModelTests(TestCase):
         self.assertIsNotNone(t.created_at)
         self.assertIsNotNone(t.updated_at)
 
-    def test_code_is_unique(self):
+    def test_code_alone_is_not_unique(self):
+        """Phase 2: catalog has duplicate codes with distinct shortnames
+        (e.g., 'M' appears as both 'Mock Exam Marking' and 'Practice
+        Exam Marking'). We preserve both. Uniqueness is over the
+        composite (code, name).
+        """
         from marking.models import MarkingTemplate
-        MarkingTemplate.objects.create(code='MM1', name='Mock Marking 1')
+        MarkingTemplate.objects.create(code='M', name='Mock Exam Marking')
+        # Same code, different name — must succeed
+        t2 = MarkingTemplate.objects.create(code='M', name='Practice Exam Marking')
+        self.assertEqual(t2.code, 'M')
+        self.assertEqual(MarkingTemplate.objects.filter(code='M').count(), 2)
+
+    def test_code_name_pair_is_unique(self):
+        """Same code AND same name => IntegrityError via composite UC."""
+        from marking.models import MarkingTemplate
+        MarkingTemplate.objects.create(code='X', name='X Marking')
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
-                MarkingTemplate.objects.create(code='MM1', name='Duplicate')
+                MarkingTemplate.objects.create(code='X', name='X Marking')
+
+    def test_has_composite_unique_constraint(self):
+        """Constraint is registered in _meta so Django will enforce it in migrations."""
+        from marking.models import MarkingTemplate
+        constraint_names = {c.name for c in MarkingTemplate._meta.constraints}
+        self.assertIn('uq_marking_template_code_name', constraint_names)
 
     def test_str_format(self):
         from marking.models import MarkingTemplate
