@@ -111,3 +111,43 @@ def test_apply_filters_empty_or_no_handler_returns_unfiltered():
     assert service.apply_filters(qs, {}).count() == qs.count()
     # Unknown filter_key is silently ignored
     assert service.apply_filters(qs, {'nonexistent_key': ['x']}).count() == qs.count()
+
+
+@pytest.mark.django_db
+def test_generate_filter_counts_uses_handlers_for_path_and_q():
+    """Counts are computed via disjunctive faceting using each handler's
+    count_path() for grouping and build_q() to exclude itself."""
+    from catalog.models import (
+        Subject, ExamSession, ExamSessionSubject, Product as CatalogProduct,
+        ProductVariation, ProductProductVariation,
+    )
+    from store.models import Product as StoreProduct
+
+    cb1 = Subject.objects.create(code='CB1', description='T1', active=True)
+    cb2 = Subject.objects.create(code='CB2', description='T2', active=True)
+    sess = ExamSession.objects.create(
+        session_code='2026-04', start_date='2026-04-01', end_date='2026-04-30',
+    )
+    e1 = ExamSessionSubject.objects.create(exam_session=sess, subject=cb1)
+    e2 = ExamSessionSubject.objects.create(exam_session=sess, subject=cb2)
+    cp = CatalogProduct.objects.create(shortname='X', fullname='X', code='X', is_active=True)
+    pv = ProductVariation.objects.create(code='P', name='Printed', variation_type='Material')
+    ppv = ProductProductVariation.objects.create(product=cp, product_variation=pv)
+    StoreProduct.objects.create(
+        exam_session_subject=e1, product_product_variation=ppv, product_code='P1',
+    )
+    StoreProduct.objects.create(
+        exam_session_subject=e2, product_product_variation=ppv, product_code='P2',
+    )
+
+    FilterConfiguration.objects.create(
+        name='SUBJ', filter_key='subjects', filter_type='subject',
+        display_label='Subject',
+    )
+
+    service = ProductFilterService()
+    counts = service.generate_filter_counts(StoreProduct.objects.all(), filters={})
+
+    assert 'subjects' in counts
+    assert counts['subjects']['CB1']['count'] == 1
+    assert counts['subjects']['CB2']['count'] == 1

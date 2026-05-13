@@ -261,106 +261,41 @@ class ProductFilterService:
         return self.apply_filters(queryset, reduced)
 
     def generate_filter_counts(self, base_queryset, filters=None):
-        """Generate disjunctive facet counts for all filter dimensions.
+        """Generate disjunctive facet counts keyed by FilterConfiguration.filter_key.
 
-        Each dimension's counts are computed against a queryset with all OTHER
-        active filters applied, but excluding that dimension's own filter (R4).
-
-        Args:
-            base_queryset: Unfiltered queryset of active store.Product instances.
-            filters: Dict with optional filter keys.
-
-        Returns:
-            Dict with five dimensions, each containing {name: {count, name}} entries.
+        For each active filter configuration, compute counts against a queryset
+        with all OTHER active filters applied (disjunctive faceting).
         """
         from django.db.models import Count
+        from filtering.services.filter_handlers import FILTER_HANDLERS
 
         filters = filters or {}
-        filter_counts = {
-            'subjects': {},
-            'categories': {},
-            'product_types': {},
-            'products': {},
-            'modes_of_delivery': {},
-        }
+        result = {}
 
-        # Subject counts — exclude subjects filter
-        subjects_qs = self._apply_filters_excluding(
-            base_queryset, filters, 'subjects'
-        )
-        subject_counts = subjects_qs.values(
-            'exam_session_subject__subject__code'
-        ).annotate(count=Count('id')).order_by('-count')
-
-        for item in subject_counts:
-            code = item['exam_session_subject__subject__code']
-            count = item['count']
-            if code and count > 0:
-                filter_counts['subjects'][code] = {'count': count, 'name': code}
-
-        # Group counts partitioned by FilterConfigurationGroup assignments.
-        # All three group-based dimensions use the same mechanism.
-        for filter_key in ('categories', 'product_types', 'modes_of_delivery'):
-            assigned_groups = list(
-                FilterConfigurationGroup.objects.filter(
-                    filter_configuration__filter_key=filter_key,
-                    filter_configuration__is_active=True,
-                ).select_related('filter_group').values_list(
-                    'filter_group_id', 'filter_group__name', named=True
-                )
-            )
-            if not assigned_groups:
+        configs = FilterConfiguration.objects.filter(is_active=True)
+        for config in configs:
+            handler = FILTER_HANDLERS.get(config.filter_type)
+            if not handler:
                 continue
 
-            assigned_group_ids = {g.filter_group_id for g in assigned_groups}
-            assigned_group_names = {g.filter_group_id: g.filter_group__name for g in assigned_groups}
-
-            # Pre-populate with count=0
-            for group_id, group_name in assigned_group_names.items():
-                if group_name:
-                    filter_counts[filter_key][group_name] = {
-                        'count': 0, 'name': group_name
-                    }
-
             dimension_qs = self._apply_filters_excluding(
-                base_queryset, filters, filter_key
+                base_queryset, filters, config.filter_key,
             )
+            path = handler.count_path(config)
+            rows = (
+                dimension_qs.values(path)
+                .annotate(count=Count('id', distinct=True))
+                .order_by('-count')
+            )
+            bucket = {}
+            for row in rows:
+                value = row[path]
+                n = row['count']
+                if value and n > 0:
+                    bucket[value] = {'count': n, 'name': value}
+            result[config.filter_key] = bucket
 
-            # Roll up counts per assigned group
-            for group_id in assigned_group_ids:
-                group_name = assigned_group_names.get(group_id)
-                if not group_name:
-                    continue
-                rollup_count = dimension_qs.filter(
-                    product_product_variation__product_groups__product_group__id__in={group_id}
-                ).distinct().count()
-                filter_counts[filter_key][group_name] = {
-                    'count': rollup_count, 'name': group_name
-                }
-
-        # Product counts — exclude products filter
-        products_qs = self._apply_filters_excluding(
-            base_queryset, filters, 'products'
-        )
-        product_counts = products_qs.values(
-            'product_product_variation__product__id',
-            'product_product_variation__product__shortname',
-            'product_product_variation__product__fullname'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
-
-        for item in product_counts:
-            product_id = item['product_product_variation__product__id']
-            shortname = item['product_product_variation__product__shortname']
-            fullname = item['product_product_variation__product__fullname']
-            count = item['count']
-            if product_id and count > 0:
-                filter_counts['products'][str(product_id)] = {
-                    'count': count,
-                    'name': shortname or fullname or f'Product {product_id}',
-                    'display_name': shortname or fullname or f'Product {product_id}'
-                }
-
-        return filter_counts
+        return result
 
     def reload_configurations(self):
         """Reload filter configurations from database."""
