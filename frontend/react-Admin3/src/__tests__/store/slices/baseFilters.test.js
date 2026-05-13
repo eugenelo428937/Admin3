@@ -381,6 +381,7 @@ describe('Base Filters Module', () => {
       baseFiltersReducers.applyFilters(state);
 
       expect(state.appliedFilters).toEqual({
+        programme_type: [],
         subjects: ['CM2'],
         categories: ['Bundle'],
         product_types: [],

@@ -299,6 +299,7 @@ class ProductFilterService:
             descendant_map = ProductFilterService._build_descendant_map()
 
         resolved_ids = set()
+        unresolved = []
         for name in group_names:
             if name in exclude_names:
                 continue
@@ -306,7 +307,18 @@ class ProductFilterService:
                 group = FilterGroup.objects.get(name__iexact=name)
                 resolved_ids |= descendant_map.get(group.id, {group.id})
             except FilterGroup.DoesNotExist:
-                continue
+                unresolved.append(name)
+
+        # Observability for the silent fail-open in apply_store_product_filters:
+        # when every requested name misses, the caller drops the WHERE clause
+        # and returns the full queryset. Emit a WARNING so future
+        # name-mismatch regressions surface in logs. Behavior unchanged.
+        if unresolved and not resolved_ids:
+            logger.warning(
+                "FilterGroup name resolution returned no matches; "
+                "downstream filter will be silently dropped. "
+                "Unresolved names: %s", unresolved,
+            )
 
         return resolved_ids
 

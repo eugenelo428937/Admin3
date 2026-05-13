@@ -9,6 +9,9 @@ import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
+import productService from "./services/productService";
+import { FilterRegistry } from "./store/filters/filterRegistry";
+import { setFilterConfiguration, setFilterConfigurationLoading, setFilterConfigurationError } from "./store/slices/filtersSlice";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 import { ConfigProvider } from "./contexts/ConfigContext";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
@@ -151,6 +154,44 @@ function App() {
 		if (authStatus === "true") {
 			setIsAuthenticated(true);
 		}
+	}, []);
+
+	// Boot: load FilterPanel sections from DB (filter_configurations table).
+	//
+	// This is the architectural override for the static fallback in
+	// filterRegistry.ts. Without this call, the static registrations would
+	// be the only source of truth, and any drift between the file and the
+	// DB would render either empty sections or missing filters. With this
+	// call, the registry mirrors `filter_configurations` exactly — adding
+	// a filter becomes a DB-only change for the *rendering* layer.
+	//
+	// NOTE: clicks/URL persistence still need Redux state + reducers
+	// (baseFilters.slice.ts) — see docs/filter-registry-architecture-debt.md.
+	useEffect(() => {
+		let cancelled = false;
+		store.dispatch(setFilterConfigurationLoading(true));
+		productService
+			.getFilterConfiguration()
+			.then((config) => {
+				if (cancelled) return;
+				FilterRegistry.registerFromBackend(config);
+				store.dispatch(setFilterConfiguration(config));
+			})
+			.catch((err) => {
+				if (cancelled) return;
+				// Static fallback in filterRegistry.ts keeps the panel usable.
+				console.warn(
+					"[App] Failed to load filter configuration from backend; " +
+						"falling back to static registrations.",
+					err
+				);
+				store.dispatch(
+					setFilterConfigurationError(err?.message || "Unknown error")
+				);
+			});
+		return () => {
+			cancelled = true;
+		};
 	}, []);
 
 	// Clear legacy filter cookies (Story 1.13 - Cookie Middleware Removal)

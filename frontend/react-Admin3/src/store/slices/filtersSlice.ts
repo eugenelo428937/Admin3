@@ -34,17 +34,20 @@ const filtersSlice = createSlice({
       Object.entries(baseFiltersReducers).map(([key, reducer]) => {
         // Actions that should trigger validation after execution
         const validationTriggers = [
+          'setProgrammeTypes',
           'setSubjects',
           'setCategories',
           'setProductTypes',
           'setProducts',
           'setModesOfDelivery',
           'setMultipleFilters',
+          'toggleProgrammeTypeFilter',
           'toggleSubjectFilter',
           'toggleCategoryFilter',
           'toggleProductTypeFilter',
           'toggleProductFilter',
           'toggleModeOfDeliveryFilter',
+          'removeProgrammeTypeFilter',
           'removeSubjectFilter',
           'removeCategoryFilter',
           'removeProductTypeFilter',
@@ -110,6 +113,7 @@ const filtersSlice = createSlice({
 // Re-export ALL actions from the slice (base + navigation + validation)
 export const {
   // Base filter actions - Set
+  setProgrammeTypes,
   setSubjects,
   setCategories,
   setProductTypes,
@@ -120,6 +124,7 @@ export const {
   setMultipleFilters,
 
   // Base filter actions - Toggle
+  toggleProgrammeTypeFilter,
   toggleSubjectFilter,
   toggleCategoryFilter,
   toggleProductTypeFilter,
@@ -127,6 +132,7 @@ export const {
   toggleModeOfDeliveryFilter,
 
   // Base filter actions - Remove
+  removeProgrammeTypeFilter,
   removeSubjectFilter,
   removeCategoryFilter,
   removeProductTypeFilter,

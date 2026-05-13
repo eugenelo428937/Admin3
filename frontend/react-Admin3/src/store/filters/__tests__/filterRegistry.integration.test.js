@@ -35,16 +35,18 @@ describe('FilterRegistry Integration', () => {
 
   describe('Registry Configuration Access', () => {
     it('should provide configuration for all filter types', () => {
+      // NOTE: `products` is intentionally absent — see
+      // docs/to-dos/filter-registry-architecture-debt.md.
+      const programmeTypeConfig = FilterRegistry.get('programme_type');
       const subjectsConfig = FilterRegistry.get('subjects');
       const categoriesConfig = FilterRegistry.get('categories');
       const producttypesConfig = FilterRegistry.get('product_types');
-      const productsConfig = FilterRegistry.get('products');
       const modsConfig = FilterRegistry.get('modes_of_delivery');
 
+      expect(programmeTypeConfig).toBeDefined();
       expect(subjectsConfig).toBeDefined();
       expect(categoriesConfig).toBeDefined();
       expect(producttypesConfig).toBeDefined();
-      expect(productsConfig).toBeDefined();
       expect(modsConfig).toBeDefined();
     });
 
@@ -90,12 +92,9 @@ describe('FilterRegistry Integration', () => {
       expect(config.type).toBe('product_types');
     });
 
-    it('should map product to products filter', () => {
-      const config = FilterRegistry.getByUrlParam('product');
-
-      expect(config).toBeDefined();
-      expect(config.type).toBe('products');
-    });
+    // NOTE: a test mapping URL param `product` → `products` filter was here.
+    // Removed because the `products` filter is no longer registered — see
+    // docs/to-dos/filter-registry-architecture-debt.md.
 
     it('should map mode_of_delivery to modes_of_delivery filter', () => {
       const config = FilterRegistry.getByUrlParam('mode_of_delivery');
@@ -156,27 +155,10 @@ describe('FilterRegistry Integration', () => {
       expect(displayValue).toBe('Bundle');
     });
 
-    it('should format product display values with filter counts', () => {
-      const config = FilterRegistry.get('products');
-
-      const mockCounts = {
-        'PROD_123': {
-          count: 5,
-          name: 'Core Reading',
-          display_name: 'Core Reading Materials'
-        }
-      };
-
-      const displayValue = config.getDisplayValue('PROD_123', mockCounts);
-      expect(displayValue).toBe('Core Reading Materials');
-    });
-
-    it('should fallback to product ID when no counts available', () => {
-      const config = FilterRegistry.get('products');
-      const displayValue = config.getDisplayValue('PROD_123');
-
-      expect(displayValue).toBe('PROD_123');
-    });
+    // NOTE: two tests asserting the `products` filter's getDisplayValue
+    // formatting (with-counts and fallback) were here. Removed because
+    // `products` is no longer registered — see
+    // docs/to-dos/filter-registry-architecture-debt.md.
 
     it('should handle null/undefined display values gracefully', () => {
       const config = FilterRegistry.get('subjects');
@@ -191,17 +173,14 @@ describe('FilterRegistry Integration', () => {
     it('should return filters in correct order', () => {
       const allFilters = FilterRegistry.getAll();
 
-      // Search query should be first (order: 0)
+      // Order after the `products` removal + `programme_type` addition:
+      //   searchQuery(0), programme_type(1), subjects(2), categories(3),
+      //   product_types(4), modes_of_delivery(5).
       expect(allFilters[0].type).toBe('searchQuery');
-
-      // Then subjects (order: 1)
-      expect(allFilters[1].type).toBe('subjects');
-
-      // Then categories (order: 2)
-      expect(allFilters[2].type).toBe('categories');
-
-      // Then product types (order: 3)
-      expect(allFilters[3].type).toBe('product_types');
+      expect(allFilters[1].type).toBe('programme_type');
+      expect(allFilters[2].type).toBe('subjects');
+      expect(allFilters[3].type).toBe('categories');
+      expect(allFilters[4].type).toBe('product_types');
     });
 
     it('should include all registered filters', () => {
@@ -250,10 +229,8 @@ describe('FilterRegistry Integration', () => {
       expect(config.urlFormat).toBe('comma-separated');
     });
 
-    it('should use comma-separated format for products', () => {
-      const config = FilterRegistry.get('products');
-      expect(config.urlFormat).toBe('comma-separated');
-    });
+    // NOTE: a test asserting comma-separated URL format for the `products`
+    // filter was here. Removed because `products` is no longer registered.
 
     it('should use comma-separated format for modes of delivery', () => {
       const config = FilterRegistry.get('modes_of_delivery');
@@ -263,10 +240,12 @@ describe('FilterRegistry Integration', () => {
 
   describe('Color Theming', () => {
     it('should assign appropriate colors to filter types', () => {
+      // NOTE: a `products`-color assertion was here; removed because that
+      // filter is no longer registered. See architecture-debt doc.
+      expect(FilterRegistry.get('programme_type').color).toBe('secondary');
       expect(FilterRegistry.get('subjects').color).toBe('primary');
       expect(FilterRegistry.get('categories').color).toBe('info');
       expect(FilterRegistry.get('product_types').color).toBe('success');
-      expect(FilterRegistry.get('products').color).toBe('default');
       expect(FilterRegistry.get('modes_of_delivery').color).toBe('warning');
     });
 

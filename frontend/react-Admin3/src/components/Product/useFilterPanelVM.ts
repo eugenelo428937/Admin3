@@ -13,6 +13,7 @@ import {
     selectFilters,
     selectFilterCounts,
     selectValidationErrors,
+    toggleProgrammeTypeFilter,
     toggleSubjectFilter,
     toggleCategoryFilter,
     toggleProductTypeFilter,
@@ -67,6 +68,7 @@ export const SCROLLABLE_FILTER_STYLES = {
 // ─── Expanded Panels State ──────────────────────────────────────
 
 export interface ExpandedPanelsState {
+    programme_type: boolean;
     subjects: boolean;
     categories: boolean;
     product_types: boolean;
@@ -156,6 +158,7 @@ const useFilterPanelVM = (props: FilterPanelProps): FilterPanelVM => {
         }
         // Default state
         return {
+            programme_type: false,
             subjects: true,
             categories: false,
             product_types: false,
@@ -189,6 +192,9 @@ const useFilterPanelVM = (props: FilterPanelProps): FilterPanelVM => {
      */
     const handleFilterChange = useCallback((filterType: string, value: string) => {
         switch (filterType) {
+            case 'programme_type':
+                dispatch(toggleProgrammeTypeFilter(value));
+                break;
             case 'subjects':
                 dispatch(toggleSubjectFilter(value));
                 break;

@@ -106,6 +106,7 @@ let lastUrlParams: string | null = null;
 
 // Define all filter action types that should trigger URL updates (Story 1.1, 1.16)
 const FILTER_ACTION_TYPES: string[] = [
+  'filters/setProgrammeTypes',
   'filters/setSubjects',
   'filters/setCategories',
   'filters/setProductTypes',
@@ -113,11 +114,13 @@ const FILTER_ACTION_TYPES: string[] = [
   'filters/setModesOfDelivery',
   'filters/setSearchQuery',
   'filters/setMultipleFilters',
+  'filters/toggleProgrammeTypeFilter',
   'filters/toggleSubjectFilter',
   'filters/toggleCategoryFilter',
   'filters/toggleProductTypeFilter',
   'filters/toggleProductFilter',
   'filters/toggleModeOfDeliveryFilter',
+  'filters/removeProgrammeTypeFilter',
   'filters/removeSubjectFilter',
   'filters/removeCategoryFilter',
   'filters/removeProductTypeFilter',
@@ -143,6 +146,7 @@ const URL_SYNC_PAGES: string[] = ['/products', '/home', '/'];
 // Any param NOT matching these is preserved across URL sync updates
 // (e.g., ?preview=1 for admin storefront preview, ?utm_source=... for analytics).
 const FILTER_PARAM_PATTERNS: RegExp[] = [
+  /^programme_type$/,
   /^subject_code$/, /^subject_\d+$/,
   /^category_code$/, /^category_\d+$/,
   /^group$/,
