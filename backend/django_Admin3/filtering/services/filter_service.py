@@ -1,8 +1,7 @@
 import logging
-from typing import Dict, List, Any, Optional, Union
-from django.db.models import Q, QuerySet, Prefetch
+from typing import Dict, List, Any, Optional
+from django.db.models import Prefetch
 from django.core.cache import cache
-from django.utils import timezone
 
 from filtering.models import (
     FilterConfiguration,
@@ -227,169 +226,39 @@ class ProductFilterService:
     
     # ── store.Product filter methods (US2) ──────────────────────────
 
-    @staticmethod
-    def _build_descendant_map():
-        """Build a map of group ID → {group ID} for each FilterGroup.
-
-        The parent/children hierarchy was removed in migration 0012. Each
-        group now maps only to itself (no descendants). Callers that expand
-        group IDs to include descendants will now get only the group itself.
-        """
-        all_ids = list(FilterGroup.objects.values_list('id', flat=True))
-        return {gid: {gid} for gid in all_ids}
-
-    @staticmethod
-    def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None,
-                                          descendant_map=None):
-        """Resolve group names to IDs, expanding each to include descendants.
+    def apply_filters(self, queryset, filters: dict):
+        """Apply filters to a queryset by dispatching to per-filter_type handlers.
 
         Args:
-            group_names: List of group names to resolve.
-            exclude_names: Optional list of names to skip (e.g., ['Bundle']).
-            descendant_map: Pre-built map from _build_descendant_map().
-                If None, builds one on the fly.
+            queryset: base queryset (typically store.Product.objects.all()).
+            filters: dict mapping filter_key → list of selected values.
 
         Returns:
-            Set of FilterGroup IDs (including descendants).
+            Filtered, distinct queryset.
         """
-        exclude_names = set(exclude_names or [])
-        if descendant_map is None:
-            descendant_map = ProductFilterService._build_descendant_map()
-
-        resolved_ids = set()
-        unresolved = []
-        for name in group_names:
-            if name in exclude_names:
-                continue
-            try:
-                group = FilterGroup.objects.get(name__iexact=name)
-                resolved_ids |= descendant_map.get(group.id, {group.id})
-            except FilterGroup.DoesNotExist:
-                unresolved.append(name)
-
-        # Observability for the silent fail-open in apply_store_product_filters:
-        # when every requested name misses, the caller drops the WHERE clause
-        # and returns the full queryset. Emit a WARNING so future
-        # name-mismatch regressions surface in logs. Behavior unchanged.
-        if unresolved and not resolved_ids:
-            logger.warning(
-                "FilterGroup name resolution returned no matches; "
-                "downstream filter will be silently dropped. "
-                "Unresolved names: %s", unresolved,
-            )
-
-        return resolved_ids
-
-    def apply_store_product_filters(self, queryset, filters, descendant_map=None):
-        """Apply filters to a store.Product queryset.
-
-        Uses store.Product-specific field paths:
-        - subjects: exam_session_subject__subject__id / __code
-        - categories: product_product_variation__product_groups__product_group__id__in
-        - product_types: product_product_variation__product_groups__product_group__id__in
-        - modes_of_delivery: product_product_variation__product_groups__product_group__id__in
-
-        Args:
-            queryset: Base queryset of store.Product instances.
-            filters: Dict with filter dimensions.
-            descendant_map: Optional pre-built hierarchy map to avoid
-                rebuilding it on every call.
-
-        Returns:
-            Filtered and distinct queryset.
-        """
-        from django.db.models import Q
+        from filtering.services.filter_handlers import FILTER_HANDLERS
 
         if not filters:
             return queryset.distinct()
 
-        q_filter = Q()
-
-        # Subject filter
-        if filters.get('subjects'):
-            subject_q = Q()
-            for subject in filters['subjects']:
-                if isinstance(subject, int) or (isinstance(subject, str) and subject.isdigit()):
-                    subject_q |= Q(exam_session_subject__subject__id=int(subject))
-                else:
-                    subject_q |= Q(exam_session_subject__subject__code=subject)
-            q_filter &= subject_q
-
-        # Product ID filter
-        product_ids = filters.get('product_ids') or filters.get('products')
-        if product_ids:
-            int_product_ids = []
-            for pid in product_ids:
-                if isinstance(pid, int):
-                    int_product_ids.append(pid)
-                elif isinstance(pid, str) and pid.isdigit():
-                    int_product_ids.append(int(pid))
-            if int_product_ids:
-                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
-
-        # Store product ID filter (essp_ids for backward compatibility)
-        if filters.get('essp_ids'):
-            q_filter &= Q(id__in=filters['essp_ids'])
-
-        if q_filter:
-            queryset = queryset.filter(q_filter)
-
-        # M2M group filters — separate .filter() calls for independent JOINs.
-        # All three dimensions (categories, product_types, modes_of_delivery)
-        # use the same mechanism: resolve group names to IDs via the
-        # FilterGroup hierarchy, then filter through filter_product_product_groups.
-        if filters.get('categories'):
-            category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle'],
-                descendant_map=descendant_map,
-            )
-            if category_group_ids:
-                queryset = queryset.filter(
-                    product_product_variation__product_groups__product_group__id__in=category_group_ids
-                )
-
-        if filters.get('product_types'):
-            type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types'], descendant_map=descendant_map,
-            )
-            if type_group_ids:
-                queryset = queryset.filter(
-                    product_product_variation__product_groups__product_group__id__in=type_group_ids
-                )
-
-        if filters.get('modes_of_delivery'):
-            mode_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['modes_of_delivery'], descendant_map=descendant_map,
-            )
-            if mode_group_ids:
-                queryset = queryset.filter(
-                    product_product_variation__product_groups__product_group__id__in=mode_group_ids
-                )
+        for config in FilterConfiguration.objects.filter(is_active=True):
+            values = filters.get(config.filter_key) or []
+            if not values:
+                continue
+            handler = FILTER_HANDLERS.get(config.filter_type)
+            if not handler:
+                continue
+            queryset = queryset.filter(handler.build_q(config, values))
 
         return queryset.distinct()
 
-    def _apply_filters_excluding(self, queryset, filters, exclude_dimension,
+    def _apply_filters_excluding(self, queryset, filters, exclude_filter_key,
                                   descendant_map=None):
-        """Apply all filters EXCEPT the excluded dimension (for disjunctive faceting).
-
-        Args:
-            queryset: Base queryset to filter.
-            filters: Dict of all active filters.
-            exclude_dimension: The filter key to exclude.
-            descendant_map: Optional pre-built hierarchy map.
-
-        Returns:
-            Filtered queryset with the excluded dimension removed.
-        """
+        """Apply all filters EXCEPT the excluded filter_key (disjunctive faceting)."""
         if not filters:
-            return queryset
-
-        reduced_filters = {k: v for k, v in filters.items() if k != exclude_dimension}
-        if not reduced_filters:
-            return queryset
-
-        return self.apply_store_product_filters(queryset, reduced_filters,
-                                                descendant_map=descendant_map)
+            return queryset.distinct()
+        reduced = {k: v for k, v in filters.items() if k != exclude_filter_key}
+        return self.apply_filters(queryset, reduced)
 
     def generate_filter_counts(self, base_queryset, filters=None):
         """Generate disjunctive facet counts for all filter dimensions.
@@ -415,12 +284,9 @@ class ProductFilterService:
             'modes_of_delivery': {},
         }
 
-        # Build hierarchy map once for the entire method
-        descendant_map = self._build_descendant_map()
-
         # Subject counts — exclude subjects filter
         subjects_qs = self._apply_filters_excluding(
-            base_queryset, filters, 'subjects', descendant_map=descendant_map
+            base_queryset, filters, 'subjects'
         )
         subject_counts = subjects_qs.values(
             'exam_session_subject__subject__code'
@@ -457,7 +323,7 @@ class ProductFilterService:
                     }
 
             dimension_qs = self._apply_filters_excluding(
-                base_queryset, filters, filter_key, descendant_map=descendant_map
+                base_queryset, filters, filter_key
             )
 
             # Roll up counts per assigned group
@@ -465,9 +331,8 @@ class ProductFilterService:
                 group_name = assigned_group_names.get(group_id)
                 if not group_name:
                     continue
-                desc_ids = descendant_map.get(group_id, {group_id})
                 rollup_count = dimension_qs.filter(
-                    product_product_variation__product_groups__product_group__id__in=desc_ids
+                    product_product_variation__product_groups__product_group__id__in={group_id}
                 ).distinct().count()
                 filter_counts[filter_key][group_name] = {
                     'count': rollup_count, 'name': group_name
@@ -475,7 +340,7 @@ class ProductFilterService:
 
         # Product counts — exclude products filter
         products_qs = self._apply_filters_excluding(
-            base_queryset, filters, 'products', descendant_map=descendant_map
+            base_queryset, filters, 'products'
         )
         product_counts = products_qs.values(
             'product_product_variation__product__id',

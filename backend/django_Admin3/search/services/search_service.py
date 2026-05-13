@@ -110,7 +110,7 @@ class SearchService:
             filtered_queryset = base_queryset.none()
         else:
             # Apply merged filters through ProductFilterService
-            filtered_queryset = self.filter_service.apply_store_product_filters(
+            filtered_queryset = self.filter_service.apply_filters(
                 base_queryset, filters
             )
 
@@ -543,21 +543,18 @@ class SearchService:
             product_qs = product_qs.filter(q_filter)
 
         # M2M group filters — separate .filter() calls for independent JOINs.
-        # All three group-based dimensions use the same mechanism.
-        from filtering.services.filter_service import ProductFilterService
+        # Filter by group name directly (hierarchy was flattened in migration 0012).
         for filter_key, exclude in [
-            ('categories', ['Bundle']),
-            ('product_types', None),
-            ('modes_of_delivery', None),
+            ('categories', {'Bundle'}),
+            ('product_types', set()),
+            ('modes_of_delivery', set()),
         ]:
-            if filters.get(filter_key):
-                group_ids = ProductFilterService._resolve_group_ids_with_hierarchy(
-                    filters[filter_key],
-                    exclude_names=exclude,
-                )
-                if group_ids:
+            values = filters.get(filter_key)
+            if values:
+                names = [v for v in values if v not in exclude]
+                if names:
                     product_qs = product_qs.filter(
-                        product_product_variation__product_groups__product_group__id__in=group_ids
+                        product_product_variation__product_groups__product_group__name__in=names
                     )
 
         return set(product_qs.distinct().values_list('id', flat=True))

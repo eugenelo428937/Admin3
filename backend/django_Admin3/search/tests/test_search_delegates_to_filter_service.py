@@ -54,11 +54,11 @@ class SearchBrowseConsistencyTest(TestCase):
         filters = {'subjects': ['CS2']}
 
         # Browse path: ProductFilterService directly
-        browse_result = filter_service.apply_store_product_filters(base_qs, filters)
+        browse_result = filter_service.apply_filters(base_qs, filters)
         browse_ids = set(browse_result.values_list('id', flat=True))
 
         # Search path: SearchService uses same ProductFilterService
-        search_result = search_service.filter_service.apply_store_product_filters(base_qs, filters)
+        search_result = search_service.filter_service.apply_filters(base_qs, filters)
         search_ids = set(search_result.values_list('id', flat=True))
 
         self.assertEqual(browse_ids, search_ids,

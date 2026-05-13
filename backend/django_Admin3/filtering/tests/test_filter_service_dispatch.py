@@ -57,3 +57,57 @@ def test_get_filter_configuration_response_shape():
     assert 'validation_rules' not in entry
     assert 'dependency_rules' not in entry
     assert 'filter_groups' not in entry  # junction array no longer needed
+
+
+@pytest.mark.django_db
+def test_apply_filters_dispatches_on_filter_type():
+    """apply_filters loops through active FilterConfigurations and calls
+    each handler's build_q for the corresponding filter_key in input."""
+    from catalog.models import (
+        Subject, ExamSession, ExamSessionSubject, Product as CatalogProduct,
+        ProductVariation, ProductProductVariation,
+    )
+    from store.models import Product as StoreProduct
+
+    subj1 = Subject.objects.create(code='CB1', description='Test 1', active=True)
+    subj2 = Subject.objects.create(code='CB2', description='Test 2', active=True)
+    sess = ExamSession.objects.create(
+        session_code='2026-04', start_date='2026-04-01', end_date='2026-04-30',
+    )
+    ess1 = ExamSessionSubject.objects.create(exam_session=sess, subject=subj1)
+    ess2 = ExamSessionSubject.objects.create(exam_session=sess, subject=subj2)
+    cprod = CatalogProduct.objects.create(shortname='X', fullname='X', code='X', is_active=True)
+    pvar = ProductVariation.objects.create(
+        code='P', name='Printed', variation_type='Material',
+    )
+    ppv = ProductProductVariation.objects.create(product=cprod, product_variation=pvar)
+    StoreProduct.objects.create(
+        exam_session_subject=ess1, product_product_variation=ppv, product_code='P1',
+    )
+    StoreProduct.objects.create(
+        exam_session_subject=ess2, product_product_variation=ppv, product_code='P2',
+    )
+
+    FilterConfiguration.objects.create(
+        name='SUBJ', filter_key='subjects', filter_type='subject',
+        display_label='Subject',
+    )
+
+    service = ProductFilterService()
+    qs = StoreProduct.objects.all()
+    filtered = service.apply_filters(qs, {'subjects': ['CB1']})
+
+    assert filtered.count() == 1
+    assert filtered.first().product_code == 'P1'
+
+
+@pytest.mark.django_db
+def test_apply_filters_empty_or_no_handler_returns_unfiltered():
+    """Empty filters dict or unmatched keys → unfiltered queryset."""
+    from store.models import Product as StoreProduct
+
+    service = ProductFilterService()
+    qs = StoreProduct.objects.all()
+    assert service.apply_filters(qs, {}).count() == qs.count()
+    # Unknown filter_key is silently ignored
+    assert service.apply_filters(qs, {'nonexistent_key': ['x']}).count() == qs.count()

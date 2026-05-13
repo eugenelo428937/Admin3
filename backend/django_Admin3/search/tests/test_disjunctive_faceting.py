@@ -42,6 +42,9 @@ class TestDisjunctiveFaceting(TestCase):
         - Product Types config: Core Study, Revision groups
         """
         # Filter configs
+        self.subjects_config = create_filter_config(
+            'Subjects', 'subjects', 'subject', display_order=0
+        )
         self.categories_config = create_filter_config(
             'Categories', 'categories', 'filter_group', display_order=1
         )
