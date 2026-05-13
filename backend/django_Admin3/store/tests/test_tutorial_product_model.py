@@ -1,4 +1,4 @@
-"""Tests for store.TutorialProduct (Phase 1 of MTI specialization)."""
+"""Tests for store.TutorialProduct (MTI specialization, Phases 1–2)."""
 from django.test import TestCase
 
 
@@ -44,17 +44,50 @@ class TutorialProductFieldsTests(TestCase):
             'tutorials.TutorialLocation',
         )
 
-    def test_format_is_textchoices(self):
+    def test_format_is_textchoices_with_23_real_codes(self):
+        """Phase 2 expanded the enum to match the 23 real codes in
+        catalog_product_variations (variation_type='Tutorial'). The
+        Phase 1 placeholders LIVE and REC were dropped — no data uses them.
+        """
         from store.models import TutorialProduct
         field = TutorialProduct._meta.get_field('format')
-        self.assertIsNotNone(field.choices)
-        # Verify a baseline value the design committed to
         format_values = {value for value, _label in field.choices}
-        for required in ('F2F_1F', 'F2F_3F', 'F2F_5F', 'LIVE', 'REC'):
-            self.assertIn(
-                required, format_values,
-                f"Tutorial Format must include {required}",
-            )
+        expected = {
+            # Face-to-face (9)
+            'F2F_1F', 'F2F_1PD', 'F2F_2F', 'F2F_3F', 'F2F_4F',
+            'F2F_5B', 'F2F_5F', 'F2F_6B', 'F2F_6H',
+            # Live online (13)
+            'LO_10H', 'LO_1F', 'LO_1PD', 'LO_2F', 'LO_2H',
+            'LO_3F', 'LO_4F', 'LO_4H', 'LO_5B', 'LO_5F',
+            'LO_6B', 'LO_6H', 'LO_8H',
+            # Online classroom (1)
+            'OC',
+        }
+        self.assertEqual(format_values, expected,
+                         f"Expected 23 codes; got {format_values}")
+        # Dropped placeholders must NOT appear
+        self.assertNotIn('LIVE', format_values)
+        self.assertNotIn('REC', format_values)
+
+    def test_tutorial_location_is_nullable(self):
+        """OC (Online Classroom) products have no physical venue.
+        Phase 2 made tutorial_location nullable to express that.
+        """
+        from store.models import TutorialProduct
+        field = TutorialProduct._meta.get_field('tutorial_location')
+        self.assertTrue(field.null, "Phase 2: tutorial_location must be nullable for OC products")
+        self.assertTrue(field.blank)
+
+    def test_tutorial_course_template_is_nullable(self):
+        """Some OC products have no matching TutorialCourseTemplate at
+        backfill time. Nullable lets the backfill proceed; operators
+        can fix the data later.
+        """
+        from store.models import TutorialProduct
+        field = TutorialProduct._meta.get_field('tutorial_course_template')
+        self.assertTrue(field.null,
+            "Phase 2: tutorial_course_template must be nullable for backfill rows")
+        self.assertTrue(field.blank)
 
 
 class TutorialProductUniquenessTests(TestCase):
