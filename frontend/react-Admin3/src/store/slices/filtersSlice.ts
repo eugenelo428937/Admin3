@@ -64,6 +64,9 @@ export const {
   setFilterConfiguration,
   setFilterConfigurationLoading,
   setFilterConfigurationError,
+
+  // === Search-driven product-id list (used by useActiveFiltersVM) ===
+  setSearchFilterProductIds,
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

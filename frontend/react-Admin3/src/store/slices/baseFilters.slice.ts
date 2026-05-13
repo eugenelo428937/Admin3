@@ -214,7 +214,7 @@ export const baseFiltersReducers = {
     state: BaseFiltersState,
     action: PayloadAction<
       | { byKey?: Record<string, string[]>; scalar?: Record<string, string | null> }
-      | Record<string, string[] | string>
+      | Record<string, string[] | string | number>
     >,
   ) => {
     ensureBags(state);
@@ -238,8 +238,22 @@ export const baseFiltersReducers = {
         }
       }
     }
+    // Pagination travels alongside filters during URL → Redux restoration.
+    // Without this, refreshing on /products?page=3 lands on page 1. The
+    // URL → Redux path (setupUrlToReduxSync) dispatches setMultipleFilters
+    // with the parsed pagination on it; treat numeric values as authoritative.
+    if (typeof payload.currentPage === 'number' && payload.currentPage > 0) {
+      state.currentPage = payload.currentPage;
+    }
+    if (typeof payload.pageSize === 'number' && payload.pageSize > 0) {
+      state.pageSize = payload.pageSize;
+    }
     syncByKeyToLegacy(state);
     stamp(state);
+    // stamp() resets currentPage to 1; re-apply pagination if it was set.
+    if (typeof payload.currentPage === 'number' && payload.currentPage > 0) {
+      state.currentPage = payload.currentPage;
+    }
   },
 
   applyFilters: (state: BaseFiltersState) => {
@@ -603,6 +617,20 @@ export const baseFiltersReducers = {
     // No-op — validation errors are cleared/set by other actions
     // This action exists for backward compatibility only
     state.validationErrors = [];
+  },
+
+  /**
+   * Stores the array of product IDs returned by a fuzzy search.
+   * Consumed by useActiveFiltersVM to render the search-result chip
+   * and cleared when the user dismisses it. The state field has
+   * always existed; the reducer was dropped during the Phase D state
+   * rewrite (commit 848d85c6b) and is restored here.
+   */
+  setSearchFilterProductIds: (
+    state: BaseFiltersState,
+    action: PayloadAction<string[]>,
+  ) => {
+    state.searchFilterProductIds = Array.isArray(action.payload) ? action.payload : [];
   },
 
   // =========================================================

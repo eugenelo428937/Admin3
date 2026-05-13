@@ -268,7 +268,13 @@ describe('Redux Middleware Integration', () => {
       window.performance.mark = originalMark;
     });
 
-    it('should track filter validation performance', async () => {
+    // The filter system no longer performance-tracks validation as a
+    // discrete step. The Phase D state rewrite reduced validateFilters
+    // to a no-op shim (validation moved into the action creators
+    // themselves), so there is no longer a "filter validation" mark
+    // to assert on. Tracked in the architecture-debt doc as a
+    // candidate for the next perf-instrumentation pass.
+    it.skip('should track filter validation performance', async () => {
       const store = createMockStore();
 
       const performanceMarks = [];

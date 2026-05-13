@@ -329,9 +329,11 @@ describe('Footer', () => {
 
       fireEvent.click(screen.getByText('Course Notes'));
 
-      // Verify Redux action was dispatched by checking store state
+      // The generic navSelectFilter action coerces values to strings
+      // so every filter dimension (subject codes, group names, product
+      // ids) shares one Record<filterKey, string[]> bag.
       const state = store.getState();
-      expect(state.filters.products).toContain(101);
+      expect(state.filters.products).toContain('101');
     });
 
     test('tutorial format links dispatch Redux action on click', async () => {
