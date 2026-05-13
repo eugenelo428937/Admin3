@@ -9,27 +9,13 @@ from .models import (
 )
 
 
-class FilterGroupChildrenInline(admin.TabularInline):
-    """Inline for child filter groups."""
-    model = FilterGroup
-    fk_name = 'parent'
-    extra = 0
-    fields = ['name', 'code', 'is_active', 'display_order']
-    show_change_link = True
-
-
 @admin.register(FilterGroup)
 class FilterGroupAdmin(admin.ModelAdmin):
-    """Admin for FilterGroup model."""
-    list_display = ['name', 'code', 'parent', 'is_active', 'display_order', 'get_level']
-    list_filter = ['is_active', 'parent']
+    """Admin for FilterGroup model (flat — no parent hierarchy)."""
+    list_display = ['name', 'code', 'is_active', 'display_order']
+    list_filter = ['is_active']
     search_fields = ['name', 'code']
     ordering = ['display_order', 'name']
-    inlines = [FilterGroupChildrenInline]
-
-    @admin.display(description='Level')
-    def get_level(self, obj):
-        return obj.get_level()
 
 
 class FilterConfigurationGroupInline(admin.TabularInline):

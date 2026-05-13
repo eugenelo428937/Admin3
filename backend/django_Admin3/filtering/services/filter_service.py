@@ -38,35 +38,19 @@ class FilterOptionProvider:
         return []
 
     def _get_filter_group_options(self) -> List[Dict[str, Any]]:
-        """Get options from associated filter groups."""
-        groups = self.filter_config.filter_groups.all().select_related('parent')
+        """Get options from associated filter groups (flat — hierarchy removed in migration 0012)."""
+        groups = self.filter_config.filter_groups.all()
 
         options = []
         for group in groups:
-            if self.filter_config.get_ui_config().get('include_children', False):
-                descendants = group.get_descendants(include_self=True)
-                for desc in descendants:
-                    options.append({
-                        'id': desc.id,
-                        'value': desc.code,
-                        'label': desc.name,
-                        'code': desc.code,
-                        'level': desc.get_level(),
-                        'path': desc.get_full_path(),
-                        'parent_id': desc.parent_id,
-                    })
-            else:
-                options.append({
-                    'id': group.id,
-                    'value': group.code,
-                    'label': group.name,
-                    'code': group.code,
-                    'level': group.get_level(),
-                    'path': group.get_full_path(),
-                    'parent_id': group.parent_id,
-                })
+            options.append({
+                'id': group.id,
+                'value': group.code,
+                'label': group.name,
+                'code': group.code,
+            })
 
-        options.sort(key=lambda x: (x['level'], x['label']))
+        options.sort(key=lambda x: x['label'])
         return options
 
     def _get_subject_options(self) -> List[Dict[str, Any]]:
@@ -130,7 +114,7 @@ class ProductFilterService:
     def _load_filter_configurations(self):
         """Load filter configurations from database."""
         configs = FilterConfiguration.objects.filter(is_active=True).prefetch_related(
-            Prefetch('filter_groups', queryset=FilterGroup.objects.select_related('parent'))
+            Prefetch('filter_groups', queryset=FilterGroup.objects.all())
         )
 
         for config in configs:
@@ -258,27 +242,14 @@ class ProductFilterService:
 
     @staticmethod
     def _build_descendant_map():
-        """Load the full FilterGroup tree and build a parent→descendants map.
+        """Build a map of group ID → {group ID} for each FilterGroup.
 
-        Loads all groups in a single query, then walks parent→children
-        edges in Python. Returns a dict mapping each group ID to the set
-        of IDs that includes itself and all its descendants.
+        The parent/children hierarchy was removed in migration 0012. Each
+        group now maps only to itself (no descendants). Callers that expand
+        group IDs to include descendants will now get only the group itself.
         """
-        all_groups = list(FilterGroup.objects.values_list('id', 'parent_id'))
-
-        # Build adjacency list: parent_id → [child_ids]
-        children_of = {}
-        for gid, parent_id in all_groups:
-            children_of.setdefault(parent_id, []).append(gid)
-
-        # Compute descendants for a given group ID
-        def _collect(gid):
-            result = {gid}
-            for child_id in children_of.get(gid, []):
-                result |= _collect(child_id)
-            return result
-
-        return {gid: _collect(gid) for gid, _ in all_groups}
+        all_ids = list(FilterGroup.objects.values_list('id', flat=True))
+        return {gid: {gid} for gid in all_ids}
 
     @staticmethod
     def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None,

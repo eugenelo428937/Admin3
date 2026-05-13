@@ -15,6 +15,20 @@ class FilterGroupModelTest(TestCase):
         from filtering.models import FilterGroup
         self.assertEqual(FilterGroup._meta.db_table, '"acted"."filter_groups"')
 
+    def test_no_parent_field_after_migration_0012(self):
+        """FilterGroup is flat — parent_id was removed in migration 0012."""
+        from filtering.models import FilterGroup
+        fg = FilterGroup(name='Test', code='test')
+        fg.save()
+        self.assertFalse(
+            hasattr(fg, 'parent'),
+            "FilterGroup should no longer have a 'parent' field after migration 0012",
+        )
+        self.assertNotIn(
+            'parent_id',
+            [f.name for f in fg._meta.get_fields()],
+        )
+
 
 class FilterConfigurationModelTest(TestCase):
     """Test FilterConfiguration model."""
@@ -88,15 +102,3 @@ class FilterAdminTest(TestCase):
         self.assertIn(FilterConfiguration, admin.site._registry)
 
 
-import pytest
-from filtering.models import FilterGroup
-
-
-@pytest.mark.django_db
-def test_filter_group_no_parent_field():
-    """FilterGroup is flat — parent_id was removed in migration 0012."""
-    fg = FilterGroup(name='Test', code='test')
-    fg.save()
-    assert not hasattr(fg, 'parent'), \
-        "FilterGroup should no longer have a 'parent' field after migration 0012"
-    assert 'parent_id' not in [f.name for f in fg._meta.get_fields()]
