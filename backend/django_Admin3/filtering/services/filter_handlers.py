@@ -80,5 +80,30 @@ class SubjectTypeHandler(FilterHandler):
         return 'exam_session_subject__subject__subject_type'
 
 
+class FilterGroupHandler(FilterHandler):
+    """For filter_type='filter_group'. Lists FilterGroup rows mapped to
+    this configuration via FilterConfigurationGroup; filters store.Product
+    through filter_product_product_groups → filter_groups.name."""
+
+    def get_options(self, config):
+        groups = config.filter_groups.all().order_by('display_order', 'name')
+        return [
+            {
+                'value': g.name,
+                'label': g.name,
+                'code': g.code or '',
+            }
+            for g in groups
+        ]
+
+    def build_q(self, config, values):
+        return Q(
+            product_product_variation__product_groups__product_group__name__in=values
+        )
+
+    def count_path(self, config):
+        return 'product_product_variation__product_groups__product_group__name'
+
+
 # Concrete handlers added in subsequent tasks
 FILTER_HANDLERS: dict[str, FilterHandler] = {}

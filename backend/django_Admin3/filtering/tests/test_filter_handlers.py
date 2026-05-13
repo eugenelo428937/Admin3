@@ -91,3 +91,43 @@ def test_subject_type_handler_count_path():
     handler = SubjectTypeHandler()
     assert handler.count_path(config=None) == \
         'exam_session_subject__subject__subject_type'
+
+
+@pytest.mark.django_db
+def test_filter_group_handler_get_options_returns_assigned_groups():
+    from filtering.models import (
+        FilterConfiguration, FilterGroup, FilterConfigurationGroup,
+    )
+    from filtering.services.filter_handlers import FilterGroupHandler
+
+    fc = FilterConfiguration.objects.create(
+        name='TEST_CAT', filter_key='test_cat', filter_type='filter_group',
+        display_label='Test Category',
+    )
+    fg1 = FilterGroup.objects.create(name='Alpha', code='alpha', display_order=1)
+    fg2 = FilterGroup.objects.create(name='Beta',  code='beta',  display_order=2)
+    FilterConfigurationGroup.objects.create(filter_configuration=fc, filter_group=fg1)
+    FilterConfigurationGroup.objects.create(filter_configuration=fc, filter_group=fg2)
+
+    handler = FilterGroupHandler()
+    options = handler.get_options(fc)
+
+    assert [o['value'] for o in options] == ['Alpha', 'Beta']
+    assert options[0]['label'] == 'Alpha'
+
+
+def test_filter_group_handler_build_q():
+    from filtering.services.filter_handlers import FilterGroupHandler
+    handler = FilterGroupHandler()
+    q = handler.build_q(config=None, values=['Material', 'Marking'])
+    assert q.children == [
+        ('product_product_variation__product_groups__product_group__name__in',
+         ['Material', 'Marking'])
+    ]
+
+
+def test_filter_group_handler_count_path():
+    from filtering.services.filter_handlers import FilterGroupHandler
+    handler = FilterGroupHandler()
+    assert handler.count_path(config=None) == \
+        'product_product_variation__product_groups__product_group__name'
