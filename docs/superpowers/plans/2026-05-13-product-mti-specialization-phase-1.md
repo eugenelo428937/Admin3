@@ -36,9 +36,9 @@ python manage.py test store marking     # confirm baseline green
 | `backend/django_Admin3/store/tests/test_tutorial_product_model.py` | TDD tests for `TutorialProduct`. |
 | `backend/django_Admin3/store/tests/test_marking_product_model.py` | TDD tests for `MarkingProduct`. |
 | `backend/django_Admin3/marking/migrations/0017_add_marking_template_and_paper_fk.py` | Creates `marking_templates` table; adds nullable `MarkingPaper.marking_template` FK. |
-| `backend/django_Admin3/store/migrations/0016_create_material_products.py` | Creates `acted.material_products` MTI subclass table. |
-| `backend/django_Admin3/store/migrations/0017_create_tutorial_products.py` | Creates `acted.tutorial_products` MTI subclass table (with unique constraint). |
-| `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` | Creates `acted.marking_products` MTI subclass table + extends `Purchasable.Kind` enum. |
+| `backend/django_Admin3/store/migrations/0016_create_material_products.py` | Creates `acted.material_products` MTI subclass table + extends `Purchasable.Kind` enum (AlterField piggybacks on the first store migration that requires the new kind values). |
+| `backend/django_Admin3/store/migrations/0017_create_tutorial_products.py` | Creates `acted.tutorial_products` MTI subclass table. |
+| `backend/django_Admin3/store/migrations/0018_create_marking_products.py` | Creates `acted.marking_products` MTI subclass table. |
 
 ### Files to modify
 
@@ -931,7 +931,7 @@ its table crashes any Product DELETE with UndefinedTable."
 
 **Files:**
 - Create: `backend/django_Admin3/store/models/marking_product.py`
-- Create: `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` (generated)
+- Create: `backend/django_Admin3/store/migrations/0018_create_marking_products.py` (generated)
 - Test: `backend/django_Admin3/store/tests/test_marking_product_model.py`
 
 This is the final subclass model. Its migration also picks up the deferred `Purchasable.Kind` `AlterField` operation (the enum values were extended in Task 1's Python code but no DB migration shipped — Django's `makemigrations` rolls it into the next pending store migration).
@@ -1101,12 +1101,12 @@ Expected output:
 
 ```
 Migrations for 'store':
-  store/migrations/0018_create_marking_products_and_kind.py
+  store/migrations/0018_create_marking_products.py
     - Alter field kind on purchasable
     - Create model MarkingProduct
 ```
 
-Open `backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py` and verify:
+Open `backend/django_Admin3/store/migrations/0018_create_marking_products.py` and verify:
 
 1. Exactly two operations: `AlterField` on `purchasable.kind` + `CreateModel MarkingProduct`. (Tasks 4 and 5 already migrated MaterialProduct and TutorialProduct.)
 2. `AlterField` on `purchasable.kind` lists all seven choices (MATERIAL, TUTORIAL, MARKING, MARKING_VOUCHER, DOCUMENT_BINDER, ADDITIONAL_CHARGE, PRODUCT).
@@ -1141,7 +1141,7 @@ dependencies = [
 python manage.py migrate store
 ```
 
-Expected: `Applying store.0018_create_marking_products_and_kind... OK`
+Expected: `Applying store.0018_create_marking_products... OK`
 
 - [ ] **Step 6.8: Run all Phase 1 model tests**
 
@@ -1160,7 +1160,7 @@ Expected: All tests PASS.
 ```bash
 git add backend/django_Admin3/store/models/marking_product.py \
        backend/django_Admin3/store/models/__init__.py \
-       backend/django_Admin3/store/migrations/0018_create_marking_products_and_kind.py \
+       backend/django_Admin3/store/migrations/0018_create_marking_products.py \
        backend/django_Admin3/store/tests/test_marking_product_model.py
 git commit -m "feat(store): MarkingProduct MTI subclass + Kind AlterField (Phase 1 close)
 
