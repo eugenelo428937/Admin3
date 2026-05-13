@@ -70,44 +70,18 @@ export interface FilterOptions {
   event_codes: string[];
 }
 
-export type AttendanceStatus = 'ATTENDED' | 'ABSENT' | 'LATE' | 'OTHER';
+export type {
+  AttendanceStatus,
+  StudentMini,
+  RosterRowDTO,
+  AttendancePayload,
+  AttendanceSaveItem,
+  AttendanceService,
+  SessionLite,
+} from '../../shared/attendance/types';
 
-export interface StudentMini {
-  student_ref: number;
-  first_name: string;
-  last_name: string;
-}
-
-export interface RosterRowDTO {
-  registration_id: number;
-  student: StudentMini;
-  current_status: AttendanceStatus | null;
-  current_reason: string;
-}
-
-export interface SessionDetail {
-  id: number;
-  title: string;
-  start_date: string;
-  end_date: string;
-  venue: VenueMini | null;
-  tutorial_event: {
-    id: number;
-    code: string;
-  };
-}
-
-export interface AttendancePayload {
-  session: SessionDetail;
-  attendance_enabled: boolean;
-  registrations: RosterRowDTO[];
-}
-
-export interface AttendanceSaveItem {
-  registration_id: number;
-  status: AttendanceStatus;
-  reason: string;
-}
+// SessionDetail is an alias for SessionLite kept for backward compatibility
+export type { SessionLite as SessionDetail } from '../../shared/attendance/types';
 
 export interface EventFilters {
   subject_codes: string[];

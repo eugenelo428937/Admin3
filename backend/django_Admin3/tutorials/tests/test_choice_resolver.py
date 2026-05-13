@@ -1,8 +1,12 @@
-"""Tests for choice_resolver (Phase 2 Task 2.2).
+"""Tests for choice_resolver.
 
-Strategy A (strict): a TutorialRegistration can only be created if the
-student has a non-cancelled TutorialChoice pointing at the session's
-event. Multiple matches → pick lowest choice_rank, set a warning.
+After 2026-05-08 simplification:
+- Return None on zero matches (no warning).
+- Return single match on exactly one match.
+- Return None on multi-match WITH a warning (operator decides linkage later).
+
+ChoiceResolution no longer carries `order_item` — callers use
+`result.choice.order_item` if `result.choice` is not None.
 """
 from django.test import TestCase
 
@@ -22,7 +26,6 @@ class ResolveChoiceTests(TestCase):
     def test_returns_none_when_no_choice_exists(self):
         result = resolve_choice_for_registration(self.student, self.session)
         self.assertIsNone(result.choice)
-        self.assertIsNone(result.order_item)
         self.assertEqual(result.warning, '')
 
     def test_returns_single_match(self):
@@ -32,21 +35,19 @@ class ResolveChoiceTests(TestCase):
         )
         result = resolve_choice_for_registration(self.student, self.session)
         self.assertEqual(result.choice, choice)
-        self.assertEqual(result.order_item, oi)
         self.assertEqual(result.warning, '')
 
-    def test_picks_lowest_rank_when_multiple_matches_and_warns(self):
+    def test_returns_none_when_multiple_matches_and_warns(self):
         oi1 = _make_order_item(self.student, self.sp)
         oi2 = _make_order_item(self.student, self.sp)
         TutorialChoice.objects.create(
             order_item=oi1, student=self.student, tutorial_event=self.event, choice_rank=2,
         )
-        first_choice = TutorialChoice.objects.create(
+        TutorialChoice.objects.create(
             order_item=oi2, student=self.student, tutorial_event=self.event, choice_rank=1,
         )
         result = resolve_choice_for_registration(self.student, self.session)
-        self.assertEqual(result.choice, first_choice)
-        self.assertEqual(result.order_item, oi2)
+        self.assertIsNone(result.choice)
         self.assertIn('multiple', result.warning.lower())
 
     def test_skips_cancelled_order_items(self):
@@ -58,10 +59,8 @@ class ResolveChoiceTests(TestCase):
         )
         result = resolve_choice_for_registration(self.student, self.session)
         self.assertIsNone(result.choice)
-        self.assertIsNone(result.order_item)
 
     def test_ignores_choices_for_other_events(self):
-        # Choice exists for a *different* event in the same product.
         other_event = factories.make_event(store_product=self.sp, code='OTHER-EV')
         oi = _make_order_item(self.student, self.sp)
         TutorialChoice.objects.create(
@@ -69,4 +68,3 @@ class ResolveChoiceTests(TestCase):
         )
         result = resolve_choice_for_registration(self.student, self.session)
         self.assertIsNone(result.choice)
-        self.assertIsNone(result.order_item)

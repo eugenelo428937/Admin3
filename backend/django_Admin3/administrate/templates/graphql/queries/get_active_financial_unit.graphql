@@ -1,0 +1,12 @@
+query getAllFinancialUnit {
+   currencies(filters:[{field:isActive,operation:eq,value:"true"}]){
+    edges{
+      node{
+        id
+        name
+        code
+        isActive
+      }
+    }
+  }
+}

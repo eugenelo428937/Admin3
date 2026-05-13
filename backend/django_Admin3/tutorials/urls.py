@@ -13,6 +13,7 @@ admin_router.register(
 )
 
 urlpatterns = [
+    path('public/', include('tutorials.public_urls')),
     path('list/', TutorialEventListView.as_view(), name='tutorial-event-list'),
     path('products/', TutorialProductListView.as_view(), name='tutorial-products'),
     path('products/all/', TutorialProductListAllView.as_view(), name='tutorial-products-all'),

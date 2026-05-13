@@ -28,6 +28,7 @@ import "./App.scss";
 
 // Public pages
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage.tsx"));
+const InstructorAttendancePage = React.lazy(() => import("./components/instructor/attendance/InstructorAttendancePage.tsx"));
 const ProductList = React.lazy(() => import("./components/Product/ProductList.tsx"));
 const CheckoutPage = React.lazy(() => import("./components/Ordering/CheckoutPage.tsx"));
 const OrderHistory = React.lazy(() => import("./components/User/OrderHistory.tsx"));
@@ -406,6 +407,7 @@ function App() {
 										</Route>{/* end AdminLayout wrapper */}
 
 									{/* Public routes */}
+										<Route path="/instructor/attendance/:token" element={<InstructorAttendancePage />} />
 										<Route path="/checkout" element={<CheckoutPage />} />
 										<Route path="/orders" element={<OrderHistory />} />
 										<Route path="/auth/forgot-password" element={<ForgotPasswordForm />} />
