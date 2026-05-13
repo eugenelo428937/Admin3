@@ -39,7 +39,7 @@ class GenerateFilterCountsContractTest(TestCase):
         self.material = create_filter_group('Material', code='MATERIAL')
         assign_group_to_config(self.cat_config, self.material)
 
-        self.core = create_filter_group('Core Study Material', parent=self.material, code='CORE')
+        self.core = create_filter_group('Core Study Material', code='CORE')
         assign_group_to_config(self.type_config, self.core)
 
         # Create products

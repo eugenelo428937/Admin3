@@ -97,26 +97,10 @@ class TestFilterOptionProvider(TestCase):
         options = provider.get_options()
         self.assertEqual(options, [])
 
-    # --- _get_filter_group_options with include_children -----------------------
-
-    def test_get_filter_group_options_include_children(self):
-        """_get_filter_group_options includes descendants when configured."""
-        self.config.ui_config = {'include_children': True}
-        self.config.save()
-        parent = create_filter_group('Parent', code='PARENT')
-        child = create_filter_group('Child', code='CHILD', parent=parent)
-        assign_group_to_config(self.config, parent)
-
-        provider = FilterOptionProvider(self.config)
-        options = provider.get_options()
-        codes = [o['code'] for o in options]
-        self.assertIn('PARENT', codes)
-        self.assertIn('CHILD', codes)
-
     def test_get_filter_group_options_without_children(self):
-        """_get_filter_group_options excludes descendants by default."""
+        """_get_filter_group_options returns only directly-assigned groups."""
         parent = create_filter_group('ParentOnly', code='PARENTONLY')
-        create_filter_group('HiddenChild', code='HIDDEN_CHILD', parent=parent)
+        create_filter_group('UnassignedGroup', code='UNASSIGNED')
         assign_group_to_config(self.config, parent)
 
         provider = FilterOptionProvider(self.config)

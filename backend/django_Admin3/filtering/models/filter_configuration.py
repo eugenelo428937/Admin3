@@ -150,29 +150,6 @@ class FilterConfiguration(models.Model):
         config.update(self.ui_config)
         return config
 
-    def get_filter_groups_tree(self):
-        """Get associated filter groups as a tree structure."""
-        groups = self.filter_groups.all().select_related('parent')
-
-        # Build tree structure
-        tree = {}
-        for group in groups:
-            if group.parent_id not in tree:
-                tree[group.parent_id] = []
-            tree[group.parent_id].append({
-                'id': group.id,
-                'name': group.name,
-                'code': group.code,
-                'level': group.get_level(),
-                'children': []
-            })
-
-        # Build hierarchical structure
-        def build_tree(parent_id=None):
-            return tree.get(parent_id, [])
-
-        return build_tree()
-
     def is_dependent_on(self, other_filter):
         """Check if this filter depends on another filter."""
         depends_on = self.dependency_rules.get('depends_on', [])

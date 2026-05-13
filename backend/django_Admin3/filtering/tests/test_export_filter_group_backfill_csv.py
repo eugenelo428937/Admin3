@@ -58,11 +58,11 @@ class ExportFilterGroupBackfillCsvTests(TestCase):
         )
         FilterGroup.objects.create(
             name='Core Study Materials', code='core_study_materials',
-            parent=self.material, is_active=True,
+            is_active=True,
         )
         FilterGroup.objects.create(
             name='Revision Materials', code='revision_materials',
-            parent=self.material, is_active=True,
+            is_active=True,
         )
         self.marking = FilterGroup.objects.create(
             name='Marking', code='marking', is_active=True,
@@ -72,7 +72,7 @@ class ExportFilterGroupBackfillCsvTests(TestCase):
         )
         self.f2f = FilterGroup.objects.create(
             name='Face-to-face', code='face_to_face',
-            parent=self.tutorial, is_active=True,
+            is_active=True,
         )
 
         # An eBook orphan (no row in PPG) → needs Core Study vs Revision

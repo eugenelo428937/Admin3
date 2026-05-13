@@ -69,37 +69,6 @@ class TestFilterConfigurationGetUiConfig(TestCase):
         self.assertTrue(result['expanded'])
 
 
-class TestFilterConfigurationGetFilterGroupsTree(TestCase):
-    """Test FilterConfiguration.get_filter_groups_tree (lines 153-174)."""
-
-    def test_get_filter_groups_tree_empty(self):
-        config = create_filter_config('TreeEmpty', 'tree_empty', 'filter_group')
-        result = config.get_filter_groups_tree()
-        self.assertEqual(result, [])
-
-    def test_get_filter_groups_tree_with_root_groups(self):
-        config = create_filter_config('TreeRoot', 'tree_root', 'filter_group')
-        g1 = create_filter_group('GroupA', code='TREE_GA')
-        g2 = create_filter_group('GroupB', code='TREE_GB')
-        assign_group_to_config(config, g1)
-        assign_group_to_config(config, g2)
-        result = config.get_filter_groups_tree()
-        self.assertEqual(len(result), 2)
-        names = [r['name'] for r in result]
-        self.assertIn('GroupA', names)
-        self.assertIn('GroupB', names)
-
-    def test_get_filter_groups_tree_with_parent_child(self):
-        config = create_filter_config('TreeNested', 'tree_nested', 'filter_group')
-        parent = create_filter_group('Parent', code='TREE_PARENT')
-        child = create_filter_group('Child', code='TREE_CHILD', parent=parent)
-        assign_group_to_config(config, parent)
-        assign_group_to_config(config, child)
-        result = config.get_filter_groups_tree()
-        # Both are returned but organized by parent_id
-        self.assertTrue(len(result) >= 1)
-
-
 class TestFilterConfigurationIsDependentOn(TestCase):
     """Test FilterConfiguration.is_dependent_on (lines 176-179)."""
 
@@ -175,14 +144,10 @@ class TestProductsByGroupWithChildren(APITestCase):
     """Test products_by_group view with children (views.py line 50)."""
 
     def test_products_by_group_with_child_groups(self):
-        """Group with children triggers recursive get_descendant_ids (line 50)."""
+        """products_by_group view returns 200 for a group with no products."""
         parent = FilterGroup.objects.create(name='ParentGrp', code='PBG_PARENT')
-        child = FilterGroup.objects.create(
-            name='ChildGrp', code='PBG_CHILD', parent=parent
-        )
-        grandchild = FilterGroup.objects.create(
-            name='GrandchildGrp', code='PBG_GRAND', parent=child
-        )
+        FilterGroup.objects.create(name='ChildGrp', code='PBG_CHILD')
+        FilterGroup.objects.create(name='GrandchildGrp', code='PBG_GRAND')
         response = self.client.get(
             f'/api/products/product-groups/{parent.id}/products/'
         )
