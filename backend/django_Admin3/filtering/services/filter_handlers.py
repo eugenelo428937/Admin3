@@ -41,5 +41,26 @@ class FilterHandler(ABC):
         to roll up counts by this filter's discrete option."""
 
 
+class SubjectHandler(FilterHandler):
+    """Lists active Subject rows; filters store.Product by subject code."""
+
+    def get_options(self, config):
+        from catalog.models import Subject
+        return [
+            {
+                'value': s.code,
+                'label': f"{s.code} - {s.description}" if s.description else s.code,
+                'code': s.code,
+            }
+            for s in Subject.objects.filter(active=True).order_by('code')
+        ]
+
+    def build_q(self, config, values):
+        return Q(exam_session_subject__subject__code__in=values)
+
+    def count_path(self, config):
+        return 'exam_session_subject__subject__code'
+
+
 # Concrete handlers added in subsequent tasks
 FILTER_HANDLERS: dict[str, FilterHandler] = {}
