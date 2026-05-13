@@ -472,6 +472,7 @@ class SearchService:
         """
         exclude_names = set(exclude_names or [])
         resolved_ids = set()
+        unresolved = []
 
         for name in group_names:
             if name in exclude_names:
@@ -481,7 +482,18 @@ class SearchService:
                 descendants = group.get_descendants(include_self=True)
                 resolved_ids.update(g.id for g in descendants)
             except FilterGroup.DoesNotExist:
-                continue
+                unresolved.append(name)
+
+        # Mirrors filtering.services.filter_service: when every requested
+        # name misses, the caller drops the WHERE clause and silently
+        # returns the full queryset. Surface this in logs so name drift
+        # between code and FilterGroup.name rows is visible.
+        if unresolved and not resolved_ids:
+            logger.warning(
+                "FilterGroup name resolution returned no matches; "
+                "downstream filter will be silently dropped. "
+                "Unresolved names: %s", unresolved,
+            )
 
         return resolved_ids
 

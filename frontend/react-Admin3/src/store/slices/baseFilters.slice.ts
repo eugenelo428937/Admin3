@@ -13,6 +13,7 @@
 import { PayloadAction } from '@reduxjs/toolkit';
 
 export interface FilterCounts {
+  programme_type: Record<string, any>;
   subjects: Record<string, any>;
   categories: Record<string, any>;
   product_types: Record<string, any>;
@@ -28,6 +29,7 @@ export interface ValidationError {
 
 export interface FilterState {
   // Filter values - arrays to support multiple selections
+  programme_type: string[];
   subjects: string[];
   categories: string[];
   product_types: string[];
@@ -73,6 +75,7 @@ export interface FilterState {
  */
 export const baseFiltersInitialState: FilterState = {
   // Filter values - arrays to support multiple selections
+  programme_type: [],
   subjects: [],
   categories: [],
   product_types: [],
@@ -101,6 +104,7 @@ export const baseFiltersInitialState: FilterState = {
 
   // Filter counts from API responses
   filterCounts: {
+    programme_type: {},
     subjects: {},
     categories: {},
     product_types: {},
@@ -129,6 +133,12 @@ export const baseFiltersReducers = {
   // ========================================
   // Set Actions (7 reducers)
   // ========================================
+
+  setProgrammeTypes: (state: FilterState, action: PayloadAction<string[]>) => {
+    state.programme_type = action.payload;
+    state.currentPage = 1;
+    state.lastUpdated = Date.now();
+  },
 
   setSubjects: (state: FilterState, action: PayloadAction<string[]>) => {
     state.subjects = action.payload;
@@ -178,6 +188,18 @@ export const baseFiltersReducers = {
   // ========================================
   // Toggle Actions (5 reducers)
   // ========================================
+
+  toggleProgrammeTypeFilter: (state: FilterState, action: PayloadAction<string>) => {
+    const value = action.payload;
+    const index = state.programme_type.indexOf(value);
+    if (index === -1) {
+      state.programme_type.push(value);
+    } else {
+      state.programme_type.splice(index, 1);
+    }
+    state.currentPage = 1;
+    state.lastUpdated = Date.now();
+  },
 
   toggleSubjectFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
@@ -243,6 +265,13 @@ export const baseFiltersReducers = {
   // Remove Actions (5 reducers)
   // ========================================
 
+  removeProgrammeTypeFilter: (state: FilterState, action: PayloadAction<string>) => {
+    const value = action.payload;
+    state.programme_type = state.programme_type.filter(item => item !== value);
+    state.currentPage = 1;
+    state.lastUpdated = Date.now();
+  },
+
   removeSubjectFilter: (state: FilterState, action: PayloadAction<string>) => {
     const value = action.payload;
     state.subjects = state.subjects.filter(item => item !== value);
@@ -286,6 +315,9 @@ export const baseFiltersReducers = {
   clearFilterType: (state: FilterState, action: PayloadAction<string>) => {
     const filterType = action.payload;
     switch (filterType) {
+      case 'programme_type':
+        state.programme_type = [];
+        break;
       case 'subjects':
         state.subjects = [];
         break;
@@ -310,6 +342,7 @@ export const baseFiltersReducers = {
 
   // Clear all filters
   clearAllFilters: (state: FilterState) => {
+    state.programme_type = [];
     state.subjects = [];
     state.categories = [];
     state.product_types = [];
@@ -329,6 +362,7 @@ export const baseFiltersReducers = {
   // Multi-filter update action
   setMultipleFilters: (state: FilterState, action: PayloadAction<Partial<FilterState>>) => {
     const {
+      programme_type,
       subjects,
       categories,
       product_types,
@@ -340,6 +374,7 @@ export const baseFiltersReducers = {
     } = action.payload;
 
     // Set array filters
+    if (programme_type !== undefined) state.programme_type = programme_type;
     if (subjects !== undefined) state.subjects = subjects;
     if (categories !== undefined) state.categories = categories;
     if (product_types !== undefined) state.product_types = product_types;
@@ -409,6 +444,7 @@ export const baseFiltersReducers = {
 
   // Reset all filters to initial state
   resetFilters: (state: FilterState) => {
+    state.programme_type = [];
     state.subjects = [];
     state.categories = [];
     state.product_types = [];
@@ -424,6 +460,7 @@ export const baseFiltersReducers = {
   // Apply filters - used to cache current filter state
   applyFilters: (state: FilterState) => {
     state.appliedFilters = {
+      programme_type: [...state.programme_type],
       subjects: [...state.subjects],
       categories: [...state.categories],
       product_types: [...state.product_types],

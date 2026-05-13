@@ -729,24 +729,24 @@ describe("ActiveFilters Component", () => {
             FilterRegistry,
          } = _reqmod_______store_filters_filterRegistry_js;
 
+         // NOTE: `products` is intentionally absent — that filter is no
+         // longer registered (see docs/to-dos/filter-registry-architecture-debt.md).
          const initialState = {
             subjects: ["CM2", "SA1"],
             categories: ["Materials"],
             product_types: ["Core Study Material"],
-            products: ["Product A"],
             modes_of_delivery: ["Ebook"],
          };
 
          renderWithProviders(<ActiveFilters />, { initialState });
 
-         // Verify all 5 filter types render correctly using FilterRegistry
+         // Verify the registered filter types render correctly via FilterRegistry
          expect(screen.getByText("Subject: CM2")).toBeInTheDocument();
          expect(screen.getByText("Subject: SA1")).toBeInTheDocument();
          expect(screen.getByText("Category: Materials")).toBeInTheDocument();
          expect(
             screen.getByText("Product Type: Core Study Material")
          ).toBeInTheDocument();
-         expect(screen.getByText("Product: Product A")).toBeInTheDocument();
          expect(
             screen.getByText("Mode of Delivery: Ebook")
          ).toBeInTheDocument();

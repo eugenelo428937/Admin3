@@ -142,6 +142,7 @@ export function createMockStore(options = {}) {
   const {
     preloadedState = {
       filters: {
+        programme_type: [],
         subjects: [],
         categories: [],
         product_types: [],

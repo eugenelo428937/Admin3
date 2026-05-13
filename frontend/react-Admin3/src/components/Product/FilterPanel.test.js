@@ -130,13 +130,15 @@ describe('FilterPanel Component', () => {
 
     describe('Rendering and Initial State', () => {
         test('renders desktop filter panel with default state', async () => {
-            // Provide minimal filterCounts so sections render (registry-based implementation)
+            // Provide minimal filterCounts so sections render (registry-based implementation).
+            // NOTE: the `products` filter is no longer registered, so no Products section
+            // is rendered — see docs/to-dos/filter-registry-architecture-debt.md.
             const initialState = {
                 filterCounts: {
+                    programme_type: { 'UK': 1 },
                     subjects: { 'CM2': 1 },
                     categories: { 'Materials': 1 },
                     product_types: { 'Core Study Material': 1 },
-                    products: { 'Product A': 1 },
                     modes_of_delivery: { 'Ebook': 1 },
                 },
             };
@@ -144,11 +146,11 @@ describe('FilterPanel Component', () => {
             renderWithProviders(<FilterPanel />, { initialState });
 
             expect(screen.getByText('Filters')).toBeInTheDocument();
+            expect(screen.getByText('Programmes')).toBeInTheDocument();
             expect(screen.getByText('Subjects')).toBeInTheDocument();
             expect(screen.getByText('Categories')).toBeInTheDocument();
             expect(screen.getByText('Product Types')).toBeInTheDocument();
-            expect(screen.getByText('Products')).toBeInTheDocument();
-            expect(screen.getByText('Modes of Delivery')).toBeInTheDocument();  // Updated to match registry pluralLabel
+            expect(screen.getByText('Modes of Delivery')).toBeInTheDocument();  // matches registry pluralLabel
         });
 
         test('renders mobile filter panel button when isMobile is true', async () => {

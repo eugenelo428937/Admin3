@@ -27,6 +27,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -43,6 +44,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: ['Materials', 'Tutorials', 'Mocks'],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -58,6 +60,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -73,6 +76,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -89,6 +93,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -101,6 +106,7 @@ describe('FilterUrlManager', () => {
 
       test('converts all filter types simultaneously', () => {
         const filters = {
+          programme_type: ['normal', 'caa'],
           subjects: ['CM2', 'SA1'],
           categories: ['Bundle', 'Core'],
           product_types: ['Materials', 'Tutorials'],
@@ -110,6 +116,9 @@ describe('FilterUrlManager', () => {
         };
 
         const params = toUrlParams(filters);
+
+        // Programme type (comma-separated)
+        expect(params.get('programme_type')).toBe('normal,caa');
 
         // Subjects (indexed)
         expect(params.get('subject_code')).toBe('CM2');
@@ -122,8 +131,11 @@ describe('FilterUrlManager', () => {
         // Product types (comma-separated)
         expect(params.get('group')).toBe('Materials,Tutorials');
 
-        // Products (comma-separated)
-        expect(params.get('product')).toBe('PROD1,PROD2');
+        // The 'products' filter is no longer registered — see
+        // docs/filter-registry-architecture-debt.md. Asserting it does NOT
+        // serialize prevents the historical "empty Products section" bug
+        // from regressing through this code path.
+        expect(params.get('product')).toBeNull();
 
         // Modes of delivery (comma-separated)
         expect(params.get('mode_of_delivery')).toBe('Online,In-Person');
@@ -138,6 +150,7 @@ describe('FilterUrlManager', () => {
           categories: ['Bundle', 'Core', 'Revision'],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -148,18 +161,38 @@ describe('FilterUrlManager', () => {
         expect(params.get('category_2')).toBe('Revision');
       });
 
-      test('handles products comma-separated format', () => {
+      test('does NOT emit ?product= for the removed products filter', () => {
+        // Even if a stale 'products' field appears in state (e.g. from
+        // restored URL or persisted store), the URL serializer must NOT
+        // resurrect ?product=. The 'products' filter was removed; see
+        // docs/filter-registry-architecture-debt.md.
         const filters = {
           subjects: [],
           categories: [],
           product_types: [],
           products: ['PROD1', 'PROD2', 'PROD3'],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
 
         const params = toUrlParams(filters);
-        expect(params.get('product')).toBe('PROD1,PROD2,PROD3');
+        expect(params.get('product')).toBeNull();
+      });
+
+      test('handles programme_type comma-separated format', () => {
+        const filters = {
+          programme_type: ['normal', 'caa', 'apprentice'],
+          subjects: [],
+          categories: [],
+          product_types: [],
+          products: [],
+          modes_of_delivery: [],
+          searchQuery: ''
+        };
+
+        const params = toUrlParams(filters);
+        expect(params.get('programme_type')).toBe('normal,caa,apprentice');
       });
 
       test('handles modes_of_delivery comma-separated format', () => {
@@ -183,6 +216,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: 'mock exam papers'
         };
@@ -200,6 +234,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: ['Materials', 'Mocks'],  // comma-separated
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -212,10 +247,11 @@ describe('FilterUrlManager', () => {
 
       test('preserves parameter order consistency', () => {
         const filters = {
+          programme_type: ['normal'],
           subjects: ['CM2'],
           categories: ['Bundle'],
           product_types: ['Materials'],
-          products: ['PROD1'],
+          products: ['PROD1'],  // present in state, but no longer serialized
           modes_of_delivery: ['Online'],
           searchQuery: 'test'
         };
@@ -223,13 +259,15 @@ describe('FilterUrlManager', () => {
         const params = toUrlParams(filters);
         const str = params.toString();
 
-        // Verify all parameters are present
+        // Verify all parameters of currently-registered filters are present
+        expect(str).toContain('programme_type=normal');
         expect(str).toContain('subject_code=CM2');
         expect(str).toContain('category_code=Bundle');
         expect(str).toContain('group=Materials');
-        expect(str).toContain('product=PROD1');
         expect(str).toContain('mode_of_delivery=Online');
         expect(str).toContain('search_query=test');
+        // 'products' filter removed — must NOT serialize
+        expect(str).not.toContain('product=PROD1');
       });
     });
 
@@ -243,6 +281,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -258,6 +297,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: undefined
         };
@@ -273,6 +313,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -291,6 +332,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -315,6 +357,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -333,6 +376,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: '  mock exam  '
         };
@@ -347,6 +391,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: ['Materials', '', 'Mocks'],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -368,6 +413,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         };
@@ -384,6 +430,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: '   '
         };
@@ -398,6 +445,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: 'test & practice'
         };
@@ -452,14 +500,17 @@ describe('FilterUrlManager', () => {
       });
 
       test('parses all filter types simultaneously', () => {
-        const queryString = 'subject_code=CM2&subject_1=SA1&category_code=Bundle&group=Materials,Tutorials&product=PROD1&mode_of_delivery=Online,Hybrid&search_query=test';
+        // Note: ?product=PROD1 is intentionally included to confirm it is
+        // IGNORED — the products filter was removed from the registry.
+        const queryString = 'programme_type=normal,caa&subject_code=CM2&subject_1=SA1&category_code=Bundle&group=Materials,Tutorials&product=PROD1&mode_of_delivery=Online,Hybrid&search_query=test';
         const params = new URLSearchParams(queryString);
         const filters = fromUrlParams(params);
 
+        expect(filters.programme_type).toEqual(['normal', 'caa']);
         expect(filters.subjects).toEqual(['CM2', 'SA1']);
         expect(filters.categories).toEqual(['Bundle']);
         expect(filters.product_types).toEqual(['Materials', 'Tutorials']);
-        expect(filters.products).toEqual(['PROD1']);
+        expect(filters.products).toEqual([]);  // 'products' is no longer a registered filter
         expect(filters.modes_of_delivery).toEqual(['Online', 'Hybrid']);
         expect(filters.searchQuery).toBe('test');
       });
@@ -471,11 +522,21 @@ describe('FilterUrlManager', () => {
         expect(filters.categories).toEqual(['Bundle', 'Core', 'Revision']);
       });
 
-      test('parses products comma-separated format', () => {
+      test('ignores ?product= because the products filter is no longer registered', () => {
+        // Historical behavior parsed ?product=PROD1,PROD2 into state.products.
+        // The 'products' filter has been removed from FilterRegistry
+        // (no DB row in filter_configurations). Old URLs are now ignored.
         const params = new URLSearchParams('product=PROD1,PROD2,PROD3');
         const filters = fromUrlParams(params);
 
-        expect(filters.products).toEqual(['PROD1', 'PROD2', 'PROD3']);
+        expect(filters.products).toEqual([]);
+      });
+
+      test('parses programme_type comma-separated format', () => {
+        const params = new URLSearchParams('programme_type=normal,caa,apprentice');
+        const filters = fromUrlParams(params);
+
+        expect(filters.programme_type).toEqual(['normal', 'caa', 'apprentice']);
       });
 
       test('parses modes_of_delivery comma-separated format', () => {
@@ -545,6 +606,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         });
@@ -559,6 +621,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         });
@@ -574,6 +637,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         });
@@ -587,6 +651,7 @@ describe('FilterUrlManager', () => {
           categories: [],
           product_types: [],
           products: [],
+          programme_type: [],
           modes_of_delivery: [],
           searchQuery: ''
         });
@@ -715,11 +780,14 @@ describe('FilterUrlManager', () => {
     // T010 - idempotency tests
 
     test('filters → URL → filters produces same result', () => {
+      // 'products' is intentionally omitted — it is no longer a registered
+      // filter (no row in filter_configurations), so it cannot round-trip.
       const originalFilters = {
+        programme_type: ['normal', 'caa'],
         subjects: ['CM2', 'SA1'],
         categories: ['Bundle'],
         product_types: ['Materials', 'Tutorials'],
-        products: ['PROD1'],
+        products: [],
         modes_of_delivery: ['Online'],
         searchQuery: 'mock exam'
       };
@@ -811,6 +879,7 @@ describe('FilterUrlManager', () => {
 
     test('returns true for identical filters', () => {
       const filters1 = {
+        programme_type: [],
         subjects: ['CM2', 'SA1'],
         categories: ['Bundle'],
         product_types: ['Materials'],
