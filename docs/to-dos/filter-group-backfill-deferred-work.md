@@ -38,30 +38,51 @@ from `variation_type` or `variation_code`.
 | Printed orphans (no row) | `variation_type='Printed'` PPVs | 32 | Core Study Materials, Revision Materials |
 | Marking orphans + parent rows | `variation_type='Marking'` + Marking direct rows | 4 | Series Assignments Marking, Mock Exam Marking, Marking Vouchers |
 
-### Suggested CSV shape
+### How to produce the input CSV
 
-```csv
-ppv_id,target_filter_group_code,rationale
-3420,core_study_materials,"M1 Bronze Printed Book — primary study content"
-3424,revision_materials,"Printed Textbook 2nd — revision booklet"
-4383,mock_exam_marking,"Mock Exam Marking voucher"
-...
-```
-
-The follow-up will read this CSV and produce a corresponding `backfill_material_filter_groups`
-command (or extend the existing one with a `--csv` flag).
-
-### How to produce the input list
+A dedicated management command writes a CSV with all rows that need a decision:
 
 ```bash
 cd backend/django_Admin3
 DJANGO_SETTINGS_MODULE=django_Admin3.settings.development \
-    python manage.py shell < diagnose_filter_group_hierarchy.py
+    python manage.py export_filter_group_backfill_csv \
+        --output ../../docs/filter-group-backfill-input.csv
 ```
 
-The script's section 5 (Sample Orphans By variation_type) prints each
-remaining PPV's id, product shortname, and variation_code — paste these
-into the CSV with a target_filter_group_code per row.
+The current export of the dev DB lives at
+[`docs/filter-group-backfill-input.csv`](filter-group-backfill-input.csv)
+(200 rows: 132 orphans + 68 rows stranded at Material/Marking parent).
+
+### CSV shape
+
+Columns (left = context, read-only; right = decision, fill in):
+
+| Column | Meaning |
+|---|---|
+| `ppv_id` | ProductProductVariation.id (primary key — never change) |
+| `kind` | `orphan` (no row in PPG) or `parent_tagged` (stranded at Material/Marking) |
+| `product_id` / `product_code` / `product_shortname` / `product_fullname` | catalog.Product context |
+| `variation_type` / `variation_code` / `variation_name` / `variation_description` | ProductVariation context |
+| `current_group_code` / `current_group_name` | blank for orphans; `material` or `marking` for parent_tagged |
+| **`target_filter_group_code`** | **← fill in: `core_study_materials`, `revision_materials`, `series_assignments_marking`, `mock_exam_marking`, or `marking_vouchers`** |
+| `target_filter_group_name` | optional human-readable reference (not consumed by import) |
+| `rationale` | optional free text — preserved for audit |
+
+### Example filled rows
+
+```csv
+ppv_id,kind,...,target_filter_group_code,target_filter_group_name,rationale
+3420,orphan,...,core_study_materials,Core Study Materials,"M1 Bronze Printed Book — primary study content"
+3424,orphan,...,revision_materials,Revision Materials,"Printed Textbook 2nd ed. — revision booklet"
+4383,orphan,...,mock_exam_marking,Mock Exam Marking,"Mock Exam Marking voucher"
+```
+
+### After the CSV comes back
+
+A companion `backfill_filter_groups_from_csv` command (not yet written —
+will be built once we have a returned CSV to test against) will read the
+filled CSV and apply the assignments idempotently, mirroring the
+`backfill_tutorial_filter_groups` shape (transactional, `--dry-run`).
 
 ## Related files
 

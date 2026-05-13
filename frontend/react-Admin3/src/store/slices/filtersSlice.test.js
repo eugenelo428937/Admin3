@@ -10,6 +10,7 @@ import {
   setCategories,
   setProductTypes,
   setProducts,
+  setProgrammeTypes,
   setModesOfDelivery,
   setSearchQuery,
   setMultipleFilters,
@@ -26,6 +27,10 @@ import {
   clearError,
   resetFilters,
   applyFilters,
+  toggleProgrammeTypeFilter,
+  removeProgrammeTypeFilter,
+  clearAllFilters,
+  clearFilterType,
   selectFilters,
   selectHasActiveFilters,
   selectActiveFilterCount,
@@ -33,6 +38,7 @@ import {
 
 // Initial state for testing (Story 1.14 - updated to match baseFiltersInitialState)
 const initialState = {
+  programme_type: [],
   subjects: [],
   categories: [],
   product_types: [],
@@ -49,6 +55,7 @@ const initialState = {
   lastUpdated: null,
   // Filter counts from API responses
   filterCounts: {
+    programme_type: {},
     subjects: {},
     categories: {},
     product_types: {},
@@ -101,10 +108,51 @@ describe('filtersSlice', () => {
     it('should handle setProducts', () => {
       const products = ['Additional Mock Pack'];
       const newState = filtersReducer(initialState, setProducts(products));
-      
+
       expect(newState.products).toEqual(products);
     });
-    
+
+    it('should handle setProgrammeTypes', () => {
+      const programmes = ['normal', 'caa'];
+      const newState = filtersReducer(initialState, setProgrammeTypes(programmes));
+
+      expect(newState.programme_type).toEqual(programmes);
+      expect(newState.currentPage).toBe(1);
+      expect(newState.lastUpdated).toBeTruthy();
+    });
+
+    it('should handle toggleProgrammeTypeFilter adding a value', () => {
+      const newState = filtersReducer(initialState, toggleProgrammeTypeFilter('normal'));
+      expect(newState.programme_type).toEqual(['normal']);
+    });
+
+    it('should handle toggleProgrammeTypeFilter removing a value', () => {
+      const stateWith = { ...initialState, programme_type: ['normal', 'caa'] };
+      const newState = filtersReducer(stateWith, toggleProgrammeTypeFilter('normal'));
+      expect(newState.programme_type).toEqual(['caa']);
+    });
+
+    it('should handle removeProgrammeTypeFilter', () => {
+      const stateWith = { ...initialState, programme_type: ['normal', 'caa', 'apprentice'] };
+      const newState = filtersReducer(stateWith, removeProgrammeTypeFilter('caa'));
+      expect(newState.programme_type).toEqual(['normal', 'apprentice']);
+    });
+
+    it('should clear programme_type when clearAllFilters is dispatched', () => {
+      const stateWith = { ...initialState, programme_type: ['normal'], subjects: ['CM2'] };
+      const newState = filtersReducer(stateWith, clearAllFilters());
+      expect(newState.programme_type).toEqual([]);
+      expect(newState.subjects).toEqual([]);
+    });
+
+    it('should clear programme_type when clearFilterType("programme_type") is dispatched', () => {
+      const stateWith = { ...initialState, programme_type: ['normal'], subjects: ['CM2'] };
+      const newState = filtersReducer(stateWith, clearFilterType('programme_type'));
+      expect(newState.programme_type).toEqual([]);
+      // Other filters must be untouched
+      expect(newState.subjects).toEqual(['CM2']);
+    });
+
     it('should handle setModesOfDelivery', () => {
       const modes = ['Ebook', 'Printed'];
       const newState = filtersReducer(initialState, setModesOfDelivery(modes));
@@ -298,6 +346,7 @@ describe('filtersSlice', () => {
       const newState = filtersReducer(previousState, applyFilters());
       
       expect(newState.appliedFilters).toEqual({
+        programme_type: [],
         subjects: ['CM2'],
         categories: ['Bundle'],
         product_types: [],

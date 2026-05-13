@@ -14,6 +14,7 @@
 import { FilterRegistry } from '../store/filters/filterRegistry';
 
 export interface FilterState {
+  programme_type: string[];
   subjects: string[];
   categories: string[];
   product_types: string[];
@@ -55,6 +56,7 @@ export const URL_PARAM_KEYS = {
  * Default empty filter structure
  */
 const DEFAULT_FILTERS: FilterState = {
+  programme_type: [],
   subjects: [],
   categories: [],
   product_types: [],

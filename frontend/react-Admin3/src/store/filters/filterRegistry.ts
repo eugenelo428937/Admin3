@@ -199,12 +199,18 @@ export class FilterRegistry {
   static registerFromBackend(backendConfigs: Record<string, any>): void {
     this.#filters.clear();
 
-    // URL param mapping for known filter keys
+    // URL param mapping for known filter keys.
+    //
+    // 'products' is intentionally NOT here. There is no PRODUCTS row in
+    // filter_configurations; an entry here is dead weight that has tempted
+    // refactors to re-add the hardcoded 'products' filter several times.
+    // If a 'products' filter ever becomes a real product requirement, add
+    // both the DB row AND this entry in the same PR.
     const URL_PARAM_MAP: Record<string, { urlParam: string; urlParamAliases: string[]; urlFormat: string; color: string }> = {
+      programme_type: { urlParam: 'programme_type', urlParamAliases: [], urlFormat: 'comma-separated', color: 'secondary' },
       subjects: { urlParam: 'subject_code', urlParamAliases: ['subject'], urlFormat: 'indexed', color: 'primary' },
       categories: { urlParam: 'category_code', urlParamAliases: ['category'], urlFormat: 'indexed', color: 'info' },
       product_types: { urlParam: 'group', urlParamAliases: [], urlFormat: 'comma-separated', color: 'success' },
-      products: { urlParam: 'product', urlParamAliases: [], urlFormat: 'comma-separated', color: 'default' },
       modes_of_delivery: { urlParam: 'mode_of_delivery', urlParamAliases: [], urlFormat: 'comma-separated', color: 'warning' },
     };
 
@@ -254,8 +260,37 @@ export class FilterRegistry {
 }
 
 // ===================================================================
-// Register all existing filter types
+// Register all existing filter types (STATIC FALLBACK).
+//
+// These run on module load and act as a fallback while the
+// /api/products/filter-configuration/ response is in flight. On boot
+// App.js calls FilterRegistry.registerFromBackend() which clears these
+// and re-registers from the DB filter_configurations table.
+//
+// IMPORTANT: any entry here that has NO corresponding row in
+// filter_configurations renders a permanently-empty section in the
+// FilterPanel (because the registry says "render me" but the DB
+// returns no options). 'products' used to live here for that exact
+// reason — there is no PRODUCTS filter_configurations row and there
+// never was. Do NOT re-add it. See
+// docs/filter-registry-architecture-debt.md for the full hardcoded-
+// layer audit and why this file is one of six places that has to
+// stay in sync.
 // ===================================================================
+
+// Programme Type — DB: filter_configurations(filter_key='programme_type')
+FilterRegistry.register({
+  type: 'programme_type',
+  label: 'Programme',
+  pluralLabel: 'Programmes',
+  urlParam: 'programme_type',
+  color: 'secondary',
+  multiple: true,
+  dataType: 'array',
+  urlFormat: 'comma-separated',
+  getDisplayValue: (value: any) => value,
+  order: 1,
+});
 
 // Subjects
 FilterRegistry.register({
@@ -269,7 +304,7 @@ FilterRegistry.register({
   dataType: 'array',
   urlFormat: 'indexed', // subject_code, subject_1, subject_2, ...
   getDisplayValue: (value: any) => value,
-  order: 1,
+  order: 2,
 });
 
 // Categories
@@ -284,7 +319,7 @@ FilterRegistry.register({
   dataType: 'array',
   urlFormat: 'indexed', // category_code, category_1, category_2, ...
   getDisplayValue: (value: any) => value,
-  order: 2,
+  order: 3,
 });
 
 // Product Types
@@ -298,34 +333,13 @@ FilterRegistry.register({
   dataType: 'array',
   urlFormat: 'comma-separated',
   getDisplayValue: (value: any) => value,
-  order: 3,
-});
-
-// Products
-FilterRegistry.register({
-  type: 'products',
-  label: 'Product',
-  pluralLabel: 'Products',
-  urlParam: 'product',
-  color: 'default',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any, counts?: any) => {
-    // Try to get product name from filterCounts
-    if (counts && counts[value]) {
-      const productData = counts[value];
-      // Handle the backend structure: { count: number, name: string, display_name?: string }
-      if (typeof productData === 'object' && productData !== null) {
-        const displayName = productData.display_name || productData.name || productData.label || value;
-        return displayName;
-      }
-    }
-    // Fallback to the product ID if no counts data available
-    return value;
-  },
   order: 4,
 });
+
+// NOTE: 'products' filter was historically registered here but is removed.
+// The DB has no PRODUCTS filter_configurations row, so this entry only ever
+// rendered an empty section. If you find yourself wanting to re-add it,
+// add the DB row first AND read docs/filter-registry-architecture-debt.md.
 
 // Modes of Delivery
 FilterRegistry.register({
