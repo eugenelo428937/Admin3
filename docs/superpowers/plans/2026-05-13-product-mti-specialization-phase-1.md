@@ -28,7 +28,7 @@ python manage.py test store marking     # confirm baseline green
 | Path | Responsibility |
 |------|----------------|
 | `backend/django_Admin3/marking/models/marking_template.py` | New `MarkingTemplate` model (exam-session-agnostic template for marking series). |
-| `backend/django_Admin3/store/models/material_product.py` | MTI subclass of `store.Product` for material products (eBook/Printed/Hub). Holds `product_product_variation` FK. |
+| `backend/django_Admin3/store/models/material_product.py` | MTI subclass of `store.Product` for material products (eBook/Printed/Hub). **Empty marker in Phase 1** — `product_product_variation` is moved off `Product` in Phase 5 (Django MTI forbids the parent and child both declaring the field). |
 | `backend/django_Admin3/store/models/tutorial_product.py` | MTI subclass of `store.Product` for tutorial products. Holds `tutorial_course_template`, `tutorial_location`, and `format` enum. |
 | `backend/django_Admin3/store/models/marking_product.py` | MTI subclass of `store.Product` for marking products. Holds `marking_template` FK and `paper_count`. |
 | `backend/django_Admin3/marking/tests/test_marking_template_model.py` | TDD tests for `MarkingTemplate`. |
@@ -458,14 +458,16 @@ backfills it from the purchasable chain and enforces NOT NULL."
 
 ---
 
-## Task 4: Create `store.MaterialProduct` MTI subclass
+## Task 4: Create `store.MaterialProduct` MTI subclass (empty marker)
 
 **Files:**
 - Create: `backend/django_Admin3/store/models/material_product.py`
 - Modify: `backend/django_Admin3/store/models/__init__.py`
 - Test: `backend/django_Admin3/store/tests/test_material_product_model.py`
 
-`MaterialProduct` is the simplest of the three subclasses — it keeps the `product_product_variation` FK that currently lives on `store.Product`. (`store.Product` will keep this column too during Phase 1–4; it's removed in Phase 5.)
+`MaterialProduct` ships as an **empty MTI marker** in Phase 1. The `product_product_variation` FK stays on `store.Product` through Phases 1–4, because Django MTI forbids a subclass redeclaring a parent's field. The actual "move PPV from Product to MaterialProduct" happens in Phase 5 via `RemoveField + AddField` with a data migration — see [design doc §6 Phase 5](../specs/2026-05-13-product-mti-specialization-design.md). This keeps every Phase 1–4 consumer that reads `product.product_product_variation` working without code changes.
+
+Phase 1's job for MaterialProduct is just to **create the table** (`acted.material_products`) so Phase 2 backfill has somewhere to write subclass rows.
 
 - [ ] **Step 4.1: Write the failing test**
 
@@ -512,21 +514,40 @@ class MaterialProductMTITests(TestCase):
             "No MTI parent_link found from MaterialProduct to Product",
         )
 
-    def test_owns_product_product_variation_fk(self):
-        """PPV FK lives on MaterialProduct (not redeclared elsewhere)."""
-        from store.models import MaterialProduct
-        field = MaterialProduct._meta.get_field('product_product_variation')
-        self.assertEqual(field.model, MaterialProduct)
-        self.assertEqual(
-            field.related_model._meta.label,
-            'catalog_products.ProductProductVariation',
-        )
-
     def test_inherits_exam_session_subject_from_product(self):
         """ESS FK is inherited from the intermediate Product parent."""
         from store.models import MaterialProduct, Product
         field = MaterialProduct._meta.get_field('exam_session_subject')
         self.assertEqual(field.model, Product)
+
+    def test_inherits_product_product_variation_from_product(self):
+        """PPV FK stays on Product through Phases 1-4; MaterialProduct
+        inherits it via MTI. The 'move PPV to MaterialProduct' rewrite
+        happens in Phase 5 (see design doc §6 Phase 5).
+        """
+        from store.models import MaterialProduct, Product
+        field = MaterialProduct._meta.get_field('product_product_variation')
+        self.assertEqual(
+            field.model, Product,
+            "Phase 1: PPV remains on Product; MaterialProduct inherits it",
+        )
+        self.assertEqual(
+            field.related_model._meta.label,
+            'catalog_products.ProductProductVariation',
+        )
+
+    def test_no_local_fields_beyond_parent_link(self):
+        """Phase 1: MaterialProduct ships empty (just product_ptr).
+
+        Phase 5 adds `product_product_variation` locally after moving it
+        off Product. Until then, the only local field is the MTI parent_link.
+        """
+        from store.models import MaterialProduct
+        local_field_names = {
+            f.name for f in MaterialProduct._meta.local_fields
+        }
+        # `product_ptr` is the auto-generated MTI parent_link OneToOneField
+        self.assertEqual(local_field_names, {'product_ptr'})
 ```
 
 - [ ] **Step 4.2: Run test to verify it fails**
@@ -538,7 +559,7 @@ python manage.py test store.tests.test_material_product_model -v 2
 
 Expected: FAIL with `ImportError: cannot import name 'MaterialProduct' from 'store.models'`.
 
-- [ ] **Step 4.3: Create the model**
+- [ ] **Step 4.3: Create the model (empty marker subclass)**
 
 Create `backend/django_Admin3/store/models/material_product.py`:
 
@@ -549,36 +570,39 @@ Materials (eBook, Printed, Hub) are the only product family that uses
 the `catalog_products` template + variation structure. Tutorial and
 Marking products have their own subclasses that bypass the catalog.
 
+**Phase 1 status — empty marker.** MaterialProduct ships in Phase 1 as
+an MTI subclass with no local fields of its own. The
+`product_product_variation` FK stays on the `Product` parent through
+Phases 1–4 because Django MTI forbids a subclass redeclaring a parent's
+field. Phase 5 moves the FK from Product to MaterialProduct via a
+`RemoveField + AddField` migration with data backfill — at which point
+this class gains its `product_product_variation` field.
+
+Phase 1's role for MaterialProduct is purely to create the
+`acted.material_products` table so Phase 2 backfill has a destination.
+
 Table: acted.material_products
 """
-from django.db import models
-
 from store.models.product import Product
 
 
 class MaterialProduct(Product):
     """ESS-based material product (eBook/Printed/Hub).
 
-    Phase 1: empty table. Phase 2 backfills rows from existing
+    Phase 1: empty marker subclass. Phase 2 backfills rows from existing
     `store.Product` rows whose PPV.variation.variation_type is
-    one of {'eBook', 'Printed', 'Hub'}. Each backfilled row shares
-    its PK with the parent Product row (MTI shared PK).
-    """
+    one of {'eBook', 'Printed', 'Hub'}. Each backfilled row shares its
+    PK with the parent Product row (MTI shared PK). The PPV value
+    remains on the `Product` parent for the row.
 
-    product_product_variation = models.ForeignKey(
-        'catalog_products.ProductProductVariation',
-        on_delete=models.PROTECT,
-        related_name='store_material_products',
-        help_text='The catalog template + variation combination.',
-    )
+    Phase 5 adds `product_product_variation` as a local field after
+    moving it off `Product`.
+    """
 
     class Meta:
         db_table = '"acted"."material_products"'
         verbose_name = 'Material Product'
         verbose_name_plural = 'Material Products'
-        # Uniqueness enforced by Purchasable.code UNIQUE.
-        # Addons share PPV with their base (distinguished via
-        # Purchasable.is_addon), so we don't unique on (ess, ppv).
 ```
 
 - [ ] **Step 4.4: Export `MaterialProduct` from `store.models`**

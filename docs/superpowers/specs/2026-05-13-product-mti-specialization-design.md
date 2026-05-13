@@ -99,7 +99,7 @@ re-classed into subclasses during Phase 2 backfill (Section 6).
 | `Purchasable`     | `code` / `name` / `is_active` / `is_addon` / `vat_classification` / `dynamic_pricing` | (unchanged)      | |
 | `Product`         | `exam_session_subject`         | FK ESS           | Truly shared by all three subclasses. |
 | `Product`         | `product_code`                 | CharField unique | Shared field; subclass overrides `_generate_product_code()`. |
-| `MaterialProduct` | `product_product_variation`    | FK PPV           | Moved from `Product`. Material is the only family using catalog variations. |
+| `MaterialProduct` | `product_product_variation`    | FK PPV           | **Final state**: lives on MaterialProduct. **Transition**: stays on `Product` through Phases 1–4 (Django MTI forbids field clashes). MaterialProduct ships as empty marker in Phase 1; field is moved in Phase 5 via `RemoveField('product', 'product_product_variation') + AddField('materialproduct', 'product_product_variation')` with data migration. Material is the only family using catalog variations. |
 | `TutorialProduct` | `tutorial_course_template`     | FK TutorialCourseTemplate | Tutorials app owns the template concept. |
 | `TutorialProduct` | `tutorial_location`            | FK TutorialLocation | |
 | `TutorialProduct` | `format`                       | TextChoices      | Replaces `ProductVariation` rows with `variation_type='Tutorial'`. |
@@ -364,7 +364,7 @@ burn-in before the next step lands.
 
 ### Phase 5 — Drop legacy (1 PR, after Phase 4 burn-in)
 
-- Remove `store.Product.product_product_variation` field.
+- Move `product_product_variation` from `store.Product` to `store.MaterialProduct` via data migration: backfill `MaterialProduct.product_product_variation` from `Product.product_product_variation` for material rows, then `RemoveField('product', 'product_product_variation')`. Tutorial/Marking rows lose their PPV value at this point (their type info now lives entirely in subclass-specific fields).
 - Delete `catalog_product_variations` rows with `variation_type IN ('Tutorial', 'Marking')`.
 - Delete dangling `catalog_product_product_variations` rows.
 - Delete `catalog_products.Product` rows whose code matches a
