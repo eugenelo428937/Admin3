@@ -10,9 +10,13 @@ def test_filter_handler_is_abstract():
         FilterHandler()
 
 
-def test_filter_handlers_registry_has_three_handlers():
-    """FILTER_HANDLERS dict ships with subject, subject_type, filter_group."""
-    assert set(FILTER_HANDLERS.keys()) == {'subject', 'subject_type', 'filter_group'}
+def test_filter_handlers_registry_has_expected_handlers():
+    """FILTER_HANDLERS dict ships with the original three handlers plus
+    the three Phase 4a subclass-aware handlers."""
+    assert set(FILTER_HANDLERS.keys()) == {
+        'subject', 'subject_type', 'filter_group',
+        'tutorial_format', 'tutorial_location', 'marking_template',
+    }
 
 
 def test_filter_handlers_all_implement_required_methods():
