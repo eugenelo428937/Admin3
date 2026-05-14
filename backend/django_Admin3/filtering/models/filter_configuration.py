@@ -28,6 +28,7 @@ class FilterConfiguration(models.Model):
         ('subject', 'Subject'),
         ('subject_type', 'Subject Type'),
         ('filter_group', 'Filter Group'),
+        ('product_id', 'Product ID'),  # Hidden — set by nav clicks, not panel UI
         ('product_variation', 'Product Variation'),
         # Phase 4a — subclass-aware filter types. Each is served by a
         # dedicated handler in filtering/services/filter_handlers.py

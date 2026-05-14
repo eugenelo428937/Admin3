@@ -230,9 +230,15 @@ const MaterialProductCard = React.memo<MaterialProductCardProps>(
                     const standardPrice = variation.prices?.find(
                       (p) => p.price_type === 'standard',
                     );
+                    // React key must be unique per row. `variation.id` is
+                    // the PPV id, which is NOT unique within a group when
+                    // a base product and its addon both point at the same
+                    // PPV (distinguished by Purchasable.is_addon). The
+                    // store.Product id is unique per row.
+                    const rowKey = (variation as any).store_product_id ?? variation.id;
                     return (
                       <Box
-                        key={variation.id}
+                        key={rowKey}
                         className="variation-option"
                         sx={{
                           borderColor:

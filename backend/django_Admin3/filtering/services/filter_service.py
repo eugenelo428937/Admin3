@@ -165,6 +165,17 @@ class ProductFilterService:
                 if allowed_names is not None and value not in allowed_names:
                     continue
                 bucket[value] = {'count': n, 'name': value}
+
+            # Let the handler post-process: rename opaque values to a
+            # human-readable label (e.g. product_id → shortname),
+            # restrict the bucket to a subset (e.g. only currently
+            # selected values for nav-only filters), etc. Default
+            # implementation is a no-op pass-through.
+            selected_values = filters.get(config.filter_key) or []
+            bucket = handler.post_process_bucket(
+                bucket, selected_values, config,
+            )
+
             result[config.filter_key] = bucket
 
         return result

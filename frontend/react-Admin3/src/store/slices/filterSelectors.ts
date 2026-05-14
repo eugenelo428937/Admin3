@@ -13,7 +13,41 @@ export const selectFilterValues = (filterKey: string) => (state: RootStateWithFi
 export const selectFilterScalar = (filterKey: string) => (state: RootStateWithFilters) =>
   state.filters.scalar?.[filterKey] ?? null;
 
-export const selectAllFilters = (state: RootStateWithFilters) => state.filters.byKey ?? {};
+/**
+ * Returns every active filter as a `Record<filter_key, string[]>` regardless
+ * of whether the store currently keeps it under `byKey` (new generic shape)
+ * or as a flat field (legacy shim shape used by reducers like setSubjects,
+ * setCategories, etc. — and by older test fixtures that preload state
+ * directly without going through actions).
+ *
+ * Per-key merge rule: prefer the legacy flat field when present and
+ * non-empty, otherwise fall back to byKey. Memoized via createSelector
+ * so consumers (useProductsSearch, etc.) get a stable reference across
+ * renders that don't actually change the filter state.
+ */
+export const selectAllFilters = createSelector(
+  (state: RootStateWithFilters) => state.filters,
+  (filters: any): Record<string, string[]> => {
+    const byKey: Record<string, string[]> = filters.byKey ?? {};
+    const out: Record<string, string[]> = { ...byKey };
+    const legacyKeys = [
+      'subjects',
+      'categories',
+      'product_types',
+      'products',
+      'modes_of_delivery',
+      'programme_type',
+      'subject_type',
+    ];
+    for (const k of legacyKeys) {
+      const flat = filters[k];
+      if (Array.isArray(flat) && flat.length > 0) {
+        out[k] = flat;
+      }
+    }
+    return out;
+  },
+);
 export const selectAllScalars = (state: RootStateWithFilters) => state.filters.scalar ?? {};
 export const selectFilterCounts = (state: RootStateWithFilters) =>
   state.filters.filterCounts ?? {};

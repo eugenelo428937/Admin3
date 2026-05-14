@@ -90,7 +90,7 @@ describe('FilterPanel dynamic rendering (T046)', () => {
     FilterRegistry.registerFromBackend({
       'Subjects': {
         filter_key: 'subjects',
-        label: 'Subject',
+        label: 'Subjects',
         display_order: 0,
         type: 'subject',
         allow_multiple: true,
@@ -100,7 +100,7 @@ describe('FilterPanel dynamic rendering (T046)', () => {
       },
       'Categories': {
         filter_key: 'categories',
-        label: 'Category',
+        label: 'Categories',
         display_order: 1,
         type: 'filter_group',
         allow_multiple: true,
@@ -134,7 +134,7 @@ describe('FilterPanel dynamic rendering (T046)', () => {
     FilterRegistry.registerFromBackend({
       'Subjects': {
         filter_key: 'subjects',
-        label: 'Subject',
+        label: 'Subjects',
         display_order: 2,
         type: 'subject',
         allow_multiple: true,
@@ -144,7 +144,7 @@ describe('FilterPanel dynamic rendering (T046)', () => {
       },
       'Categories': {
         filter_key: 'categories',
-        label: 'Category',
+        label: 'Categories',
         display_order: 1,
         type: 'filter_group',
         allow_multiple: true,

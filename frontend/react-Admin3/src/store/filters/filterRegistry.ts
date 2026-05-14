@@ -225,10 +225,16 @@ export class FilterRegistry {
         color: 'default',
       };
 
+      // Section title comes from FilterConfiguration.display_label
+      // (sent as `config.label`). `configName` is the snake_case
+      // filter_key — only used as a last-resort fallback when the
+      // admin hasn't filled in a display_label.
+      const sectionTitle: string = config.label || configName;
+
       this.register({
         type: filterKey,
-        label: config.label || configName,
-        pluralLabel: configName,
+        label: sectionTitle,
+        pluralLabel: sectionTitle,
         urlParam: urlDefaults.urlParam,
         urlParamAliases: urlDefaults.urlParamAliases,
         color: urlDefaults.color,

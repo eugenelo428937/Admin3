@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi';
 import {
   selectFilters,
+  selectAllFilters,
   selectSearchQuery,
   selectCurrentPage,
   selectPageSize,
@@ -92,8 +93,20 @@ export const useProductsSearch = (options: UseProductsSearchOptions = {}): UsePr
 
   const dispatch = useDispatch();
 
-  // Redux state selectors
+  // Redux state selectors.
+  //
+  // `filters` (selectFilters) is the legacy derived shape with a fixed set of
+  // keys (subjects, categories, product_types, products, modes_of_delivery,
+  // searchQuery). Kept for the PerformanceTracker filter-count metric below
+  // until that selector is replaced.
+  //
+  // `byKey` (selectAllFilters) is the generic Redux bag — every filter the
+  // user has set, keyed by the FilterConfiguration.filter_key the backend
+  // knows. This is what gets sent in the request payload so new filter
+  // types (subject_type, programme_type, …) work end-to-end without a
+  // frontend touch.
   const filters = useSelector(selectFilters) as any;
+  const byKey = useSelector(selectAllFilters) as Record<string, string[]>;
   const searchQuery = useSelector(selectSearchQuery) as string;
   const currentPage = useSelector(selectCurrentPage) as number;
   const pageSize = useSelector(selectPageSize) as number;
@@ -161,15 +174,22 @@ export const useProductsSearch = (options: UseProductsSearchOptions = {}): UsePr
       if (tutorialFormat) navbarFilters.tutorial_format = tutorialFormat;
       if (distanceLearning) navbarFilters.distance_learning = '1';
 
+      // Send the full byKey bag — only non-empty arrays — so any
+      // FilterConfiguration the backend knows about (current set:
+      // subject_type, subjects, programme_type, categories,
+      // product_types, modes_of_delivery, products) flows through
+      // automatically. Backend's apply_filters() ignores keys it has no
+      // handler for, so unknown keys are harmless.
+      const activeFilters: Record<string, string[]> = {};
+      for (const [key, values] of Object.entries(byKey)) {
+        if (Array.isArray(values) && values.length > 0) {
+          activeFilters[key] = values;
+        }
+      }
+
       const searchParams = {
-        searchQuery: searchQuery || '', // NEW: Send search query to backend
-        filters: {
-          subjects: filters.subjects || [],
-          categories: filters.categories || [],
-          product_types: filters.product_types || [],
-          products: filters.products || [], // Products filter for navbar product links (e.g., Core Reading)
-          modes_of_delivery: filters.modes_of_delivery || [],
-        },
+        searchQuery: searchQuery || '',
+        filters: activeFilters,
         navbarFilters, // Story 1.4: Include navbar filters
         pagination: {
           page: currentPage,
@@ -181,10 +201,14 @@ export const useProductsSearch = (options: UseProductsSearchOptions = {}): UsePr
         },
       };
 
-      // Check if search parameters have changed (avoid duplicate requests)
-      // Use a fast hash instead of JSON.stringify for performance
-      // Include searchQuery, products filter, AND navbar filters to trigger new search when they change
-      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial}|${tutorialFormat||''}|${distanceLearning}`;
+      // Cache-key the request by its observable shape. Sort keys so
+      // {subjects:['CB1'],categories:['Material']} and
+      // {categories:['Material'],subjects:['CB1']} hash the same.
+      const filterFingerprint = Object.keys(activeFilters)
+        .sort()
+        .map((k) => `${k}=${activeFilters[k].slice().sort().join(',')}`)
+        .join('|');
+      const paramsHash = `${searchQuery || ''}||${filterFingerprint}||${currentPage}|${pageSize}|${tutorial}|${tutorialFormat || ''}|${distanceLearning}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -198,8 +222,9 @@ export const useProductsSearch = (options: UseProductsSearchOptions = {}): UsePr
       if (PerformanceTracker.isSupported()) {
         PerformanceTracker.startMeasure('api.products', {
           hasSearchQuery: !!searchQuery,
-          filterCount: Object.keys(filters).reduce((count: number, key: string) =>
-            count + (Array.isArray(filters[key]) ? filters[key].length : (filters[key] ? 1 : 0)), 0
+          filterCount: Object.values(activeFilters).reduce(
+            (count: number, values: string[]) => count + values.length,
+            0
           ),
           page: currentPage
         });
@@ -309,11 +334,17 @@ export const useProductsSearch = (options: UseProductsSearchOptions = {}): UsePr
     lastSearchParamsRef.current = null;
   }, [clearDebounce, dispatch]);
 
-  // Create stable references for effect dependencies
-  // Include searchQuery, products filter, AND navbar filters to trigger search when they change
+  // Generic, byKey-derived effect trigger. New filter keys (subject_type,
+  // programme_type, anything added later) are picked up automatically —
+  // no need to extend this hash when the filter taxonomy changes.
   const filterHash = useMemo(() => {
-    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial}|${tutorialFormat||''}|${distanceLearning}`;
-  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.products, filters.modes_of_delivery, currentPage, pageSize, tutorial, tutorialFormat, distanceLearning]);
+    const fp = Object.keys(byKey)
+      .filter((k) => Array.isArray(byKey[k]) && byKey[k].length > 0)
+      .sort()
+      .map((k) => `${k}=${byKey[k].slice().sort().join(',')}`)
+      .join('|');
+    return `${searchQuery || ''}||${fp}||${currentPage}|${pageSize}|${tutorial}|${tutorialFormat || ''}|${distanceLearning}`;
+  }, [searchQuery, byKey, currentPage, pageSize, tutorial, tutorialFormat, distanceLearning]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {

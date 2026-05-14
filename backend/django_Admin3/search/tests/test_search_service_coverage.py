@@ -286,19 +286,29 @@ class TestApplyFilters(TestCase):
         self.assertIn(self.cm2_sp, list(filtered))
         self.assertIn(self.sa1_sp, list(filtered))
 
-    def test_filter_by_products_key_ignored(self):
-        # 'products' has no FilterConfiguration row → silently ignored.
+    def test_filter_by_products_filters_by_catalog_product_id(self):
+        # 'products' is a hidden FilterConfiguration (filter_type='product_id')
+        # registered in filtering/migrations/0015. Dispatching it filters
+        # store.Products to those backed by the given catalog.Product master.
+        # Set by nav-menu drill-downs (e.g. Products > Core Study Materials >
+        # Course Notes).
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service.filter_service.apply_filters(qs, {'products': [str(self.cm2_catalog.id)]})
+        filtered = self.service.filter_service.apply_filters(
+            qs, {'products': [str(self.cm2_catalog.id)]}
+        )
         self.assertIn(self.cm2_sp, list(filtered))
-        self.assertIn(self.sa1_sp, list(filtered))
+        self.assertNotIn(self.sa1_sp, list(filtered))
 
-    def test_filter_by_products_with_non_digit_strings_ignored(self):
-        # 'products' has no FilterConfiguration row → silently ignored.
+    def test_filter_by_products_with_non_digit_strings_silently_dropped(self):
+        # ProductIdHandler.build_q coerces values to int; non-numeric entries
+        # are filtered out before the lookup. Mixed input → only the valid
+        # IDs are used; invalid ones are ignored.
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service.filter_service.apply_filters(qs, {'products': ['abc', str(self.cm2_catalog.id)]})
+        filtered = self.service.filter_service.apply_filters(
+            qs, {'products': ['abc', str(self.cm2_catalog.id)]}
+        )
         self.assertIn(self.cm2_sp, list(filtered))
-        self.assertIn(self.sa1_sp, list(filtered))
+        self.assertNotIn(self.sa1_sp, list(filtered))
 
     def test_filter_by_essp_ids_ignored(self):
         # 'essp_ids' has no FilterConfiguration row → silently ignored.
