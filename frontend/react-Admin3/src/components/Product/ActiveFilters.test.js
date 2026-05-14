@@ -152,9 +152,9 @@ describe("ActiveFilters Component", () => {
          renderWithProviders(<ActiveFilters />, { initialState });
 
          expect(screen.getByText("3 Active Filters")).toBeInTheDocument();
-         expect(screen.getByText("Subject: CM2")).toBeInTheDocument();
-         expect(screen.getByText("Subject: SA1")).toBeInTheDocument();
-         expect(screen.getByText("Category: Materials")).toBeInTheDocument();
+         expect(screen.getByText("Subjects: CM2")).toBeInTheDocument();
+         expect(screen.getByText("Subjects: SA1")).toBeInTheDocument();
+         expect(screen.getByText("Categories: Materials")).toBeInTheDocument();
       });
 
       test("shows correct active filter count", async () => {
@@ -225,7 +225,7 @@ describe("ActiveFilters Component", () => {
          });
 
          expect(screen.getByText("3 filters active")).toBeInTheDocument();
-         expect(screen.queryByText("Subject: CM2")).not.toBeInTheDocument(); // No chips in compact mode
+         expect(screen.queryByText("Subjects: CM2")).not.toBeInTheDocument(); // No chips in compact mode
       });
 
       test("shows singular form in compact variant", async () => {
@@ -378,7 +378,7 @@ describe("ActiveFilters Component", () => {
             // On mobile, should show just the filter value, not the full "Type: Value" format
             expect(screen.getByText("CM2")).toBeInTheDocument();
             expect(screen.getByText("Materials")).toBeInTheDocument();
-            expect(screen.queryByText("Subject: CM2")).not.toBeInTheDocument();
+            expect(screen.queryByText("Subjects: CM2")).not.toBeInTheDocument();
          });
       });
       test.skip("uses small chips on mobile", () => {
@@ -440,7 +440,7 @@ describe("ActiveFilters Component", () => {
             renderWithProviders(<ActiveFilters />, { initialState });
 
             expect(
-               screen.getByText("Subject: Capital Markets Advanced")
+               screen.getByText("Subjects: Capital Markets Advanced")
             ).toBeInTheDocument();
          });
       });
@@ -452,7 +452,7 @@ describe("ActiveFilters Component", () => {
          renderWithProviders(<ActiveFilters />, { initialState });
 
          expect(
-            screen.getByText("Subject: UNKNOWN_SUBJECT")
+            screen.getByText("Subjects: UNKNOWN_SUBJECT")
          ).toBeInTheDocument();
       });
    });
@@ -471,10 +471,10 @@ describe("ActiveFilters Component", () => {
 
             // Check that chips have different color classes (actual color values depend on theme)
             const subjectChip = screen
-               .getByText("Subject: CM2")
+               .getByText("Subjects: CM2")
                .closest(".MuiChip-root");
             const categoryChip = screen
-               .getByText("Category: Materials")
+               .getByText("Categories: Materials")
                .closest(".MuiChip-root");
 
             expect(subjectChip).toHaveClass("MuiChip-colorPrimary");
@@ -525,7 +525,7 @@ describe("ActiveFilters Component", () => {
          }).not.toThrow();
 
          // Should only show valid filters
-         expect(screen.getByText("Category: Materials")).toBeInTheDocument();
+         expect(screen.getByText("Categories: Materials")).toBeInTheDocument();
       });
 
       test("handles empty filter arrays", async () => {
@@ -627,10 +627,10 @@ describe("ActiveFilters Component", () => {
          renderWithProviders(<ActiveFilters />, { initialState });
 
          // Verify labels come from FilterRegistry.label, not hardcoded FILTER_CONFIG
-         expect(screen.getByText("Subject: CM2")).toBeInTheDocument();
-         expect(screen.getByText("Category: Materials")).toBeInTheDocument();
+         expect(screen.getByText("Subjects: CM2")).toBeInTheDocument();
+         expect(screen.getByText("Categories: Materials")).toBeInTheDocument();
          expect(
-            screen.getByText("Mode of Delivery: Ebook")
+            screen.getByText("Modes of Delivery: Ebook")
          ).toBeInTheDocument();
       });
       test.skip("automatically renders chips for new filter types added to registry", () => {
@@ -661,7 +661,7 @@ describe("ActiveFilters Component", () => {
             renderWithProviders(<ActiveFilters />, { initialState });
 
             // Verify new filter type renders WITHOUT modifying ActiveFilters.js
-            expect(screen.getByText("Subject: CM2")).toBeInTheDocument();
+            expect(screen.getByText("Subjects: CM2")).toBeInTheDocument();
             // Now that we've migrated, the new filter should render automatically
             expect(
                screen.getByText("Tutorial Location: London")
@@ -718,9 +718,9 @@ describe("ActiveFilters Component", () => {
                .map((btn) => btn.closest(".MuiChip-root").textContent);
 
             // Verify chips appear in order specified by FilterRegistry.order
-            expect(chips[0]).toBe("Subject: CM2");
-            expect(chips[1]).toBe("Category: Materials");
-            expect(chips[2]).toBe("Product Type: Core Study Material");
+            expect(chips[0]).toBe("Subjects: CM2");
+            expect(chips[1]).toBe("Categories: Materials");
+            expect(chips[2]).toBe("Product Types: Core Study Material");
          });
       });
       test("no hardcoded FILTER_CONFIG remains in component (AC6 - Story 1.11)", async () => {
@@ -741,14 +741,14 @@ describe("ActiveFilters Component", () => {
          renderWithProviders(<ActiveFilters />, { initialState });
 
          // Verify the registered filter types render correctly via FilterRegistry
-         expect(screen.getByText("Subject: CM2")).toBeInTheDocument();
-         expect(screen.getByText("Subject: SA1")).toBeInTheDocument();
-         expect(screen.getByText("Category: Materials")).toBeInTheDocument();
+         expect(screen.getByText("Subjects: CM2")).toBeInTheDocument();
+         expect(screen.getByText("Subjects: SA1")).toBeInTheDocument();
+         expect(screen.getByText("Categories: Materials")).toBeInTheDocument();
          expect(
-            screen.getByText("Product Type: Core Study Material")
+            screen.getByText("Product Types: Core Study Material")
          ).toBeInTheDocument();
          expect(
-            screen.getByText("Mode of Delivery: Ebook")
+            screen.getByText("Modes of Delivery: Ebook")
          ).toBeInTheDocument();
 
          // Verify all chips have correct colors from FilterRegistry
