@@ -14,6 +14,7 @@ from administrate.services.webhook_ingress import (
     dispatch_inbox_task,
     persist_inbox_row,
 )
+from administrate.services.webhook_metrics import incr_received
 
 
 logger = logging.getLogger('administrate.webhook')
@@ -38,12 +39,14 @@ class AdministrateEventWebhookView(APIView):
     def post(self, request, route_token, *args, **kwargs):
         expected_token = settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN
         if not expected_token or not constant_time_compare(route_token, expected_token):
+            incr_received('', 'auth_failed')
             return Response(status=404)
 
         config = request.data.get('configuration') or {}
         secret = config.get('secret', '') if isinstance(config, dict) else ''
         configured_secret = settings.ADMINISTRATE_WEBHOOK_SECRET
         if not configured_secret or not constant_time_compare(secret, configured_secret):
+            incr_received('', 'auth_failed')
             return Response(status=401)
 
         try:
@@ -53,9 +56,34 @@ class AdministrateEventWebhookView(APIView):
             with transaction.atomic():
                 row = persist_inbox_row(request.data, dict(request.headers))
         except InvalidPayload as exc:
+            incr_received('', 'bad_request')
             return Response({'error': str(exc)}, status=400)
         except IntegrityError:
+            metadata = request.data.get('metadata') or {}
+            type_name = metadata.get('webhookTypeName', '') if isinstance(metadata, dict) else ''
+            entity_id = str(metadata.get('entityId', '')) if isinstance(metadata, dict) else ''
+            incr_received(type_name, 'duplicate')
+            logger.info(
+                'administrate.webhook.received',
+                extra={
+                    'inbox_id': None,
+                    'type': type_name,
+                    'entity_id': entity_id,
+                    'duplicate': True,
+                },
+            )
             return Response({'status': 'duplicate'}, status=200)
+
+        logger.info(
+            'administrate.webhook.received',
+            extra={
+                'inbox_id': row.id,
+                'type': row.webhook_type_name,
+                'entity_id': row.entity_external_id,
+                'duplicate': False,
+            },
+        )
+        incr_received(row.webhook_type_name, 'queued')
 
         # Under ImmediateBackend (slice 1), this call runs the handler
         # synchronously in-request and may raise. The inbox row is already

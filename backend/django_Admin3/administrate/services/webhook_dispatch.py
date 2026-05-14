@@ -18,9 +18,10 @@ from django.utils import timezone
 from administrate.exceptions import MissingDependencyError
 from administrate.models import WebhookInbox
 from administrate.services.webhook_handlers import EVENT_HANDLERS
+from administrate.services.webhook_metrics import incr_applied, incr_failed
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('administrate.webhook')
 
 MAX_ATTEMPTS = 5
 
@@ -80,6 +81,7 @@ def apply_inbox_row(inbox_id: int) -> None:
             return
 
         node = _extract_node(row.raw_payload)
+        logger.info('administrate.webhook.task.start', extra={'inbox_id': inbox_id})
         with transaction.atomic():
             handler(node)
         _mark_applied(row)
@@ -108,18 +110,43 @@ def _mark_applied(row: WebhookInbox) -> None:
     row.applied_at = timezone.now()
     row.error_message = ''
     row.save(update_fields=['status', 'applied_at', 'error_message'])
+    incr_applied(row.webhook_type_name)
+    logger.info(
+        'administrate.webhook.task.applied',
+        extra={'inbox_id': row.id, 'attempts': row.attempts},
+    )
 
 
 def _mark_failed(row: WebhookInbox, message: str) -> None:
     row.status = WebhookInbox.STATUS_FAILED
     row.error_message = message
     row.save(update_fields=['status', 'error_message'])
+    incr_failed(row.webhook_type_name, row.attempts)
+    logger.error(
+        'administrate.webhook.task.failed',
+        extra={
+            'inbox_id': row.id,
+            'attempt': row.attempts,
+            'error': message,
+            'terminal': False,
+        },
+    )
 
 
 def _mark_dead(row: WebhookInbox, message: str) -> None:
     row.status = WebhookInbox.STATUS_DEAD
     row.error_message = message
     row.save(update_fields=['status', 'error_message'])
+    incr_failed(row.webhook_type_name, row.attempts)
+    logger.error(
+        'administrate.webhook.task.failed',
+        extra={
+            'inbox_id': row.id,
+            'attempt': row.attempts,
+            'error': message,
+            'terminal': True,
+        },
+    )
 
 
 def _format_error(exc: Exception) -> str:
