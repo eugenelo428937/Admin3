@@ -13,14 +13,10 @@ import {
     selectFilters,
     selectFilterCounts,
     selectValidationErrors,
-    toggleSubjectFilter,
-    toggleCategoryFilter,
-    toggleProductTypeFilter,
-    toggleProductFilter,
-    toggleModeOfDeliveryFilter,
+    toggleFilter,
     clearAllFilters,
     clearFilterType,
-    clearValidationErrors
+    clearValidationErrors,
 } from '../../store/slices/filtersSlice';
 import { FilterRegistry } from '../../store/filters/filterRegistry';
 import type {
@@ -67,6 +63,7 @@ export const SCROLLABLE_FILTER_STYLES = {
 // ─── Expanded Panels State ──────────────────────────────────────
 
 export interface ExpandedPanelsState {
+    programme_type: boolean;
     subjects: boolean;
     categories: boolean;
     product_types: boolean;
@@ -156,6 +153,7 @@ const useFilterPanelVM = (props: FilterPanelProps): FilterPanelVM => {
         }
         // Default state
         return {
+            programme_type: false,
             subjects: true,
             categories: false,
             product_types: false,
@@ -185,28 +183,12 @@ const useFilterPanelVM = (props: FilterPanelProps): FilterPanelVM => {
     }, []);
 
     /**
-     * Handle filter selection
+     * Handle filter selection — dispatches the generic toggleFilter
+     * action so every registered filter type works without needing a
+     * per-dimension case here. Adding a new filter is a DB-only change.
      */
     const handleFilterChange = useCallback((filterType: string, value: string) => {
-        switch (filterType) {
-            case 'subjects':
-                dispatch(toggleSubjectFilter(value));
-                break;
-            case 'categories':
-                dispatch(toggleCategoryFilter(value));
-                break;
-            case 'product_types':
-                dispatch(toggleProductTypeFilter(value));
-                break;
-            case 'products':
-                dispatch(toggleProductFilter(value));
-                break;
-            case 'modes_of_delivery':
-                dispatch(toggleModeOfDeliveryFilter(value));
-                break;
-            default:
-                break;
-        }
+        dispatch(toggleFilter({ filterKey: filterType, value }));
     }, [dispatch]);
 
     /**

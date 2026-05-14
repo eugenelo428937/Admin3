@@ -3,12 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useConfig } from '../../contexts/ConfigContext';
 import productService from '../../services/productService';
-import {
-   navSelectSubject,
-   navViewAllProducts,
-   navSelectProductGroup,
-   navSelectProduct,
-} from '../../store/slices/filtersSlice';
+import { navSelectFilter } from '../../store/slices/filtersSlice';
 import type {
    NavigationSubject,
    NavigationProductGroup,
@@ -39,6 +34,14 @@ export interface MainNavBarVM {
    handleSpecificProductClick: (productId: number | string) => void;
    handleProductVariationClick: (variationId: number | string) => void;
    handleMarkingVouchersClick: (e: React.MouseEvent) => void;
+   /**
+    * Generic nav-filter handler. Consumes the `filter` object that the
+    * backend embeds on each clickable nav item (see
+    * catalog/services/navigation_filter_mapping.py). Adding a new
+    * filter type is a backend-only change once nav items declare their
+    * target via this object.
+    */
+   handleNavFilter: (target: { filterKey: string; value: string; preserve?: string[] }) => void;
 
    // UI handlers
    toggleExpanded: () => void;
@@ -116,30 +119,40 @@ const useMainNavBarVM = (): MainNavBarVM => {
       fetchNavigationData();
    }, [configLoaded, isInternal]);
 
-   // Navigation handlers
+   // Generic nav-filter handler. Every per-dimension handler below
+   // routes through this; new filter types added via the DB become
+   // navigable as soon as the navigation API embeds a `filter` object
+   // on the relevant item.
+   const handleNavFilter = useCallback(
+      (target: { filterKey: string; value: string; preserve?: string[] }) => {
+         dispatch(navSelectFilter(target));
+         navigate('/products');
+         setExpanded(false);
+      },
+      [dispatch, navigate]
+   );
+
+   // Per-dimension navigation handlers (kept for NavigationMenu.tsx
+   // call sites — see docs/to-dos/filter-registry-architecture-debt.md
+   // for the follow-up that threads the API's `filter` object all the
+   // way through and lets these go away).
    const handleSubjectClick = useCallback((subjectCode: string) => {
-      dispatch(navSelectSubject(subjectCode));
-      navigate('/products');
-      setExpanded(false);
-   }, [dispatch, navigate]);
+      handleNavFilter({ filterKey: 'subjects', value: subjectCode, preserve: [] });
+   }, [handleNavFilter]);
 
    const handleProductClick = useCallback(() => {
-      dispatch(navViewAllProducts());
-      navigate('/products');
-      setExpanded(false);
-   }, [dispatch, navigate]);
+      // "View all products for the current subjects": clear everything
+      // else but keep the active subjects.
+      handleNavFilter({ filterKey: 'subjects', value: '__keep__', preserve: ['subjects'] });
+   }, [handleNavFilter]);
 
    const handleProductGroupClick = useCallback((groupName: string) => {
-      dispatch(navSelectProductGroup(groupName));
-      navigate('/products');
-      setExpanded(false);
-   }, [dispatch, navigate]);
+      handleNavFilter({ filterKey: 'product_types', value: groupName, preserve: ['subjects'] });
+   }, [handleNavFilter]);
 
    const handleSpecificProductClick = useCallback((productId: number | string) => {
-      dispatch(navSelectProduct(productId));
-      navigate('/products');
-      setExpanded(false);
-   }, [dispatch, navigate]);
+      handleNavFilter({ filterKey: 'products', value: String(productId), preserve: ['subjects'] });
+   }, [handleNavFilter]);
 
    const handleProductVariationClick = useCallback((_variationId: number | string) => {
       navigate('/products');
@@ -148,10 +161,8 @@ const useMainNavBarVM = (): MainNavBarVM => {
 
    const handleMarkingVouchersClick = useCallback((e: React.MouseEvent) => {
       e.preventDefault();
-      dispatch(navSelectProductGroup('8'));
-      navigate('/products');
-      setExpanded(false);
-   }, [dispatch, navigate]);
+      handleNavFilter({ filterKey: 'product_types', value: '8', preserve: ['subjects'] });
+   }, [handleNavFilter]);
 
    // UI handlers
    const toggleExpanded = useCallback(() => {
@@ -199,6 +210,7 @@ const useMainNavBarVM = (): MainNavBarVM => {
       handleSpecificProductClick,
       handleProductVariationClick,
       handleMarkingVouchersClick,
+      handleNavFilter,
       toggleExpanded,
       setExpanded,
       handleOpenSearchModal,

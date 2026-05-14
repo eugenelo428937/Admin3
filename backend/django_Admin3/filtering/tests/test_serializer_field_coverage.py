@@ -7,16 +7,14 @@ patterns that the coverage auditor scanner detects:
 - Write: 'field_name': value in dict literals (in files with .post() calls)
 
 Coverage targets:
-- FilterConfigurationGroupSerializer: 6 fields (all read + write)
-- FilterGroupSerializer: 4 fields (all read + write)
-- FilterGroupThreeLevelSerializer: 4 fields (all read + write)
+- FilterConfigurationGroupSerializer: 5 fields (id, name, code, display_order, is_default)
+- FilterGroupSerializer: 2 fields (id, name)
 """
 from django.test import TestCase
 
 from filtering.serializers import (
     FilterConfigurationGroupSerializer,
     FilterGroupSerializer,
-    FilterGroupThreeLevelSerializer,
 )
 from filtering.models import FilterGroup, FilterConfigurationGroup, FilterConfiguration
 from filtering.tests.factories import create_filter_config, create_filter_group, assign_group_to_config
@@ -60,12 +58,13 @@ class FilterConfigurationGroupSerializerReadCoverageTest(TestCase):
         data = FilterConfigurationGroupSerializer(junction).data
         self.assertTrue(data['is_default'])
 
-    def test_read_parent_id(self):
-        config = create_filter_config('FCGReadPid', 'fcg_read_pid', 'filter_group')
-        group = create_filter_group('FCGReadPidGrp', code='FCGRP')
+    def test_no_parent_id_field(self):
+        """parent_id was removed from FilterConfigurationGroupSerializer in migration 0012."""
+        config = create_filter_config('FCGNoPid', 'fcg_no_pid', 'filter_group')
+        group = create_filter_group('FCGNoPidGrp', code='FCGNP')
         junction = assign_group_to_config(config, group)
         data = FilterConfigurationGroupSerializer(junction).data
-        _ = data['parent_id']
+        self.assertNotIn('parent_id', data)
 
 
 class FilterConfigurationGroupSerializerWriteCoverageTest(TestCase):
@@ -87,9 +86,8 @@ class FilterConfigurationGroupSerializerWriteCoverageTest(TestCase):
             'code': 'WRT_GRP',
             'display_order': 1,
             'is_default': True,
-            'parent_id': None,
         }
-        response = self.client.post('/api/products/filter-configuration/', payload, content_type='application/json')
+        self.client.post('/api/products/filter-configuration/', payload, content_type='application/json')
 
 
 class FilterGroupSerializerReadCoverageTest(TestCase):
@@ -105,27 +103,17 @@ class FilterGroupSerializerReadCoverageTest(TestCase):
         data = FilterGroupSerializer(group).data
         _ = data['name']
 
-    def test_read_parent_null(self):
-        group = create_filter_group('FGSReadParNull', code='FGSRPN')
+    def test_no_parent_field(self):
+        """parent field was removed from FilterGroupSerializer in migration 0012."""
+        group = create_filter_group('FGSNoPar', code='FGSNP')
         data = FilterGroupSerializer(group).data
-        self.assertIsNone(data['parent'])
+        self.assertNotIn('parent', data)
 
-    def test_read_parent_with_value(self):
-        parent = create_filter_group('FGSReadPar', code='FGSRP')
-        child = create_filter_group('FGSReadChild', code='FGSRC', parent=parent)
-        data = FilterGroupSerializer(child).data
-        self.assertEqual(data['parent'], parent.id)
-
-    def test_read_children_empty(self):
-        group = create_filter_group('FGSReadLeaf', code='FGSRL')
+    def test_no_children_field(self):
+        """children field was removed from FilterGroupSerializer in migration 0012."""
+        group = create_filter_group('FGSNoChild', code='FGSNC')
         data = FilterGroupSerializer(group).data
-        self.assertEqual(data['children'], [])
-
-    def test_read_children_with_data(self):
-        parent = create_filter_group('FGSReadPar2', code='FGSRP2')
-        create_filter_group('FGSReadCh2', code='FGSRC2', parent=parent)
-        data = FilterGroupSerializer(parent).data
-        self.assertEqual(len(data['children']), 1)
+        self.assertNotIn('children', data)
 
 
 class FilterGroupSerializerWriteCoverageTest(TestCase):
@@ -144,67 +132,5 @@ class FilterGroupSerializerWriteCoverageTest(TestCase):
         payload = {
             'id': 1,
             'name': 'Write Filter Group',
-            'parent': None,
-            'children': [],
         }
-        response = self.client.post('/api/products/filter-configuration/', payload, content_type='application/json')
-
-
-class FilterGroupThreeLevelSerializerReadCoverageTest(TestCase):
-    """Read coverage for FilterGroupThreeLevelSerializer fields."""
-
-    def test_read_id(self):
-        group = create_filter_group('FG3ReadId', code='FG3RI')
-        data = FilterGroupThreeLevelSerializer(group).data
-        _ = data['id']
-
-    def test_read_name(self):
-        group = create_filter_group('FG3ReadName', code='FG3RN')
-        data = FilterGroupThreeLevelSerializer(group).data
-        _ = data['name']
-
-    def test_read_parent_null(self):
-        group = create_filter_group('FG3ReadPNull', code='FG3RPN')
-        data = FilterGroupThreeLevelSerializer(group).data
-        self.assertIsNone(data['parent'])
-
-    def test_read_parent_with_value(self):
-        parent = create_filter_group('FG3ReadPar', code='FG3RP')
-        child = create_filter_group('FG3ReadChild', code='FG3RC', parent=parent)
-        data = FilterGroupThreeLevelSerializer(child).data
-        self.assertEqual(data['parent'], parent.id)
-
-    def test_read_children_empty(self):
-        group = create_filter_group('FG3ReadLeaf', code='FG3RL')
-        data = FilterGroupThreeLevelSerializer(group).data
-        self.assertEqual(data['children'], [])
-
-    def test_read_children_three_levels(self):
-        root = create_filter_group('FG3L1R', code='FG3L1R')
-        child = create_filter_group('FG3L2R', code='FG3L2R', parent=root)
-        create_filter_group('FG3L3R', code='FG3L3R', parent=child)
-        data = FilterGroupThreeLevelSerializer(root).data
-        self.assertEqual(len(data['children']), 1)
-        self.assertEqual(len(data['children'][0]['children']), 1)
-
-
-class FilterGroupThreeLevelSerializerWriteCoverageTest(TestCase):
-    """Write coverage for FilterGroupThreeLevelSerializer fields."""
-
-    def setUp(self):
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        self.user = User.objects.create_user(
-            username='fg3_write_user', email='fg3_write@test.com', password='pass',
-        )
-        self.client.force_login(self.user)
-
-    def test_write_three_level_fields(self):
-        """Trigger write coverage for all FilterGroupThreeLevelSerializer fields."""
-        payload = {
-            'id': 1,
-            'name': 'Write Three Level Group',
-            'parent': None,
-            'children': [],
-        }
-        response = self.client.post('/api/products/filter-configuration/', payload, content_type='application/json')
+        self.client.post('/api/products/filter-configuration/', payload, content_type='application/json')

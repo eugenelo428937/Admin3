@@ -1,6 +1,6 @@
-"""FilterGroup model for hierarchical product filtering.
+"""FilterGroup model for flat product filtering.
 
-Provides tree structure for organizing product filters.
+Provides flat groups for organizing product filters.
 
 Table: "acted"."filter_groups"
 """
@@ -9,33 +9,21 @@ from django.db import models
 
 class FilterGroup(models.Model):
     """
-    Hierarchical filter groups for product categorization.
+    Flat filter groups for product categorization.
 
-    Supports parent-child relationships for nested filter hierarchies
-    like Material > Study Text > eBook.
+    Products are mapped to groups via the filter_product_product_groups
+    join table (one row per group a product belongs to).
 
     **Usage Example**::
 
         from filtering.models import FilterGroup
 
-        # Get root categories
-        roots = FilterGroup.objects.filter(parent__isnull=True)
-
-        # Get descendants of a group
-        material_group = FilterGroup.objects.get(code='MATERIAL')
-        descendants = material_group.get_descendants()
+        # Get all active groups
+        groups = FilterGroup.objects.filter(is_active=True)
     """
     name = models.CharField(
         max_length=100,
         help_text='Display name for the filter group'
-    )
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='children',
-        help_text='Parent group for hierarchy'
     )
     code = models.CharField(
         max_length=100,
@@ -65,30 +53,3 @@ class FilterGroup(models.Model):
 
     def __str__(self):
         return self.name
-
-    def get_full_path(self):
-        """Get the full hierarchical path."""
-        path = [self.name]
-        parent = self.parent
-        while parent:
-            path.insert(0, parent.name)
-            parent = parent.parent
-        return ' > '.join(path)
-
-    def get_descendants(self, include_self=True):
-        """Get all descendant groups."""
-        descendants = []
-        if include_self:
-            descendants.append(self)
-        for child in self.children.all():
-            descendants.extend(child.get_descendants(include_self=True))
-        return descendants
-
-    def get_level(self):
-        """Get the depth level in the hierarchy."""
-        level = 0
-        parent = self.parent
-        while parent:
-            level += 1
-            parent = parent.parent
-        return level

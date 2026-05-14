@@ -20,49 +20,10 @@ import PerformanceTracker from '../../utils/PerformanceTracker';
 import { URL_SYNC_BUDGET } from '../../config/performanceBudgets';
 import { setMultipleFilters as _setMultipleFilters } from '../slices/filtersSlice';
 
-/**
- * URL Parameter Mapping Configuration
- *
- * Defines how Redux state fields map to URL query parameters
- */
-const URL_PARAM_MAPPING: Record<string, { reduxField: string; urlParam: string; format: string; type: string }> = {
-  subjects: {
-    reduxField: 'subjects',
-    urlParam: 'subject_code',
-    format: 'indexed',        // subject_code, subject_1, subject_2
-    type: 'array'
-  },
-  categories: {
-    reduxField: 'categories',
-    urlParam: 'category_code',
-    format: 'indexed',        // category_code, category_1, category_2
-    type: 'array'
-  },
-  product_types: {
-    reduxField: 'product_types',
-    urlParam: 'group',        // Legacy name for backward compatibility
-    format: 'comma-separated', // group=PRINTED,EBOOK
-    type: 'array'
-  },
-  products: {
-    reduxField: 'products',
-    urlParam: 'product',
-    format: 'comma-separated', // product=PROD1,PROD2
-    type: 'array'
-  },
-  modes_of_delivery: {
-    reduxField: 'modes_of_delivery',
-    urlParam: 'mode_of_delivery',
-    format: 'comma-separated',
-    type: 'array'
-  },
-  searchQuery: {
-    reduxField: 'searchQuery',
-    urlParam: 'search_query',
-    format: 'single',
-    type: 'string'
-  }
-};
+// NOTE: a per-filter URL_PARAM_MAPPING constant used to live here as a
+// second source of truth alongside FilterRegistry. It has been removed
+// — toUrlParams / fromUrlParams in filterUrlManager.ts read the
+// registry directly. See docs/to-dos/filter-registry-architecture-debt.md.
 
 /**
  * Parse URL parameters to Redux filter state
@@ -104,34 +65,54 @@ export const urlSyncMiddleware = createListenerMiddleware();
 // Track last URL parameters to prevent infinite loops
 let lastUrlParams: string | null = null;
 
-// Define all filter action types that should trigger URL updates (Story 1.1, 1.16)
+// Filter actions that should trigger a URL update.
+//
+// The generic group is the canonical new API; the legacy group is the
+// deprecated per-dimension shim layer (filtersSlice.legacy.ts) — both
+// route through baseFilters.slice.ts and produce the same state
+// transitions, so both must be listed here until the shims are
+// retired.
 const FILTER_ACTION_TYPES: string[] = [
+  // === Generic actions (new API) ===
+  'filters/setFilter',
+  'filters/toggleFilter',
+  'filters/removeFilter',
+  'filters/clearFilterKey',
+  'filters/clearAllFilters',
+  'filters/resetFilters',
+  'filters/setScalar',
+  'filters/setMultipleFilters',
+  'filters/applyFilters',
+  'filters/navSelectFilter',
+
+  // === Legacy actions (deprecated shims) ===
+  'filters/setProgrammeTypes',
   'filters/setSubjects',
   'filters/setCategories',
   'filters/setProductTypes',
   'filters/setProducts',
   'filters/setModesOfDelivery',
   'filters/setSearchQuery',
-  'filters/setMultipleFilters',
+  'filters/toggleProgrammeTypeFilter',
   'filters/toggleSubjectFilter',
   'filters/toggleCategoryFilter',
   'filters/toggleProductTypeFilter',
   'filters/toggleProductFilter',
   'filters/toggleModeOfDeliveryFilter',
+  'filters/removeProgrammeTypeFilter',
   'filters/removeSubjectFilter',
   'filters/removeCategoryFilter',
   'filters/removeProductTypeFilter',
   'filters/removeProductFilter',
   'filters/removeModeOfDeliveryFilter',
   'filters/clearFilterType',
-  'filters/clearAllFilters',
-  'filters/resetFilters',
   'filters/navSelectSubject',
   'filters/navViewAllProducts',
   'filters/navSelectProductGroup',
   'filters/navSelectProduct',
   'filters/navSelectModeOfDelivery',
-  // Pagination actions (Story 1.16)
+
+  // === Pagination (Story 1.16) ===
   'filters/setCurrentPage',
   'filters/setPageSize',
 ];
@@ -143,6 +124,7 @@ const URL_SYNC_PAGES: string[] = ['/products', '/home', '/'];
 // Any param NOT matching these is preserved across URL sync updates
 // (e.g., ?preview=1 for admin storefront preview, ?utm_source=... for analytics).
 const FILTER_PARAM_PATTERNS: RegExp[] = [
+  /^programme_type$/,
   /^subject_code$/, /^subject_\d+$/,
   /^category_code$/, /^category_\d+$/,
   /^group$/,

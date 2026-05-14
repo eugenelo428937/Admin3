@@ -206,11 +206,21 @@ describe('parseUrlToFilters - URL → Redux Restoration (Story 1.6)', () => {
       expect(filters.product_types).toEqual(['PRINTED', 'EBOOK', 'ONLINE']);
     });
 
-    it('should parse comma-separated product parameter to products array', () => {
+    it('should parse comma-separated programme_type parameter to programme_type array', () => {
+      const params = new URLSearchParams('programme_type=normal,caa');
+      const filters = parseUrlToFilters(params);
+
+      expect(filters.programme_type).toEqual(['normal', 'caa']);
+    });
+
+    it('ignores ?product= because the products filter is no longer registered', () => {
+      // Historical behavior parsed ?product=PROD1,PROD2 into state.products.
+      // The 'products' filter has been removed from FilterRegistry — see
+      // docs/filter-registry-architecture-debt.md.
       const params = new URLSearchParams('product=PROD1,PROD2');
       const filters = parseUrlToFilters(params);
 
-      expect(filters.products).toEqual(['PROD1', 'PROD2']);
+      expect(filters.products).toEqual([]);
     });
 
     it('should handle single value in comma-separated format', () => {

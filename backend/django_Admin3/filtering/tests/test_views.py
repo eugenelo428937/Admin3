@@ -9,9 +9,8 @@ class TestProductCategoriesAllEndpoint(APITestCase):
 
     def setUp(self):
         self.root = FilterGroup.objects.create(name='Root Category', code='ROOT')
-        self.child = FilterGroup.objects.create(
-            name='Child Category', code='CHILD', parent=self.root,
-        )
+        # parent field removed in migration 0012 — groups are now flat
+        self.child = FilterGroup.objects.create(name='Child Category', code='CHILD')
 
     def test_product_categories_all(self):
         """GET /api/products/product-categories/all/ returns category tree."""

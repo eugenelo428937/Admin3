@@ -1,0 +1,121 @@
+"""Filter handlers — one per filter_type.
+
+Each handler encapsulates how to compute options, build a Q for filtering,
+and identify the field path for disjunctive-facet counting. Adding a new
+filter_type means adding a handler class and one line in FILTER_HANDLERS.
+
+See docs/superpowers/specs/2026-05-13-filter-system-redesign-design.md
+section 2 for the full design.
+"""
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from typing import Any
+from django.db.models import Q
+
+from filtering.models import FilterConfiguration
+
+
+class FilterHandler(ABC):
+    """One per filter_type. Knows how to list options, build a Q,
+    and compute counts for filters of its type."""
+
+    @abstractmethod
+    def get_options(self, config: FilterConfiguration) -> list[dict[str, Any]]:
+        """Return options to render in this filter's UI section.
+
+        Each option is a dict with at minimum {'value': str, 'label': str}.
+        """
+
+    @abstractmethod
+    def build_q(self, config: FilterConfiguration, values: list[str]) -> Q:
+        """Return a Q object that filters store.Product to rows whose
+        relation through this filter matches any of `values`.
+
+        Empty `values` → caller skips, so this method may assume values
+        is non-empty.
+        """
+
+    @abstractmethod
+    def count_path(self, config: FilterConfiguration) -> str:
+        """Return the queryset .values(<path>) used in disjunctive faceting
+        to roll up counts by this filter's discrete option."""
+
+
+class SubjectHandler(FilterHandler):
+    """Lists active Subject rows; filters store.Product by subject code."""
+
+    def get_options(self, config):
+        from catalog.models import Subject
+        return [
+            {
+                'value': s.code,
+                'label': f"{s.code} - {s.description}" if s.description else s.code,
+                'code': s.code,
+            }
+            for s in Subject.objects.filter(active=True).order_by('code')
+        ]
+
+    def build_q(self, config, values):
+        return Q(exam_session_subject__subject__code__in=values)
+
+    def count_path(self, config):
+        return 'exam_session_subject__subject__code'
+
+
+class SubjectTypeHandler(FilterHandler):
+    """Enumerates Subject.SubjectType.choices (UK / SA / CAA / PMS);
+    filters store.Product by Subject.subject_type column."""
+
+    def get_options(self, config):
+        from catalog.subject.models import Subject
+        return [
+            {'value': value, 'label': label}
+            for value, label in Subject.SubjectType.choices
+        ]
+
+    def build_q(self, config, values):
+        return Q(exam_session_subject__subject__subject_type__in=values)
+
+    def count_path(self, config):
+        return 'exam_session_subject__subject__subject_type'
+
+
+class FilterGroupHandler(FilterHandler):
+    """For filter_type='filter_group'. Lists FilterGroup rows mapped to
+    this configuration via FilterConfigurationGroup; filters store.Product
+    through filter_product_product_groups → filter_groups.name."""
+
+    def get_options(self, config):
+        groups = config.filter_groups.all().order_by('display_order', 'name')
+        return [
+            {
+                'value': g.name,
+                'label': g.name,
+                'code': g.code or '',
+            }
+            for g in groups
+        ]
+
+    def build_q(self, config, values):
+        # Use a subquery (id__in=…) rather than a direct JOIN-based filter.
+        # Multiple filter_group filters all share the same JOIN chain
+        # (product_product_variation → product_groups → product_group); if
+        # we expressed the filter as a JOIN, Django would reuse the same
+        # alias for the disjunctive-faceting GROUP BY, restricting the
+        # count's scope to the filter's WHERE clause. The subquery keeps
+        # the count's JOIN independent.
+        from store.models import Product as StoreProduct
+        matching = StoreProduct.objects.filter(
+            product_product_variation__product_groups__product_group__name__in=values
+        ).values_list('id', flat=True)
+        return Q(id__in=matching)
+
+    def count_path(self, config):
+        return 'product_product_variation__product_groups__product_group__name'
+
+
+FILTER_HANDLERS: dict[str, FilterHandler] = {
+    'subject':       SubjectHandler(),
+    'subject_type':  SubjectTypeHandler(),
+    'filter_group':  FilterGroupHandler(),
+}

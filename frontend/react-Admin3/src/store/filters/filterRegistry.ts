@@ -199,12 +199,18 @@ export class FilterRegistry {
   static registerFromBackend(backendConfigs: Record<string, any>): void {
     this.#filters.clear();
 
-    // URL param mapping for known filter keys
+    // URL param mapping for known filter keys.
+    //
+    // 'products' is intentionally NOT here. There is no PRODUCTS row in
+    // filter_configurations; an entry here is dead weight that has tempted
+    // refactors to re-add the hardcoded 'products' filter several times.
+    // If a 'products' filter ever becomes a real product requirement, add
+    // both the DB row AND this entry in the same PR.
     const URL_PARAM_MAP: Record<string, { urlParam: string; urlParamAliases: string[]; urlFormat: string; color: string }> = {
+      programme_type: { urlParam: 'programme_type', urlParamAliases: [], urlFormat: 'comma-separated', color: 'secondary' },
       subjects: { urlParam: 'subject_code', urlParamAliases: ['subject'], urlFormat: 'indexed', color: 'primary' },
       categories: { urlParam: 'category_code', urlParamAliases: ['category'], urlFormat: 'indexed', color: 'info' },
       product_types: { urlParam: 'group', urlParamAliases: [], urlFormat: 'comma-separated', color: 'success' },
-      products: { urlParam: 'product', urlParamAliases: [], urlFormat: 'comma-separated', color: 'default' },
       modes_of_delivery: { urlParam: 'mode_of_delivery', urlParamAliases: [], urlFormat: 'comma-separated', color: 'warning' },
     };
 
@@ -254,104 +260,25 @@ export class FilterRegistry {
 }
 
 // ===================================================================
-// Register all existing filter types
+// NO STATIC REGISTRATIONS AT MODULE LOAD.
+//
+// Previously this file shipped a static fallback that registered six
+// filters on import. That made the file the second source of truth
+// alongside `filter_configurations`, and any drift between the two
+// produced a quietly-broken FilterPanel — either an empty hardcoded
+// section (the famous 'products' bug) or a missing filter.
+//
+// Production now boots the registry exclusively via
+// `FilterRegistry.registerFromBackend(config)` in App.js's mount
+// effect. The boot gate (`FilterBootGate`) blocks filter-dependent
+// routes until that effect resolves, so no consumer ever sees an
+// empty registry.
+//
+// Tests bootstrap the registry from a fixture once globally — see
+// `src/test-utils/filterRegistryBootstrap.js` and the `beforeAll` in
+// `src/setupTests.js`. Individual tests can call
+// `FilterRegistry.clear()` in their own `beforeEach` for isolation.
+//
+// See docs/to-dos/filter-registry-architecture-debt.md for the full
+// audit of where filter-shape used to be hardcoded.
 // ===================================================================
-
-// Subjects
-FilterRegistry.register({
-  type: 'subjects',
-  label: 'Subject',
-  pluralLabel: 'Subjects',
-  urlParam: 'subject_code',
-  urlParamAliases: ['subject'],
-  color: 'primary',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'indexed', // subject_code, subject_1, subject_2, ...
-  getDisplayValue: (value: any) => value,
-  order: 1,
-});
-
-// Categories
-FilterRegistry.register({
-  type: 'categories',
-  label: 'Category',
-  pluralLabel: 'Categories',
-  urlParam: 'category_code',
-  urlParamAliases: ['category'],
-  color: 'info',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'indexed', // category_code, category_1, category_2, ...
-  getDisplayValue: (value: any) => value,
-  order: 2,
-});
-
-// Product Types
-FilterRegistry.register({
-  type: 'product_types',
-  label: 'Product Type',
-  pluralLabel: 'Product Types',
-  urlParam: 'group',
-  color: 'success',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any) => value,
-  order: 3,
-});
-
-// Products
-FilterRegistry.register({
-  type: 'products',
-  label: 'Product',
-  pluralLabel: 'Products',
-  urlParam: 'product',
-  color: 'default',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any, counts?: any) => {
-    // Try to get product name from filterCounts
-    if (counts && counts[value]) {
-      const productData = counts[value];
-      // Handle the backend structure: { count: number, name: string, display_name?: string }
-      if (typeof productData === 'object' && productData !== null) {
-        const displayName = productData.display_name || productData.name || productData.label || value;
-        return displayName;
-      }
-    }
-    // Fallback to the product ID if no counts data available
-    return value;
-  },
-  order: 4,
-});
-
-// Modes of Delivery
-FilterRegistry.register({
-  type: 'modes_of_delivery',
-  label: 'Mode of Delivery',
-  pluralLabel: 'Modes of Delivery',
-  urlParam: 'mode_of_delivery',
-  color: 'warning',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any) => value,
-  order: 5,
-});
-
-// Search Query (special case - not rendered as filter section)
-FilterRegistry.register({
-  type: 'searchQuery',
-  label: 'Search',
-  pluralLabel: 'Search',
-  urlParam: 'search_query',
-  urlParamAliases: ['q', 'search'],
-  color: 'info',
-  multiple: false,
-  dataType: 'string',
-  urlFormat: 'single',
-  getDisplayValue: (value: any) => value,
-  order: 0, // First in order but not rendered in FilterPanel
-});

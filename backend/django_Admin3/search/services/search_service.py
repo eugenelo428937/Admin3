@@ -110,7 +110,7 @@ class SearchService:
             filtered_queryset = base_queryset.none()
         else:
             # Apply merged filters through ProductFilterService
-            filtered_queryset = self.filter_service.apply_store_product_filters(
+            filtered_queryset = self.filter_service.apply_filters(
                 base_queryset, filters
             )
 
@@ -149,10 +149,12 @@ class SearchService:
         # Generate filter counts (disjunctive faceting)
         filter_counts = self.filter_service.generate_filter_counts(self._build_optimized_queryset(), filters=filters)
 
-        # Add bundle count (bundle logic stays in SearchService)
+        # Add bundle count (bundle logic stays in SearchService).
+        # Use setdefault because filter_counts only contains keys for which
+        # a FilterConfiguration row exists — 'categories' is not guaranteed.
         bundle_count = self._get_filtered_bundle_count(filters)
         if bundle_count > 0:
-            filter_counts['categories']['Bundle'] = {
+            filter_counts.setdefault('categories', {})['Bundle'] = {
                 'count': bundle_count, 'name': 'Bundle'
             }
 
@@ -472,6 +474,7 @@ class SearchService:
         """
         exclude_names = set(exclude_names or [])
         resolved_ids = set()
+        unresolved = []
 
         for name in group_names:
             if name in exclude_names:
@@ -481,7 +484,18 @@ class SearchService:
                 descendants = group.get_descendants(include_self=True)
                 resolved_ids.update(g.id for g in descendants)
             except FilterGroup.DoesNotExist:
-                continue
+                unresolved.append(name)
+
+        # Mirrors filtering.services.filter_service: when every requested
+        # name misses, the caller drops the WHERE clause and silently
+        # returns the full queryset. Surface this in logs so name drift
+        # between code and FilterGroup.name rows is visible.
+        if unresolved and not resolved_ids:
+            logger.warning(
+                "FilterGroup name resolution returned no matches; "
+                "downstream filter will be silently dropped. "
+                "Unresolved names: %s", unresolved,
+            )
 
         return resolved_ids
 
@@ -531,21 +545,18 @@ class SearchService:
             product_qs = product_qs.filter(q_filter)
 
         # M2M group filters — separate .filter() calls for independent JOINs.
-        # All three group-based dimensions use the same mechanism.
-        from filtering.services.filter_service import ProductFilterService
+        # Filter by group name directly (hierarchy was flattened in migration 0012).
         for filter_key, exclude in [
-            ('categories', ['Bundle']),
-            ('product_types', None),
-            ('modes_of_delivery', None),
+            ('categories', {'Bundle'}),
+            ('product_types', set()),
+            ('modes_of_delivery', set()),
         ]:
-            if filters.get(filter_key):
-                group_ids = ProductFilterService._resolve_group_ids_with_hierarchy(
-                    filters[filter_key],
-                    exclude_names=exclude,
-                )
-                if group_ids:
+            values = filters.get(filter_key)
+            if values:
+                names = [v for v in values if v not in exclude]
+                if names:
                     product_qs = product_qs.filter(
-                        product_product_variation__product_groups__product_group__id__in=group_ids
+                        product_product_variation__product_groups__product_group__name__in=names
                     )
 
         return set(product_qs.distinct().values_list('id', flat=True))
