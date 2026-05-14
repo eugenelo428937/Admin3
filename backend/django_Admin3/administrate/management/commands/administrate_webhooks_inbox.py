@@ -51,6 +51,8 @@ class Command(BaseCommand):
         rp.add_argument('inbox_id', nargs='?', type=int)
         rp.add_argument('--status', default=None)
         rp.add_argument('--since', default=None)
+        rp.add_argument('--dry-run', action='store_true', default=False,
+                        help='Show what would be replayed without enqueuing tasks.')
 
     def handle(self, *args, action, **opts):
         if action == 'list':
@@ -58,7 +60,12 @@ class Command(BaseCommand):
         elif action == 'show':
             self._show(opts['inbox_id'])
         elif action == 'replay':
-            self._replay(opts.get('inbox_id'), opts.get('status'), opts.get('since'))
+            self._replay(
+                opts.get('inbox_id'),
+                opts.get('status'),
+                opts.get('since'),
+                dry_run=opts.get('dry_run', False),
+            )
         else:
             raise CommandError(f'Unknown action: {action}')
 
@@ -68,7 +75,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"{row.id}\t{row.received_at:%Y-%m-%d %H:%M:%S}\t"
                 f"{row.webhook_type_name}\t{row.entity_external_id}\t"
-                f"attempts={row.attempts}\t{row.error_message[:60]}"
+                f"attempts={row.attempts}\t{(row.error_message or '')[:60]}"
             )
 
     def _show(self, inbox_id):
@@ -88,7 +95,7 @@ class Command(BaseCommand):
         self.stdout.write('raw_payload:')
         self.stdout.write(json.dumps(row.raw_payload, indent=2, sort_keys=True))
 
-    def _replay(self, inbox_id, status_filter, since):
+    def _replay(self, inbox_id, status_filter, since, dry_run=False):
         if inbox_id is not None:
             self._replay_one(inbox_id)
             return
@@ -101,8 +108,22 @@ class Command(BaseCommand):
             )
         qs = WebhookInbox.objects.filter(status=status_filter)
         if since:
-            since_dt = parse_datetime(since) or datetime.fromisoformat(since)
+            try:
+                since_dt = parse_datetime(since)
+                if since_dt is None:
+                    since_dt = datetime.fromisoformat(since)
+            except ValueError:
+                raise CommandError(
+                    f'--since value {since!r} is not a valid ISO-8601 datetime '
+                    '(example: 2026-05-14T00:00:00Z)'
+                )
             qs = qs.filter(received_at__gte=since_dt)
+        if dry_run:
+            count = qs.count()
+            self.stdout.write(
+                f'[dry-run] would replay {count} row(s) with status={status_filter!r}'
+            )
+            return
         count = 0
         for row in qs:
             self._replay_one(row.id, _row=row)

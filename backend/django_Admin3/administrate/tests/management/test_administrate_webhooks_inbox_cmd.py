@@ -93,7 +93,71 @@ class TestInboxCommand:
             attempts=1,
         )
         # Replay an applied row should error (CommandError).
-        with pytest.raises(Exception):  # Django CommandError
+        from django.core.management.base import CommandError
+        with pytest.raises(CommandError):
             call_command('administrate_webhooks_inbox', 'replay', str(row.id))
         row.refresh_from_db()
         assert row.status == WebhookInbox.STATUS_APPLIED  # unchanged
+
+    def test_show_missing_inbox_id_raises_command_error(self, db):
+        from django.core.management.base import CommandError
+        with pytest.raises(CommandError, match='No inbox row #99999'):
+            call_command('administrate_webhooks_inbox', 'show', '99999')
+
+    @patch(
+        'administrate.management.commands.administrate_webhooks_inbox'
+        '.dispatch_inbox_task'
+    )
+    def test_bulk_replay_by_status(self, mock_dispatch, db):
+        """Bulk replay --status dead should re-enqueue every dead row."""
+        for i in range(3):
+            WebhookInbox.objects.create(
+                administrate_webhook_id=f'wh_bulk_{i}',
+                administrate_event_timestamp='2026-05-14T12:00:00Z',
+                webhook_type_name='Event Updated',
+                entity_type='event',
+                entity_external_id=f'evt_bulk_{i}',
+                raw_payload={},
+                status=WebhookInbox.STATUS_DEAD,
+                attempts=5,
+            )
+
+        out = StringIO()
+        call_command(
+            'administrate_webhooks_inbox', 'replay', '--status', 'dead',
+            stdout=out,
+        )
+        assert mock_dispatch.call_count == 3
+        assert 'replayed 3 row(s)' in out.getvalue()
+
+    @patch(
+        'administrate.management.commands.administrate_webhooks_inbox'
+        '.dispatch_inbox_task'
+    )
+    def test_bulk_replay_dry_run_does_not_dispatch(self, mock_dispatch, db):
+        WebhookInbox.objects.create(
+            administrate_webhook_id='wh_dry_1',
+            administrate_event_timestamp='2026-05-14T12:00:00Z',
+            webhook_type_name='Event Updated',
+            entity_type='event',
+            entity_external_id='evt_dry_1',
+            raw_payload={},
+            status=WebhookInbox.STATUS_DEAD,
+            attempts=5,
+        )
+        out = StringIO()
+        call_command(
+            'administrate_webhooks_inbox', 'replay',
+            '--status', 'dead', '--dry-run',
+            stdout=out,
+        )
+        assert mock_dispatch.call_count == 0
+        assert 'would replay 1 row(s)' in out.getvalue()
+
+    def test_invalid_since_raises_command_error(self, db):
+        from django.core.management.base import CommandError
+        with pytest.raises(CommandError, match='not a valid ISO-8601'):
+            call_command(
+                'administrate_webhooks_inbox', 'replay',
+                '--status', 'dead', '--since', 'yesterday',
+            )
