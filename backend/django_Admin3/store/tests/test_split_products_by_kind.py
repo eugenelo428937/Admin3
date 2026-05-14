@@ -45,8 +45,22 @@ class SplitProductsDryRunTests(TestCase):
         out = StringIO()
         call_command('split_products_by_kind', '--dry-run', stdout=out)
         output = out.getvalue()
-        # The tally lines use the kind names directly
-        for kind in ('material', 'tutorial', 'marking'):
+        for kind in ('material', 'tutorial', 'marking', 'unresolved'):
             self.assertIn(kind, output.lower())
-        # The summary includes a total
         self.assertIn('total', output.lower())
+
+
+class SplitProductsUnimplementedModesTests(TestCase):
+    """--check and --commit raise CommandError until Tasks 5/6 land."""
+
+    def test_check_mode_raises_command_error(self):
+        from django.core.management.base import CommandError
+        with self.assertRaises(CommandError) as cm:
+            call_command('split_products_by_kind', '--check')
+        self.assertIn('Task 5', str(cm.exception))
+
+    def test_commit_mode_raises_command_error(self):
+        from django.core.management.base import CommandError
+        with self.assertRaises(CommandError) as cm:
+            call_command('split_products_by_kind', '--commit')
+        self.assertIn('Task 6', str(cm.exception))

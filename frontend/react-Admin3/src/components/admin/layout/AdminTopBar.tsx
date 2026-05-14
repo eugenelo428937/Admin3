@@ -1,9 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  PanelLeft, Search, Sun, Moon, Settings, LogIn, LogOut, ExternalLink,
-  GraduationCap, ShoppingCart, ClipboardCheck, BookOpen,
-} from 'lucide-react';
+   PanelLeft,
+   Search,
+   Sun,
+   Moon,
+   Settings,
+   LogIn,
+   LogOut,
+   ExternalLink,
+   GraduationCap,
+   ShoppingCart,
+   MessagesSquare,
+   BookOpen,
+   Mails,
+   ListTodo,
+} from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useConfig } from '@/contexts/ConfigContext';
 import { useDarkMode } from './DarkModeProvider';
@@ -19,9 +31,11 @@ const PRIMARY_NAV = [
    {
       label: "Marking",
       path: "/admin/marking/submissions",
-      icon: ClipboardCheck,
+      icon: ListTodo,
    },
-   { label: "Tutorial", path: "/admin/tutorial-events", icon: BookOpen },
+   { label: "Tutorial", path: "/admin/tutorial-events", icon: MessagesSquare },
+   ,
+   { label: "Communications", path: "/admin/email/batches", icon: Mails },
 ];
 
 export function AdminTopBar() {
@@ -49,127 +63,138 @@ export function AdminTopBar() {
   }, [showUserMenu]);
 
   return (
-    <header className="tw:flex tw:h-16 tw:shrink-0 tw:items-center tw:justify-between tw:border-b tw:border-border tw:px-4 tw:gap-4">
-      {/* Left: sidebar toggle */}
-      <div className="tw:flex tw:items-center tw:gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="tw:h-8 tw:w-8"
-          aria-label="Toggle sidebar"
-        >
-          <PanelLeft className="tw:h-4 tw:w-4" />
-        </Button>
-        <Separator orientation="vertical" className="tw:h-4" />
-        {isInternal && (
-          <a
-            href={`${storefrontUrl}${storefrontUrl.includes('?') ? '&' : '?'}preview=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="tw:flex tw:items-center tw:gap-1.5 tw:rounded-md tw:px-2.5 tw:py-1.5 tw:text-xs tw:font-medium tw:text-muted-foreground hover:tw:text-foreground hover:tw:bg-accent tw:transition-colors tw:no-underline"
-          >
-            <ExternalLink className="tw:h-3.5 tw:w-3.5" />
-            View Store
-          </a>
-        )}
-      </div>
-
-      {/* Center: primary navigation (higher hierarchy than sidebar) */}
-      <nav className="tw:flex tw:items-center tw:gap-1">
-        {PRIMARY_NAV.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                'tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:px-4 tw:py-2 tw:text-base tw:font-semibold tw:transition-colors tw:no-underline',
-                isActive
-                  ? 'tw:bg-primary tw:text-primary-foreground tw:shadow-sm'
-                  : 'tw:text-foreground hover:tw:bg-accent hover:tw:text-accent-foreground',
-              )
-            }
-          >
-            <item.icon className="tw:h-5 tw:w-5" />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Right: search, dark mode, settings, avatar */}
-      <div className="tw:flex tw:items-center tw:gap-2">
-        <div className="tw:relative">
-          <Search className="tw:absolute tw:left-2.5 tw:top-1/2 tw:-translate-y-1/2 tw:h-3.5 tw:w-3.5 tw:text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="tw:h-8 tw:w-40 tw:pl-8 tw:text-sm"
-          />
+     <header className="tw:flex tw:h-16 tw:shrink-0 tw:items-center tw:justify-between tw:border-b tw:border-border tw:px-4 tw:gap-4">
+        {/* Left: sidebar toggle */}
+        <div className="tw:flex tw:items-center tw:gap-2">
+           <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="tw:h-8 tw:w-8"
+              aria-label="Toggle sidebar"
+           >
+              <PanelLeft className="tw:h-4 tw:w-4" />
+           </Button>
+           <Separator orientation="vertical" className="tw:h-4" />
+           {isInternal && (
+              <a
+                 href={`${storefrontUrl}${
+                    storefrontUrl.includes("?") ? "&" : "?"
+                 }preview=1`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="tw:flex tw:items-center tw:gap-1.5 tw:rounded-md tw:px-2.5 tw:py-1.5 tw:text-xs tw:font-medium tw:text-muted-foreground hover:tw:text-foreground hover:tw:bg-accent tw:transition-colors tw:no-underline"
+              >
+                 <ExternalLink className="tw:h-3.5 tw:w-3.5" />
+                 View Store
+              </a>
+           )}
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleMode}
-          className="tw:h-8 tw:w-8"
-          aria-label={mode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-        >
-          {mode === 'light' ? (
-            <Moon className="tw:h-4 tw:w-4" />
-          ) : (
-            <Sun className="tw:h-4 tw:w-4" />
-          )}
-        </Button>
+        {/* Center: primary navigation (higher hierarchy than sidebar) */}
+        <nav className="tw:flex tw:items-center tw:gap-1">
+           {PRIMARY_NAV.map((item) => (
+              <NavLink
+                 key={item.path}
+                 to={item.path}
+                 className={({ isActive }) =>
+                    cn(
+                       "tw:flex tw:items-center tw:gap-2 tw:rounded-md tw:px-4 tw:py-2 tw:text-base tw:font-semibold tw:transition-colors tw:no-underline",
+                       isActive
+                          ? "tw:bg-primary tw:text-primary-foreground tw:shadow-sm"
+                          : "tw:text-foreground hover:tw:bg-accent hover:tw:text-accent-foreground"
+                    )
+                 }
+              >
+                 <item.icon className="tw:h-5 tw:w-5" />
+                 <span>{item.label}</span>
+              </NavLink>
+           ))}
+        </nav>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="tw:h-8 tw:w-8"
-          aria-label="Settings"
-        >
-          <Settings className="tw:h-4 tw:w-4" />
-        </Button>
+        {/* Right: search, dark mode, settings, avatar */}
+        <div className="tw:flex tw:items-center tw:gap-2">
+           <div className="tw:relative">
+              <Search className="tw:absolute tw:left-2.5 tw:top-1/2 tw:-translate-y-1/2 tw:h-3.5 tw:w-3.5 tw:text-muted-foreground" />
+              <Input
+                 type="search"
+                 placeholder="Search..."
+                 className="tw:h-8 tw:w-40 tw:pl-8 tw:text-sm"
+              />
+           </div>
 
-        {isAuthenticated && user ? (
-          <div className="tw:relative" ref={menuRef}>
-            <button
-              onClick={() => setShowUserMenu((prev) => !prev)}
-              className="tw:flex tw:h-8 tw:w-8 tw:items-center tw:justify-center tw:rounded-full tw:bg-primary tw:text-primary-foreground tw:text-xs tw:font-bold tw:cursor-pointer tw:border-0"
-              aria-label="User menu"
-            >
-              {userInitials}
-            </button>
+           <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMode}
+              className="tw:h-8 tw:w-8"
+              aria-label={
+                 mode === "light"
+                    ? "Switch to dark mode"
+                    : "Switch to light mode"
+              }
+           >
+              {mode === "light" ? (
+                 <Moon className="tw:h-4 tw:w-4" />
+              ) : (
+                 <Sun className="tw:h-4 tw:w-4" />
+              )}
+           </Button>
 
-            {showUserMenu && (
-              <div className="tw:absolute tw:right-0 tw:top-10 tw:z-50 tw:w-56 tw:rounded-lg tw:border tw:border-border tw:bg-popover tw:text-popover-foreground tw:shadow-lg tw:p-1">
-                <div className="tw:px-3 tw:py-2">
-                  <p className="tw:text-sm tw:font-medium">
-                    {user.first_name} {user.last_name}
-                  </p>
-                  <p className="tw:text-xs tw:text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-                <Separator className="tw:my-1" />
-                <button
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    logout();
-                  }}
-                  className="tw:flex tw:w-full tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-2 tw:text-sm tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-popover-foreground hover:tw:bg-accent"
-                >
-                  <LogOut className="tw:h-4 tw:w-4" />
-                  Log out
-                </button>
+           <Button
+              variant="ghost"
+              size="icon"
+              className="tw:h-8 tw:w-8"
+              aria-label="Settings"
+           >
+              <Settings className="tw:h-4 tw:w-4" />
+           </Button>
+
+           {isAuthenticated && user ? (
+              <div className="tw:relative" ref={menuRef}>
+                 <button
+                    onClick={() => setShowUserMenu((prev) => !prev)}
+                    className="tw:flex tw:h-8 tw:w-8 tw:items-center tw:justify-center tw:rounded-full tw:bg-primary tw:text-primary-foreground tw:text-xs tw:font-bold tw:cursor-pointer tw:border-0"
+                    aria-label="User menu"
+                 >
+                    {userInitials}
+                 </button>
+
+                 {showUserMenu && (
+                    <div className="tw:absolute tw:right-0 tw:top-10 tw:z-50 tw:w-56 tw:rounded-lg tw:border tw:border-border tw:bg-popover tw:text-popover-foreground tw:shadow-lg tw:p-1">
+                       <div className="tw:px-3 tw:py-2">
+                          <p className="tw:text-sm tw:font-medium">
+                             {user.first_name} {user.last_name}
+                          </p>
+                          <p className="tw:text-xs tw:text-muted-foreground">
+                             {user.email}
+                          </p>
+                       </div>
+                       <Separator className="tw:my-1" />
+                       <button
+                          onClick={() => {
+                             setShowUserMenu(false);
+                             logout();
+                          }}
+                          className="tw:flex tw:w-full tw:items-center tw:gap-2 tw:rounded-md tw:px-3 tw:py-2 tw:text-sm tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-popover-foreground hover:tw:bg-accent"
+                       >
+                          <LogOut className="tw:h-4 tw:w-4" />
+                          Log out
+                       </button>
+                    </div>
+                 )}
               </div>
-            )}
-          </div>
-        ) : (
-          <Button variant="ghost" size="icon" className="tw:h-8 tw:w-8" aria-label="Log in">
-            <LogIn className="tw:h-4 tw:w-4" />
-          </Button>
-        )}
-      </div>
-    </header>
+           ) : (
+              <Button
+                 variant="ghost"
+                 size="icon"
+                 className="tw:h-8 tw:w-8"
+                 aria-label="Log in"
+              >
+                 <LogIn className="tw:h-4 tw:w-4" />
+              </Button>
+           )}
+        </div>
+     </header>
   );
 }

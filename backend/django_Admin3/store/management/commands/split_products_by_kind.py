@@ -19,7 +19,10 @@ Usage:
   python manage.py split_products_by_kind --commit
 """
 from collections import Counter
-from django.core.management.base import BaseCommand
+
+from django.core.management.base import BaseCommand, CommandError
+
+from store.models import Product
 
 
 # Mapping from catalog ProductVariation.variation_type to the
@@ -41,8 +44,7 @@ class Command(BaseCommand):
         mode.add_argument(
             '--dry-run',
             action='store_true',
-            default=True,
-            help='Walk and report; write nothing. Default.',
+            help='Walk and report; write nothing. Default when no mode flag is passed.',
         )
         mode.add_argument(
             '--check',
@@ -57,35 +59,30 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['commit']:
-            # Will be implemented in Task 6
-            raise NotImplementedError(
-                '--commit mode is implemented in Phase 2 Task 6'
-            )
+            raise CommandError('--commit mode is implemented in Phase 2 Task 6')
         if options['check']:
-            # Will be implemented in Task 5
-            raise NotImplementedError(
-                '--check mode is implemented in Phase 2 Task 5'
-            )
+            raise CommandError('--check mode is implemented in Phase 2 Task 5')
 
-        # --dry-run (default)
+        # Default (no flag, or --dry-run explicitly) — walk and report.
         self._walk_and_report()
 
     def _walk_and_report(self):
-        from store.models import Product, Purchasable
+        """Walk every legacy Product row and tally by resolved kind.
 
+        Single joined queryset — Product MTI shares the Purchasable PK,
+        so filtering by purchasable_ptr__kind='product' is the canonical
+        way to get the legacy rows that still need splitting.
+        """
         tally = Counter()
         unresolved = 0
-        # Walk Purchasable.kind='product' rows that still have a Product
-        # child (i.e., not orphans — see pre-flight in plan).
-        legacy = Purchasable.objects.filter(
-            kind='product',
-            pk__in=Product.objects.values('pk'),
+
+        legacy = (
+            Product.objects
+            .filter(purchasable_ptr__kind='product')
+            .select_related('product_product_variation__product_variation')
         )
 
-        for purchasable in legacy.iterator():
-            product = Product.objects.select_related(
-                'product_product_variation__product_variation'
-            ).get(pk=purchasable.pk)
+        for product in legacy.iterator():
             vt = product.product_product_variation.product_variation.variation_type
             kind = KIND_BY_VARIATION_TYPE.get(vt)
             if kind is None:
@@ -94,7 +91,7 @@ class Command(BaseCommand):
             tally[kind] += 1
 
         self.stdout.write(self.style.NOTICE(
-            f'split_products_by_kind --dry-run summary:'
+            'split_products_by_kind --dry-run summary:'
         ))
         for kind in ('material', 'tutorial', 'marking'):
             self.stdout.write(f'  {kind:10s} {tally[kind]:6d}')
