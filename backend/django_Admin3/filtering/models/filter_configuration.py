@@ -28,6 +28,7 @@ class FilterConfiguration(models.Model):
         ('subject', 'Subject'),
         ('subject_type', 'Subject Type'),
         ('filter_group', 'Filter Group'),
+        ('product_id', 'Product ID'),  # Hidden — set by nav clicks, not panel UI
         ('product_variation', 'Product Variation'),
         ('tutorial_format', 'Tutorial Format'),
         ('bundle', 'Bundle'),

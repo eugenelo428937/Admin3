@@ -27,18 +27,16 @@ import { FilterRegistry } from '../store/filters/filterRegistry';
  * Keep keys/labels/orders in sync with the rows in
  * `filtering.filter_configurations` so test behaviour mirrors prod.
  */
-// Dict keys here become each filter's `pluralLabel` (see
-// FilterRegistry.registerFromBackend). The production backend keys its
-// response by snake_case filter_key, so the rendered section titles
-// would actually be snake_case there — that is a separate bug tracked
-// in docs/to-dos/filter-registry-architecture-debt.md, addressed in a
-// follow-up by adding a `plural_label` field to FilterConfiguration.
-// For now we use friendly keys here so the tests assert the same
-// section titles the old static-fallback produced.
+// Section titles in the FilterPanel come from `config.label`, which
+// mirrors `FilterConfiguration.display_label` in the DB. The fixture
+// here uses the plural form an admin would write for a section header
+// ("Subjects", "Categories", …). To change the section title in
+// production, edit `display_label` on the corresponding
+// FilterConfiguration row via the admin.
 export const FILTER_CONFIGURATION_FIXTURE = {
-  'Programmes': {
+  'programme_type': {
     filter_key: 'programme_type',
-    label: 'Programme',
+    label: 'Programmes',
     display_order: 1,
     filter_type: 'filter_group',
     allow_multiple: true,
@@ -46,9 +44,9 @@ export const FILTER_CONFIGURATION_FIXTURE = {
     is_expanded_by_default: false,
     filter_groups: [],
   },
-  'Subjects': {
+  'subjects': {
     filter_key: 'subjects',
-    label: 'Subject',
+    label: 'Subjects',
     display_order: 2,
     filter_type: 'subject',
     allow_multiple: true,
@@ -56,9 +54,9 @@ export const FILTER_CONFIGURATION_FIXTURE = {
     is_expanded_by_default: true,
     filter_groups: [],
   },
-  'Categories': {
+  'categories': {
     filter_key: 'categories',
-    label: 'Category',
+    label: 'Categories',
     display_order: 3,
     filter_type: 'filter_group',
     allow_multiple: true,
@@ -66,9 +64,9 @@ export const FILTER_CONFIGURATION_FIXTURE = {
     is_expanded_by_default: false,
     filter_groups: [],
   },
-  'Product Types': {
+  'product_types': {
     filter_key: 'product_types',
-    label: 'Product Type',
+    label: 'Product Types',
     display_order: 4,
     filter_type: 'filter_group',
     allow_multiple: true,
@@ -76,9 +74,9 @@ export const FILTER_CONFIGURATION_FIXTURE = {
     is_expanded_by_default: false,
     filter_groups: [],
   },
-  'Modes of Delivery': {
+  'modes_of_delivery': {
     filter_key: 'modes_of_delivery',
-    label: 'Mode of Delivery',
+    label: 'Modes of Delivery',
     display_order: 5,
     filter_type: 'subject_type',
     allow_multiple: true,

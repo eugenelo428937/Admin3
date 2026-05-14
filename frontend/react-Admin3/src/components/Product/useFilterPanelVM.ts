@@ -11,6 +11,7 @@ import { useMediaQuery, useTheme } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import {
     selectFilters,
+    selectAllFilters,
     selectFilterCounts,
     selectValidationErrors,
     toggleFilter,
@@ -133,8 +134,17 @@ const useFilterPanelVM = (props: FilterPanelProps): FilterPanelVM => {
     const isMobile: boolean = useMediaQuery(theme.breakpoints.down('md'));
     const dispatch = useDispatch();
 
-    // Redux state - use deep equality check to prevent unnecessary re-renders
-    const filters = useSelector(selectFilters, deepEqual) as Record<string, string[]>;
+    // Redux state - use deep equality check to prevent unnecessary re-renders.
+    //
+    // `filters` was previously `selectFilters` (legacy derived shape with
+    // only 5 fixed keys: subjects/categories/product_types/products/
+    // modes_of_delivery). After the registry redesign, new filter types
+    // (subject_type, programme_type) live in `byKey` and never made it
+    // into the legacy shape, so the panel's `activeValues` lookup for
+    // those keys returned undefined and the checkbox state never
+    // reflected the active selection. Switching to `selectAllFilters`
+    // (byKey ∪ legacy-flat) is the byKey-aware read.
+    const filters = useSelector(selectAllFilters, deepEqual) as Record<string, string[]>;
     const filterCounts = useSelector(selectFilterCounts, deepEqual) as FilterCountsMap;
     const validationErrors = useSelector(selectValidationErrors) as ValidationError[];
     const isLoading = useSelector((state: RootState) => state.filters.isLoading) as boolean;

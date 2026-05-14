@@ -122,9 +122,11 @@ describe('FilterRegistry Integration', () => {
     it('should provide configuration to React components', () => {
       renderWithProviders(<TestFilterDisplay />);
 
-      expect(screen.getByTestId('subject-label')).toHaveTextContent('Subject');
+      // Labels reflect FilterConfiguration.display_label from the test
+      // fixture (filterRegistryBootstrap.js).
+      expect(screen.getByTestId('subject-label')).toHaveTextContent('Subjects');
       expect(screen.getByTestId('subject-color')).toHaveTextContent('primary');
-      expect(screen.getByTestId('category-label')).toHaveTextContent('Category');
+      expect(screen.getByTestId('category-label')).toHaveTextContent('Categories');
       expect(screen.getByTestId('category-color')).toHaveTextContent('info');
     });
 
@@ -386,31 +388,33 @@ describe('FilterRegistry Integration', () => {
   });
 
   describe('Label Configuration', () => {
-    it('should provide singular labels', () => {
-      expect(FilterRegistry.get('subjects').label).toBe('Subject');
-      expect(FilterRegistry.get('categories').label).toBe('Category');
-      expect(FilterRegistry.get('product_types').label).toBe('Product Type');
+    it('should expose display_label as label', () => {
+      // Test fixture (filterRegistryBootstrap.js) sets display_label to
+      // the plural form an admin would write for a section header.
+      expect(FilterRegistry.get('subjects').label).toBe('Subjects');
+      expect(FilterRegistry.get('categories').label).toBe('Categories');
+      expect(FilterRegistry.get('product_types').label).toBe('Product Types');
     });
 
-    it('should provide plural labels', () => {
+    it('should provide section titles from display_label', () => {
+      // pluralLabel now equals label — both sourced from
+      // FilterConfiguration.display_label per the section-title fix.
+      // The test fixture (filterRegistryBootstrap.js) uses the plural
+      // form an admin would write for a section header.
       expect(FilterRegistry.get('subjects').pluralLabel).toBe('Subjects');
       expect(FilterRegistry.get('categories').pluralLabel).toBe('Categories');
       expect(FilterRegistry.get('product_types').pluralLabel).toBe('Product Types');
     });
 
-    it('should use plural label when multiple values selected', () => {
+    it('should expose the same display_label on both label and pluralLabel', () => {
       const store = createMockStore();
       store.dispatch(setSubjects(['CM2', 'SA1']));
 
       const config = FilterRegistry.get('subjects');
-      const state = store.getState().filters;
-
-      // Should use pluralLabel when multiple values
-      if (state.subjects.length > 1) {
-        expect(config.pluralLabel).toBe('Subjects');
-      } else {
-        expect(config.label).toBe('Subject');
-      }
+      // label === pluralLabel under the display_label contract; selection
+      // count is irrelevant to which string is rendered.
+      expect(config.label).toBe('Subjects');
+      expect(config.pluralLabel).toBe('Subjects');
     });
   });
 

@@ -256,21 +256,59 @@ class ProductSearchRequestSerializer(serializers.Serializer):
 
         return value
 
-    def validate_filters(self, value):
-        """Validate filter parameters."""
-        if value:
-            valid_filter_types = [
-                'subjects', 'categories', 'product_types',
-                'products', 'essp_ids', 'product_ids',
-                'modes_of_delivery'
-            ]
+    # Canonical filter keys understood by the search backend. This is
+    # the static base set; the DB lookup in validate_filters() extends
+    # it with any additional `FilterConfiguration.filter_key` rows (so a
+    # NEW filter type becomes acceptable the moment its row is created,
+    # no serializer edit required).
+    #
+    # 'essp_ids' / 'product_ids' are legacy internal-id lookups that
+    # don't correspond to FilterConfiguration rows but are still used
+    # by cart-side code paths and tests.
+    _ALWAYS_VALID_FILTER_KEYS = frozenset({
+        'subjects',
+        'subject_type',
+        'categories',
+        'product_types',
+        'programme_type',
+        'modes_of_delivery',
+        'products',
+        'essp_ids',
+        'product_ids',
+    })
 
-            for filter_type in value.keys():
-                if filter_type not in valid_filter_types:
-                    raise serializers.ValidationError(
-                        f"Invalid filter type: {filter_type}. "
-                        f"Valid types: {', '.join(valid_filter_types)}"
-                    )
+    def validate_filters(self, value):
+        """Validate filter parameters.
+
+        Accepts any key in the static base set OR registered as an
+        active `FilterConfiguration.filter_key`. Unknown keys are
+        rejected with a 400 listing the full valid set.
+        """
+        if not value:
+            return value
+
+        valid_filter_types = set(self._ALWAYS_VALID_FILTER_KEYS)
+
+        # Extend with DB-registered filter keys so admin-added filter
+        # types become acceptable here without a code edit. Wrapped to
+        # tolerate DB errors during early request processing (e.g. when
+        # this serializer is unit-tested in isolation without a DB).
+        try:
+            from filtering.models import FilterConfiguration
+
+            valid_filter_types.update(
+                FilterConfiguration.objects.filter(is_active=True)
+                .values_list('filter_key', flat=True)
+            )
+        except Exception:
+            pass
+
+        for filter_type in value.keys():
+            if filter_type not in valid_filter_types:
+                raise serializers.ValidationError(
+                    f"Invalid filter type: {filter_type}. "
+                    f"Valid types: {', '.join(sorted(valid_filter_types))}"
+                )
 
         return value
 

@@ -10,9 +10,16 @@ def test_filter_handler_is_abstract():
         FilterHandler()
 
 
-def test_filter_handlers_registry_has_three_handlers():
-    """FILTER_HANDLERS dict ships with subject, subject_type, filter_group."""
-    assert set(FILTER_HANDLERS.keys()) == {'subject', 'subject_type', 'filter_group'}
+def test_filter_handlers_registry_has_expected_handlers():
+    """FILTER_HANDLERS dict ships with the canonical set of filter types.
+
+    `product_id` was added alongside the hidden 'products' FilterConfiguration
+    so nav-menu drill-downs (e.g. Products > Core Study Materials > Course
+    Notes) can actually filter the product list.
+    """
+    assert set(FILTER_HANDLERS.keys()) == {
+        'subject', 'subject_type', 'filter_group', 'product_id',
+    }
 
 
 def test_filter_handlers_all_implement_required_methods():
@@ -140,3 +147,88 @@ def test_filter_group_handler_count_path():
     handler = FilterGroupHandler()
     assert handler.count_path(config=None) == \
         'product_product_variation__product_groups__product_group__name'
+
+
+# ── ProductIdHandler ──────────────────────────────────────────────────────
+
+
+def test_product_id_handler_get_options_returns_empty():
+    """ProductIdHandler is a hidden filter set by nav drill-downs; the
+    filter panel must render no checkbox section, so options() returns []."""
+    from filtering.services.filter_handlers import ProductIdHandler
+    handler = ProductIdHandler()
+    assert handler.get_options(config=None) == []
+
+
+def test_product_id_handler_build_q_coerces_to_int():
+    """Values are received as strings from the URL/Redux; the handler must
+    coerce to int before issuing the FK lookup."""
+    from filtering.services.filter_handlers import ProductIdHandler
+    handler = ProductIdHandler()
+    q = handler.build_q(config=None, values=['8242', '8226'])
+    assert q.children == [
+        ('product_product_variation__product__id__in', [8242, 8226])
+    ]
+
+
+def test_product_id_handler_build_q_handles_invalid_values():
+    """Stray non-numeric entries (URL tampering, legacy bookmarks) must
+    not raise — they're filtered out, and an all-invalid list produces a
+    no-op match-nothing Q."""
+    from filtering.services.filter_handlers import ProductIdHandler
+    handler = ProductIdHandler()
+    q = handler.build_q(config=None, values=['abc', 'xyz'])
+    # match-nothing: pk__in=[]
+    assert q.children == [('pk__in', [])]
+
+
+def test_product_id_handler_count_path():
+    from filtering.services.filter_handlers import ProductIdHandler
+    handler = ProductIdHandler()
+    assert handler.count_path(config=None) == \
+        'product_product_variation__product__id'
+
+
+def test_product_id_handler_post_process_bucket_empty_when_no_selection():
+    """Without an active selection, the section must collapse to empty so
+    the FilterPanel renders no checkboxes (~160 catalog products would
+    swamp the UI otherwise)."""
+    from filtering.services.filter_handlers import ProductIdHandler
+    handler = ProductIdHandler()
+    raw_bucket = {
+        8242: {'count': 48, 'name': 8242},
+        8226: {'count': 34, 'name': 8226},
+    }
+    result = handler.post_process_bucket(raw_bucket, [], config=None)
+    assert result == {}
+
+
+@pytest.mark.django_db
+def test_product_id_handler_post_process_bucket_resolves_shortname():
+    """When a product ID is selected, the bucket must be restricted to
+    that selection AND its `name` rewritten to the catalog.Product.shortname.
+    """
+    from catalog.models import Product as CatalogProduct
+    from filtering.services.filter_handlers import ProductIdHandler
+
+    p1 = CatalogProduct.objects.create(
+        fullname='Course Notes Full', shortname='Course Notes', code='N',
+    )
+    p2 = CatalogProduct.objects.create(
+        fullname='Core Reading Full', shortname='Core Reading', code='CR',
+    )
+
+    handler = ProductIdHandler()
+    raw_bucket = {
+        p1.id: {'count': 48, 'name': p1.id},
+        p2.id: {'count': 34, 'name': p2.id},
+        9999: {'count': 7, 'name': 9999},  # Not selected — must be dropped.
+    }
+    # Selected values can arrive as strings (from URL/Redux); the handler
+    # must compare with str-coercion.
+    result = handler.post_process_bucket(
+        raw_bucket, selected_values=[str(p1.id)], config=None,
+    )
+    assert set(result.keys()) == {p1.id}
+    assert result[p1.id]['name'] == 'Course Notes'
+    assert result[p1.id]['count'] == 48
