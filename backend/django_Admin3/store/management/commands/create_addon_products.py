@@ -27,7 +27,7 @@ from collections import defaultdict
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from store.models import Price, Product, Purchasable
+from store.models import MaterialProduct, Price, Product, Purchasable
 
 
 # Segment-level mapping. Patterns match a "/<seg>/" slice of the code so a
@@ -148,7 +148,7 @@ class Command(BaseCommand):
                     f"{base.purchasable_ptr.name} (Solutions)"
                     if base.purchasable_ptr.name else new_code
                 )
-                addon = Product.objects.create(
+                addon = MaterialProduct.objects.create(
                     kind=Purchasable.Kind.PRODUCT,
                     code=new_code,
                     product_code=new_code,
@@ -258,7 +258,7 @@ class Command(BaseCommand):
         created, prices = 0, 0
         for template, target_code, ess_id in plan:
             ptr = template.purchasable_ptr
-            new = Product.objects.create(
+            new = MaterialProduct.objects.create(
                 kind=Purchasable.Kind.PRODUCT,
                 code=target_code,
                 product_code=target_code,

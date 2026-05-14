@@ -1,5 +1,12 @@
 """Store serializers - API serialization for store models."""
-from store.serializers.product import ProductSerializer, ProductListSerializer
+from store.serializers.product import (
+    ProductSerializer,
+    ProductListSerializer,
+    MaterialProductSerializer,
+    TutorialProductSerializer,
+    MarkingProductSerializer,
+    serializer_for,
+)
 from store.serializers.price import PriceSerializer, PriceListSerializer
 from store.serializers.purchasable import PurchasableSerializer
 from store.serializers.bundle import (
@@ -24,6 +31,10 @@ from store.serializers.search import (
 __all__ = [
     'ProductSerializer',
     'ProductListSerializer',
+    'MaterialProductSerializer',
+    'TutorialProductSerializer',
+    'MarkingProductSerializer',
+    'serializer_for',
     'PriceSerializer',
     'PriceListSerializer',
     'PurchasableSerializer',
