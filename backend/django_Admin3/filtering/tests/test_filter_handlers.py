@@ -16,9 +16,14 @@ def test_filter_handlers_registry_has_expected_handlers():
     `product_id` was added alongside the hidden 'products' FilterConfiguration
     so nav-menu drill-downs (e.g. Products > Core Study Materials > Course
     Notes) can actually filter the product list.
+
+    Phase 4a adds three subclass-aware handlers (tutorial_format,
+    tutorial_location, marking_template) as dormant capability; they're
+    registered but no active FilterConfiguration row uses them yet.
     """
     assert set(FILTER_HANDLERS.keys()) == {
         'subject', 'subject_type', 'filter_group', 'product_id',
+        'tutorial_format', 'tutorial_location', 'marking_template',
     }
 
 

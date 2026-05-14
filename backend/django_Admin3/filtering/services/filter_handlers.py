@@ -221,9 +221,92 @@ class ProductIdHandler(FilterHandler):
         return kept
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Phase 4a — subclass-aware handlers that read from MTI subclass fields
+# instead of joining through product_product_variation. Each survives
+# Phase 5's PPV removal because they're rooted in the subclass table.
+# ──────────────────────────────────────────────────────────────────────
+class TutorialFormatHandler(FilterHandler):
+    """Phase 4a: filters store.Product to TutorialProduct rows with a
+    given format code.
+
+    Reads `TutorialProduct.format` (subclass field) — NOT the catalog
+    `ProductVariation.code` that the legacy FilterGroupHandler joins
+    through PPV. This handler survives Phase 5's PPV removal.
+    """
+
+    def get_options(self, config):
+        from store.models import TutorialProduct
+        return [
+            {'value': value, 'label': label}
+            for value, label in TutorialProduct.Format.choices
+        ]
+
+    def build_q(self, config, values):
+        return Q(tutorialproduct__format__in=values)
+
+    def count_path(self, config):
+        return 'tutorialproduct__format'
+
+
+class TutorialLocationHandler(FilterHandler):
+    """Phase 4a: filters store.Product to TutorialProduct rows whose
+    tutorial_location.code matches.
+    """
+
+    def get_options(self, config):
+        from tutorials.models import TutorialLocation
+        return [
+            {
+                'value': loc.code,
+                'label': f"{loc.code} - {loc.name}" if loc.name else loc.code,
+                'code': loc.code,
+            }
+            for loc in TutorialLocation.objects.filter(is_active=True).order_by('code')
+        ]
+
+    def build_q(self, config, values):
+        return Q(tutorialproduct__tutorial_location__code__in=values)
+
+    def count_path(self, config):
+        return 'tutorialproduct__tutorial_location__code'
+
+
+class MarkingTemplateHandler(FilterHandler):
+    """Phase 4a: filters store.Product to MarkingProduct rows whose
+    marking_template.code matches.
+
+    Note that MarkingTemplate.code is NOT unique on its own —
+    uniqueness is (code, name) — so filtering by code can match
+    multiple templates with the same code but different names. That's
+    intentional: callers want "all Series X marking", not "the
+    specific Mock 1 Series X".
+    """
+
+    def get_options(self, config):
+        from marking.models import MarkingTemplate
+        seen = {}
+        for mt in MarkingTemplate.objects.filter(is_active=True).order_by('code', 'name'):
+            if mt.code not in seen:
+                seen[mt.code] = mt.name
+        return [
+            {'value': code, 'label': f"{code} - {name}" if name else code, 'code': code}
+            for code, name in sorted(seen.items())
+        ]
+
+    def build_q(self, config, values):
+        return Q(markingproduct__marking_template__code__in=values)
+
+    def count_path(self, config):
+        return 'markingproduct__marking_template__code'
+
+
 FILTER_HANDLERS: dict[str, FilterHandler] = {
-    'subject':       SubjectHandler(),
-    'subject_type':  SubjectTypeHandler(),
-    'filter_group':  FilterGroupHandler(),
-    'product_id':    ProductIdHandler(),
+    'subject':            SubjectHandler(),
+    'subject_type':       SubjectTypeHandler(),
+    'filter_group':       FilterGroupHandler(),
+    'product_id':         ProductIdHandler(),
+    'tutorial_format':    TutorialFormatHandler(),
+    'tutorial_location':  TutorialLocationHandler(),
+    'marking_template':   MarkingTemplateHandler(),
 }

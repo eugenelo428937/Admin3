@@ -30,7 +30,15 @@ class FilterConfiguration(models.Model):
         ('filter_group', 'Filter Group'),
         ('product_id', 'Product ID'),  # Hidden — set by nav clicks, not panel UI
         ('product_variation', 'Product Variation'),
+        # Phase 4a — subclass-aware filter types. Each is served by a
+        # dedicated handler in filtering/services/filter_handlers.py
+        # that reads from the corresponding MTI subclass table:
+        #   tutorial_format    → TutorialProduct.format
+        #   tutorial_location  → TutorialProduct.tutorial_location
+        #   marking_template   → MarkingProduct.marking_template
         ('tutorial_format', 'Tutorial Format'),
+        ('tutorial_location', 'Tutorial Location'),
+        ('marking_template', 'Marking Template'),
         ('bundle', 'Bundle'),
         ('custom_field', 'Custom Field'),
         ('computed', 'Computed Filter'),
