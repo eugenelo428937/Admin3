@@ -32,8 +32,32 @@ def test_received_log_emitted_on_post(caplog, valid_payload):
         valid_payload, format='json',
     )
     received = [r for r in caplog.records if r.message == 'administrate.webhook.received']
-    assert len(received) >= 1
-    assert any(getattr(r, 'inbox_id', None) is not None for r in received)
+    assert len(received) == 1
+    r = received[0]
+    assert r.inbox_id is not None
+    assert r.duplicate is False
+
+
+@pytest.mark.django_db
+def test_duplicate_post_logs_with_duplicate_flag(caplog, valid_payload):
+    caplog.set_level(logging.INFO, logger='administrate.webhook')
+    client = APIClient()
+    client.post(
+        '/api/administrate/webhooks/test-route-token/event/',
+        valid_payload, format='json',
+    )
+    caplog.clear()  # Drop the first delivery's logs
+
+    client.post(
+        '/api/administrate/webhooks/test-route-token/event/',
+        valid_payload, format='json',
+    )
+
+    received = [r for r in caplog.records if r.message == 'administrate.webhook.received']
+    assert len(received) == 1
+    r = received[0]
+    assert r.duplicate is True
+    assert r.inbox_id is None
 
 
 @pytest.mark.django_db

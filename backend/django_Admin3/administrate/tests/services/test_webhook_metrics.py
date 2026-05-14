@@ -10,6 +10,8 @@ from administrate.services import webhook_metrics
 @pytest.fixture(autouse=True)
 def _reset_counters():
     webhook_metrics.reset_for_tests()
+    yield
+    webhook_metrics.reset_for_tests()
 
 
 @pytest.mark.django_db
