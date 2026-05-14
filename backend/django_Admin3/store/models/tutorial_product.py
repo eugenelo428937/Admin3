@@ -4,7 +4,8 @@ Tutorial products bypass the catalog (catalog_products /
 catalog_product_variations). Instead, each TutorialProduct owns:
   - `tutorial_course_template` FK → tutorials.TutorialCourseTemplate
   - `tutorial_location`        FK → tutorials.TutorialLocation
-  - `format` enum (F2F 1-day / 3-day / 5-day, Live Online, Recorded)
+  - `format` enum (23 real codes matching catalog_product_variations
+    where variation_type='Tutorial')
 
 The enum replaces the role of catalog `ProductVariation` rows with
 `variation_type='Tutorial'`.
@@ -17,33 +18,70 @@ from store.models.product import Product
 
 
 class TutorialProduct(Product):
-    """ESS-based tutorial product.
+    """ESS-based tutorial product. Phase 2 backfilled from existing
+    Product rows whose PPV variation_type is 'Tutorial'.
 
-    Phase 1: empty table. Phase 2 backfills rows from existing
-    `store.Product` rows whose PPV.variation.variation_type is
-    'Tutorial' or any tutorial-format equivalent. Each backfilled row
-    shares its PK with the parent Product row (MTI shared PK).
+    Nullability notes (Phase 2):
+      - tutorial_location is NULL for OC (Online Classroom) rows —
+        no physical venue.
+      - tutorial_course_template is NULL for rows where
+        `{subject}_{format}` doesn't match an existing
+        TutorialCourseTemplate; operators can backfill later.
     """
 
     class Format(models.TextChoices):
-        # Initial set — Phase 2 backfill expands if it finds legacy values
-        # that don't map cleanly. The Phase 2 plan's `--check` mode will
-        # surface those.
-        F2F_1DAY    = 'F2F_1F', 'Face-to-Face 1-day'
-        F2F_3DAY    = 'F2F_3F', 'Face-to-Face 3-day'
-        F2F_5DAY    = 'F2F_5F', 'Face-to-Face 5-day'
-        LIVE_ONLINE = 'LIVE',   'Live Online'
-        RECORDED    = 'REC',    'Recorded'
+        # Phase 2 expanded to match the 23 real codes in
+        # catalog_product_variations (variation_type='Tutorial').
+        # LIVE/REC dropped — no data uses them.
+
+        # Face-to-face
+        F2F_1F  = 'F2F_1F',  'Face-to-Face 1 full day'
+        F2F_1PD = 'F2F_1PD', 'Face-to-Face Paper B Preparation Day'
+        F2F_2F  = 'F2F_2F',  'Face-to-Face 2 full days'
+        F2F_3F  = 'F2F_3F',  'Face-to-Face 3 full days'
+        F2F_4F  = 'F2F_4F',  'Face-to-Face 4 full days'
+        F2F_5B  = 'F2F_5B',  'Face-to-Face 5-day bundle'
+        F2F_5F  = 'F2F_5F',  'Face-to-Face 5 full days'
+        F2F_6B  = 'F2F_6B',  'Face-to-Face 6-day bundle'
+        F2F_6H  = 'F2F_6H',  'Face-to-Face 6 half days'
+
+        # Live online
+        LO_10H  = 'LO_10H',  'Live Online 10 half days'
+        LO_1F   = 'LO_1F',   'Live Online 1 full day'
+        LO_1PD  = 'LO_1PD',  'Live Online Paper B Preparation Day'
+        LO_2F   = 'LO_2F',   'Live Online 2 full days'
+        LO_2H   = 'LO_2H',   'Live Online 2 half days'
+        LO_3F   = 'LO_3F',   'Live Online 3 full days'
+        LO_4F   = 'LO_4F',   'Live Online 4 full days'
+        LO_4H   = 'LO_4H',   'Live Online 4 half days'
+        LO_5B   = 'LO_5B',   'Live Online 5-day bundle'
+        LO_5F   = 'LO_5F',   'Live Online 5 full days'
+        LO_6B   = 'LO_6B',   'Live Online 6-day bundle'
+        LO_6H   = 'LO_6H',   'Live Online 6 half days'
+        LO_8H   = 'LO_8H',   'Live Online 8 half days'
+
+        # Online classroom (no physical location — see tutorial_location)
+        OC      = 'OC',      'Online Classroom'
 
     tutorial_course_template = models.ForeignKey(
         'tutorials.TutorialCourseTemplate',
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name='store_tutorial_products',
+        help_text=(
+            'NULL if no matching `{subject}_{format}` template '
+            'existed at Phase 2 backfill time. Operators can link '
+            'a real template later.'
+        ),
     )
     tutorial_location = models.ForeignKey(
         'tutorials.TutorialLocation',
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name='store_tutorial_products',
+        help_text='NULL for OC (Online Classroom) rows — no physical venue.',
     )
     format = models.CharField(max_length=16, choices=Format.choices)
 
@@ -51,13 +89,8 @@ class TutorialProduct(Product):
         db_table = '"acted"."tutorial_products"'
         verbose_name = 'Tutorial Product'
         verbose_name_plural = 'Tutorial Products'
-        # Note: cross-(template, location, format, ESS) uniqueness cannot be
-        # expressed as a Django UniqueConstraint here — Django MTI raises
-        # models.E016 if Meta.constraints references parent-table fields
-        # (exam_session_subject lives on Product). Uniqueness is instead
-        # enforced via Purchasable.code UNIQUE: TutorialProduct's auto-
-        # generated product_code includes all four dimensions
-        # (subject/location/format/session), so two rows with the same
-        # dimensional tuple cannot share a Purchasable.code. A proper
-        # cross-table partial unique index via RunSQL can be added in a
-        # later phase if explicit DB-level enforcement is desired.
+        # See sibling model marking_product.py and the design doc §4.5 — Django MTI
+        # raises models.E016 if a child UniqueConstraint references a parent-table
+        # field (exam_session_subject lives on Product). Uniqueness is enforced
+        # via Purchasable.code UNIQUE (auto-generated product_code includes all
+        # four dimensions: subject, location, format, session).
