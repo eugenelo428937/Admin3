@@ -122,6 +122,36 @@ That refactor is multi-day and out of scope for the current PR. It is,
 however, the only true fix for the recurrence pattern. Until then,
 this doc IS the fix — read it before editing any of the six files.
 
+## Open follow-ups (post 2026-05-13 backend-only-registry refactor)
+
+The 2026-05-13 PR (`feat/20260513-filter-system-redesign`) removed the
+static fallback and made `registerFromBackend` the only source of
+truth at runtime. Two known bugs remain that the previous static
+fallback was masking:
+
+1. **Section titles render as snake_case `filter_key` in production.**
+   `FilterPanel.tsx` uses `filterConfig.pluralLabel` as the section
+   title. `FilterRegistry.registerFromBackend` sets
+   `pluralLabel: configName`, where `configName` is the dict key of
+   the `/api/products/filter-configuration/` response — and that
+   endpoint keys its dict by `config.filter_key` (snake_case). So
+   `pluralLabel` ends up as `'programme_type'` instead of
+   `'Programmes'`.
+
+   **Fix**: add a `plural_label` field to `FilterConfiguration` (Django
+   model + admin + migration), return it in `get_filter_configuration`,
+   and have `registerFromBackend` use `config.plural_label ||
+   config.label + 's'` instead of `configName`.
+
+   The static fallback that previously masked this is gone, so this
+   is now user-visible after this PR ships.
+
+2. **Test fixture uses friendly dict keys** (`'Programmes'`,
+   `'Subjects'`, …) in `src/test-utils/filterRegistryBootstrap.js` so
+   the suite passes against existing UI assertions. Production data
+   uses snake_case keys (bug 1 above), so these tests will need to be
+   adjusted once bug 1 is fixed.
+
 ## Quick smoke test after editing
 
 ```bash

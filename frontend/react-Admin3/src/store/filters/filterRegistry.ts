@@ -260,112 +260,25 @@ export class FilterRegistry {
 }
 
 // ===================================================================
-// Register all existing filter types (STATIC FALLBACK).
+// NO STATIC REGISTRATIONS AT MODULE LOAD.
 //
-// These run on module load and act as a fallback while the
-// /api/products/filter-configuration/ response is in flight. On boot
-// App.js calls FilterRegistry.registerFromBackend() which clears these
-// and re-registers from the DB filter_configurations table.
+// Previously this file shipped a static fallback that registered six
+// filters on import. That made the file the second source of truth
+// alongside `filter_configurations`, and any drift between the two
+// produced a quietly-broken FilterPanel — either an empty hardcoded
+// section (the famous 'products' bug) or a missing filter.
 //
-// IMPORTANT: any entry here that has NO corresponding row in
-// filter_configurations renders a permanently-empty section in the
-// FilterPanel (because the registry says "render me" but the DB
-// returns no options). 'products' used to live here for that exact
-// reason — there is no PRODUCTS filter_configurations row and there
-// never was. Do NOT re-add it. See
-// docs/filter-registry-architecture-debt.md for the full hardcoded-
-// layer audit and why this file is one of six places that has to
-// stay in sync.
+// Production now boots the registry exclusively via
+// `FilterRegistry.registerFromBackend(config)` in App.js's mount
+// effect. The boot gate (`FilterBootGate`) blocks filter-dependent
+// routes until that effect resolves, so no consumer ever sees an
+// empty registry.
+//
+// Tests bootstrap the registry from a fixture once globally — see
+// `src/test-utils/filterRegistryBootstrap.js` and the `beforeAll` in
+// `src/setupTests.js`. Individual tests can call
+// `FilterRegistry.clear()` in their own `beforeEach` for isolation.
+//
+// See docs/to-dos/filter-registry-architecture-debt.md for the full
+// audit of where filter-shape used to be hardcoded.
 // ===================================================================
-
-// Programme Type — DB: filter_configurations(filter_key='programme_type')
-FilterRegistry.register({
-  type: 'programme_type',
-  label: 'Programme',
-  pluralLabel: 'Programmes',
-  urlParam: 'programme_type',
-  color: 'secondary',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any) => value,
-  order: 1,
-});
-
-// Subjects
-FilterRegistry.register({
-  type: 'subjects',
-  label: 'Subject',
-  pluralLabel: 'Subjects',
-  urlParam: 'subject_code',
-  urlParamAliases: ['subject'],
-  color: 'primary',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'indexed', // subject_code, subject_1, subject_2, ...
-  getDisplayValue: (value: any) => value,
-  order: 2,
-});
-
-// Categories
-FilterRegistry.register({
-  type: 'categories',
-  label: 'Category',
-  pluralLabel: 'Categories',
-  urlParam: 'category_code',
-  urlParamAliases: ['category'],
-  color: 'info',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'indexed', // category_code, category_1, category_2, ...
-  getDisplayValue: (value: any) => value,
-  order: 3,
-});
-
-// Product Types
-FilterRegistry.register({
-  type: 'product_types',
-  label: 'Product Type',
-  pluralLabel: 'Product Types',
-  urlParam: 'group',
-  color: 'success',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any) => value,
-  order: 4,
-});
-
-// NOTE: 'products' filter was historically registered here but is removed.
-// The DB has no PRODUCTS filter_configurations row, so this entry only ever
-// rendered an empty section. If you find yourself wanting to re-add it,
-// add the DB row first AND read docs/filter-registry-architecture-debt.md.
-
-// Modes of Delivery
-FilterRegistry.register({
-  type: 'modes_of_delivery',
-  label: 'Mode of Delivery',
-  pluralLabel: 'Modes of Delivery',
-  urlParam: 'mode_of_delivery',
-  color: 'warning',
-  multiple: true,
-  dataType: 'array',
-  urlFormat: 'comma-separated',
-  getDisplayValue: (value: any) => value,
-  order: 5,
-});
-
-// Search Query (special case - not rendered as filter section)
-FilterRegistry.register({
-  type: 'searchQuery',
-  label: 'Search',
-  pluralLabel: 'Search',
-  urlParam: 'search_query',
-  urlParamAliases: ['q', 'search'],
-  color: 'info',
-  multiple: false,
-  dataType: 'string',
-  urlFormat: 'single',
-  getDisplayValue: (value: any) => value,
-  order: 0, // First in order but not rendered in FilterPanel
-});

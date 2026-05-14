@@ -209,14 +209,26 @@ class TestNavigationDataCacheHit(CatalogAPITestCase):
         cache.clear()
 
     def test_cache_hit_returns_cached_data(self):
-        """When cache has data, return it directly without querying DB."""
+        """When cache has data, return it directly without querying DB.
+
+        The cache key is `navigation_data_v4_fcg{max_id}` where max_id is
+        FilterConfigurationGroup.objects.aggregate(Max('id')). See
+        catalog.views.navigation_views.get_navigation_data for why.
+        """
+        from filtering.models import FilterConfigurationGroup
+        from django.db.models import Max
+
         cached = {
             'subjects': [{'id': 1, 'code': 'TEST', 'description': 'Cached', 'name': 'Cached', 'active': True}],
             'navbar_product_groups': {'results': []},
             'distance_learning_dropdown': {'results': []},
             'tutorial_dropdown': {'results': {}}
         }
-        cache.set('navigation_data_v3', cached, 300)
+        fcg_version = (
+            FilterConfigurationGroup.objects.aggregate(latest=Max('id'))['latest']
+            or 0
+        )
+        cache.set(f'navigation_data_v4_fcg{fcg_version}', cached, 300)
 
         response = self.client.get('/api/catalog/navigation-data/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -316,17 +328,20 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
             is_active=True,
         )
 
-        # Create child format groups for Tutorial
+        # NOTE: FilterGroup.parent was removed in migration 0012 (see
+        # docs/superpowers/specs/2026-05-13-filter-system-redesign-design.md
+        # §1). What used to be "child format groups under Tutorial"
+        # are now first-class FilterGroup rows in their own right; the
+        # tutorial dropdown structure is derived from
+        # FilterConfigurationGroup assignments instead.
         self.f2f_format = FilterGroup.objects.create(
             name='Face-to-face Tutorial',
             code='face_to_face',
-            parent=self.tutorial_group,
             is_active=True,
         )
         self.live_online_format = FilterGroup.objects.create(
             name='Live Online Tutorial',
             code='live_online',
-            parent=self.tutorial_group,
             is_active=True,
         )
 

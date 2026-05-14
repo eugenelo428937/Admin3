@@ -24,6 +24,7 @@ from catalog.serializers import (
     ProductSerializer,
     ProductVariationSerializer,
 )
+from catalog.services.navigation_filter_mapping import resolve_nav_filter
 
 
 @api_view(['GET'])
@@ -80,7 +81,17 @@ def navigation_data(request):
             )
         )
 
-    cache_key = 'navigation_data_v3'  # bumped from v2 — adds availability filter
+    # Version the cache key by the max FilterConfigurationGroup id so admin
+    # reassignments propagate without a manual cache bump. IDs increase
+    # monotonically on insert (and stay flat on delete; the 300s TTL covers
+    # those rarer cases).
+    from filtering.models import FilterConfigurationGroup
+    from django.db.models import Max as _Max
+    fcg_version = (
+        FilterConfigurationGroup.objects.aggregate(latest=_Max('id'))['latest']
+        or 0
+    )
+    cache_key = f'navigation_data_v4_fcg{fcg_version}'
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
@@ -96,7 +107,8 @@ def navigation_data(request):
                 'code': s['code'],
                 'description': s['description'],
                 'name': s['description'],  # Frontend compatibility alias
-                'active': s['active']
+                'active': s['active'],
+                'filter': {'key': 'subjects', 'value': s['code'], 'preserve': []},
             }
             for s in subjects
         ]
@@ -119,7 +131,8 @@ def navigation_data(request):
         for group_name in navbar_groups:
             if group_name in groups_dict:
                 group = groups_dict[group_name]
-                navbar_data.append({
+                group_filter = resolve_nav_filter(group.name, preserve=['subjects'])
+                entry = {
                     'id': group.id,
                     'name': group.name,
                     'products': [
@@ -133,7 +146,10 @@ def navigation_data(request):
                                 productproductvariation__product_groups__product_group=group
                             ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
-                })
+                }
+                if group_filter is not None:
+                    entry['filter'] = group_filter
+                navbar_data.append(entry)
             else:
                 navbar_data.append({'id': None, 'name': group_name, 'products': []})
 
@@ -143,7 +159,8 @@ def navigation_data(request):
         for group_name in dl_groups:
             if group_name in groups_dict:
                 group = groups_dict[group_name]
-                distance_learning_data.append({
+                group_filter = resolve_nav_filter(group.name, preserve=['subjects'])
+                entry = {
                     'id': group.id,
                     'name': group.name,
                     'products': [
@@ -157,7 +174,10 @@ def navigation_data(request):
                                 productproductvariation__product_groups__product_group=group
                             ).filter(_has_available_store_product_for_catalog_product()).distinct()
                     ]
-                })
+                }
+                if group_filter is not None:
+                    entry['filter'] = group_filter
+                distance_learning_data.append(entry)
             else:
                 distance_learning_data.append({'id': None, 'name': group_name, 'products': []})
 
@@ -178,23 +198,28 @@ def navigation_data(request):
             location_products = []
         mid_point = (len(location_products) + 1) // 2
 
-        # Format groups (children of Tutorial)
-        if tutorial_group:
-            format_groups = list(FilterGroup.objects.filter(
-                parent=tutorial_group
-            ).order_by('name').values('name', 'code'))
+        # Format groups (flat lookup — parent field was dropped in migration 0012)
+        # These are the tutorial format FilterGroup rows in the DB.
+        TUTORIAL_FORMAT_GROUP_NAMES = ['Face-to-face', 'Live Online']
+        format_groups = list(FilterGroup.objects.filter(
+            name__in=TUTORIAL_FORMAT_GROUP_NAMES, is_active=True
+        ).order_by('name').values('name', 'code'))
+        format_data = []
+        for g in format_groups:
+            fmt_filter = resolve_nav_filter(g['name'], preserve=['subjects'])
+            item = {
+                'name': g['name'],
+                'filter_type': g['code'],
+                'group_name': g['name'],
+            }
+            if fmt_filter is not None:
+                item['filter'] = fmt_filter
+            format_data.append(item)
+        if not format_data:
+            # Fallback when DB has no rows for these groups
             format_data = [
-                {
-                    'name': g['name'],
-                    'filter_type': g['code'],
-                    'group_name': g['name']
-                }
-                for g in format_groups
-            ]
-        else:
-            format_data = [
-                {'name': 'Face-to-face Tutorial', 'filter_type': 'face_to_face', 'group_name': 'Face-to-face Tutorial'},
-                {'name': 'Live Online Tutorial', 'filter_type': 'live_online', 'group_name': 'Live Online Tutorial'}
+                {'name': 'Face-to-face', 'filter_type': 'face_to_face', 'group_name': 'Face-to-face'},
+                {'name': 'Live Online', 'filter_type': 'live_online', 'group_name': 'Live Online'},
             ]
 
         # Online Classroom variations

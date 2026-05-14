@@ -1,7 +1,7 @@
 """Test factories for filtering models.
 
 Provides reusable factory functions for creating FilterConfiguration,
-FilterConfigurationGroup, and FilterGroup hierarchies in tests.
+FilterConfigurationGroup, and FilterGroup records in tests.
 
 Usage::
 
@@ -15,10 +15,10 @@ Usage::
     # Create a filter config for categories
     config = create_filter_config('Categories', 'categories', 'filter_group')
 
-    # Create a hierarchy: Material > Core Study Materials, Revision Materials
+    # Create flat groups (hierarchy removed in migration 0012)
     material = create_filter_group('Material', code='MATERIAL')
-    core = create_filter_group('Core Study Materials', parent=material, code='CORE')
-    revision = create_filter_group('Revision Materials', parent=material, code='REVISION')
+    core = create_filter_group('Core Study Materials', code='CORE')
+    revision = create_filter_group('Revision Materials', code='REVISION')
 
     # Assign groups to config
     assign_group_to_config(config, material)
@@ -52,12 +52,11 @@ def create_filter_config(name, filter_key, filter_type='filter_group', **kwargs)
     return FilterConfiguration.objects.create(**defaults)
 
 
-def create_filter_group(name, parent=None, code=None, **kwargs):
-    """Create a FilterGroup record.
+def create_filter_group(name, code=None, **kwargs):
+    """Create a FilterGroup record (flat — hierarchy removed in migration 0012).
 
     Args:
         name: Display name for the group.
-        parent: Optional parent FilterGroup for hierarchy.
         code: Optional unique code identifier.
         **kwargs: Additional fields to override.
 
@@ -66,7 +65,6 @@ def create_filter_group(name, parent=None, code=None, **kwargs):
     """
     defaults = {
         'name': name,
-        'parent': parent,
         'code': code,
         'is_active': True,
         'display_order': kwargs.pop('display_order', 0),
@@ -96,15 +94,18 @@ def assign_group_to_config(config, group, is_default=False, display_order=0):
 
 
 def create_filter_hierarchy(root_name, child_names, root_code=None):
-    """Create a root group with children in one call.
+    """Create a set of flat groups in one call (hierarchy removed in migration 0012).
+
+    Previously created a root + children tree. Now creates independent flat groups.
+    The first group corresponds to root_name; the remainder correspond to child_names.
 
     Args:
-        root_name: Name for the root group.
-        child_names: List of child group names (or tuples of (name, code)).
-        root_code: Optional code for root group.
+        root_name: Name for the first group.
+        child_names: List of additional group names (or tuples of (name, code)).
+        root_code: Optional code for the first group.
 
     Returns:
-        Tuple of (root_group, list_of_child_groups).
+        Tuple of (first_group, list_of_remaining_groups).
     """
     root = create_filter_group(root_name, code=root_code)
     children = []
@@ -114,6 +115,6 @@ def create_filter_hierarchy(root_name, child_names, root_code=None):
         else:
             name, code = child, None
         children.append(
-            create_filter_group(name, parent=root, code=code, display_order=i)
+            create_filter_group(name, code=code, display_order=i)
         )
     return root, children

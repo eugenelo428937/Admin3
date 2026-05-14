@@ -225,13 +225,13 @@ describe('FilterPanel Component', () => {
             
             expect(mockDispatch).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    type: expect.stringContaining('toggleSubjectFilter'),
-                    payload: 'CM2',
+                    type: 'filters/toggleFilter',
+                    payload: { filterKey: 'subjects', value: 'CM2' },
                 })
             );
         });
 
-        test('dispatches toggleCategoryFilter when category checkbox is clicked', async () => {
+        test('dispatches toggleFilter for categories when category checkbox is clicked', async () => {
             const user = userEvent.setup();
             const initialState = {
                 filterCounts: mockFilterCounts,
@@ -248,8 +248,8 @@ describe('FilterPanel Component', () => {
             
             expect(mockDispatch).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    type: expect.stringContaining('toggleCategoryFilter'),
-                    payload: 'Materials',
+                    type: 'filters/toggleFilter',
+                    payload: { filterKey: 'categories', value: 'Materials' },
                 })
             );
         });
@@ -506,7 +506,8 @@ describe('FilterPanel Component', () => {
             // Verify interaction worked
             expect(mockDispatch).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    type: expect.stringContaining('toggleSubjectFilter'),
+                    type: 'filters/toggleFilter',
+                    payload: expect.objectContaining({ filterKey: 'subjects' }),
                 })
             );
         });

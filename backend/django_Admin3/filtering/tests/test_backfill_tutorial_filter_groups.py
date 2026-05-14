@@ -45,15 +45,15 @@ class BackfillTutorialFilterGroupsTests(TestCase):
         )
         self.f2f = FilterGroup.objects.create(
             name='Face-to-face', code='face_to_face',
-            parent=self.tutorial, is_active=True,
+            is_active=True,
         )
         self.lo = FilterGroup.objects.create(
             name='Live Online', code='live_online',
-            parent=self.tutorial, is_active=True,
+            is_active=True,
         )
         self.oc = FilterGroup.objects.create(
             name='Online Classroom', code='online_classroom',
-            parent=self.tutorial, is_active=True,
+            is_active=True,
         )
 
         # Three orphans, one per prefix

@@ -109,11 +109,11 @@ class NavbarFilterConsistencyTest(TestCase):
 
         # Navbar path: translate then apply
         translated = search_service._translate_navbar_filters({'group': 'PRINTED'})
-        navbar_result = filter_service.apply_store_product_filters(base_qs, translated)
+        navbar_result = filter_service.apply_filters(base_qs, translated)
         navbar_ids = set(navbar_result.values_list('id', flat=True))
 
         # Panel path: direct filter
-        panel_result = filter_service.apply_store_product_filters(
+        panel_result = filter_service.apply_filters(
             base_qs, {'categories': ['PRINTED']}
         )
         panel_ids = set(panel_result.values_list('id', flat=True))
