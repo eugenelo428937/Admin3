@@ -462,10 +462,14 @@ describe('FilterRegistry', () => {
       expect(FilterRegistry.has('categories')).toBe(true);
       expect(FilterRegistry.has('product_types')).toBe(true);
 
-      // Verify config properties are mapped correctly
+      // Verify config properties are mapped correctly.
+      // pluralLabel now mirrors label — both come from
+      // FilterConfiguration.display_label per the section-title fix.
+      // (The DB has no separate plural_label field; if/when it gets
+      // one, registerFromBackend should prefer it for pluralLabel.)
       const catConfig = FilterRegistry.get('categories');
       expect(catConfig.label).toBe('Category');
-      expect(catConfig.pluralLabel).toBe('Categories');
+      expect(catConfig.pluralLabel).toBe('Category');
       expect(catConfig.order).toBe(1);
       expect(catConfig.multiple).toBe(true);
 
