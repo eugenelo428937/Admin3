@@ -140,6 +140,9 @@ class Command(BaseCommand):
         row.status = WebhookInbox.STATUS_RECEIVED
         row.attempts = 0
         row.error_message = ''
-        row.save(update_fields=['status', 'attempts', 'error_message'])
+        row.last_attempted_at = None
+        row.save(update_fields=[
+            'status', 'attempts', 'error_message', 'last_attempted_at',
+        ])
         dispatch_inbox_task(row.id)
         self.stdout.write(f'replayed: {row.id}')

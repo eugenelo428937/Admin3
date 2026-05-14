@@ -58,12 +58,18 @@ class TestInboxCommand:
         '.dispatch_inbox_task'
     )
     def test_replay_resets_and_enqueues(self, mock_dispatch, dead_row):
+        # Simulate a prior failed attempt timestamp so the reset is observable.
+        from django.utils import timezone
+        dead_row.last_attempted_at = timezone.now()
+        dead_row.save()
+
         call_command('administrate_webhooks_inbox', 'replay', str(dead_row.id))
 
         dead_row.refresh_from_db()
         assert dead_row.status == WebhookInbox.STATUS_RECEIVED
         assert dead_row.attempts == 0
         assert dead_row.error_message == ''
+        assert dead_row.last_attempted_at is None
         mock_dispatch.assert_called_once_with(dead_row.id)
 
     @patch(

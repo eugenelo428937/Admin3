@@ -7,23 +7,9 @@ class AdministrateConfig(AppConfig):
     verbose_name = 'Administrate'
 
     def ready(self):
-        from django.conf import settings
-        from django.core.exceptions import ImproperlyConfigured
-
-        # Refuse to boot in a non-debug environment with empty webhook secrets.
-        # Empty values would let constant_time_compare('', '') return True and
-        # silently authorize every inbound request.
-        if not settings.DEBUG:
-            missing = [
-                name for name in (
-                    'ADMINISTRATE_WEBHOOK_SECRET',
-                    'ADMINISTRATE_WEBHOOK_ROUTE_TOKEN',
-                )
-                if not getattr(settings, name, '')
-            ]
-            if missing:
-                raise ImproperlyConfigured(
-                    f"Empty Administrate webhook settings: {', '.join(missing)}. "
-                    f"Set these in the deployment environment or disable the webhook "
-                    f"endpoint."
-                )
+        # Register the webhook-credentials system check on app load.
+        # The check itself only runs during `manage.py check` or server
+        # startup (runserver/gunicorn), NOT during build-phase commands
+        # like collectstatic or migrate. This keeps the UAT/Railway
+        # build pipeline from failing on missing runtime env vars.
+        from administrate import checks  # noqa: F401 — registers the check

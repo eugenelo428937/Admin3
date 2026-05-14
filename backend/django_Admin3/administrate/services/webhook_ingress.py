@@ -54,7 +54,7 @@ def persist_inbox_row(body: dict, headers: dict) -> WebhookInbox:
         webhook_type_name=metadata['webhookTypeName'],
         entity_type='event',  # this slice is Event-only; future slices set per route
         entity_external_id=str(metadata['entityId']),
-        raw_payload=body,
+        raw_payload=_sanitize_body(body),
         raw_headers=_sanitize_headers(headers),
     )
 
@@ -69,6 +69,20 @@ def dispatch_inbox_task(inbox_id: int) -> Any:
     from administrate.tasks import process_webhook_inbox
 
     return process_webhook_inbox.enqueue(inbox_id)
+
+
+def _sanitize_body(body: dict) -> dict:
+    """Strip the shared webhook secret from `configuration` before persisting.
+
+    Mirrors `_sanitize_headers` for the body. The secret is the auth credential
+    Administrate uses to identify itself; storing it verbatim in the audit log
+    means any admin-panel viewer can leak it. The rest of `configuration` may
+    legitimately carry caller metadata, so we mutate only the `secret` key.
+    """
+    config = body.get('configuration')
+    if not isinstance(config, dict) or 'secret' not in config:
+        return body
+    return {**body, 'configuration': {**config, 'secret': '***'}}
 
 
 def _sanitize_headers(headers: dict) -> dict:

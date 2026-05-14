@@ -110,7 +110,22 @@ class TestWebhookPersistence:
         # POST, so the row will have moved past 'received'. The intent of
         # this test is webhook persistence — task behaviour is covered by
         # tests/services/test_webhook_dispatch.py.
-        assert row.raw_payload == valid_payload
+        # The raw_payload mirrors the request body but with the shared
+        # webhook secret in `configuration.secret` redacted (see
+        # _sanitize_body in services/webhook_ingress.py).
+        expected_payload = {
+            **valid_payload,
+            'configuration': {**valid_payload['configuration'], 'secret': '***'},
+        }
+        assert row.raw_payload == expected_payload
+
+    def test_persisted_payload_redacts_configuration_secret(self, client, valid_payload):
+        resp = client.post(self.URL, valid_payload, format='json')
+        assert resp.status_code == 202
+        row = WebhookInbox.objects.get(id=resp.json()['inbox_id'])
+        assert row.raw_payload['configuration']['secret'] == '***'
+        # And the rest of the payload is preserved.
+        assert row.raw_payload['metadata']['webhookId'] == valid_payload['metadata']['webhookId']
 
     def test_duplicate_delivery_returns_200(self, client, valid_payload):
         client.post(self.URL, valid_payload, format='json')
