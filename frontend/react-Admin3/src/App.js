@@ -1,7 +1,7 @@
 // src/App.js
 import React, { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, CircularProgress, Box } from "@mui/material";
@@ -11,7 +11,12 @@ import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
 import productService from "./services/productService";
 import { FilterRegistry } from "./store/filters/filterRegistry";
-import { setFilterConfiguration, setFilterConfigurationLoading, setFilterConfigurationError } from "./store/slices/filtersSlice";
+import {
+	setFilterConfiguration,
+	setFilterConfigurationLoading,
+	setFilterConfigurationError,
+	selectFilterConfigurationLoaded,
+} from "./store/slices/filtersSlice";
 import { AuthProvider } from "./hooks/useAuth.tsx";
 import { ConfigProvider } from "./contexts/ConfigContext";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
@@ -131,6 +136,21 @@ const LazyFallback = () => (
 	</Box>
 );
 
+/**
+ * Boot gate for filter-dependent routes.
+ *
+ * Renders a spinner until App.js's boot effect has finished populating
+ * FilterRegistry from /api/products/filter-configuration/. Without this
+ * gate, ProductList / FilterPanel would mount before the registry has
+ * any filters, producing an empty panel that "fills in" a tick later
+ * (and breaking URL → Redux restoration that runs once on mount).
+ */
+const FilterBootGate = ({ children }) => {
+	const loaded = useSelector(selectFilterConfigurationLoaded);
+	if (!loaded) return <LazyFallback />;
+	return children;
+};
+
 function App() {
 	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -158,15 +178,16 @@ function App() {
 
 	// Boot: load FilterPanel sections from DB (filter_configurations table).
 	//
-	// This is the architectural override for the static fallback in
-	// filterRegistry.ts. Without this call, the static registrations would
-	// be the only source of truth, and any drift between the file and the
-	// DB would render either empty sections or missing filters. With this
-	// call, the registry mirrors `filter_configurations` exactly — adding
-	// a filter becomes a DB-only change for the *rendering* layer.
+	// filterRegistry.ts no longer self-registers at module load — this call
+	// is the SOLE producer of registry state. Adding a filter is now a
+	// DB-only change for the rendering layer.
+	//
+	// The FilterBootGate below blocks filter-dependent routes (/products)
+	// until either filterConfiguration or filterConfigurationError is set,
+	// so the registry is always populated before any consumer renders.
 	//
 	// NOTE: clicks/URL persistence still need Redux state + reducers
-	// (baseFilters.slice.ts) — see docs/filter-registry-architecture-debt.md.
+	// (baseFilters.slice.ts) — see docs/to-dos/filter-registry-architecture-debt.md.
 	useEffect(() => {
 		let cancelled = false;
 		store.dispatch(setFilterConfigurationLoading(true));
@@ -179,10 +200,10 @@ function App() {
 			})
 			.catch((err) => {
 				if (cancelled) return;
-				// Static fallback in filterRegistry.ts keeps the panel usable.
-				console.warn(
-					"[App] Failed to load filter configuration from backend; " +
-						"falling back to static registrations.",
+				// No static fallback anymore — error surfaces in the boot gate.
+				console.error(
+					"[App] Failed to load filter configuration from backend. " +
+						"Filter UI will render an error state.",
 					err
 				);
 				store.dispatch(
@@ -277,7 +298,7 @@ function App() {
 										<Route path="/theme-visualizer" element={<MaterialThemeVisualizer />} />
 										<Route path="/home" element={<InternalHome />} />
 										<Route path="/profile" element={<ProfilePage />} />
-										<Route path="/products" element={<ProductList />} />
+										<Route path="/products" element={<FilterBootGate><ProductList /></FilterBootGate>} />
 
 										{/* Admin routes — wrapped by AdminLayout shell */}
 										<Route element={<AdminLayout />}>

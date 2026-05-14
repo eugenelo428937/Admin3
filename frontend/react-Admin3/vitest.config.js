@@ -74,7 +74,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupPolyfills.js', './src/setupTests.js'],
-    exclude: ['e2e/**', 'node_modules/**'],
+    exclude: [
+      'e2e/**',
+      'node_modules/**',
+      // Stale git worktrees under .claude/ resolve to a sibling repo
+      // that doesn't have node_modules installed; vitest's default
+      // glob would otherwise scan it and fail with "Cannot find
+      // package '@reduxjs/toolkit'".
+      '../../.claude/**',
+      '**/.claude/**',
+    ],
     pool: 'threads',
     poolOptions: {
       threads: {

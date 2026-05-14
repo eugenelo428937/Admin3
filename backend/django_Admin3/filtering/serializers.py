@@ -8,67 +8,35 @@ from .models import FilterGroup, FilterConfigurationGroup
 
 
 class FilterGroupSerializer(serializers.ModelSerializer):
-    """Serializer for filter groups with recursive children."""
-    children = serializers.SerializerMethodField()
+    """Serializer for flat filter groups (parent hierarchy removed in migration 0012)."""
 
     class Meta:
         model = FilterGroup
-        fields = ['id', 'name', 'parent', 'children']
-
-    def get_children(self, obj):
-        return FilterGroupSerializer(obj.children.all(), many=True).data
-
-
-class FilterGroupThreeLevelSerializer(serializers.ModelSerializer):
-    """Serializer for filter groups up to three levels deep."""
-    children = serializers.SerializerMethodField()
-
-    class Meta:
-        model = FilterGroup
-        fields = ['id', 'name', 'parent', 'children']
-
-    def get_children(self, obj):
-        # Level 2
-        return [
-            {
-                **FilterGroupThreeLevelSerializer(child).data,
-                'children': [
-                    FilterGroupThreeLevelSerializer(grandchild).data
-                    for grandchild in child.children.all()
-                ]
-            }
-            for child in obj.children.all()
-        ]
+        fields = ['id', 'name']
 
 
 class FilterConfigurationGroupSerializer(serializers.Serializer):
     """Serializer for filter groups within a FilterConfiguration.
 
     Returns the group data needed for filter partitioning: id, name,
-    code, display_order, is_default, parent_id.
+    code, display_order, is_default.
     """
     id = serializers.IntegerField(source='filter_group.id')
     name = serializers.CharField(source='filter_group.name')
     code = serializers.CharField(source='filter_group.code', allow_null=True)
     display_order = serializers.IntegerField()
     is_default = serializers.BooleanField()
-    parent_id = serializers.IntegerField(source='filter_group.parent_id', allow_null=True)
 
 
 class ProductGroupFilterSerializer(serializers.ModelSerializer):
-    """Serializer for product group filters with child groups."""
-    filter_type = serializers.SerializerMethodField()
+    """Serializer for product group filters (flat model — parent hierarchy removed in migration 0012)."""
     groups = serializers.SerializerMethodField()
 
     class Meta:
         model = FilterGroup
-        fields = ['id', 'name', 'filter_type', 'groups']
-
-    def get_filter_type(self, obj):
-        return 'category' if obj.parent is None else 'type'
+        fields = ['id', 'name', 'groups']
 
     def get_groups(self, obj):
-        children = obj.children.filter(is_active=True)
-        return [{'id': child.id, 'name': child.name} for child in children]
+        return []
 
 

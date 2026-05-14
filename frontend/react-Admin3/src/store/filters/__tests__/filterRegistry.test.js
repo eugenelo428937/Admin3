@@ -619,39 +619,53 @@ describe('FilterRegistry', () => {
     });
   });
 
-  describe('module initialization (default registrations)', () => {
-    // This test verifies that the module registers default filters on import.
+  describe('module initialization (no static registrations)', () => {
+    // The registry no longer self-registers at module load. Production
+    // populates it via FilterRegistry.registerFromBackend(...) on App
+    // mount (see App.js boot effect); tests do the equivalent in
+    // setupTests.js via bootstrapFilterRegistryForTests().
     //
-    // 'products' is intentionally absent — there is no PRODUCTS row in
-    // filter_configurations. It used to be registered here as dead code and
-    // kept being re-added during refactors; the FilterPanel rendered an empty
-    // "Products" section as a result. See docs/filter-registry-architecture-debt.md.
-    test('auto-registers default filters on module load', async () => {
-      // Clear to start fresh
-      FilterRegistry.clear();
-
-      // Re-import the module to trigger registration code
+    // This test verifies the contract: a fresh import yields an EMPTY
+    // registry. Removing this guarantee would re-introduce the
+    // 6-hardcoded-layer problem documented in
+    // docs/to-dos/filter-registry-architecture-debt.md.
+    test('fresh module import yields empty registry', async () => {
+      // Re-import the module — no top-level register() calls means
+      // the fresh module starts empty.
       vi.resetModules();
-      const _reqmod____filterRegistry = await import('../filterRegistry'); const { FilterRegistry: FreshRegistry } = _reqmod____filterRegistry;
+      const _mod = await import('../filterRegistry');
+      const { FilterRegistry: FreshRegistry } = _mod;
 
-      // Filters that ARE registered as static fallback (mirror DB rows)
+      expect(FreshRegistry.getAll()).toHaveLength(0);
+      expect(FreshRegistry.has('subjects')).toBe(false);
+      expect(FreshRegistry.has('searchQuery')).toBe(false);
+    });
+
+    test('registerFromBackend populates the expected six filters', async () => {
+      vi.resetModules();
+      const _mod = await import('../filterRegistry');
+      const { FilterRegistry: FreshRegistry } = _mod;
+      const { FILTER_CONFIGURATION_FIXTURE } = await import(
+        '../../../test-utils/filterRegistryBootstrap'
+      );
+
+      FreshRegistry.registerFromBackend(FILTER_CONFIGURATION_FIXTURE);
+
+      // Filters that ARE registered (mirror DB rows)
       expect(FreshRegistry.has('programme_type')).toBe(true);
       expect(FreshRegistry.has('subjects')).toBe(true);
       expect(FreshRegistry.has('categories')).toBe(true);
       expect(FreshRegistry.has('product_types')).toBe(true);
       expect(FreshRegistry.has('modes_of_delivery')).toBe(true);
+      // searchQuery is always re-registered by registerFromBackend
       expect(FreshRegistry.has('searchQuery')).toBe(true);
 
       // Filters that must NOT be registered (no DB config exists)
       expect(FreshRegistry.has('products')).toBe(false);
-      expect(FreshRegistry.has('tutorial_format')).toBe(false);
-      expect(FreshRegistry.has('distance_learning')).toBe(false);
-      expect(FreshRegistry.has('tutorial')).toBe(false);
 
       // Total count: programme_type + subjects + categories + product_types + modes_of_delivery + searchQuery
       expect(FreshRegistry.getAll()).toHaveLength(6);
 
-      // Verify specific configurations
       const subjectsConfig = FreshRegistry.get('subjects');
       expect(subjectsConfig.urlFormat).toBe('indexed');
 

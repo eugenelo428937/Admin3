@@ -36,8 +36,12 @@ import {
   selectActiveFilterCount,
 } from './filtersSlice';
 
-// Initial state for testing (Story 1.14 - updated to match baseFiltersInitialState)
+// Initial state for testing (updated to match baseFiltersInitialState after byKey/scalar refactor)
 const initialState = {
+  // New generic bags (Task 21 refactor)
+  byKey: {},
+  scalar: {},
+  // Legacy flat fields (kept for backward compat)
   programme_type: [],
   subjects: [],
   categories: [],
@@ -45,7 +49,7 @@ const initialState = {
   products: [],
   modes_of_delivery: [],
   searchQuery: '',
-  searchFilterProductIds: [], // Story 1.14: Added from baseFiltersInitialState
+  searchFilterProductIds: [],
   currentPage: 1,
   pageSize: 20,
   isFilterPanelOpen: false,
@@ -53,16 +57,8 @@ const initialState = {
   isLoading: false,
   error: null,
   lastUpdated: null,
-  // Filter counts from API responses
-  filterCounts: {
-    programme_type: {},
-    subjects: {},
-    categories: {},
-    product_types: {},
-    products: {},
-    modes_of_delivery: {}
-  },
-  validationErrors: [], // Story 1.14: Added from baseFiltersInitialState
+  filterCounts: {},
+  validationErrors: [],
   // US5: Dynamic filter configuration from backend
   filterConfiguration: null,
   filterConfigurationLoading: false,

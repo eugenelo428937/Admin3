@@ -560,14 +560,28 @@ class TestNavigationDataView(CatalogAPITestCase):
         self.assertNotIn('CB1', subject_codes)  # Inactive
 
     def test_navigation_data_cached(self):
-        """navigation-data should use caching with key 'navigation_data_v3'."""
+        """navigation-data should use caching keyed by FilterConfigurationGroup max id.
+
+        The key is `navigation_data_v4_fcg{max_id}` so re-assigning a
+        FilterGroup to a different FilterConfiguration invalidates the
+        cache without a manual bump (see navigation_views.get_navigation_data).
+        """
+        from filtering.models import FilterConfigurationGroup
+        from django.db.models import Max
+
         # First request - should populate cache
         response1 = self.client.get('/api/catalog/navigation-data/')
         self.assertEqual(response1.status_code, status.HTTP_200_OK)
 
-        # Cache should be populated
-        cached_data = cache.get('navigation_data_v3')
-        self.assertIsNotNone(cached_data, "navigation_data_v3 cache key should be set")
+        # Build the expected key the same way the view does
+        fcg_version = (
+            FilterConfigurationGroup.objects.aggregate(latest=Max('id'))['latest']
+            or 0
+        )
+        cache_key = f'navigation_data_v4_fcg{fcg_version}'
+
+        cached_data = cache.get(cache_key)
+        self.assertIsNotNone(cached_data, f"{cache_key} should be set")
 
     def test_navigation_data_allows_anonymous(self):
         """navigation-data should allow anonymous access."""

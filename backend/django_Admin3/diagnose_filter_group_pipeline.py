@@ -102,7 +102,7 @@ for value in candidate_dispatches:
         # The method is private but we need to see the resolution
         ids = svc._resolve_group_ids_with_hierarchy([value]) if hasattr(svc, "_resolve_group_ids_with_hierarchy") else "<no resolver>"
         # Then run the full filter
-        result_qs = svc.apply_store_product_filters(base_qs, filters)
+        result_qs = svc.apply_filters(base_qs, filters)
         n_result = result_qs.count()
     except Exception as e:
         ids = f"ERROR: {e}"

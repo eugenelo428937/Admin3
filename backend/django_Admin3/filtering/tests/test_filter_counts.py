@@ -31,15 +31,26 @@ class GenerateFilterCountsContractTest(TestCase):
     def setUp(self):
         self.service = ProductFilterService()
 
-        # Create filter configurations
-        self.cat_config = create_filter_config('Categories', 'categories')
-        self.type_config = create_filter_config('Product Types', 'product_types')
+        # Create filter configurations — dispatcher only generates buckets for
+        # active FilterConfiguration rows, so each asserted filter_key must have one.
+        self.subj_config = create_filter_config(
+            'SUBJECTS', 'subjects', 'subject', display_order=0
+        )
+        self.cat_config = create_filter_config(
+            'Categories', 'categories', display_order=1
+        )
+        self.type_config = create_filter_config(
+            'Product Types', 'product_types', display_order=2
+        )
+        self.modes_config = create_filter_config(
+            'Modes of Delivery', 'modes_of_delivery', display_order=3
+        )
 
         # Create groups and assign to configs
         self.material = create_filter_group('Material', code='MATERIAL')
         assign_group_to_config(self.cat_config, self.material)
 
-        self.core = create_filter_group('Core Study Material', parent=self.material, code='CORE')
+        self.core = create_filter_group('Core Study Material', code='CORE')
         assign_group_to_config(self.type_config, self.core)
 
         # Create products
@@ -55,17 +66,16 @@ class GenerateFilterCountsContractTest(TestCase):
         assign_product_to_group(self.cat_prod, self.material)
         assign_product_to_group(self.cat_prod, self.core)
 
-    def test_returns_dict_with_5_dimensions(self):
-        """generate_filter_counts() returns dict with 5 dimensions."""
+    def test_returns_dict_with_active_filter_keys(self):
+        """generate_filter_counts() returns dict keyed by active FilterConfiguration.filter_key."""
         base_qs = StoreProduct.objects.filter(is_active=True)
         counts = self.service.generate_filter_counts(base_qs)
 
+        # Every active FilterConfiguration created in setUp must appear as a key.
         self.assertIn('subjects', counts)
         self.assertIn('categories', counts)
         self.assertIn('product_types', counts)
-        self.assertIn('products', counts)
         self.assertIn('modes_of_delivery', counts)
-        self.assertEqual(len(counts), 5)
 
     def test_dimension_entry_has_count_and_name(self):
         """Each dimension entry has {count: int, name: str} structure."""
@@ -109,10 +119,10 @@ class GenerateFilterCountsContractTest(TestCase):
         self.assertIn('CM2', counts['subjects'])
 
     def test_empty_result_set_returns_zero_counts(self):
-        """Edge case: Empty result set returns zero counts for all dimensions."""
+        """Edge case: Empty result set returns empty buckets for configured dimensions."""
         base_qs = StoreProduct.objects.none()
         counts = self.service.generate_filter_counts(base_qs)
 
+        # Dimensions backed by a FilterConfiguration must exist; all counts are 0.
         self.assertEqual(counts['subjects'], {})
-        self.assertEqual(counts['products'], {})
         self.assertEqual(counts['modes_of_delivery'], {})

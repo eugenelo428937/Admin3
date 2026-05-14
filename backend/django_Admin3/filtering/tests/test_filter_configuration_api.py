@@ -42,22 +42,15 @@ class TestFilterConfigurationAPI(TestCase):
         assign_group_to_config(self.product_types_config, self.core, display_order=0)
 
     def test_response_includes_filter_groups(self):
-        """T010: Each config entry includes a filter_groups array.
+        """T010: Each filter_group config entry includes assigned groups via options[].
 
-        The API should return filter_groups with at minimum: id, name, code.
-        This allows the frontend to know which groups belong to each filter
-        configuration, enabling correct partitioning in the UI.
+        In the new dispatcher shape, filter groups are surfaced as options
+        (value/label/code dicts) rather than a separate filter_groups array.
         """
         response = self.client.get('/api/products/filter-configuration/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
-
-        # The response should contain our configurations
-        # The format may be a dict keyed by config name/key or a list
-        # We need to find the categories config and check its filter_groups
-        found_categories = False
-        found_product_types = False
 
         # Handle both dict and list response formats
         if isinstance(data, dict):
@@ -67,6 +60,9 @@ class TestFilterConfigurationAPI(TestCase):
         else:
             self.fail(f"Unexpected response format: {type(data)}")
 
+        found_categories = False
+        found_product_types = False
+
         for config in configs:
             if not isinstance(config, dict):
                 continue
@@ -75,30 +71,17 @@ class TestFilterConfigurationAPI(TestCase):
 
             if config_key in ('categories', 'Categories'):
                 found_categories = True
-                self.assertIn(
-                    'filter_groups', config,
-                    "Categories config must include 'filter_groups' array"
-                )
-                groups = config['filter_groups']
-                self.assertIsInstance(groups, list)
-                group_names = {g['name'] for g in groups}
-                self.assertIn('Material', group_names)
-                self.assertIn('Tutorial', group_names)
-
-                # Each group should have at least id, name
-                for group in groups:
-                    self.assertIn('id', group)
-                    self.assertIn('name', group)
+                options = config.get('options', [])
+                self.assertIsInstance(options, list)
+                option_labels = {o['label'] for o in options}
+                self.assertIn('Material', option_labels)
+                self.assertIn('Tutorial', option_labels)
 
             if config_key in ('product_types', 'Product Types'):
                 found_product_types = True
-                self.assertIn(
-                    'filter_groups', config,
-                    "Product Types config must include 'filter_groups' array"
-                )
-                groups = config['filter_groups']
-                group_names = {g['name'] for g in groups}
-                self.assertIn('Core Study Materials', group_names)
+                options = config.get('options', [])
+                option_labels = {o['label'] for o in options}
+                self.assertIn('Core Study Materials', option_labels)
 
         self.assertTrue(found_categories, "Response should include categories config")
         self.assertTrue(found_product_types, "Response should include product_types config")
@@ -109,28 +92,30 @@ class TestFilterConfigurationAPI(TestCase):
         The API must return enough information for the frontend to
         dynamically render filter sections without hardcoded config.
 
-        Required fields per config entry:
+        Required fields per config entry (new dispatcher shape):
         - filter_key: Redux state key (e.g., 'categories')
+        - filter_type: Handler discriminator (e.g., 'filter_group')
         - label: Human-readable display label
         - display_order: Numeric sort order
-        - type: UI component type (e.g., 'checkbox', 'filter_group')
+        - ui_component: UI component type (e.g., 'multi_select')
         - allow_multiple: Whether multiple selections allowed
-        - filter_groups: Array of assigned groups (for filter_group type)
-        - collapsible: Whether the section can be collapsed
-        - default_open: Whether collapsed by default
+        - options: Array of available filter options
+        - is_collapsible: Whether the section can be collapsed
+        - is_expanded_by_default: Whether expanded by default
         """
         response = self.client.get('/api/products/filter-configuration/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
-        # Response is a dict keyed by config name
+        # Response is a dict keyed by filter_key
         self.assertIsInstance(data, dict)
         self.assertTrue(len(data) >= 2, "Should have at least 2 configurations")
 
         # Required UI fields every config must have
         required_fields = [
-            'filter_key', 'label', 'display_order', 'type',
-            'allow_multiple', 'filter_groups', 'collapsible', 'default_open',
+            'filter_key', 'filter_type', 'label', 'display_order',
+            'ui_component', 'allow_multiple', 'options',
+            'is_collapsible', 'is_expanded_by_default',
         ]
 
         for config_name, config in data.items():
@@ -142,20 +127,19 @@ class TestFilterConfigurationAPI(TestCase):
 
             # Validate types
             self.assertIsInstance(config['filter_key'], str)
+            self.assertIsInstance(config['filter_type'], str)
             self.assertIsInstance(config['display_order'], int)
             self.assertIsInstance(config['allow_multiple'], bool)
-            self.assertIsInstance(config['filter_groups'], list)
-            self.assertIsInstance(config['collapsible'], bool)
-            self.assertIsInstance(config['default_open'], bool)
+            self.assertIsInstance(config['options'], list)
+            self.assertIsInstance(config['is_collapsible'], bool)
+            self.assertIsInstance(config['is_expanded_by_default'], bool)
 
-        # Verify correct filter_key values
-        all_filter_keys = {v['filter_key'] for v in data.values()}
-        self.assertIn('categories', all_filter_keys)
-        self.assertIn('product_types', all_filter_keys)
+        # Verify correct filter_key values (response is now keyed by filter_key)
+        self.assertIn('categories', data)
+        self.assertIn('product_types', data)
 
         # Verify order: categories (1) before product_types (2)
-        configs_by_key = {v['filter_key']: v for v in data.values()}
         self.assertLess(
-            configs_by_key['categories']['display_order'],
-            configs_by_key['product_types']['display_order']
+            data['categories']['display_order'],
+            data['product_types']['display_order']
         )

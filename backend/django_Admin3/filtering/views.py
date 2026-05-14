@@ -10,7 +10,6 @@ from catalog.models import ProductProductVariation
 from .models import FilterGroup
 from .serializers import (
     FilterGroupSerializer,
-    FilterGroupThreeLevelSerializer,
     ProductGroupFilterSerializer,
 )
 from .services.filter_service import get_filter_service
@@ -20,10 +19,11 @@ from .services.filter_service import get_filter_service
 @permission_classes([AllowAny])
 def product_group_tree(request):
     """
-    Returns the full product group tree (with children) for navigation/filtering.
+    Returns active filter groups as a flat list for navigation/filtering.
+    (Hierarchy was removed in migration 0012 — parent field no longer exists.)
     """
-    roots = FilterGroup.objects.filter(parent__isnull=True)
-    serializer = FilterGroupSerializer(roots, many=True)
+    groups = FilterGroup.objects.filter(is_active=True).order_by('display_order', 'name')
+    serializer = FilterGroupSerializer(groups, many=True)
     return Response({'results': serializer.data})
 
 
@@ -31,10 +31,11 @@ def product_group_tree(request):
 @permission_classes([AllowAny])
 def product_group_three_level_tree(request):
     """
-    Returns the product group tree up to three levels deep.
+    Returns active filter groups as a flat list.
+    (Three-level hierarchy was removed in migration 0012 — parent field no longer exists.)
     """
-    roots = FilterGroup.objects.filter(parent__isnull=True)
-    serializer = FilterGroupThreeLevelSerializer(roots, many=True)
+    groups = FilterGroup.objects.filter(is_active=True).order_by('display_order', 'name')
+    serializer = FilterGroupSerializer(groups, many=True)
     return Response({'results': serializer.data})
 
 
@@ -42,20 +43,15 @@ def product_group_three_level_tree(request):
 @permission_classes([AllowAny])
 def products_by_group(request, group_id):
     """
-    Returns all product-variations in the given group and all its descendants.
+    Returns all product-variations in the given group.
+    (Descendant traversal was removed in migration 0012 — parent field no longer exists.)
     """
-    def get_descendant_ids(group):
-        ids = [group.id]
-        for child in group.children.all():
-            ids.extend(get_descendant_ids(child))
-        return ids
-
     try:
         group = FilterGroup.objects.get(id=group_id)
     except FilterGroup.DoesNotExist:
         return Response({'error': 'Group not found'}, status=404)
 
-    group_ids = get_descendant_ids(group)
+    group_ids = [group.id]
     ppvs = ProductProductVariation.objects.filter(
         product_groups__product_group__id__in=group_ids
     ).select_related('product', 'product_variation').distinct()
@@ -99,7 +95,8 @@ def filter_configuration(request):
 @permission_classes([AllowAny])
 def product_group_filters(request):
     """
-    Returns parent filter groups with their child groups for filtering.
+    Returns active filter groups as a flat list for filtering.
+    (Parent/children hierarchy was removed in migration 0012 — parent field no longer exists.)
 
     Response format:
     {
@@ -107,16 +104,11 @@ def product_group_filters(request):
             {
                 "id": 1,
                 "name": "Study Materials",
-                "filter_type": "category",
-                "groups": [
-                    {"id": 2, "name": "Core Study Materials"}
-                ]
+                "groups": []
             }
         ]
     }
     """
-    roots = FilterGroup.objects.filter(
-        parent__isnull=True, is_active=True, children__isnull=False
-    ).prefetch_related('children').distinct()
-    serializer = ProductGroupFilterSerializer(roots, many=True)
+    groups = FilterGroup.objects.filter(is_active=True).order_by('display_order', 'name')
+    serializer = ProductGroupFilterSerializer(groups, many=True)
     return Response({'results': serializer.data})
