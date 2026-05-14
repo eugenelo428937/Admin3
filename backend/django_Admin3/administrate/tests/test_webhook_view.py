@@ -128,3 +128,22 @@ class TestWebhookPersistence:
         del valid_payload['metadata']['webhookId']
         resp = client.post(self.URL, valid_payload, format='json')
         assert resp.status_code == 400
+
+    def test_invalid_timestamp_returns_400(self, client, valid_payload):
+        valid_payload['metadata']['eventTimestamp'] = 'not-a-real-date'
+        resp = client.post(self.URL, valid_payload, format='json')
+        assert resp.status_code == 400
+        assert WebhookInbox.objects.count() == 0
+
+    def test_non_dict_metadata_returns_400(self, client, valid_payload):
+        valid_payload['metadata'] = 'string-not-object'
+        resp = client.post(self.URL, valid_payload, format='json')
+        assert resp.status_code == 400
+        assert WebhookInbox.objects.count() == 0
+
+    def test_falsy_but_valid_entity_id_accepted(self, client, valid_payload):
+        """entityId='0' should NOT trigger the missing-keys validation."""
+        valid_payload['metadata']['entityId'] = '0'
+        resp = client.post(self.URL, valid_payload, format='json')
+        assert resp.status_code == 202
+        assert WebhookInbox.objects.get().entity_external_id == '0'
