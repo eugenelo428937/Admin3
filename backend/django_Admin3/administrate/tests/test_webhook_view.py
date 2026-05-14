@@ -78,3 +78,53 @@ class TestWebhookAuth:
             body, format='json',
         )
         assert resp.status_code == 401
+
+
+from administrate.models import WebhookInbox
+
+
+@pytest.mark.django_db
+class TestWebhookPersistence:
+    URL = '/api/administrate/webhooks/test-route-token/event/'
+
+    @pytest.fixture(autouse=True)
+    def _webhook_settings(self, settings):
+        settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN = 'test-route-token'
+        settings.ADMINISTRATE_WEBHOOK_SECRET = 'test-shared-secret'
+
+    def test_fresh_delivery_persists_and_returns_202(self, client, valid_payload):
+        resp = client.post(self.URL, valid_payload, format='json')
+
+        assert resp.status_code == 202
+        assert resp.json()['status'] == 'queued'
+        assert 'inbox_id' in resp.json()
+        assert WebhookInbox.objects.count() == 1
+
+        row = WebhookInbox.objects.get()
+        assert row.administrate_webhook_id == 'wh_test_1'
+        assert row.webhook_type_name == 'Event Updated'
+        assert row.entity_type == 'event'
+        assert row.entity_external_id == 'evt_1'
+        assert row.status == WebhookInbox.STATUS_RECEIVED
+        assert row.raw_payload == valid_payload
+
+    def test_duplicate_delivery_returns_200(self, client, valid_payload):
+        client.post(self.URL, valid_payload, format='json')
+        resp = client.post(self.URL, valid_payload, format='json')
+
+        assert resp.status_code == 200
+        assert resp.json()['status'] == 'duplicate'
+        assert WebhookInbox.objects.count() == 1
+
+    def test_missing_metadata_returns_400(self, client, valid_payload):
+        del valid_payload['metadata']
+        resp = client.post(self.URL, valid_payload, format='json')
+
+        assert resp.status_code == 400
+        assert 'error' in resp.json()
+        assert WebhookInbox.objects.count() == 0
+
+    def test_missing_webhook_id_returns_400(self, client, valid_payload):
+        del valid_payload['metadata']['webhookId']
+        resp = client.post(self.URL, valid_payload, format='json')
+        assert resp.status_code == 400

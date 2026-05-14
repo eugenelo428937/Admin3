@@ -1,10 +1,22 @@
+import logging
+
 from django.conf import settings
+from django.db import IntegrityError, transaction
 from django.utils.crypto import constant_time_compare
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from administrate.services.webhook_ingress import (
+    InvalidPayload,
+    dispatch_inbox_task,
+    persist_inbox_row,
+)
+
+
+logger = logging.getLogger('administrate.webhook')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -34,5 +46,30 @@ class AdministrateEventWebhookView(APIView):
         if not configured_secret or not constant_time_compare(secret, configured_secret):
             return Response(status=401)
 
-        # Persistence + dispatch land in Task 4.
-        return Response({'status': 'queued'}, status=202)
+        try:
+            # Wrap in an atomic block so an IntegrityError (dedup hit) on the
+            # UniqueConstraint doesn't poison the surrounding transaction
+            # (e.g. the pytest-django outer atomic block).
+            with transaction.atomic():
+                row = persist_inbox_row(request.data, dict(request.headers))
+        except InvalidPayload as exc:
+            return Response({'error': str(exc)}, status=400)
+        except IntegrityError:
+            return Response({'status': 'duplicate'}, status=200)
+
+        # Under ImmediateBackend (slice 1), this call runs the handler
+        # synchronously in-request and may raise. The inbox row is already
+        # persisted with its outcome (failed/dead), so we MUST suppress
+        # exceptions here — otherwise a handler bug returns HTTP 500 to
+        # Administrate, which retries the webhook, which we then dedup
+        # (200), which masks the failure. Logging stays as the operator
+        # signal; replay is via the inbox CLI command.
+        try:
+            dispatch_inbox_task(row.id)
+        except Exception:  # noqa: BLE001 — see comment above
+            logger.exception(
+                'administrate.webhook.dispatch_failed',
+                extra={'inbox_id': row.id},
+            )
+
+        return Response({'status': 'queued', 'inbox_id': row.id}, status=202)
