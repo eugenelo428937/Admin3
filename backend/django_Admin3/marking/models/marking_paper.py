@@ -34,6 +34,17 @@ class MarkingPaper(models.Model):
         blank=True,
         help_text='The purchasable this marking paper belongs to',
     )
+    marking_template = models.ForeignKey(
+        'marking.MarkingTemplate',
+        on_delete=models.PROTECT,
+        related_name='marking_papers',
+        null=True,
+        blank=True,
+        help_text=(
+            'The marking template this paper belongs to. Nullable during '
+            'Phase 1 (created); backfilled and made NOT NULL in Phase 4c.'
+        ),
+    )
     name = models.CharField(max_length=10)
     deadline = models.DateTimeField()
     recommended_submit_date = models.DateTimeField()

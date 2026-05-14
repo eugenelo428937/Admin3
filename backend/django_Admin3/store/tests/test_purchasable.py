@@ -56,3 +56,32 @@ class PurchasablePricingTests(TestCase):
     # was removed. ``Price.product`` FK no longer exists as a DB column
     # after ``store.migrations.0013_drop_price_product_fk``; only the
     # ``product=`` kwarg shim in ``Price.__init__`` remains for compat.
+
+
+class KindEnumExtensionTests(TestCase):
+    """Kind enum gains specialized product family values in Phase 1.
+
+    Phase 2 backfill reassigns existing `'product'` rows to one of these.
+    Phase 4e removes `'product'` from choices.
+    """
+
+    def test_kind_has_material_value(self):
+        self.assertEqual(Purchasable.Kind.MATERIAL.value, 'material')
+        self.assertEqual(Purchasable.Kind.MATERIAL.label, 'Material Product')
+
+    def test_kind_has_tutorial_value(self):
+        self.assertEqual(Purchasable.Kind.TUTORIAL.value, 'tutorial')
+        self.assertEqual(Purchasable.Kind.TUTORIAL.label, 'Tutorial Product')
+
+    def test_kind_has_marking_value(self):
+        self.assertEqual(Purchasable.Kind.MARKING.value, 'marking')
+        self.assertEqual(Purchasable.Kind.MARKING.label, 'Marking Product')
+
+    def test_kind_keeps_legacy_product_value(self):
+        """Legacy `'product'` must remain valid during Phase 1-4 transition."""
+        self.assertEqual(Purchasable.Kind.PRODUCT.value, 'product')
+
+    def test_kind_keeps_existing_generic_values(self):
+        self.assertEqual(Purchasable.Kind.MARKING_VOUCHER.value, 'marking_voucher')
+        self.assertEqual(Purchasable.Kind.DOCUMENT_BINDER.value, 'document_binder')
+        self.assertEqual(Purchasable.Kind.ADDITIONAL_CHARGE.value, 'additional_charge')
