@@ -113,7 +113,7 @@ class OrchestratorTests(TestCase):
         loc = TutorialLocation.objects.create(name='Old Location', code='Old')
         # Create via raw save — needs FK to store_product, so just create one
         # using the same setUp data.
-        from store.models import Product as StoreProduct
+        from store.models import TutorialProduct
         from catalog.models import ExamSession, ExamSessionSubject, ProductProductVariation
         es_old = ExamSession.objects.create(
             session_code='OLD',
@@ -127,9 +127,10 @@ class OrchestratorTests(TestCase):
             product=CatProduct.objects.get(code='Live'),
             product_variation=ProductVariation.objects.get(code='LO_6H'),
         )
-        sp_old = StoreProduct(
+        sp_old = TutorialProduct(
             exam_session_subject=ess_old, product_product_variation=ppv_old,
             product_code='OLD_PRODUCT_CODE',
+            format='LO_6H',
         )
         sp_old.save()
         ev_old = TutorialEvents.objects.create(

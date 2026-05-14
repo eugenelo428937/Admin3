@@ -28,7 +28,7 @@ from catalog.models import (
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
 from staff.models import Staff
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from tutorials.models import (
     TutorialLocation, TutorialVenue, TutorialInstructor,
 )
@@ -66,7 +66,7 @@ class Resolution:
     product_variation: Optional[ProductVariation] = None
     catalog_product: Optional[CatProduct] = None
     product_product_variation: Optional[ProductProductVariation] = None
-    store_product: Optional[StoreProduct] = None
+    store_product: Optional[TutorialProduct] = None
     tutorial_location: Optional[TutorialLocation] = None
     tutorial_venue: Optional[TutorialVenue] = None
     instructors: List[TutorialInstructor] = field(default_factory=list)
@@ -249,20 +249,25 @@ def _get_or_create_store_product(
     ess: ExamSessionSubject,
     ppv: ProductProductVariation,
     legacy_code: str,  # kept in signature for back-compat / debugging; not used
-) -> StoreProduct:
-    """Look up store.Product by (ess, ppv); create with a canonical
+) -> TutorialProduct:
+    """Look up store.TutorialProduct by (ess, ppv); create with a canonical
     ``{subject}/{location_code}/{variation}/{sitting}`` product_code if missing.
+
+    Phase 4b: was store.Product, now store.TutorialProduct. The format field
+    is derived from the ProductVariation.code (e.g. 'LO_6H' → format='LO_6H').
+    All Tutorial variation codes match TutorialProduct.Format choices exactly.
 
     The legacy CSV Code (e.g. 'CB1_f2f_3') is shared across many events so
     it can't be the unique product_code. Pre-setting our own canonical code
     skips the Product.save() auto-generation path (which would fail because
     no TutorialEvent is linked yet — chicken-and-egg).
     """
-    sp = StoreProduct.objects.filter(
+    # First try to find an existing TutorialProduct (MTI child row must exist)
+    tp = TutorialProduct.objects.filter(
         exam_session_subject=ess, product_product_variation=ppv,
     ).first()
-    if sp is not None:
-        return sp
+    if tp is not None:
+        return tp
 
     subject_code = ess.subject.code
     sitting_code = ess.exam_session.session_code
@@ -270,13 +275,14 @@ def _get_or_create_store_product(
     location_code = ppv.product.code  # 'Lon', 'Live', 'Edi', etc.
     canonical_code = f"{subject_code}/{location_code}/{variation_code}/{sitting_code}"
 
-    sp = StoreProduct(
+    tp = TutorialProduct(
         exam_session_subject=ess,
         product_product_variation=ppv,
         product_code=canonical_code,
+        format=variation_code,  # ProductVariation.code == TutorialProduct.Format value
     )
-    sp.save()
-    return sp
+    tp.save()
+    return tp
 
 
 def _slugify_username(full_name: str) -> str:

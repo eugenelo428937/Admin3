@@ -17,7 +17,7 @@ from catalog.models import (
 )
 from cart.services.cart_service import cart_service
 from cart.models import Cart, CartItem
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, TutorialProduct
 from students.models import Student
 from tutorials.models import CartTutorialChoice, TutorialEvents
 
@@ -67,9 +67,10 @@ def _seed_tutorial_product(subject_code='CB1', sitting='24'):
     if not cat.is_active:
         cat.is_active = True
         cat.save(update_fields=['is_active'])
-    sp = StoreProduct(
+    sp = TutorialProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject_code}/Live/LO_6H/{sitting}',
+        format='LO_6H',
     )
     sp.save()
     event_a = TutorialEvents.objects.create(

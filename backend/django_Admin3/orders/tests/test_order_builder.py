@@ -210,7 +210,7 @@ class TransferTutorialChoicesTests(TestCase):
             Product as CatProduct, ProductVariation,
             ProductProductVariation,
         )
-        from store.models import Product as StoreProduct
+        from store.models import Product as StoreProduct, TutorialProduct
         from students.models import Student
         from tutorials.models import CartTutorialChoice, TutorialEvents
 
@@ -238,9 +238,10 @@ class TransferTutorialChoicesTests(TestCase):
                       'variation_type': 'Tutorial'})
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv)
-        sp = StoreProduct(
+        sp = TutorialProduct(
             exam_session_subject=ess, product_product_variation=ppv,
-            product_code='CM2/Live/LO_6H/25')
+            product_code='CM2/Live/LO_6H/25',
+            format='LO_6H')
         sp.save()
         self.event_a = TutorialEvents.objects.create(
             code='CM2-01-25A', store_product=sp,
@@ -307,7 +308,7 @@ class TutorialCheckoutAuthGateTests(TestCase):
             Product as CatProduct, ProductVariation,
             ProductProductVariation,
         )
-        from store.models import Product as StoreProduct
+        from store.models import Product as StoreProduct, TutorialProduct
         from tutorials.models import CartTutorialChoice, TutorialEvents
 
         es = ExamSession.objects.create(
@@ -329,9 +330,10 @@ class TutorialCheckoutAuthGateTests(TestCase):
                       'variation_type': 'Tutorial'})
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv)
-        sp = StoreProduct(
+        sp = TutorialProduct(
             exam_session_subject=ess, product_product_variation=ppv,
-            product_code='CM2/Live/LO_6H/25')
+            product_code='CM2/Live/LO_6H/25',
+            format='LO_6H')
         sp.save()
         ev = TutorialEvents.objects.create(
             code='CM2-01-25A', store_product=sp,

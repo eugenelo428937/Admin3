@@ -10,7 +10,7 @@ from django.test import TestCase
 
 from orders.models import Order, OrderItem
 from orders.serializers.order_serializer import OrderItemSerializer
-from store.models import GenericItem, Product as StoreProduct
+from store.models import GenericItem, Product as StoreProduct, TutorialProduct
 
 
 User = get_user_model()
@@ -125,9 +125,10 @@ class OrderItemTutorialChoicesSerializerTests(TestCase):
                       'variation_type': 'Tutorial'})
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv)
-        sp = StoreProduct(
+        sp = TutorialProduct(
             exam_session_subject=ess, product_product_variation=ppv,
-            product_code='SP1/Live/LO_6H/25')
+            product_code='SP1/Live/LO_6H/25',
+            format='LO_6H')
         sp.save()
         event = TutorialEvents.objects.create(
             code='SP1-01-25A', store_product=sp,

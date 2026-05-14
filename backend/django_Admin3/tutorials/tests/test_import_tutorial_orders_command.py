@@ -12,7 +12,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from orders.models import Order, OrderItem
 from tutorials.models import TutorialChoice, TutorialEvents
 
@@ -39,13 +39,14 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17'):
                   'variation_type': 'Tutorial'},
     )
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
-    sp = StoreProduct.objects.filter(exam_session_subject=ess, product_product_variation=ppv).first()
-    if sp is None:
-        sp = StoreProduct(exam_session_subject=ess, product_product_variation=ppv,
-                          product_code=f'{subject_code}/Live/LO_6H/{sitting_session}')
-        sp.save()
+    tp = TutorialProduct.objects.filter(exam_session_subject=ess, product_product_variation=ppv).first()
+    if tp is None:
+        tp = TutorialProduct(exam_session_subject=ess, product_product_variation=ppv,
+                             product_code=f'{subject_code}/Live/LO_6H/{sitting_session}',
+                             format='LO_6H')
+        tp.save()
     return TutorialEvents.objects.create(
-        code=f'{subject_code}-{event_num}-{sitting_short}', store_product=sp,
+        code=f'{subject_code}-{event_num}-{sitting_short}', store_product=tp,
         start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
     )
 

@@ -81,12 +81,12 @@ def _normalize_sitting(sitting):
 
 def _resolve_store_product(row_data, debug=False):
     """
-    Resolve store.Product from course template code and sitting.
+    Resolve store.TutorialProduct from course template code and sitting.
 
     Chain: adm.CourseTemplate → tutorial_course_template.code (= subject code)
-           → ExamSessionSubject → store.Product
+           → ExamSessionSubject → store.TutorialProduct
     """
-    from store.models import Product as StoreProduct
+    from store.models import TutorialProduct
     from catalog.models import ExamSessionSubject
     from administrate.models import CourseTemplate as AdmCourseTemplate
 
@@ -127,7 +127,7 @@ def _resolve_store_product(row_data, debug=False):
                     f"subject={subject_code} sitting={sitting}")
             return None
 
-        product = StoreProduct.objects.filter(
+        product = TutorialProduct.objects.filter(
             exam_session_subject=ess,
             is_active=True,
         ).first()

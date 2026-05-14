@@ -19,7 +19,7 @@ from typing import List, Optional
 
 from django.contrib.auth.models import User
 
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from students.models import Student
 from tutorials.models import TutorialEvents
 from tutorials.services.orders_csv_parser import ParsedOrderRow
@@ -29,7 +29,7 @@ from tutorials.services.orders_csv_parser import ParsedOrderRow
 class OrderResolution:
     student: Optional[Student] = None
     tutorial_event: Optional[TutorialEvents] = None
-    store_product: Optional[StoreProduct] = None
+    store_product: Optional[TutorialProduct] = None
     errors: List[str] = field(default_factory=list)
 
 

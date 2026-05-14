@@ -25,7 +25,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from tutorials.models import TutorialEvents
 
 
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             f"Done — created={created} skipped_existing={skipped_existing}"
         ))
 
-    def _resolve_store_product(self, spec: StubSpec) -> StoreProduct:
+    def _resolve_store_product(self, spec: StubSpec) -> TutorialProduct:
         # Use lookup-only on master data (Subject/ProductVariation/catalog.Product).
         try:
             subject = Subject.objects.get(code=spec.subject_code)
@@ -108,16 +108,17 @@ class Command(BaseCommand):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat_product, product_variation=variation,
         )
-        sp = StoreProduct.objects.filter(
+        tp = TutorialProduct.objects.filter(
             exam_session_subject=ess, product_product_variation=ppv,
         ).first()
-        if sp is not None:
-            return sp
+        if tp is not None:
+            return tp
         canonical_code = f"{spec.subject_code}/{spec.catalog_product_code}/{spec.variation_code}/{spec.sitting}"
-        sp = StoreProduct(
+        tp = TutorialProduct(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code=canonical_code,
+            format=spec.variation_code,  # ProductVariation.code == TutorialProduct.Format value
         )
-        sp.save()
-        return sp
+        tp.save()
+        return tp

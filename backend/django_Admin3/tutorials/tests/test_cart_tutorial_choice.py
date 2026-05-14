@@ -15,7 +15,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from students.models import Student
 from cart.models import Cart, CartItem
 from tutorials.models import CartTutorialChoice, TutorialEvents
@@ -23,7 +23,7 @@ from tutorials.models import CartTutorialChoice, TutorialEvents
 
 def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
                          variation_type='Tutorial',
-                         variation_code='LO_6H'):
+                         variation_code='LO_6H', format='LO_6H'):
     es = ExamSession.objects.create(
         session_code=sitting_code,
         start_date=timezone.now(),
@@ -47,9 +47,10 @@ def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat_prod, product_variation=pv,
     )
-    sp = StoreProduct(
+    sp = TutorialProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject_code}/Live/{variation_code}/{sitting_code}',
+        format=format,
     )
     sp.save()
     event = TutorialEvents.objects.create(
@@ -145,10 +146,11 @@ class CartTutorialChoiceTests(TestCase):
         oc_ppv, _ = ProductProductVariation.objects.get_or_create(
             product=oc_cat, product_variation=oc_pv,
         )
-        oc_sp = StoreProduct(
+        oc_sp = TutorialProduct(
             exam_session_subject=self.sp.exam_session_subject,
             product_product_variation=oc_ppv,
             product_code='CB1/OC/OC/24',
+            format='OC',
         )
         oc_sp.save()
         oc_event = TutorialEvents.objects.create(

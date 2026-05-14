@@ -16,7 +16,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from tutorials.models import TutorialEvents, TutorialVenue
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, TutorialProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, ExamSessionSubjectProduct,
     Product, ProductProductVariation, ProductVariation, Subject
@@ -70,11 +70,12 @@ class TutorialEventsAPITestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create store.Product (replaces old ESSP + ESSPV chain)
-        self.store_product = StoreProduct.objects.create(
+        # Create store.TutorialProduct (Phase 4b: FK retargeted to TutorialProduct)
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.product_product_variation,
-            product_code='CM2/TWKDTUT001/JUNE2025'
+            product_code='CM2/TWKDTUT001/JUNE2025',
+            format='F2F_3F',
         )
 
         # Create tutorial events
@@ -343,17 +344,19 @@ class TutorialEventsListViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create store.Product instances (replaces old ESSP + ESSPV chain)
-        self.store_product1 = StoreProduct.objects.create(
+        # Create store.TutorialProduct instances (Phase 4b: FK retargeted)
+        self.store_product1 = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject1,
             product_product_variation=self.ppv1,
-            product_code='CM2/TWKDTUT001/JUNE2025'
+            product_code='CM2/TWKDTUT001/JUNE2025',
+            format='F2F_3F',
         )
 
-        self.store_product2 = StoreProduct.objects.create(
+        self.store_product2 = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject2,
             product_product_variation=self.ppv2,
-            product_code='SA1/TWKDTUT002/JUNE2025'
+            product_code='SA1/TWKDTUT002/JUNE2025',
+            format='F2F_3F',
         )
 
         # Create tutorial events
@@ -727,11 +730,12 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create store.Product (replaces old ESSP + ESSPV chain)
-        self.store_product = StoreProduct.objects.create(
+        # Create store.TutorialProduct (Phase 4b: FK retargeted to TutorialProduct)
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.ppv,
-            product_code='CM2/TWKDTUT001/JUNE2025-comp'
+            product_code='CM2/TWKDTUT001/JUNE2025-comp',
+            format='F2F_3F',
         )
 
         # Create tutorial event
@@ -865,10 +869,11 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=product, product_variation=pv
         )
-        store_product = StoreProduct.objects.create(
+        store_product = TutorialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code='TUT_BC/STORE',
+            format='F2F_3F',
         )
         event = TutorialEvents.objects.create(
             code='TUT-BC-001',
@@ -905,10 +910,11 @@ class TutorialProductListViewWithStoreProductTestCase(APITestCase):
         ppv = ProductProductVariation.objects.create(
             product=product, product_variation=pv
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code='TUT_PL/STORE',
+            format='F2F_3F',
         )
         self.exam_session = exam_session
         self.client = APIClient()
@@ -994,15 +1000,17 @@ class TutorialEventsListViewSubjectFilterTestCase(APITestCase):
             product=product2, product_variation=pv
         )
 
-        self.sp_cm2 = StoreProduct.objects.create(
+        self.sp_cm2 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
             product_product_variation=ppv_cm2,
-            product_code='FLT_CM2/WKD/2025'
+            product_code='FLT_CM2/WKD/2025',
+            format='F2F_3F',
         )
-        self.sp_sa1 = StoreProduct.objects.create(
+        self.sp_sa1 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
             product_product_variation=ppv_sa1,
-            product_code='FLT_SA1/WKD/2025'
+            product_code='FLT_SA1/WKD/2025',
+            format='F2F_3F',
         )
 
         self.event_cm2 = TutorialEvents.objects.create(
@@ -1289,21 +1297,24 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
             product=self.cat_product2, product_variation=self.pv_wkd
         )
 
-        # Create store products
-        self.sp1 = StoreProduct.objects.create(
+        # Create store products (TutorialProduct after Phase 4b retarget)
+        self.sp1 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
             product_product_variation=self.ppv_p1_wkd,
-            product_code='COMP_CM2/WKD_LON/2025'
+            product_code='COMP_CM2/WKD_LON/2025',
+            format='F2F_3F',
         )
-        self.sp2 = StoreProduct.objects.create(
+        self.sp2 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
             product_product_variation=self.ppv_p1_day,
-            product_code='COMP_CM2/DAY_LON/2025'
+            product_code='COMP_CM2/DAY_LON/2025',
+            format='F2F_3F',
         )
-        self.sp3 = StoreProduct.objects.create(
+        self.sp3 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
             product_product_variation=self.ppv_p2_wkd,
-            product_code='COMP_SA1/WKD_MAN/2025'
+            product_code='COMP_SA1/WKD_MAN/2025',
+            format='F2F_3F',
         )
 
         # Create tutorial events - multiple events per variation to test grouping
