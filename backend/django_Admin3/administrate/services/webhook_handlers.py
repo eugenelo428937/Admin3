@@ -37,8 +37,8 @@ def map_node_to_event_fields(node: dict) -> dict:
     """Translate a GraphQL `event` node into a kwargs dict for `Event.objects`.
 
     Required root keys (raise `KeyError` if absent): `id`, `title`,
-    `lifecycleState`, `learningMode`, `courseTemplate`, `location`,
-    `primaryInstructor`.
+    `lifecycleState`, `learningMode`, `webSale`, `courseTemplate`,
+    `location`, `primaryInstructor`.
 
     FK fields are resolved to local model instances. Unknown external_ids
     raise `MissingDependencyError` — the caller treats this as a
@@ -54,7 +54,7 @@ def map_node_to_event_fields(node: dict) -> dict:
         'learning_mode': node['learningMode'],
         'cancelled': bool(node.get('cancelled', False)),
         'sold_out': bool(node.get('soldOut', False)),
-        'web_sale': bool(node.get('webSale', True)),
+        'web_sale': bool(node['webSale']),
         'max_places': int(node.get('maxPlaces') or 0),
         'min_places': int(node.get('minPlaces') or 0),
         'event_url': node.get('eventUrl') or '',
@@ -69,7 +69,7 @@ def map_node_to_event_fields(node: dict) -> dict:
         'location': _resolve_fk(Location, node['location']['id']),
         'venue': (
             _resolve_fk(Venue, node['venue']['id'])
-            if node.get('venue') else None
+            if node.get('venue') and node['venue'].get('id') else None
         ),
         'primary_instructor': _resolve_fk(
             Instructor, node['primaryInstructor']['id']

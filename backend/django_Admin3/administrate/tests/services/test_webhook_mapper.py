@@ -85,3 +85,25 @@ class TestMapper:
         node['venue'] = None
         fields = map_node_to_event_fields(node)
         assert fields['venue'] is None
+
+    def test_missing_web_sale_raises_keyerror(self, seed_dependencies):
+        node = _load('event_updated.json')
+        del node['webSale']
+        with pytest.raises(KeyError):
+            map_node_to_event_fields(node)
+
+    def test_empty_venue_dict_treated_as_none(self, seed_dependencies):
+        """venue={} can happen when GraphQL returns an empty object for a
+        nullable relation; must NOT raise KeyError, must produce venue=None.
+        """
+        node = _load('event_updated.json')
+        node['venue'] = {}
+        fields = map_node_to_event_fields(node)
+        assert fields['venue'] is None
+
+    def test_venue_missing_id_treated_as_none(self, seed_dependencies):
+        """Defensive: venue dict present but missing the id key shouldn't crash."""
+        node = _load('event_updated.json')
+        node['venue'] = {'someOtherField': 'whatever'}
+        fields = map_node_to_event_fields(node)
+        assert fields['venue'] is None
