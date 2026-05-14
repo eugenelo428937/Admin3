@@ -25,12 +25,13 @@ class AdministrateEventWebhookView(APIView):
 
     def post(self, request, route_token, *args, **kwargs):
         expected_token = settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN
-        if not constant_time_compare(route_token, expected_token):
+        if not expected_token or not constant_time_compare(route_token, expected_token):
             return Response(status=404)
 
         config = request.data.get('configuration') or {}
         secret = config.get('secret', '') if isinstance(config, dict) else ''
-        if not constant_time_compare(secret, settings.ADMINISTRATE_WEBHOOK_SECRET):
+        configured_secret = settings.ADMINISTRATE_WEBHOOK_SECRET
+        if not configured_secret or not constant_time_compare(secret, configured_secret):
             return Response(status=401)
 
         # Persistence + dispatch land in Task 4.
