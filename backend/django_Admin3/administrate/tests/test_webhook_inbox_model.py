@@ -28,6 +28,7 @@ class TestWebhookInbox:
         assert row.status == WebhookInbox.STATUS_RECEIVED
         assert row.attempts == 0
         assert row.applied_at is None
+        assert row.last_attempted_at is None
         assert row.error_message == ''
         assert row.task_id == ''
         assert row.received_at is not None

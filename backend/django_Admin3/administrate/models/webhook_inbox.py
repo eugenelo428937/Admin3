@@ -29,6 +29,9 @@ class WebhookInbox(models.Model):
         (STATUS_DEAD, 'Dead'),
     ]
 
+    # Administrate's registered webhook ID (NOT a per-delivery ID); two
+    # registrations firing for the same event use different values, which
+    # is why the composite UniqueConstraint below is needed for dedup.
     administrate_webhook_id = models.CharField(max_length=64, db_index=True)
     administrate_event_timestamp = models.DateTimeField(db_index=True)
     webhook_type_name = models.CharField(max_length=80)
@@ -49,6 +52,8 @@ class WebhookInbox(models.Model):
     task_id = models.CharField(max_length=64, blank=True, default='')
 
     received_at = models.DateTimeField(auto_now_add=True)
+    # Set by the dispatch service on every attempt; lets operators see how long a row has been stuck without querying logs.
+    last_attempted_at = models.DateTimeField(null=True, blank=True)
     applied_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -71,6 +76,6 @@ class WebhookInbox(models.Model):
 
     def __str__(self):
         return (
-            f'<WebhookInbox #{self.pk} {self.webhook_type_name} '
-            f'{self.entity_external_id} {self.status}>'
+            f"WebhookInbox #{self.pk}: {self.webhook_type_name} "
+            f"{self.entity_external_id} [{self.status}]"
         )
