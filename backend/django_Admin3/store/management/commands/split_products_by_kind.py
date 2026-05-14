@@ -59,7 +59,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['commit']:
-            raise CommandError('--commit mode is implemented in Phase 2 Task 6')
+            self._walk_and_commit()
+            return
         if options['check']:
             self._walk_and_check()
             return
@@ -193,6 +194,144 @@ class Command(BaseCommand):
             self.stdout.write(f'    Product.pk={pk}, catalog_product.id={cp_id}')
         if len(missing_marking_templates) > 10:
             self.stdout.write(f'    ... +{len(missing_marking_templates) - 10} more')
+
+    def _walk_and_commit(self):
+        """Create subclass rows + reassign Purchasable.kind.
+
+        Idempotent: rows with an existing subclass child are skipped
+        for the subclass-create step but still have their
+        Purchasable.kind corrected if it's stale.
+
+        Transactional: one outer atomic() block. Failures (unmapped
+        variation_type, unknown tutorial Format, missing MarkingTemplate)
+        abort the entire run with a clear CommandError naming the
+        offending Product.
+        """
+        from django.db import transaction
+        from store.models import (
+            Purchasable,
+            MaterialProduct, TutorialProduct, MarkingProduct,
+        )
+        from marking.models import MarkingTemplate
+        from tutorials.models import (
+            TutorialCourseTemplate, TutorialEvents,
+        )
+
+        valid_formats = set(TutorialProduct.Format.values)
+        template_by_code = {
+            t.code: t for t in TutorialCourseTemplate.objects.all()
+        }
+        # Pre-fetch tutorial-event-to-location mapping for non-OC rows.
+        event_location_by_product = {
+            evt.store_product_id: evt.location_id
+            for evt in TutorialEvents.objects
+                .filter(location__isnull=False)
+                .only('store_product_id', 'location_id')
+        }
+        # MarkingTemplate is keyed by catalog.Product.id (Task 3 backfill).
+        marking_template_pks = set(
+            MarkingTemplate.objects.values_list('pk', flat=True)
+        )
+        # Pre-fetch existing subclass PKs as sets. Re-runs (idempotency)
+        # hit these the most — set membership avoids 3 N+1 queries per row.
+        existing_material_pks = set(MaterialProduct.objects.values_list('pk', flat=True))
+        existing_tutorial_pks = set(TutorialProduct.objects.values_list('pk', flat=True))
+        existing_marking_pks = set(MarkingProduct.objects.values_list('pk', flat=True))
+
+        tally = Counter()
+        with transaction.atomic():
+            legacy = (
+                Product.objects
+                .filter(purchasable_ptr__kind='product')
+                .select_related(
+                    'exam_session_subject__subject',
+                    'product_product_variation__product_variation',
+                    'product_product_variation__product',
+                )
+            )
+
+            for product in legacy.iterator():
+                ppv = product.product_product_variation
+                vt = ppv.product_variation.variation_type
+                kind = KIND_BY_VARIATION_TYPE.get(vt)
+                if kind is None:
+                    raise CommandError(
+                        f'Cannot map variation_type={vt!r} '
+                        f'(Product.pk={product.pk}). '
+                        f'Update KIND_BY_VARIATION_TYPE in '
+                        f'split_products_by_kind.py.'
+                    )
+
+                if kind == 'material':
+                    if product.pk not in existing_material_pks:
+                        mp = MaterialProduct(product_ptr_id=product.pk)
+                        mp.save_base(raw=True, force_insert=True)
+                        existing_material_pks.add(product.pk)
+                        tally['material_created'] += 1
+                    else:
+                        tally['material_already_split'] += 1
+
+                elif kind == 'tutorial':
+                    fmt_code = ppv.product_variation.code
+                    if fmt_code not in valid_formats:
+                        raise CommandError(
+                            f'Tutorial format {fmt_code!r} not in '
+                            f'TutorialProduct.Format. Update the enum '
+                            f'before re-running. (Product.pk={product.pk})'
+                        )
+                    subject_code = product.exam_session_subject.subject.code
+                    template_code = self._build_template_code(subject_code, fmt_code)
+                    template_id = (
+                        template_by_code[template_code].pk
+                        if template_code in template_by_code
+                        else None
+                    )
+                    location_id = (
+                        event_location_by_product.get(product.pk)
+                        if fmt_code != 'OC' else None
+                    )
+                    if product.pk not in existing_tutorial_pks:
+                        tp = TutorialProduct(
+                            product_ptr_id=product.pk,
+                            tutorial_course_template_id=template_id,
+                            tutorial_location_id=location_id,
+                            format=fmt_code,
+                        )
+                        tp.save_base(raw=True, force_insert=True)
+                        existing_tutorial_pks.add(product.pk)
+                        tally['tutorial_created'] += 1
+                    else:
+                        tally['tutorial_already_split'] += 1
+
+                elif kind == 'marking':
+                    if ppv.product_id not in marking_template_pks:
+                        raise CommandError(
+                            f'No MarkingTemplate with pk={ppv.product_id} '
+                            f'(needed by Product.pk={product.pk}). '
+                            f'Re-run marking migration 0019_backfill.'
+                        )
+                    if product.pk not in existing_marking_pks:
+                        mkp = MarkingProduct(
+                            product_ptr_id=product.pk,
+                            marking_template_id=ppv.product_id,
+                        )
+                        mkp.save_base(raw=True, force_insert=True)
+                        existing_marking_pks.add(product.pk)
+                        tally['marking_created'] += 1
+                    else:
+                        tally['marking_already_split'] += 1
+
+                # Update Purchasable.kind regardless of whether we
+                # created or skipped (idempotency: fix stale kind).
+                Purchasable.objects.filter(pk=product.pk).update(kind=kind)
+
+        self.stdout.write(self.style.SUCCESS('split_products_by_kind --commit done'))
+        for key in (
+            'material_created', 'material_already_split',
+            'tutorial_created', 'tutorial_already_split',
+            'marking_created', 'marking_already_split',
+        ):
+            self.stdout.write(f'  {key:30s} {tally[key]:6d}')
 
     @staticmethod
     def _build_template_code(subject_code, fmt_code):
