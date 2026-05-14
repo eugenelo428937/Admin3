@@ -82,20 +82,37 @@ class TestHandlers:
         assert event.cancelled is True
         assert event.lifecycle_state == 'CANCELLED'
 
-    def test_handler_preserves_tutorial_event_fk_on_update(self, deps):
-        """Updates must NOT clobber `tutorial_event` (staff-managed FK).
-
-        Seeding a real `tutorials.TutorialEvents` row is tedious for this
-        narrow assertion; the weaker but still meaningful check below
-        confirms a webhook re-apply does not introduce a non-null FK
-        where the mapper did not provide one.
+    def test_upsert_does_not_include_tutorial_event_in_defaults(self, deps):
+        """The mapper deliberately omits `tutorial_event` (staff-managed).
+        Verify the upsert call's defaults kwarg never contains it — which is
+        what guarantees existing tutorial_event FKs survive a webhook update.
         """
-        handle_event_updated(_load_event('event_updated.json'))
-        event = Event.objects.get(external_id='evt_external_42')
-        assert event.tutorial_event is None
+        from unittest.mock import patch, MagicMock
 
-        # Re-apply: assert FK STAYS None (mapper omits it, so update_or_create
-        # defaults dict has no `tutorial_event` key — existing value survives).
-        handle_event_updated(_load_event('event_updated.json'))
-        event.refresh_from_db()
-        assert event.tutorial_event is None
+        node = _load_event('event_updated.json')
+        mock_event = MagicMock(spec=Event)
+        with patch.object(
+            Event.objects, 'update_or_create', return_value=(mock_event, False)
+        ) as mock_uoc:
+            handle_event_updated(node)
+
+        assert mock_uoc.called
+        _, kwargs = mock_uoc.call_args
+        defaults = kwargs.get('defaults', {})
+        assert 'tutorial_event' not in defaults, (
+            'Mapper output must NOT include tutorial_event in defaults — '
+            'that key is staff-managed and Webhook updates must preserve it.'
+        )
+
+    def test_event_cancelled_overrides_payload_cancelled_false(self, deps):
+        """Defense: if a Cancelled webhook arrives with cancelled=false (data
+        lag edge case), the webhook type still wins and the event is marked
+        cancelled."""
+        node = _load_event('event_cancelled.json')
+        node['cancelled'] = False  # Deliberately wrong
+        node['lifecycleState'] = 'PUBLISHED'  # Deliberately wrong
+        handle_event_cancelled(node)
+
+        event = Event.objects.get(external_id='evt_external_42')
+        assert event.cancelled is True
+        assert event.lifecycle_state == 'CANCELLED'

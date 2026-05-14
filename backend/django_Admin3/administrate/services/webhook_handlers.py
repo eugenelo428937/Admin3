@@ -101,11 +101,11 @@ def handle_event_created(payload_node: dict) -> Event:
 
 @register('Event Cancelled')
 def handle_event_cancelled(payload_node: dict) -> Event:
-    event = _upsert_event(payload_node)
-    event.cancelled = True
-    event.lifecycle_state = 'CANCELLED'
-    event.save(update_fields=['cancelled', 'lifecycle_state', 'updated_at'])
-    return event
+    # Force authoritative cancelled/lifecycle state regardless of payload content.
+    # Administrate's Cancelled webhook is the source of truth; if the payload
+    # field ever lags the event type (edge case), the webhook type wins.
+    node = {**payload_node, 'cancelled': True, 'lifecycleState': 'CANCELLED'}
+    return _upsert_event(node)
 
 
 def _upsert_event(node: dict) -> Event:
