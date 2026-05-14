@@ -78,7 +78,7 @@ class TutorialAddViewGuestTests(TestCase):
             Product as CatProduct, ProductVariation,
             ProductProductVariation,
         )
-        from store.models import Product as StoreProduct
+        from store.models import Product as StoreProduct, TutorialProduct
         from tutorials.models import TutorialEvents
 
         # Build a real tutorial product so the request gets past the
@@ -110,10 +110,11 @@ class TutorialAddViewGuestTests(TestCase):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv,
             defaults={'is_active': True})
-        sp = StoreProduct(
+        sp = TutorialProduct(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            product_code='CB1/Live/LO_6H/25')
+            product_code='CB1/Live/LO_6H/25',
+            format='LO_6H')
         sp.save()
         event = TutorialEvents.objects.create(
             code='CB1-01-25A', store_product=sp,

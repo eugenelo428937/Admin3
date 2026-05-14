@@ -325,14 +325,15 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
         event exists), attach the event/location, then re-trigger
         generation by clearing product_code and saving again.
         """
-        from store.models import Product
+        from store.models import TutorialProduct
         from tutorials.models import TutorialEvents, TutorialLocation
 
-        product = Product.objects.create(
+        product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_tutorial,
             is_active=True,
             product_code='CS1/TUT/PLACEHOLDER',
+            format='LO_6H',
         )
 
         location = TutorialLocation.objects.create(name='London', code='LON')
