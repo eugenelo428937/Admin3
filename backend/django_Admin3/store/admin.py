@@ -67,10 +67,43 @@ class BundleProductInline(admin.TabularInline):
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Shared mixin — every admin below has an `exam_session_subject` FK
+# ──────────────────────────────────────────────────────────────────────
+class ESSAdminMixin:
+    """Shared display columns + select_related for admins whose models
+    have an `exam_session_subject` FK (Product + its three subclasses
+    + Bundle).
+
+    Subclasses can extend the select_related set by overriding
+    `_extra_select_related()` to return a tuple of additional paths.
+    """
+
+    _base_select_related = (
+        'exam_session_subject__subject',
+        'exam_session_subject__exam_session',
+    )
+
+    def _extra_select_related(self):
+        return ()
+
+    def get_queryset(self, request):
+        paths = self._base_select_related + tuple(self._extra_select_related())
+        return super().get_queryset(request).select_related(*paths)
+
+    @admin.display(description='Subject', ordering='exam_session_subject__subject__code')
+    def get_subject_code(self, obj):
+        return obj.exam_session_subject.subject.code
+
+    @admin.display(description='Session', ordering='exam_session_subject__exam_session__session_code')
+    def get_session_code(self, obj):
+        return obj.exam_session_subject.exam_session.session_code
+
+
+# ──────────────────────────────────────────────────────────────────────
 # Product cross-cut admin — read-only "All Products" list
 # ──────────────────────────────────────────────────────────────────────
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(ESSAdminMixin, admin.ModelAdmin):
     """Read-only cross-cut view of every store.Product (any subclass).
 
     Editing happens via the subclass admins. This view exists so staff
@@ -103,25 +136,16 @@ class ProductAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='Kind', ordering='purchasable_ptr__kind')
+    @admin.display(description='Kind', ordering='kind')
     def get_kind(self, obj):
-        # purchasable_ptr is the parent MTI link; kind tells us which subclass.
-        return obj.purchasable_ptr.kind if obj.purchasable_ptr_id else '—'
-
-    @admin.display(description='Subject')
-    def get_subject_code(self, obj):
-        return obj.exam_session_subject.subject.code
-
-    @admin.display(description='Session')
-    def get_session_code(self, obj):
-        return obj.exam_session_subject.exam_session.session_code
+        return obj.kind
 
 
 # ──────────────────────────────────────────────────────────────────────
 # Per-subclass admins — the canonical edit surfaces
 # ──────────────────────────────────────────────────────────────────────
 @admin.register(MaterialProduct)
-class MaterialProductAdmin(admin.ModelAdmin):
+class MaterialProductAdmin(ESSAdminMixin, admin.ModelAdmin):
     """Admin for store.MaterialProduct (eBook / Printed / Hub material rows).
 
     `product_product_variation` still lives on the Product parent through
@@ -147,13 +171,8 @@ class MaterialProductAdmin(admin.ModelAdmin):
     inlines = [PriceInline]
     ordering = ['product_code']
 
-    @admin.display(description='Subject')
-    def get_subject_code(self, obj):
-        return obj.exam_session_subject.subject.code
-
-    @admin.display(description='Session')
-    def get_session_code(self, obj):
-        return obj.exam_session_subject.exam_session.session_code
+    def _extra_select_related(self):
+        return ('product_product_variation__product_variation',)
 
     @admin.display(description='Variation')
     def get_variation_type(self, obj):
@@ -162,7 +181,7 @@ class MaterialProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(TutorialProduct)
-class TutorialProductAdmin(admin.ModelAdmin):
+class TutorialProductAdmin(ESSAdminMixin, admin.ModelAdmin):
     """Admin for store.TutorialProduct (Face-to-Face / Live Online / OC)."""
     list_display = [
         'product_code',
@@ -189,13 +208,8 @@ class TutorialProductAdmin(admin.ModelAdmin):
     inlines = [PriceInline]
     ordering = ['product_code']
 
-    @admin.display(description='Subject')
-    def get_subject_code(self, obj):
-        return obj.exam_session_subject.subject.code
-
-    @admin.display(description='Session')
-    def get_session_code(self, obj):
-        return obj.exam_session_subject.exam_session.session_code
+    def _extra_select_related(self):
+        return ('tutorial_location',)
 
     @admin.display(description='Location')
     def get_location(self, obj):
@@ -204,7 +218,7 @@ class TutorialProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(MarkingProduct)
-class MarkingProductAdmin(admin.ModelAdmin):
+class MarkingProductAdmin(ESSAdminMixin, admin.ModelAdmin):
     """Admin for store.MarkingProduct (Series X, Mock Marking N, etc.)."""
     list_display = [
         'product_code',
@@ -226,13 +240,8 @@ class MarkingProductAdmin(admin.ModelAdmin):
     inlines = [PriceInline]
     ordering = ['product_code']
 
-    @admin.display(description='Subject')
-    def get_subject_code(self, obj):
-        return obj.exam_session_subject.subject.code
-
-    @admin.display(description='Session')
-    def get_session_code(self, obj):
-        return obj.exam_session_subject.exam_session.session_code
+    def _extra_select_related(self):
+        return ('marking_template',)
 
     @admin.display(description='Template', ordering='marking_template__code')
     def get_template_code(self, obj):
@@ -256,7 +265,7 @@ class PriceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Bundle)
-class BundleAdmin(admin.ModelAdmin):
+class BundleAdmin(ESSAdminMixin, admin.ModelAdmin):
     list_display = [
         'name',
         'get_subject_code',
@@ -270,14 +279,6 @@ class BundleAdmin(admin.ModelAdmin):
     raw_id_fields = ['bundle_template', 'exam_session_subject']
     inlines = [BundleProductInline]
     ordering = ['display_order', 'created_at']
-
-    @admin.display(description='Subject')
-    def get_subject_code(self, obj):
-        return obj.exam_session_subject.subject.code
-
-    @admin.display(description='Session')
-    def get_session_code(self, obj):
-        return obj.exam_session_subject.exam_session.session_code
 
     @admin.display(description='Products')
     def get_product_count(self, obj):
