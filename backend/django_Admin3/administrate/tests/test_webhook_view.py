@@ -105,7 +105,11 @@ class TestWebhookPersistence:
         assert row.webhook_type_name == 'Event Updated'
         assert row.entity_type == 'event'
         assert row.entity_external_id == 'evt_1'
-        assert row.status == WebhookInbox.STATUS_RECEIVED
+        # Status is intentionally NOT asserted here: under the test
+        # ImmediateBackend the dispatch task runs synchronously inside the
+        # POST, so the row will have moved past 'received'. The intent of
+        # this test is webhook persistence — task behaviour is covered by
+        # tests/services/test_webhook_dispatch.py.
         assert row.raw_payload == valid_payload
 
     def test_duplicate_delivery_returns_200(self, client, valid_payload):

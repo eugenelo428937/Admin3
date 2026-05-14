@@ -1,16 +1,16 @@
 from django.tasks import task
 
+from administrate.services.webhook_dispatch import apply_inbox_row
+
 
 @task()
 def process_webhook_inbox(inbox_id: int) -> None:
-    """Stub — real implementation lands in Task 7."""
-    # No-op so the view's enqueue call succeeds during Task 4 tests.
-    # NOTE: Django 6.0.1's `django.tasks.task` decorator only accepts
-    # priority/queue_name/backend/takes_context. The plan's
-    # `queue_name='administrate_webhooks'`, `max_retries=5`, and
-    # `backoff='exponential'` kwargs are unsupported in this Django
-    # version: the first requires queue registration in the
-    # ImmediateBackend (not configured), and the latter two aren't
-    # part of the decorator API. Real retry/backoff behaviour lands
-    # in Task 7 via the backend or task body.
-    return None
+    """Apply a single webhook inbox row.
+
+    The task body is intentionally a one-liner. All retry / dead-letter logic
+    lives in `apply_inbox_row` so it's unit-testable without involving the
+    task framework. Django 6.0.1's `@task()` decorator does not accept the
+    `max_retries`/`backoff`/`queue_name` kwargs the original design assumed —
+    retry semantics live entirely in `apply_inbox_row.MAX_ATTEMPTS`.
+    """
+    apply_inbox_row(inbox_id)
