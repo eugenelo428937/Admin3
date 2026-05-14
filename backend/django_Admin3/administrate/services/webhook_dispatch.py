@@ -24,11 +24,20 @@ logger = logging.getLogger(__name__)
 
 MAX_ATTEMPTS = 5
 
+# Note: PROCESSING is intentionally included as terminal-from-the-dispatcher's-
+# perspective. The select_for_update lock above only protects the brief status-
+# update transaction; once that commits, the handler runs unlocked. Without
+# PROCESSING in this set, a second worker after the first worker's status
+# commit would re-run the same handler. Trade-off: a worker that crashes
+# mid-handler leaves the row stuck in PROCESSING. Recovery is via the
+# `administrate_webhooks_inbox replay` management command (Task 10), which
+# explicitly accepts PROCESSING rows whose last_attempted_at is older than
+# a configurable threshold.
 TERMINAL_STATES = {
     WebhookInbox.STATUS_APPLIED,
     WebhookInbox.STATUS_DUPLICATE,
     WebhookInbox.STATUS_DEAD,
-    WebhookInbox.STATUS_PROCESSING,  # another worker holds it
+    WebhookInbox.STATUS_PROCESSING,  # see above
 }
 
 
@@ -115,5 +124,8 @@ def _mark_dead(row: WebhookInbox, message: str) -> None:
 
 def _format_error(exc: Exception) -> str:
     if isinstance(exc, MissingDependencyError):
-        return f'{type(exc).__name__}: {exc}'
+        return (
+            f'MissingDependencyError: {exc.model_name} '
+            f'external_id={exc.external_id!r}'
+        )
     return f'{type(exc).__name__}: {exc}'

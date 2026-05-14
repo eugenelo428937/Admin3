@@ -55,6 +55,7 @@ class TestApplyInboxRow:
         assert received_row.attempts == 1
         assert 'CourseTemplate' in received_row.error_message
 
+    @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={})
     def test_unknown_webhook_type_marks_dead_immediately(self, received_row):
         received_row.webhook_type_name = 'Event Mystery'
         received_row.save()
@@ -62,6 +63,19 @@ class TestApplyInboxRow:
         received_row.refresh_from_db()
         assert received_row.status == WebhookInbox.STATUS_DEAD
         assert 'Event Mystery' in received_row.error_message
+
+    @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={
+        'Event Updated': _raise(MissingDependencyError('Location', 'loc_999')),
+    })
+    def test_missing_dependency_error_message_surfaces_structured_attrs(self, received_row):
+        """The error_message should surface MissingDependencyError's structured
+        attributes (model_name, external_id) for operator grep-ability."""
+        with pytest.raises(MissingDependencyError):
+            apply_inbox_row(received_row.id)
+        received_row.refresh_from_db()
+        assert 'MissingDependencyError' in received_row.error_message
+        assert 'Location' in received_row.error_message
+        assert 'loc_999' in received_row.error_message
 
     @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={
         'Event Updated': _raise(ValueError('boom')),
