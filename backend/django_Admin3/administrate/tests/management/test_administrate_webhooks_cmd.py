@@ -15,22 +15,24 @@ class _FakeAPI:
         self.calls.append((query, variables))
         if 'webhookTypes' in query:
             return {
-                'webhookTypes': {
-                    'edges': [
-                        {'node': {'id': 'wt_updated', 'name': 'Event Updated'}},
-                        {'node': {'id': 'wt_created', 'name': 'Event Created'}},
-                        {'node': {'id': 'wt_cancelled', 'name': 'Event Cancelled'}},
-                    ]
+                'data': {
+                    'webhookTypes': {
+                        'edges': [
+                            {'node': {'id': 'wt_updated', 'name': 'Event Updated'}},
+                            {'node': {'id': 'wt_created', 'name': 'Event Created'}},
+                            {'node': {'id': 'wt_cancelled', 'name': 'Event Cancelled'}},
+                        ]
+                    }
                 }
             }
-        if 'webhooks(' in query and 'webhooks.update' not in query:
-            # list query — return empty so register goes through create path
-            return {'webhooks': {'edges': []}}
-        if 'webhooks.create' in query:
-            return {'webhooks': {'create': {'webhook': {'id': 'wh_new'}}}}
-        if 'webhooks.delete' in query:
-            return {'webhooks': {'delete': {'success': True}}}
-        return {}
+        # List/find query — return empty so register goes through create path.
+        if 'webhooks(' in query and 'webhook { update' not in query:
+            return {'data': {'webhooks': {'edges': []}}}
+        if 'webhook { create' in query:
+            return {'data': {'webhook': {'create': {'webhook': {'id': 'wh_new'}}}}}
+        if 'webhook { delete' in query:
+            return {'data': {'webhook': {'delete': {'success': True}}}}
+        return {'data': {}}
 
 
 @pytest.mark.django_db
@@ -47,15 +49,18 @@ class TestAdministrateWebhooksCommand:
         MockAPI.return_value = _FakeAPI()
         out = StringIO()
         call_command('administrate_webhooks', 'list', stdout=out)
-        assert 'Event Updated' in out.getvalue() or out.getvalue() == ''  # tolerant
+        output = out.getvalue()
+        # _FakeAPI returns no registered webhooks for the list query, so the count
+        # summary should print "0 webhook(s) registered."
+        assert '0 webhook(s) registered' in output
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
     def test_register_dry_run_does_not_call_create(self, MockAPI):
         fake = _FakeAPI()
         MockAPI.return_value = fake
         call_command('administrate_webhooks', 'register', '--dry-run')
-        assert not any('webhooks.create' in q for q, _ in fake.calls), (
-            'register --dry-run must not issue webhooks.create mutations'
+        assert not any('webhook { create' in q for q, _ in fake.calls), (
+            'register --dry-run must not issue webhook { create mutations'
         )
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
@@ -63,5 +68,14 @@ class TestAdministrateWebhooksCommand:
         fake = _FakeAPI()
         MockAPI.return_value = fake
         call_command('administrate_webhooks', 'register')
-        create_calls = [v for q, v in fake.calls if 'webhooks.create' in q]
+        create_calls = [v for q, v in fake.calls if 'webhook { create' in q]
         assert len(create_calls) == 3
+
+    @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
+    def test_register_dry_run_masks_secret(self, MockAPI, settings):
+        settings.ADMINISTRATE_WEBHOOK_SECRET = 'super-secret-value'
+        MockAPI.return_value = _FakeAPI()
+        out = StringIO()
+        call_command('administrate_webhooks', 'register', '--dry-run', stdout=out)
+        assert 'super-secret-value' not in out.getvalue()
+        assert '***' in out.getvalue()

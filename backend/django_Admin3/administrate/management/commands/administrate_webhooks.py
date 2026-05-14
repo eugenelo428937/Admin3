@@ -77,12 +77,18 @@ class Command(BaseCommand):
         result = api.execute_query(
             'query { webhooks(first: 100) { edges { node { id name webhookType { name } } } } }'
         )
-        for edge in (result.get('webhooks', {}).get('edges') or []):
+        edges = (
+            result.get('data', {}).get('webhooks', {}).get('edges') or []
+        )
+        for edge in edges:
             node = edge.get('node', {})
             self.stdout.write(
                 f"- {node.get('id')}: {node.get('name')} "
                 f"[{node.get('webhookType', {}).get('name')}]"
             )
+        self.stdout.write(
+            self.style.SUCCESS(f'{len(edges)} webhook(s) registered.')
+        )
 
     def _register(self, api, dry_run):
         type_index = self._resolve_webhook_types(api)
@@ -106,21 +112,28 @@ class Command(BaseCommand):
                 'notificationEmails': settings.ADMINISTRATE_WEBHOOK_NOTIFICATION_EMAILS,
             }
             if dry_run:
-                self.stdout.write(f"[dry-run] webhooks.create {variables}")
+                safe_variables = {**variables, 'config': {'secret': '***'}}
+                self.stdout.write(f"[dry-run] webhook.create {safe_variables}")
                 continue
 
+            # NOTE: Mutation field names below follow the codebase's nested-action
+            # convention (see administrate/templates/graphql/mutations/*.graphql
+            # for examples like `event { createBlended }`). Actual Administrate
+            # schema for webhooks needs UAT verification — if the server rejects
+            # these field names, the structure stays the same and only the inner
+            # field identifiers change.
             existing = self._find_by_name(api, spec['name'])
             if existing:
                 api.execute_query(
                     'mutation Upd($id: ID!, $input: WebhookInput!) { '
-                    'webhooks.update(id: $id, input: $input) { webhook { id } } }',
+                    'webhook { update(id: $id, input: $input) { webhook { id } } } }',
                     variables={'id': existing, 'input': variables},
                 )
                 self.stdout.write(f"updated: {spec['name']} ({existing})")
             else:
                 api.execute_query(
                     'mutation Create($input: WebhookInput!) { '
-                    'webhooks.create(input: $input) { webhook { id } } }',
+                    'webhook { create(input: $input) { webhook { id } } } }',
                     variables={'input': variables},
                 )
                 self.stdout.write(f"created: {spec['name']}")
@@ -130,7 +143,8 @@ class Command(BaseCommand):
             existing = self._find_by_name(api, spec['name'])
             if existing:
                 api.execute_query(
-                    'mutation Del($id: ID!) { webhooks.delete(id: $id) { success } }',
+                    'mutation Del($id: ID!) { '
+                    'webhook { delete(id: $id) { success } } }',
                     variables={'id': existing},
                 )
                 self.stdout.write(f'deleted: {spec["name"]}')
@@ -141,7 +155,7 @@ class Command(BaseCommand):
         )
         return {
             edge['node']['name']: edge['node']['id']
-            for edge in (result.get('webhookTypes', {}).get('edges') or [])
+            for edge in (result.get('data', {}).get('webhookTypes', {}).get('edges') or [])
         }
 
     def _find_by_name(self, api, name):
@@ -150,5 +164,5 @@ class Command(BaseCommand):
             'webhooks(filter: {name: $name}, first: 1) { edges { node { id } } } }',
             variables={'name': name},
         )
-        edges = (result.get('webhooks', {}).get('edges') or [])
+        edges = result.get('data', {}).get('webhooks', {}).get('edges') or []
         return edges[0]['node']['id'] if edges else None
