@@ -398,6 +398,8 @@ class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
     def test_tutorial_product_includes_events_key(self):
         """When product_type is Tutorial and product has tutorial_events, events are included."""
         from filtering.tests.factories import create_filter_group
+        from catalog.products.models import ProductProductVariation
+        from store.models import TutorialProduct
 
         subject = create_subject('CB1')
         session = create_exam_session('2025-04')
@@ -407,10 +409,19 @@ class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
         catalog_product = create_catalog_product(
             fullname='CB1 Tutorial London', shortname='CB1 Tut', code='TCB1L'
         )
-        tutorial_var = create_product_variation('Tutorial', 'Face to Face', code='F')
-        sp = create_store_product(
-            ess, catalog_product, tutorial_var,
+        tutorial_var = create_product_variation('Tutorial', 'Face to Face', code='F2F_1F')
+        ppv, _ = ProductProductVariation.objects.get_or_create(
+            product=catalog_product,
+            product_variation=tutorial_var,
+            defaults={'is_active': True},
+        )
+        # Use TutorialProduct so type(sp) has the tutorial_events related manager
+        sp = TutorialProduct.objects.create(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
             product_code='CB1/FTCB1L/2025-04',
+            format='F2F_1F',
+            is_active=True,
         )
         assign_product_to_group(catalog_product, tutorial_group)
 
@@ -425,7 +436,7 @@ class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
         mock_event.start_date = None
         mock_event.end_date = None
 
-        # We need to patch the attribute on the actual store product instance
+        # Patch the related manager on TutorialProduct so the serializer sees events
         with patch.object(type(sp), 'tutorial_events', new_callable=PropertyMock) as mock_te:
             mock_manager = MagicMock()
             mock_manager.all.return_value = [mock_event]
