@@ -36,6 +36,17 @@ ADMINISTRATE_API_SECRET = 'test-secret'
 ADMINISTRATE_REST_API_URL = 'https://test.example.com'
 ADMINISTRATE_AUTH_USER = 'test@example.com'
 ADMINISTRATE_AUTH_URL="https://auth.getadministrate.com/oauth"
+
+TASKS = {
+    'default': {
+        'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
+    },
+}
+
+ADMINISTRATE_WEBHOOK_ROUTE_TOKEN = 'test-route-token'
+ADMINISTRATE_WEBHOOK_SECRET = 'test-shared-secret'
+ADMINISTRATE_WEBHOOK_BASE_URL = 'http://testserver'
+ADMINISTRATE_WEBHOOK_NOTIFICATION_EMAILS = ['ops@example.test']
 GETADDRESS_API_KEY = 'test-key'
 GETADDRESS_ADMIN_KEY = 'test-key'
 
