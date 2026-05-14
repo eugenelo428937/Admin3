@@ -21,7 +21,7 @@ from catalog.models import (
     ProductVariation,
     Subject,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from tutorials.models import TutorialEvents, TutorialLocation, TutorialVenue
 
 
@@ -87,20 +87,23 @@ class EventFkPopulationTestBase(TestCase):
             product=self.cat_product_bham, product_variation=self.pv
         )
 
-        self.sp_london = StoreProduct.objects.create(
+        self.sp_london = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_london,
             product_code='CM2/TWKDLON/APR2025',
+            format='F2F_3F',
         )
-        self.sp_live = StoreProduct.objects.create(
+        self.sp_live = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_live,
             product_code='CM2/TWKDLIVE/APR2025',
+            format='LO_3F',
         )
-        self.sp_bham = StoreProduct.objects.create(
+        self.sp_bham = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_bham,
             product_code='CM2/TWKDBIR/APR2025',
+            format='F2F_3F',
         )
 
         # Restore old venue VARCHAR column BEFORE any DML on this table

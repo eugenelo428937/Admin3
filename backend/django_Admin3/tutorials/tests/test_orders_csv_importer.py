@@ -12,7 +12,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from orders.models import Order, OrderItem
 from students.models import Student
 from tutorials.models import TutorialChoice, TutorialEvents
@@ -44,18 +44,19 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17',
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
     # Multiple events under the same subject/location/variation/sitting share
     # one store_product — match the real-data shape.
-    sp = StoreProduct.objects.filter(
+    tp = TutorialProduct.objects.filter(
         exam_session_subject=ess, product_product_variation=ppv,
     ).first()
-    if sp is None:
-        sp = StoreProduct(
+    if tp is None:
+        tp = TutorialProduct(
             exam_session_subject=ess, product_product_variation=ppv,
             product_code=f'{subject_code}/{location_code}/{variation_code}/{sitting_session}',
+            format=variation_code,
         )
-        sp.save()
+        tp.save()
     return TutorialEvents.objects.create(
         code=f'{subject_code}-{event_num}-{sitting_short}',
-        store_product=sp,
+        store_product=tp,
         start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
     )
 
