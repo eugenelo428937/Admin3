@@ -27,9 +27,11 @@ _SERVICE = (
 
 
 def _make_session_row(suffix='1'):
-    # Use a deterministic short tag so cat_product_code stays under the
-    # 10-char column cap. We just need uniqueness, not readability.
-    tag = f'D{abs(hash(suffix)) % 1000:03d}'
+    # Use the suffix value directly (truncated to fit the 10-char column
+    # cap) as a deterministic short tag. The old `hash(suffix) % 1000`
+    # approach hit a duplicate-key violation on CI when Python's random
+    # hash seed produced a collision across the four suffix values.
+    tag = suffix[:8].upper()
     sp = make_store_product(
         variation_code=tag, cat_product_code=f'DR{tag}',
     )
