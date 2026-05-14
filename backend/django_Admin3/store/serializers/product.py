@@ -85,3 +85,132 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'product_code', 'subject_code', 'is_active']
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Phase 3.2: subclass-aware serializers
+#
+# Each subclass serializer extends the base ProductSerializer to inherit
+# all common fields (subject_code, session_code, variation_type,
+# product_name, plus the FK ids), and adds the subclass-specific fields
+# that live on the corresponding MTI child table.
+#
+# The factory `serializer_for(product)` picks the right serializer class
+# for an instance, falling back to ProductSerializer for any Product row
+# that has no subclass child (a Phase-2 invariant violation, but the
+# contract is "don't raise on weird data").
+# ──────────────────────────────────────────────────────────────────────
+from store.models import (
+    MaterialProduct,
+    TutorialProduct,
+    MarkingProduct,
+)
+
+
+class _ProductKindMixin(serializers.Serializer):
+    """Adds a read-only `kind` field returning the subclass label
+    rather than the raw Purchasable.kind (still 'product' pre-Phase-4e).
+    """
+
+    _subclass_kind: str = ''  # set by each subclass below
+    kind = serializers.SerializerMethodField()
+
+    def get_kind(self, obj):
+        return self._subclass_kind
+
+
+class MaterialProductSerializer(_ProductKindMixin, ProductSerializer):
+    """Serializer for store.MaterialProduct.
+
+    Inherits every field from ProductSerializer. `product_product_variation`
+    still lives on the Product parent through Phases 1–4, so no new
+    local fields are needed; the value of `kind` ('material') is the
+    only differentiator until Phase 5 moves PPV to MaterialProduct.
+    """
+    _subclass_kind = 'material'
+
+    class Meta(ProductSerializer.Meta):
+        model = MaterialProduct
+        fields = ProductSerializer.Meta.fields + ['kind']
+
+
+class TutorialProductSerializer(_ProductKindMixin, ProductSerializer):
+    """Serializer for store.TutorialProduct.
+
+    Adds the subclass-local fields: `format`, `tutorial_location`,
+    `tutorial_course_template`. Nullable FK fields serialize as their
+    PK or null.
+    """
+    _subclass_kind = 'tutorial'
+
+    class Meta(ProductSerializer.Meta):
+        model = TutorialProduct
+        fields = ProductSerializer.Meta.fields + [
+            'kind',
+            'format',
+            'tutorial_location',
+            'tutorial_course_template',
+        ]
+
+
+class MarkingProductSerializer(_ProductKindMixin, ProductSerializer):
+    """Serializer for store.MarkingProduct.
+
+    Adds `marking_template` (PK), `marking_template_code` (display),
+    and `paper_count` (optional count of papers in the series).
+    """
+    _subclass_kind = 'marking'
+
+    marking_template_code = serializers.CharField(
+        source='marking_template.code',
+        read_only=True,
+    )
+
+    class Meta(ProductSerializer.Meta):
+        model = MarkingProduct
+        fields = ProductSerializer.Meta.fields + [
+            'kind',
+            'marking_template',
+            'marking_template_code',
+            'paper_count',
+        ]
+
+
+# Reverse-accessor name → (subclass serializer, DoesNotExist).
+# The accessor names are what Django MTI auto-generates: lowercase
+# model class name with no separator. The DoesNotExist class is needed
+# because accessing a missing OneToOne reverse relation raises the
+# *child model's* DoesNotExist, not a generic ObjectDoesNotExist.
+_SUBCLASS_DISPATCH = (
+    ('materialproduct', MaterialProductSerializer, MaterialProduct.DoesNotExist),
+    ('tutorialproduct', TutorialProductSerializer, TutorialProduct.DoesNotExist),
+    ('markingproduct',  MarkingProductSerializer,  MarkingProduct.DoesNotExist),
+)
+
+
+def serializer_for(product):
+    """Return the serializer class for a store.Product instance.
+
+    Dispatches by MTI subclass:
+      - store.MaterialProduct → MaterialProductSerializer
+      - store.TutorialProduct → TutorialProductSerializer
+      - store.MarkingProduct  → MarkingProductSerializer
+      - bare store.Product    → ProductSerializer (fallback)
+
+    After Phase 2's backfill every Product row has exactly one subclass
+    child, so the fallback should be unreachable in normal data — it
+    exists only as the no-raise contract.
+    """
+    # Short-circuit if caller already passed a downcast subclass instance.
+    for _attr, cls, _exc in _SUBCLASS_DISPATCH:
+        if isinstance(product, cls.Meta.model):
+            return cls
+
+    # Caller passed a base Product — probe each subclass.
+    for attr, cls, exc in _SUBCLASS_DISPATCH:
+        try:
+            getattr(product, attr)
+        except exc:
+            continue
+        return cls
+    return ProductSerializer

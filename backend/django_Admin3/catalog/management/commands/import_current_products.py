@@ -56,8 +56,11 @@ from catalog.models.exam_session_subject import ExamSessionSubject
 from catalog.products.models.product import Product
 from catalog.products.models.product_product_variation import ProductProductVariation
 from catalog.products.models.product_variation import ProductVariation
+from marking.models import MarkingTemplate
 from store.models.price import Price
 from store.models.product import Product as StoreProduct
+from store.models.material_product import MaterialProduct
+from store.models.marking_product import MarkingProduct
 
 
 # Delivery format → (variation_type, name, code)
@@ -487,11 +490,37 @@ class Command(BaseCommand):
                             'reason': f'duplicate_code:{code}',
                         })
                         continue
-                    sp = StoreProduct(
-                        exam_session_subject=ess,
-                        product_product_variation=ppv,
-                        product_code=code,
-                    )
+                    # Phase 3.1: dispatch to the correct MTI subclass based
+                    # on the CSV format. P/C -> Material; M -> Marking +
+                    # auto-created MarkingTemplate keyed by catalog.Product.pk.
+                    fmt = line['fmt']
+                    if fmt == 'M':
+                        catalog_product = product_by_key[(item, canonical)]
+                        mt, mt_created = MarkingTemplate.objects.get_or_create(
+                            pk=catalog_product.pk,
+                            defaults={
+                                'code': catalog_product.code,
+                                'name': catalog_product.shortname or catalog_product.fullname,
+                                'description': '',
+                                'is_active': True,
+                            },
+                        )
+                        if mt_created:
+                            stats['marking_templates_created'] = (
+                                stats.get('marking_templates_created', 0) + 1
+                            )
+                        sp = MarkingProduct(
+                            exam_session_subject=ess,
+                            product_product_variation=ppv,
+                            product_code=code,
+                            marking_template=mt,
+                        )
+                    else:  # 'P', 'C' (and any future material-family code)
+                        sp = MaterialProduct(
+                            exam_session_subject=ess,
+                            product_product_variation=ppv,
+                            product_code=code,
+                        )
                     sp.save()
                     used_codes.add(code)
                     stats['store_created'] += 1
