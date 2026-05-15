@@ -149,7 +149,7 @@ class Command(BaseCommand):
                     if base.purchasable_ptr.name else new_code
                 )
                 addon = MaterialProduct.objects.create(
-                    kind=Purchasable.Kind.PRODUCT,
+                    kind=Purchasable.Kind.MATERIAL,
                     code=new_code,
                     product_code=new_code,
                     name=new_name,
@@ -259,7 +259,7 @@ class Command(BaseCommand):
         for template, target_code, ess_id in plan:
             ptr = template.purchasable_ptr
             new = MaterialProduct.objects.create(
-                kind=Purchasable.Kind.PRODUCT,
+                kind=Purchasable.Kind.MATERIAL,
                 code=target_code,
                 product_code=target_code,
                 name=ptr.name,
