@@ -41,7 +41,7 @@ class CartAddGateTests(TestCase):
         self.inactive = StoreProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT,
+            kind=Purchasable.Kind.MATERIAL,
             is_active=False,  # KEY
             name='Gate Product eBook',
         )

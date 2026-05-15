@@ -18,7 +18,7 @@ class PurchasableModelTests(TestCase):
         self.assertFalse(obj.dynamic_pricing)
 
     def test_code_is_unique(self):
-        Purchasable.objects.create(kind='product', code='DUPE', name='First')
+        Purchasable.objects.create(kind='material', code='DUPE', name='First')
         with self.assertRaises(IntegrityError):
             Purchasable.objects.create(kind='marking_voucher', code='DUPE', name='Second')
 
@@ -32,7 +32,7 @@ class PurchasableModelTests(TestCase):
         self.assertFalse(obj.dynamic_pricing)
 
     def test_str(self):
-        obj = Purchasable.objects.create(kind='product', code='ABC', name='Thing')
+        obj = Purchasable.objects.create(kind='material', code='ABC', name='Thing')
         self.assertIn('ABC', str(obj))
 
     def test_db_table_in_acted_schema(self):

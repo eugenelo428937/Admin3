@@ -64,7 +64,7 @@ class AdminOrderViewSetListRetrieveTest(APITestCase):
         Student.objects.create(user=self.user_b)
         self.order_a = Order.objects.create(user=self.user_a, total_amount=Decimal('10'))
         self.order_b = Order.objects.create(user=self.user_b, total_amount=Decimal('20'))
-        p = Purchasable.objects.create(code='CM1/CC/26', name='CM1', kind='product')
+        p = Purchasable.objects.create(code='CM1/CC/26', name='CM1', kind='material')
         OrderItem.objects.create(order=self.order_a, purchasable=p, quantity=1, gross_amount=Decimal('10'))
 
     def test_list_returns_orders_across_users(self):
@@ -109,8 +109,8 @@ class AdminOrderViewSetFilterTest(APITestCase):
         self.order_alice = Order.objects.create(user=self.alice, total_amount=Decimal('10'))
         self.order_bob = Order.objects.create(user=self.bob, total_amount=Decimal('20'))
 
-        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1', kind='product')
-        p2 = Purchasable.objects.create(code='CP2/CPBOR/26', name='CP2', kind='product')
+        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1', kind='material')
+        p2 = Purchasable.objects.create(code='CP2/CPBOR/26', name='CP2', kind='material')
         OrderItem.objects.create(order=self.order_alice, purchasable=p1, quantity=1, gross_amount=Decimal('10'))
         OrderItem.objects.create(order=self.order_alice, purchasable=p2, quantity=1, gross_amount=Decimal('5'))
         OrderItem.objects.create(order=self.order_bob, purchasable=p2, quantity=1, gross_amount=Decimal('20'))
@@ -197,8 +197,8 @@ class AdminOrderViewSetQueryCountTest(APITestCase):
             )
             Student.objects.create(user=u)
             o = Order.objects.create(user=u, total_amount=Decimal('1'))
-            p1 = Purchasable.objects.create(code=f'CODE{i}A', name='A', kind='product')
-            p2 = Purchasable.objects.create(code=f'CODE{i}B', name='B', kind='product')
+            p1 = Purchasable.objects.create(code=f'CODE{i}A', name='A', kind='material')
+            p2 = Purchasable.objects.create(code=f'CODE{i}B', name='B', kind='material')
             OrderItem.objects.create(order=o, purchasable=p1, quantity=1, gross_amount=Decimal('1'))
             OrderItem.objects.create(order=o, purchasable=p2, quantity=1, gross_amount=Decimal('1'))
 
@@ -221,8 +221,8 @@ class AdminOrderViewSetProductCodesTest(APITestCase):
 
         u = User.objects.create_user(username='u1', email='u1@x.com')
         order = Order.objects.create(user=u, total_amount=Decimal('1'))
-        p1 = Purchasable.objects.create(code='ZZA/CC/26', name='Course CC', kind='product')
-        p2 = Purchasable.objects.create(code='ZZB/CPBOR/26', name='Course BOR', kind='product')
+        p1 = Purchasable.objects.create(code='ZZA/CC/26', name='Course CC', kind='material')
+        p2 = Purchasable.objects.create(code='ZZB/CPBOR/26', name='Course BOR', kind='material')
         # Two items pointing at p1 to confirm distinct
         OrderItem.objects.create(order=order, purchasable=p1, quantity=1, gross_amount=Decimal('1'))
         OrderItem.objects.create(order=order, purchasable=p1, quantity=1, gross_amount=Decimal('1'))

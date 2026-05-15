@@ -48,7 +48,7 @@ def make_active_product(code_suffix='1'):
     return StoreProduct.objects.create(
         exam_session_subject=ess,
         product_product_variation=ppv,
-        kind=Purchasable.Kind.PRODUCT,
+        kind=Purchasable.Kind.MATERIAL,
         is_active=True,
         name=f'Product {code_suffix} eBook',
     )

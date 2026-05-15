@@ -413,7 +413,7 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
             exam_session_subject=ess,
             product_product_variation=self.ppv_core_ebook,
             defaults={
-                'kind': Purchasable.Kind.PRODUCT,
+                'kind': Purchasable.Kind.MATERIAL,
                 'is_active': True,
                 'name': 'CSM-AVAIL',
                 'product_code': 'CSM-AVAIL-CODE',
