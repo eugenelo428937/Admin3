@@ -1,6 +1,7 @@
 """Product serializers for the store app."""
 from rest_framework import serializers
 from store.models import Product
+from store.models.purchasable import Purchasable
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -73,6 +74,33 @@ class ProductSerializer(serializers.ModelSerializer):
                 'subject and product variation.'
             )
         return attrs
+
+    def create(self, validated_data):
+        """Phase 5: dispatch to the appropriate MTI subclass on create.
+
+        Product.save() now raises ValueError if kind is not set. This
+        create() method determines the correct subclass from the PPV's
+        variation_type and delegates to it so kind is set automatically
+        by the subclass's own save().
+
+        Material (eBook, Printed, Hub): MaterialProduct
+        Tutorial / Online Classroom Recording: TutorialProduct
+        Marking: MarkingProduct
+        """
+        from store.models import MaterialProduct, TutorialProduct, MarkingProduct
+        ppv = validated_data.get('product_product_variation')
+        if ppv is not None:
+            variation_type = ppv.product_variation.variation_type
+            if variation_type in {'eBook', 'Printed', 'Hub'}:
+                return MaterialProduct.objects.create(**validated_data)
+            if variation_type in {'Tutorial', 'Online Classroom Recording'}:
+                return TutorialProduct.objects.create(**validated_data)
+            if variation_type == 'Marking':
+                return MarkingProduct.objects.create(**validated_data)
+        # Fallback: set kind=MATERIAL so Product.save() doesn't raise.
+        # This path should not be reached in normal operation.
+        validated_data.setdefault('kind', Purchasable.Kind.MATERIAL)
+        return super().create(validated_data)
 
 
 class ProductListSerializer(serializers.ModelSerializer):

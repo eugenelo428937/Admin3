@@ -94,3 +94,28 @@ class TutorialProduct(Product):
         # field (exam_session_subject lives on Product). Uniqueness is enforced
         # via Purchasable.code UNIQUE (auto-generated product_code includes all
         # four dimensions: subject, location, format, session).
+
+    def save(self, *args, **kwargs):
+        """Phase 5: TutorialProduct sets kind='tutorial' explicitly and
+        generates product_code from subclass fields. No PPV dependency."""
+        if not self.kind:
+            self.kind = self.Kind.TUTORIAL  # 'tutorial'
+        if not self.product_code:
+            self.product_code = self._generate_tutorial_product_code()
+            self.code = self.product_code
+        super().save(*args, **kwargs)
+
+    def _generate_tutorial_product_code(self):
+        """Generate Tutorial product code: {subject}/{location}/{format}/{session}.
+
+        Online Classroom rows (tutorial_location=None) substitute 'OC' for
+        the location segment to maintain code uniqueness across the
+        (subject, session, format) tuple.
+        """
+        ess = self.exam_session_subject
+        subject_code = ess.subject.code
+        exam_code = ess.exam_session.session_code
+        location_code = (
+            self.tutorial_location.code if self.tutorial_location_id else 'OC'
+        )
+        return f"{subject_code}/{location_code}/{self.format}/{exam_code}"

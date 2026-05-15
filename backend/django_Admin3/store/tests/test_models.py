@@ -146,10 +146,14 @@ class TestProductModelCreation(TestCase):
         )
 
     def test_create_product(self):
-        """Test creating a store Product."""
-        from store.models import Product
+        """Test creating a store Product (via MaterialProduct subclass).
 
-        product = Product.objects.create(
+        Phase 5: bare Product.save() requires kind to be set explicitly.
+        Use MaterialProduct which sets kind='material' in its own save().
+        """
+        from store.models import MaterialProduct
+
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -162,10 +166,13 @@ class TestProductModelCreation(TestCase):
         self.assertTrue(product.is_active)
 
     def test_product_str_method(self):
-        """Test Product __str__ method returns product_code."""
-        from store.models import Product
+        """Test Product __str__ method returns product_code.
 
-        product = Product.objects.create(
+        Phase 5: use MaterialProduct subclass which sets kind='material'.
+        """
+        from store.models import MaterialProduct
+
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -179,11 +186,16 @@ class TestProductModelCreation(TestCase):
         so that addon rows (Purchasable.is_addon=True) can clone a base
         product's PPV. Application-level safety (preventing accidental
         non-addon duplicates) is enforced in StoreProductAdminSerializer.
+
+        Phase 5: use MaterialProduct subclass which sets kind='material'.
+        Explicit product_code values are supplied so both rows have
+        distinct codes (auto-generation would produce the same code for
+        the same PPV+ESS pair).
         """
-        from store.models import Product
+        from store.models import MaterialProduct
 
         # Create first product
-        Product.objects.create(
+        MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -191,14 +203,15 @@ class TestProductModelCreation(TestCase):
         )
 
         # Same (ess, ppv) with a distinct product_code now succeeds.
-        duplicate = Product.objects.create(
+        duplicate = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04-DUPE',
-            is_active=True
+            is_active=True,
+            is_addon=True,
         )
         self.assertEqual(
-            Product.objects.filter(
+            MaterialProduct.objects.filter(
                 exam_session_subject=self.ess,
                 product_product_variation=self.ppv,
             ).count(),
@@ -370,17 +383,21 @@ class TestProductCodeGeneration(TestCase):
         )
 
     def test_product_code_format(self):
-        """T019: Test product code follows format: {subject_code}/{prefix}{product_code}{variation_code}/{exam_session_code}."""
-        from store.models import Product
+        """T019: Test product code follows format: {subject_code}/{variation_code}{product_code}/{exam_session_code}.
+
+        Phase 5: use MaterialProduct subclass which sets kind='material' and
+        auto-generates product_code via Product._generate_material_code().
+        """
+        from store.models import MaterialProduct
 
         # Create product without explicit product_code to test generation
-        product = Product.objects.create(
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             is_active=True
         )
 
-        # Expected format: SA1/PCSM01P/2025S1
+        # Expected format: SA1/PCSM01/2025S1 (variation code 'P' + product code 'CSM01')
         # Note: Exact format depends on implementation
         self.assertIsNotNone(product.product_code)
         self.assertIn(self.subject.code, product.product_code)

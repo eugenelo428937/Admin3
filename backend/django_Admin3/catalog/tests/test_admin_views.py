@@ -155,14 +155,14 @@ class TestExamSessionSubjectAdminViewSet(CatalogAdminTestCase):
 
     def test_delete_with_dependent_store_products_returns_400(self):
         """DELETE returns 400 when ESS has dependent store products."""
-        from store.models import Product as StoreProduct
+        from store.models import MaterialProduct as StoreMaterialProduct
         self.authenticate_superuser()
         ess = ExamSessionSubject.objects.create(
             exam_session=self.session_sept,
             subject=self.subject_sa1,
         )
         # Create dependent store product
-        StoreProduct.objects.create(
+        StoreMaterialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=self.ppv_core_ebook,
             product_code='TEST/DEPEND/2026-09',
@@ -301,7 +301,7 @@ class TestProductProductVariationAdminViewSet(CatalogAdminTestCase):
 
     def test_delete_with_dependent_store_products_returns_400(self):
         """DELETE returns 400 when PPV has dependent store products."""
-        from store.models import Product as StoreProduct
+        from store.models import MaterialProduct as StoreMaterialProduct
         self.authenticate_superuser()
         ppv = ProductProductVariation.objects.create(
             product=self.product_tutorial,
@@ -311,7 +311,7 @@ class TestProductProductVariationAdminViewSet(CatalogAdminTestCase):
             exam_session=self.session_sept,
             subject=self.subject_sa1,
         )
-        StoreProduct.objects.create(
+        StoreMaterialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code='TEST/PPV-DEP/2026-09',

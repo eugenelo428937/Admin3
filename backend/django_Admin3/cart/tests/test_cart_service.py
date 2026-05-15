@@ -12,7 +12,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 
 User = get_user_model()
 
@@ -49,7 +49,8 @@ class CartServiceTest(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cat_product, product_variation=variation, is_active=True
         )
-        self.store_product = StoreProduct.objects.create(
+        # Phase 5: use MaterialProduct subclass which sets kind='material'
+        self.store_product = StoreMaterialProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv
         )
 

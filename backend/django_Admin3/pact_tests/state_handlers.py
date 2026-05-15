@@ -131,7 +131,8 @@ def setup_store_product():
 
     _subject, _es, ess, _cp, _var, ppv = setup_catalog_foundation()
 
-    store_product, _ = StoreProduct.objects.get_or_create(
+    from store.models import MaterialProduct as StoreMaterialProduct
+    store_product, _ = StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=ess,
         product_product_variation=ppv,
         defaults={
@@ -1181,7 +1182,7 @@ def state_session_setup_data_exists_for_copy(params=None):
         ProductVariation, ProductProductVariation,
         ProductBundle,
     )
-    from store.models import Product as StoreProduct, Price
+    from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct, Price
 
     # Create subjects
     subject, _ = Subject.objects.get_or_create(
@@ -1255,7 +1256,7 @@ def state_session_setup_data_exists_for_copy(params=None):
     )
 
     # Store product in previous session
-    prev_store_product, _ = StoreProduct.objects.get_or_create(
+    prev_store_product, _ = StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=prev_ess,
         product_product_variation=ppv,
         defaults={'is_active': True},
@@ -1299,7 +1300,7 @@ def state_session_setup_data_exists_for_copy(params=None):
         product=sp9_cat_product,
         product_variation=sp9_variation,
     )
-    StoreProduct.objects.get_or_create(
+    StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=sp9_prev_ess,
         product_product_variation=sp9_ppv,
         defaults={'is_active': True},

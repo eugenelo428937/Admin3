@@ -5,8 +5,6 @@ Shares a PK with its parent Purchasable row (via MTI).
 
 Table: acted.products
 """
-import uuid
-
 from django.db import models
 
 from store.models.purchasable import Purchasable
@@ -53,113 +51,58 @@ class Product(Purchasable):
         verbose_name_plural = 'Store Products'
 
     def save(self, *args, **kwargs):
-        """Auto-generate product_code if not provided; mirror to Purchasable.code."""
-        # Phase 4e: derive kind from variation_type rather than defaulting
-        # to the legacy Kind.PRODUCT. Every new Product row now starts in
-        # its specialized kind directly — material / tutorial / marking.
-        if not self.kind:
-            self.kind = self._derive_kind_from_variation_type()
-        # Code generation path — material/marking codes don't need PK, so we
-        # can compute pre-save; tutorial/other codes include the PK, so we
-        # must save once to get the PK, then regenerate and update.
-        if not self.product_code:
-            variation_type = self.product_product_variation.product_variation.variation_type
-            if variation_type in ('eBook', 'Printed', 'Marking'):
-                self.product_code = self._generate_product_code()
-                self.code = self.product_code
-                super().save(*args, **kwargs)
-            else:
-                # Tutorial/other codes include PK; save first with a unique
-                # placeholder to satisfy Purchasable.code's UNIQUE constraint,
-                # then regenerate with real product_code once PK is known.
-                if not self.code:
-                    self.code = f'pending-{uuid.uuid4().hex}'
-                super().save(*args, **kwargs)
-                self.product_code = self._generate_product_code()
-                self.code = self.product_code
-                super().save(update_fields=['product_code', 'code'])
-        else:
-            # product_code already set — mirror it to Purchasable.code
-            self.code = self.product_code
-            super().save(*args, **kwargs)
+        """Phase 5: parent-class save. Each subclass (Material/Tutorial/
+        Marking) sets kind explicitly in its own save(). If a caller
+        instantiates a bare Product without setting kind, raise ValueError
+        — there is no longer a meaningful default for store products.
 
-    def _derive_kind_from_variation_type(self):
-        """Phase 4e: derive Purchasable.kind from the linked PPV's variation_type.
-
-        Eliminates the legacy Kind.PRODUCT default — every new Product row
-        now starts in its specialized kind (material / tutorial / marking),
-        removing the need for the Phase 2 split command to retroactively
-        reclassify.
-
-        Returns one of `Purchasable.Kind.MATERIAL`,
-        `Purchasable.Kind.TUTORIAL`, or `Purchasable.Kind.MARKING`.
-
-        Raises:
-            ValueError if `variation_type` is unrecognised — callers should
-            set `self.kind` explicitly for any non-standard variation rather
-            than relying on a silent fallback.
+        Code generation:
+        - Tutorial/Marking subclasses generate product_code in their own
+          save() before calling super(), so by the time we reach this
+          method, product_code is already set.
+        - Material rows: while migration 0024 has NOT yet landed, PPV is
+          still on the Product parent, so material code generation works
+          here. After 0024, MaterialProduct.save() will own this path
+          (with PPV now on the subclass).
         """
-        variation_type = self.product_product_variation.product_variation.variation_type
-        if variation_type in {'eBook', 'Printed', 'Hub'}:
-            return Purchasable.Kind.MATERIAL
-        # Tutorial-family: 'Tutorial' is the canonical type; 'Online
-        # Classroom Recording' is a legacy variant some catalog rows
-        # still use (the corresponding TutorialProduct row has format=OC).
-        if variation_type in {'Tutorial', 'Online Classroom Recording'}:
-            return Purchasable.Kind.TUTORIAL
-        if variation_type == 'Marking':
-            return Purchasable.Kind.MARKING
-        raise ValueError(
-            f'Cannot derive Purchasable.kind from variation_type={variation_type!r}; '
-            'set Product.kind explicitly before save() or extend '
-            'Product._derive_kind_from_variation_type to handle the new type.'
-        )
+        if not self.kind:
+            raise ValueError(
+                'Phase 5: store.Product requires kind to be set explicitly. '
+                'Use MaterialProduct/TutorialProduct/MarkingProduct subclasses '
+                'which set kind in their own save() methods, or pass '
+                'kind=Purchasable.Kind.MATERIAL/TUTORIAL/MARKING.'
+            )
+        # Material code generation (pre-Task-4 location). Subclass save()
+        # for Tutorial/Marking already set product_code, so this only runs
+        # for Material rows whose code wasn't pre-set.
+        if not self.product_code and self.kind == self.Kind.MATERIAL:
+            ppv_id = getattr(self, 'product_product_variation_id', None)
+            if ppv_id:
+                self.product_code = self._generate_material_code()
+                self.code = self.product_code
+        if not self.product_code:
+            # product_code is still not set — mirror whatever is already there
+            # or let super handle it
+            pass
+        else:
+            # Mirror product_code to Purchasable.code
+            self.code = self.product_code
+        super().save(*args, **kwargs)
 
-    def _generate_product_code(self):
-        """Generate product code from related entities.
+    def _generate_material_code(self):
+        """Material product code: {subject}/{variation_code}{product_code}/{exam_session}.
 
-        Format depends on variation type:
-        - Material/Marking (eBook, Printed, Marking):
-            {subject_code}/{variation_code}{product_code}/{exam_session_code}
-            Example: CB1/PC/26 , CP1/MM1/26S
-        - Tutorial/Other:
-            {subject_code}/{location}/{variation_code}/{exam_session_code}
-            Example: CB1/GSW/F2F_3F/26 (Tutorial Glasgow)
-
-        Tutorial location is derived from the first linked TutorialEvent's
-        TutorialLocation.code. A Product without an associated TutorialEvent
-        cannot produce a valid tutorial code — raise ValueError so the
-        caller fixes the data rather than silently producing a bad code.
+        Lives on Product (parent) for now because PPV is still on the
+        parent until migration 0024. Will move to MaterialProduct.save()
+        when the field moves.
         """
         ess = self.exam_session_subject
         ppv = self.product_product_variation
-
         subject_code = ess.subject.code
         exam_code = ess.exam_session.session_code
-        product_code = ppv.product.code
-        variation = ppv.product_variation
-        variation_code = variation.code if variation.code else ''
-
-        # Material and Marking products: simpler format without prefix
-        if variation.variation_type in ('eBook', 'Printed', 'Marking'):
-            return f"{subject_code}/{variation_code}{product_code}/{exam_code}"
-
-        # Tutorial/other: location from first linked TutorialEvent.
-        # Local import avoids circular dependency with tutorials app.
-        from tutorials.models import TutorialEvents
-        event = (
-            TutorialEvents.objects
-            .filter(store_product=self)
-            .select_related('location')
-            .first()
-        )
-        if event is None or event.location is None or not event.location.code:
-            raise ValueError(
-                f"Cannot generate tutorial product code for Product pk={self.pk}: "
-                "no TutorialEvent with a TutorialLocation.code is linked. "
-                "Create the event + location before saving the product."
-            )
-        return f"{subject_code}/{event.location.code}/{variation_code}/{exam_code}"
+        cat_product_code = ppv.product.code
+        variation_code = ppv.product_variation.code or ''
+        return f"{subject_code}/{variation_code}{cat_product_code}/{exam_code}"
 
     def __str__(self):
         return self.product_code

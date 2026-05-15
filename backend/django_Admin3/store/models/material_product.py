@@ -37,3 +37,13 @@ class MaterialProduct(Product):
         db_table = '"acted"."material_products"'
         verbose_name = 'Material Product'
         verbose_name_plural = 'Material Products'
+
+    def save(self, *args, **kwargs):
+        """Phase 5: MaterialProduct sets kind='material' explicitly.
+        Code generation stays in Product.save() until migration 0024
+        removes product_product_variation from the parent — then it
+        moves here too.
+        """
+        if not self.kind:
+            self.kind = self.Kind.MATERIAL  # 'material'
+        super().save(*args, **kwargs)

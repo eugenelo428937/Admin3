@@ -32,7 +32,7 @@ from catalog.models import (
     ProductProductVariation,
 )
 from marking.models import MarkingPaper
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MarkingProduct as StoreMarkingProduct
 from students.models import Student
 
 
@@ -76,9 +76,11 @@ class MarkingChainTestCase(APITestCase):
         cls.marking_template = MarkingTemplate.objects.create(
             code='FIX', name='Fixture Marking Series',
         )
-        cls.store_product = StoreProduct.objects.create(
+        # Phase 5: use MarkingProduct subclass which sets kind='marking'
+        cls.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
+            marking_template=cls.marking_template,
         )
         cls.paper = MarkingPaper.objects.create(
             purchasable=cls.store_product,

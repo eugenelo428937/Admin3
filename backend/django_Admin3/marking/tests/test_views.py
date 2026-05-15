@@ -17,7 +17,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MarkingProduct as StoreMarkingProduct
 
 
 class MarkingPaperAPITestCase(APITestCase):
@@ -66,20 +66,28 @@ class MarkingPaperAPITestCase(APITestCase):
             product=self.cat_product2, product_variation=self.variation
         )
 
-        # Create store products (replace old ESSPs)
-        self.store_product1 = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv1
-        )
-        self.store_product2 = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv2
-        )
-
         # Phase 4c: every MarkingPaper now requires marking_template.
+        # Phase 5: Each MarkingProduct needs its own template since the product_code
+        # is generated as {subject}/{template_code}/{session} — two products with
+        # the same template+ESS would produce duplicate codes.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
-            code='API', name='API Test Marking Series',
+            code='API1', name='API Test Marking Series 1',
+        )
+        self.marking_template2 = MarkingTemplate.objects.create(
+            code='API2', name='API Test Marking Series 2',
+        )
+
+        # Create store products (Phase 5: use MarkingProduct subclass)
+        self.store_product1 = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv1,
+            marking_template=self.marking_template,
+        )
+        self.store_product2 = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv2,
+            marking_template=self.marking_template2,
         )
 
         # Create marking papers
@@ -101,7 +109,7 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.paper3 = MarkingPaper.objects.create(
             purchasable=self.store_product2,
-            marking_template=self.marking_template,
+            marking_template=self.marking_template2,
             name='Paper3',
             deadline=timezone.now() + timedelta(days=60),
             recommended_submit_date=timezone.now() + timedelta(days=55)
@@ -168,10 +176,15 @@ class MarkingPaperAPITestCase(APITestCase):
             product=cat_product3, product_variation=self.variation
         )
 
-        # Create store product with no papers
-        store_product_no_papers = StoreProduct.objects.create(
+        # Create store product with no papers (Phase 5: use MarkingProduct subclass)
+        from marking.models import MarkingTemplate
+        marking_template3, _ = MarkingTemplate.objects.get_or_create(
+            code='NP3', defaults={'name': 'No Papers Marking Series 3'},
+        )
+        store_product_no_papers = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=ppv3
+            product_product_variation=ppv3,
+            marking_template=marking_template3,
         )
 
         response = self.client.get(f'/api/markings/papers/deadlines/?purchasable_id={store_product_no_papers.id}')
@@ -383,12 +396,6 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
             product=self.cat_product, product_variation=self.variation
         )
 
-        # Create store product
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv
-        )
-
         # Create ExamSessionSubjectProduct (ESSP) linking same ESS and catalog product
         self.essp = ExamSessionSubjectProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
@@ -399,6 +406,13 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
             code='ESP', name='ESSP Compat Marking Series',
+        )
+
+        # Create store product (Phase 5: use MarkingProduct subclass)
+        self.store_product = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            marking_template=self.marking_template,
         )
 
         # Create marking papers linked to the store product
@@ -522,16 +536,6 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
             product=self.cat_product2, product_variation=self.variation
         )
 
-        # Create store products
-        self.store_product1 = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv1
-        )
-        self.store_product2 = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv2
-        )
-
         # Create ESSP records
         self.essp1 = ExamSessionSubjectProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
@@ -543,9 +547,27 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
         )
 
         # Phase 4c: every MarkingPaper now requires marking_template.
+        # Phase 5: Each MarkingProduct needs its own template since the product_code
+        # is generated as {subject}/{template_code}/{session} — two products with
+        # the same template+ESS would produce duplicate codes.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
-            code='BLK', name='Bulk ESSP Marking Series',
+            code='BLK1', name='Bulk ESSP Marking Series 1',
+        )
+        self.marking_template2 = MarkingTemplate.objects.create(
+            code='BLK2', name='Bulk ESSP Marking Series 2',
+        )
+
+        # Create store products (Phase 5: use MarkingProduct subclass)
+        self.store_product1 = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv1,
+            marking_template=self.marking_template,
+        )
+        self.store_product2 = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv2,
+            marking_template=self.marking_template2,
         )
 
         # Create marking papers for each store product
@@ -565,7 +587,7 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
         )
         self.paper3 = MarkingPaper.objects.create(
             purchasable=self.store_product2,
-            marking_template=self.marking_template,
+            marking_template=self.marking_template2,
             name='BulkP3',
             deadline=timezone.now() + timedelta(days=55),
             recommended_submit_date=timezone.now() + timedelta(days=50)

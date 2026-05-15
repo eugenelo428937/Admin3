@@ -78,10 +78,13 @@ class SessionSetupService:
                 skipped_subjects.add(prev_product.exam_session_subject.subject.code)
                 continue
 
-            # Create new product (product_code auto-generates on save)
+            # Create new product (product_code auto-generates on save).
+            # Phase 5: carry over the source product's kind so Product.save()
+            # does not raise ValueError for missing kind.
             new_product = Product(
                 exam_session_subject=new_ess,
                 product_product_variation=prev_product.product_product_variation,
+                kind=prev_product.kind,
                 is_active=True,
             )
             new_product.save()

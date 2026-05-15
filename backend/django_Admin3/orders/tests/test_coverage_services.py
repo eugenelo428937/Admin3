@@ -22,7 +22,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 from orders.services.checkout_orchestrator import (
     CheckoutOrchestrator,
     CheckoutValidationError,
@@ -64,7 +64,7 @@ class ORDServiceTestMixin:
         ppv = ProductProductVariation.objects.create(
             product=cat_product, product_variation=variation
         )
-        return StoreProduct.objects.create(
+        return StoreMaterialProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv
         )
 

@@ -33,7 +33,7 @@ class StoreAPITestCase(APITestCase):
             Product as CatalogProduct, ProductVariation, ProductProductVariation,
             ProductBundle,
         )
-        from store.models import Product, Price, Bundle, BundleProduct
+        from store.models import Product, MaterialProduct, Price, Bundle, BundleProduct
 
         # Create subjects
         cls.subject = Subject.objects.create(
@@ -112,20 +112,20 @@ class StoreAPITestCase(APITestCase):
             is_active=True,
         )
 
-        # Create store products
-        cls.store_product_1 = Product.objects.create(
+        # Create store products (Phase 5: use MaterialProduct which sets kind='material')
+        cls.store_product_1 = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_printed,
             product_code='CM2/PCSM01P/2025-04',
             is_active=True
         )
-        cls.store_product_2 = Product.objects.create(
+        cls.store_product_2 = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_ebook,
             product_code='CM2/ECSM01E/2025-04',
             is_active=True
         )
-        cls.store_product_inactive = Product.objects.create(
+        cls.store_product_inactive = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=ProductProductVariation.objects.create(
                 product=cls.catalog_product_2,
@@ -140,7 +140,7 @@ class StoreAPITestCase(APITestCase):
             product=cls.catalog_product_inactive,
             product_variation=cls.variation_printed
         )
-        cls.store_product_inactive_template = Product.objects.create(
+        cls.store_product_inactive_template = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_inactive_template,
             product_code='CM2/PDM01P/2025-04',

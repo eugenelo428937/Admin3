@@ -16,7 +16,7 @@ from django.utils import timezone
 
 from marking.models import MarkingPaper
 from marking.serializers import MarkingPaperSerializer
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MarkingProduct as StoreMarkingProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product, ProductProductVariation, ProductVariation,
@@ -49,15 +49,17 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.variation,
         )
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
-            product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
-        )
         # Phase 4c: every MarkingPaper now requires marking_template.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
             code='COV', name='Coverage Test Marking Series',
+        )
+        # Phase 5: use MarkingProduct subclass which sets kind='marking'
+        self.store_product = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
+            marking_template=self.marking_template,
         )
         self.paper = MarkingPaper.objects.create(
             purchasable=self.store_product,

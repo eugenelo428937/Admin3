@@ -19,9 +19,11 @@ from catalog.tests.fixtures import (
 from catalog.models import ExamSessionSubject
 from catalog.services.session_setup_service import SessionSetupService
 from store.models.product import Product as StoreProduct
+from store.models.material_product import MaterialProduct as StoreMaterialProduct
 from store.models.price import Price
 from store.models.bundle import Bundle
 from store.models.bundle_product import BundleProduct
+from store.models.purchasable import Purchasable
 
 
 class TestSessionSetupService(CatalogAPITestCase):
@@ -60,13 +62,16 @@ class TestSessionSetupService(CatalogAPITestCase):
             exam_session=self.session_april, subject=self.subject_sa1
         )[0]
 
-        # Create store products for previous session
-        self.store_prod_ebook = StoreProduct.objects.create(
+        # Create store products for previous session.
+        # Phase 5: use MaterialProduct subclass for eBook/Printed/Hub kinds;
+        # pass kind= explicitly for Marking/Tutorial so Product.save() does
+        # not raise ValueError.
+        self.store_prod_ebook = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
         )
-        self.store_prod_printed = StoreProduct.objects.create(
+        self.store_prod_printed = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_core_printed,
             is_active=True,
@@ -74,27 +79,27 @@ class TestSessionSetupService(CatalogAPITestCase):
         self.store_prod_marking = StoreProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_marking,
+            kind=Purchasable.Kind.MARKING,
             is_active=True,
+            product_code='CM2/VAR-MARK/2026-04',
         )
         # Tutorial product (should be excluded from copy).
         # Pass product_code explicitly: tutorial codes are auto-generated
-        # from a linked TutorialEvent, which we don't need for this fixture
-        # (see store.models.product.Product._generate_product_code).
+        # from subclass fields in Phase 5.
         self.store_prod_tutorial = StoreProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_tutorial,
+            kind=Purchasable.Kind.TUTORIAL,
             is_active=True,
-            product_code='CM2/TUT/26',
+            product_code='CM2/TUT/2026-04',
         )
         # Inactive product (should be excluded from copy).
-        # ppv_marking_hub uses variation_type='Hub' which (like Tutorial)
-        # requires a linked TutorialEvent for code auto-gen — bypass with
-        # an explicit product_code.
-        self.store_prod_inactive = StoreProduct.objects.create(
+        # ppv_marking_hub uses variation_type='Hub' — treated as material.
+        self.store_prod_inactive = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
             product_product_variation=self.ppv_marking_hub,
             is_active=False,
-            product_code='CM2/HUB/26',
+            product_code='CM2/HUB/2026-04',
         )
 
         # Create prices for previous products
@@ -160,7 +165,7 @@ class TestSessionSetupService(CatalogAPITestCase):
             exam_session=self.session_april, subject=self.subject_sa1
         )[0]
         # Create a store product for SA1 in previous session
-        sa1_prod = StoreProduct.objects.create(
+        sa1_prod = StoreMaterialProduct.objects.create(
             exam_session_subject=sa1_ess,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -193,7 +198,7 @@ class TestSessionSetupService(CatalogAPITestCase):
         """Transaction rolls back all changes on failure."""
         # Create a situation that will cause a unique constraint violation
         # by pre-creating a product that the copy would try to create
-        StoreProduct.objects.create(
+        StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess_new_cm2,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -251,7 +256,7 @@ class TestSessionSetupEndpoint(CatalogAPITestCase):
             exam_session=self.session_sept, subject=self.subject_cm2
         )[0]
         # Create a store product in previous session
-        self.store_prod = StoreProduct.objects.create(
+        self.store_prod = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess_prev,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -353,7 +358,7 @@ class TestSessionDataCounts(CatalogAPITestCase):
         ess = ExamSessionSubject.objects.create(
             exam_session=self.session_sept, subject=self.subject_cm2
         )
-        StoreProduct.objects.create(
+        StoreMaterialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -371,7 +376,7 @@ class TestDeactivateSessionData(CatalogAPITestCase):
         self.ess = ExamSessionSubject.objects.create(
             exam_session=self.session_sept, subject=self.subject_cm2
         )
-        self.product = StoreProduct.objects.create(
+        self.product = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -437,7 +442,7 @@ class TestDeactivateSessionData(CatalogAPITestCase):
         other_ess = ExamSessionSubject.objects.create(
             exam_session=self.session_april, subject=self.subject_cm2
         )
-        other_product = StoreProduct.objects.create(
+        other_product = StoreMaterialProduct.objects.create(
             exam_session_subject=other_ess,
             product_product_variation=self.ppv_core_printed,
             is_active=True,
@@ -468,7 +473,7 @@ class TestSessionDataCountsEndpoint(CatalogAPITestCase):
         ess = ExamSessionSubject.objects.create(
             exam_session=self.session_sept, subject=self.subject_cm2
         )
-        StoreProduct.objects.create(
+        StoreMaterialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,
@@ -492,7 +497,7 @@ class TestDeactivateEndpoint(CatalogAPITestCase):
         self.ess = ExamSessionSubject.objects.create(
             exam_session=self.session_sept, subject=self.subject_cm2
         )
-        self.product = StoreProduct.objects.create(
+        self.product = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_core_ebook,
             is_active=True,

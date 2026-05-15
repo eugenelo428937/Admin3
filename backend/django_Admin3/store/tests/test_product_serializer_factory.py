@@ -108,15 +108,22 @@ class SerializerForFactoryTests(_Fixtures, TestCase):
 
     def test_factory_falls_back_to_base_for_bare_product(self):
         """If a Product row has no subclass row, factory returns the
-        base ProductSerializer rather than raising."""
+        base ProductSerializer rather than raising.
+
+        Phase 5: Product.save() requires kind to be set explicitly; bare
+        Products must pass kind= to avoid ValueError. This test now passes
+        kind=MATERIAL explicitly to create a Product row without a subclass
+        (MaterialProduct) row — the factory should still fall back to base.
+        """
         from store.serializers.product import ProductSerializer, serializer_for
-        from store.models import Product
+        from store.models import Product, Purchasable
         ess = self._ess(subject_code='CT1')
         ppv, _ = self._ppv('Printed', 'P')
         p = Product(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code='CT1/BARE32/2026-04',
+            kind=Purchasable.Kind.MATERIAL,
         )
         p.save()
         from store.models import MaterialProduct, TutorialProduct, MarkingProduct

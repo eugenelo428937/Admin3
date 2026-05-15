@@ -1693,8 +1693,10 @@ class TestFuzzySearchWithStoreProducts(CatalogAPITestCase):
             subject=self.subject_cm2,
         )
 
-        # Create store product linked to our catalog data
-        self.store_product, _ = StoreProduct.objects.get_or_create(
+        # Create store product linked to our catalog data.
+        # Phase 5: use MaterialProduct subclass so kind is set automatically.
+        from store.models import MaterialProduct as StoreMaterialProduct
+        self.store_product, _ = StoreMaterialProduct.objects.get_or_create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_core_ebook,
             defaults={

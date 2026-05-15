@@ -17,7 +17,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
 )
-from store.models import Product as StoreProduct, Purchasable
+from store.models import Product as StoreProduct, MarkingProduct as StoreMarkingProduct, Purchasable
 
 
 class MarkingPaperTestCase(TestCase):
@@ -58,16 +58,17 @@ class MarkingPaperTestCase(TestCase):
             product=self.cat_product, product_variation=self.variation
         )
 
-        # Create store product (replaces old ESSP)
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv
-        )
-
         # Phase 4c: every MarkingPaper now requires marking_template.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
             code='TST', name='Test Marking Series',
+        )
+
+        # Create store product (Phase 5: use MarkingProduct subclass)
+        self.store_product = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            marking_template=self.marking_template,
         )
 
     def test_marking_paper_creation_with_required_fields(self):
@@ -475,12 +476,6 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
             product=self.cat_product, product_variation=self.variation
         )
 
-        # Create store product
-        self.store_product = StoreProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv
-        )
-
         # Create ESSP that matches the store product's ESS + catalog product
         self.essp = ExamSessionSubjectProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
@@ -491,6 +486,13 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
             code='CPT', name='Compat Test Marking Series',
+        )
+
+        # Create store product (Phase 5: use MarkingProduct subclass)
+        self.store_product = StoreMarkingProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            marking_template=self.marking_template,
         )
 
         # Create marking paper
@@ -522,9 +524,14 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         ppv2 = ProductProductVariation.objects.create(
             product=cat_product2, product_variation=self.variation
         )
-        store_product2 = StoreProduct.objects.create(
+        from marking.models import MarkingTemplate
+        marking_template2, _ = MarkingTemplate.objects.get_or_create(
+            code='CPT2', defaults={'name': 'Compat Test Marking Series 2'},
+        )
+        store_product2 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=ppv2
+            product_product_variation=ppv2,
+            marking_template=marking_template2,
         )
         paper2 = MarkingPaper.objects.create(
             purchasable=store_product2,
