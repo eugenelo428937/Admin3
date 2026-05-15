@@ -37,17 +37,19 @@ def _make_instructor():
 
 
 def _make_event(ct, loc, ven, ins, suffix='1'):
-    return Event.objects.create(
-        external_id=f'evt-ext-{suffix}',
-        course_template=ct,
-        title=f'Test Event {suffix}',
-        location=loc,
-        venue=ven,
-        primary_instructor=ins,
-    )
+    # Phase 5 (2026-05-15): adm.events is now a thin bridge — only
+    # external_id + tutorial_event survived the column drop. Tests that
+    # used to pass course_template / title / location / venue /
+    # primary_instructor on adm.events should set those on the linked
+    # tutorial_events row instead. This helper preserves the old
+    # signature so callers don't have to change, but only `external_id`
+    # is actually persisted on the bridge.
+    return Event.objects.create(external_id=f'evt-ext-{suffix}')
 
 
-def _make_session(event, day=1, external_id=None):
+def _make_session(event, day=1, external_id=None, instructor=None):
+    # session_instructor is now passed explicitly (post-Phase-5: the
+    # bridge no longer carries primary_instructor for us to crib from).
     return Session.objects.create(
         event=event,
         external_id=external_id,
@@ -57,7 +59,7 @@ def _make_session(event, day=1, external_id=None):
         classroom_start_time=time(9, 0),
         classroom_end_date=date(2026, 5, 12),
         classroom_end_time=time(17, 0),
-        session_instructor=event.primary_instructor,
+        session_instructor=instructor,
     )
 
 
@@ -73,25 +75,25 @@ class AdmSessionExternalIdTests(TestCase):
         """New adm.Session rows can be created without an external_id —
         the field is populated lazily by the attendance sync service.
         """
-        s = _make_session(self.event, day=1, external_id=None)
+        s = _make_session(self.event, day=1, external_id=None, instructor=self.ins)
         self.assertIsNone(s.external_id)
 
     def test_external_id_persists_when_set(self):
-        s = _make_session(self.event, day=1, external_id='sess-ext-42')
+        s = _make_session(self.event, day=1, external_id='sess-ext-42', instructor=self.ins)
         s.refresh_from_db()
         self.assertEqual(s.external_id, 'sess-ext-42')
 
     def test_external_id_is_unique(self):
-        _make_session(self.event, day=1, external_id='dup')
+        _make_session(self.event, day=1, external_id='dup', instructor=self.ins)
         ev2 = _make_event(self.ct, self.loc, self.ven, self.ins, suffix='2')
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
-                _make_session(ev2, day=1, external_id='dup')
+                _make_session(ev2, day=1, external_id='dup', instructor=self.ins)
 
     def test_multiple_rows_can_share_null_external_id(self):
         """Unique-with-nulls: multiple unsynced rows are allowed."""
-        _make_session(self.event, day=1, external_id=None)
-        _make_session(self.event, day=2, external_id=None)
+        _make_session(self.event, day=1, external_id=None, instructor=self.ins)
+        _make_session(self.event, day=2, external_id=None, instructor=self.ins)
         self.assertEqual(
             Session.objects.filter(external_id__isnull=True).count(), 2,
         )

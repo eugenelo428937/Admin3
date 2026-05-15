@@ -110,19 +110,12 @@ class AdministrateSchemaMigrationTest(TestCase):
         )
         from datetime import date, time
 
-        ct = CourseTemplate.objects.create(external_id='CT-EVT')
-        loc = Location.objects.create(external_id='LOC-EVT')
-        venue = Venue.objects.create(external_id='VEN-EVT', location=loc)
+        # Phase 5 (2026-05-15): adm.events is a thin bridge — these
+        # master-data rows aren't carried by the bridge anymore, but the
+        # adm.Session below still references the Instructor.
         instr = Instructor.objects.create(external_id='INSTR-EVT')
 
-        event = Event.objects.create(
-            external_id='EVT-1',
-            course_template=ct,
-            title='Test Event',
-            location=loc,
-            venue=venue,
-            primary_instructor=instr,
-        )
+        event = Event.objects.create(external_id='EVT-1')
         self.assertEqual(event.external_id, 'EVT-1')
         self.assertIsNone(event.tutorial_event)
 

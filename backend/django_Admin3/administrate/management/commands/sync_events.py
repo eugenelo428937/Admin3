@@ -1,19 +1,20 @@
-"""Sync Administrate events into adm.events.
+"""Sync Administrate events into acted.tutorial_events.
 
 Companion to the webhook intake: where webhooks reflect *deltas*, this
 command takes a full snapshot of Administrate events for a given
 sitting + lifecycle state. Use it for:
 
   - Initial seeding (before webhooks are registered).
-  - Filling primary_instructor on Event Created webhook dead-letters.
-    The webhook query can't ask for `staff` (privacy/permissioning),
-    so brand-new events fail their NOT NULL FK and dead-letter; this
-    command resolves the staff connection's first contact, satisfies
-    the FK, and unblocks `administrate_webhooks_inbox replay`.
+  - Filling main_instructor — the webhook query can't fetch staff, so
+    brand-new tutorial_events rows have main_instructor=NULL after the
+    webhook applies. This command resolves the staff connection and
+    backfills via the adm.instructors -> tutorial_instructor bridge.
   - Periodic reconciliation if you suspect lost webhook deliveries.
 
-Tutorial-event linking happens as a per-event post-step using the
-exact-title-match rule (see `tutorial_event_linker`).
+Per Phase 2 of the tutorial-events-as-master refactor: the canonical
+target is acted.tutorial_events, with adm.events as a thin bridge.
+The matching rule (acted.tutorial_events.code == node.title) is the
+same one the webhook uses, so behaviour stays in lockstep.
 """
 
 import logging
@@ -27,8 +28,9 @@ from administrate.exceptions import (
 )
 from administrate.models import Event, Instructor
 from administrate.services.api_service import AdministrateAPIService
-from administrate.services.tutorial_event_linker import link_event_to_tutorial
-from administrate.services.webhook_handlers import map_node_to_event_fields
+from administrate.services.webhook_handlers import (
+    map_node_to_tutorial_event_fields,
+)
 from administrate.utils.graphql_loader import load_graphql_query
 from administrate.utils.sync_helpers import SyncStats
 
@@ -38,9 +40,9 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = (
-        'Sync Administrate events into adm.events for a given sitting + '
-        'lifecycle state, resolving primary_instructor from staff and '
-        'linking tutorial_event by exact title match.'
+        'Sync Administrate events into acted.tutorial_events for a given '
+        'sitting + lifecycle state, resolving main_instructor from the '
+        'staff connection and creating the adm.events bridge row.'
     )
 
     def add_arguments(self, parser):
@@ -77,11 +79,11 @@ class Command(BaseCommand):
             )
             return
 
-        stats, linked, unlinked = self._sync_nodes(nodes, debug=options['debug'])
+        stats, unmatched = self._sync_nodes(nodes, debug=options['debug'])
         self.stdout.write(
             self.style.SUCCESS(
                 f'Sync completed: {stats.summary_line()} '
-                f'| {linked} linked, {unlinked} unlinked'
+                f'| unlinked={unmatched}'
             )
         )
 
@@ -113,26 +115,36 @@ class Command(BaseCommand):
         return all_nodes
 
     def _sync_nodes(self, nodes, debug=False):
-        """Apply each node: upsert Event, then link tutorial_event.
+        """Apply each node: update tutorial_events + upsert adm.events bridge.
 
-        Per-event failures (missing FK, etc.) are isolated by a savepoint
-        so one bad node doesn't poison the whole batch.
+        Per-event failures (no matching tutorial_events.code, missing FK)
+        are isolated by a savepoint so one bad node doesn't poison the
+        whole batch. Unmatched titles are counted separately so operators
+        can spot when an Administrate event lacks a local tutorial_events row.
         """
+        from tutorials.models import TutorialEvents
+
         stats = SyncStats()
-        linked = 0
-        unlinked = 0
+        unmatched = 0
 
         for node in nodes:
             try:
                 with transaction.atomic():
-                    event, created = self._upsert_event(node)
-                # Linking happens outside the upsert atomic block — a
-                # linker failure (which would be unusual) shouldn't roll
-                # back the event row itself.
-                if self._link(event):
-                    linked += 1
-                else:
-                    unlinked += 1
+                    code = (node.get('title') or '').strip()
+                    if not code:
+                        unmatched += 1
+                        self.stdout.write(self.style.WARNING(
+                            f"unlinked {node.get('id')!r}: empty title"
+                        ))
+                        continue
+                    tutorial_event = TutorialEvents.objects.filter(code=code).first()
+                    if tutorial_event is None:
+                        unmatched += 1
+                        self.stdout.write(self.style.WARNING(
+                            f"unlinked {node.get('id')!r}: no tutorial_events.code={code!r}"
+                        ))
+                        continue
+                    created = self._apply_node(tutorial_event, node)
                 if created:
                     stats.created += 1
                 else:
@@ -153,68 +165,69 @@ class Command(BaseCommand):
                 if debug:
                     logger.exception(exc)
 
-        return stats, linked, unlinked
+        return stats, unmatched
 
-    def _upsert_event(self, node: dict):
-        """Map the Administrate node onto adm.events fields and upsert.
+    def _apply_node(self, tutorial_event, node: dict) -> bool:
+        """Update the tutorial_events row from the node + upsert the bridge.
 
-        Differs from the webhook's `_upsert_event` in one place only:
-        we enrich the mapped defaults with `primary_instructor`, resolved
-        from the staff connection. The webhook query can't fetch staff,
-        which is why brand-new events from the webhook path
-        dead-letter — this command is the cure.
+        Returns True if the bridge row was newly created (informs the
+        created/updated stats split).
+
+        Sync's edge over the webhook: it can resolve `main_instructor`
+        from the staff connection (the webhook query can't fetch staff).
+        Resolved through the adm.instructors -> tutorial_instructor
+        bridge, same pattern as location/venue.
         """
-        defaults = map_node_to_event_fields(node)
-        defaults.pop('external_id', None)
-        defaults['primary_instructor'] = self._resolve_primary_instructor(node)
-        return Event.objects.update_or_create(
-            external_id=node['id'], defaults=defaults,
-        )
+        defaults = map_node_to_tutorial_event_fields(node)
+        # Sync resolves main_instructor from the staff connection — the
+        # webhook can't, so this is sync's reason to exist.
+        main_instructor = self._resolve_main_instructor(node)
+        if main_instructor is not None:
+            defaults['main_instructor'] = main_instructor
 
-    def _resolve_primary_instructor(self, node: dict) -> Instructor:
-        """Pull the first staff member's Contact id and look up our
-        Instructor by external_id.
+        # Dual-write legacy Date columns from the new DateTime values
+        # so readers using start_date/end_date stay current through Phase 5.
+        from administrate.services.webhook_handlers import _truncate_to_date
+        if defaults.get('lms_start_date'):
+            defaults['start_date'] = _truncate_to_date(defaults['lms_start_date'])
+        if defaults.get('lms_end_date'):
+            defaults['end_date'] = _truncate_to_date(defaults['lms_end_date'])
+
+        for field, value in defaults.items():
+            setattr(tutorial_event, field, value)
+        tutorial_event.save()
+
+        _, created = Event.objects.update_or_create(
+            external_id=node['id'],
+            defaults={'tutorial_event': tutorial_event},
+        )
+        return created
+
+    def _resolve_main_instructor(self, node: dict):
+        """Pull the first staff member's Contact id, look up the
+        adm.instructors row, and return the linked tutorial_instructor.
 
         Administrate's `staff` is a Relay connection — the first edge is
         a deterministic choice but not a semantic 'primary'. If you need
         true 'primary' semantics, query `requiredStaff` and filter by
-        role. For now, the first staff member is good enough to satisfy
-        the FK so webhook updates can apply downstream.
+        role. For now, the first staff member is good enough.
 
-        Raises MissingDependencyError if either:
-          - the event has no staff at all (which would be unusual for
-            a PUBLISHED event), or
-          - the matched Contact id has no corresponding local Instructor
-            (operator runs sync_instructors then re-runs this command).
+        Returns None if the connection is empty or the bridge has no
+        local TutorialInstructor — the FK on tutorial_events is nullable,
+        so a missing instructor doesn't block the sync.
+        Raises MissingDependencyError only if the adm.instructors row
+        itself is missing (operator must run sync_instructors first).
         """
         edges = (((node.get('staff') or {}).get('edges')) or [])
         if not edges:
-            raise MissingDependencyError(
-                'Instructor',
-                f'<no staff in connection for event {node.get("id")!r}>',
-            )
+            return None
         contact_id = (
             (edges[0].get('node') or {}).get('contact') or {}
         ).get('id')
         if not contact_id:
-            raise MissingDependencyError(
-                'Instructor',
-                f'<staff edge missing contact.id for event {node.get("id")!r}>',
-            )
+            return None
         try:
-            return Instructor.objects.get(external_id=contact_id)
+            adm_instructor = Instructor.objects.get(external_id=contact_id)
         except Instructor.DoesNotExist:
             raise MissingDependencyError('Instructor', contact_id)
-
-    def _link(self, event: Event) -> bool:
-        """Set event.tutorial_event via exact-title match. Returns True
-        if a match was assigned, False if no match (FK stays null).
-
-        Idempotent: if the FK is already correct, we still save (cheap;
-        the alternative comparison is more code than it's worth)."""
-        match = link_event_to_tutorial(event)
-        if match is None:
-            return False
-        event.tutorial_event_id = match.pk
-        event.save(update_fields=['tutorial_event'])
-        return True
+        return adm_instructor.tutorial_instructor  # may be None

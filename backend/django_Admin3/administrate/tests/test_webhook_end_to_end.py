@@ -73,29 +73,66 @@ def deps(db):
 
 
 @pytest.fixture
-def existing_events(deps):
-    """Pre-seed the two Event rows the e2e tests target.
+def store_product(db):
+    """Bare-minimum store.TutorialProduct chain to satisfy
+    TutorialEvents.store_product NOT NULL.
 
-    The webhook intake design intentionally omits `primary_instructor`
-    from the mapper output (Administrate's typed Event surface has no
-    such field). The model still requires it as NOT NULL, so brand-new
-    rows fail at INSERT time and dead-letter — that's the documented
-    operator workflow ("sync_events first, then accept webhooks").
-    For the happy-path e2e tests we mimic the post-sync state by
-    pre-seeding the rows the fixtures target.
+    Phase 4b (PR #115): the FK target was retargeted from store.Product
+    to store.TutorialProduct (an MTI subclass with `format`).
     """
-    base = dict(
-        title='Pre-existing title',
-        learning_mode='CLASSROOM',
-        lifecycle_state='DRAFT',
-        course_template=deps['course_template'],
-        location=deps['location'],
-        venue=deps['venue'],
-        primary_instructor=deps['instructor'],
+    from datetime import timedelta
+    from django.utils import timezone
+    from catalog.models import (
+        ExamSession, ExamSessionSubject, Subject,
+        Product as CatalogProduct, ProductProductVariation, ProductVariation,
     )
-    Event.objects.create(external_id='evt_external_42', **base)
-    Event.objects.create(external_id='evt_external_43', **base)
-    return deps
+    from store.models import TutorialProduct
+    es = ExamSession.objects.create(
+        session_code='E2E26S',
+        start_date=timezone.now(),
+        end_date=timezone.now() + timedelta(days=60),
+    )
+    sub = Subject.objects.create(code='CB1', description='CB1 e2e', active=True)
+    ess = ExamSessionSubject.objects.create(exam_session=es, subject=sub)
+    p = CatalogProduct.objects.create(code='TUTE2E', fullname='E2E', shortname='E2E')
+    pv = ProductVariation.objects.create(
+        code='WKD', name='Weekend', description='W', description_short='W',
+        variation_type='Tutorial',
+    )
+    ppv = ProductProductVariation.objects.create(product=p, product_variation=pv)
+    return TutorialProduct.objects.create(
+        exam_session_subject=ess, product_product_variation=ppv,
+        product_code='CB1/TUTE2EWKD/E2E26S',
+        format='LO_6H',
+    )
+
+
+@pytest.fixture
+def existing_events(deps, store_product):
+    """Pre-seed the two TutorialEvents rows the e2e tests target.
+
+    Phase 2 of the tutorial-events-as-master refactor: the webhook handler
+    now updates `acted.tutorial_events` (looking up by code=node.title), and
+    upserts a thin `adm.events` bridge row keyed by external_id. Each
+    fixture must have a corresponding TutorialEvents row pre-seeded — that
+    matches the "create the tutorial_events row first, then accept webhooks"
+    operator workflow.
+    """
+    from datetime import date
+    from tutorials.models import TutorialEvents
+    te_42 = TutorialEvents.objects.create(
+        code='CB1-EVT42-26S',
+        start_date=date(2026, 9, 1),
+        end_date=date(2026, 12, 1),
+        store_product=store_product,
+    )
+    te_43 = TutorialEvents.objects.create(
+        code='CB1-EVT43-26S',
+        start_date=date(2026, 9, 1),
+        end_date=date(2026, 12, 1),
+        store_product=store_product,
+    )
+    return {**deps, 'tutorial_event_42': te_42, 'tutorial_event_43': te_43}
 
 
 @pytest.mark.django_db
@@ -115,28 +152,34 @@ class TestEndToEnd:
         assert row.status == WebhookInbox.STATUS_APPLIED
         assert row.applied_at is not None
 
-        event = Event.objects.get(external_id='evt_external_42')
-        assert event.title == 'CB1 Tutorial — September 2026'
-        assert event.lifecycle_state == 'PUBLISHED'
-        assert event.cancelled is False
+        # New: assertions target tutorial_events (the master) and the
+        # adm.events bridge row (just for the join key).
+        te = existing_events['tutorial_event_42']
+        te.refresh_from_db()
+        assert te.external_id == 'evt_external_42'
+        assert te.lifecycle_state == 'PUBLISHED'
+        assert te.cancelled is False
+
+        bridge = Event.objects.get(external_id='evt_external_42')
+        assert bridge.tutorial_event_id == te.pk
 
     def test_event_cancelled_full_cycle(self, existing_events):
         client = APIClient()
-        # Seed the Event row; this delivery must apply before we can cancel it.
+        # Apply the update first so external_id is wired up before the cancel.
         client.post(self.URL, _load('event_updated.json'), format='json')
 
         resp = client.post(self.URL, _load('event_cancelled.json'), format='json')
         assert resp.status_code == 202
 
-        # Verify the inbox row for the cancellation reached APPLIED.
         inbox_id = resp.json()['inbox_id']
         cancelled_row = WebhookInbox.objects.get(id=inbox_id)
         assert cancelled_row.status == WebhookInbox.STATUS_APPLIED
         assert cancelled_row.applied_at is not None
 
-        event = Event.objects.get(external_id='evt_external_42')
-        assert event.cancelled is True
-        assert event.lifecycle_state == 'CANCELLED'
+        te = existing_events['tutorial_event_42']
+        te.refresh_from_db()
+        assert te.cancelled is True
+        assert te.lifecycle_state == 'CANCELLED'
 
     def test_event_created_full_cycle(self, existing_events):
         body = _load('event_created.json')
@@ -147,31 +190,36 @@ class TestEndToEnd:
         row = WebhookInbox.objects.get(id=inbox_id)
         assert row.status == WebhookInbox.STATUS_APPLIED
 
-        event = Event.objects.get(external_id='evt_external_43')
-        assert event.tutorial_event is None
-        assert event.title == 'CB1 Tutorial — September 2026'
-        assert event.lifecycle_state == 'PUBLISHED'
-        assert event.cancelled is False
-        assert event.learning_mode == 'CLASSROOM'
+        te = existing_events['tutorial_event_43']
+        te.refresh_from_db()
+        assert te.external_id == 'evt_external_43'
+        assert te.lifecycle_state == 'PUBLISHED'
+        assert te.cancelled is False
+        assert te.learning_mode == 'CLASSROOM'
+
+        bridge = Event.objects.get(external_id='evt_external_43')
+        assert bridge.tutorial_event_id == te.pk
 
     def test_missing_dependency_dead_letters_via_full_cycle(self):
-        """No deps fixture — FK lookups will fail. The handler raises
-        MissingDependencyError, which apply_inbox_row classifies as terminal
-        and marks the inbox row DEAD on first attempt (no retry — the missing
-        FK won't materialize without operator action: run sync_*, then replay).
+        """No `existing_events` fixture — no TutorialEvents row matches the
+        fixture title. The new handler raises MissingDependencyError(
+        'TutorialEvents', code), which apply_inbox_row classifies as
+        terminal and marks the inbox row DEAD on first attempt.
 
-        The view's dispatch try/except keeps the HTTP response at 202 either
-        way. The row's status records the failure for operator-triggered replay.
+        Operator runbook: create the tutorial_events row (with its
+        store_product), then `administrate_webhooks_inbox replay`.
         """
         body = _load('event_updated.json')
         resp = APIClient().post(self.URL, body, format='json')
         assert resp.status_code == 202
 
         row = WebhookInbox.objects.get(id=resp.json()['inbox_id'])
-        # First attempt: terminal. Row is DEAD and surfaces on dashboards.
         assert row.status == WebhookInbox.STATUS_DEAD
         assert row.attempts == 1
         assert 'MissingDependencyError' in row.error_message
+        # The error must name the missing tutorial_events.code so an
+        # operator can fix it without grepping logs.
+        assert 'CB1-EVT42-26S' in row.error_message
 
     def test_duplicate_delivery_does_not_re_process(self, existing_events):
         """Second delivery of the same webhook should return 200 duplicate

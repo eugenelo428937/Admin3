@@ -308,67 +308,25 @@ def create_event_bridge_record(tutorial_event, api_event_id, row_data,
     Create an adm.Event bridge record linking a tutorial event to
     its Administrate counterpart.
 
+    Per the tutorial-events-as-master refactor (Phase 5, 2026-05-15):
+    adm.events keeps only (external_id, tutorial_event, created_at,
+    updated_at). All event data lives on acted.tutorial_events. The
+    `row_data` arg is kept in the signature for caller compatibility
+    but only `api_event_id` and `tutorial_event` are persisted.
+
     Returns the created adm.Event, or None on failure.
     """
-    from administrate.models import (
-        Event as AdmEvent, CourseTemplate as AdmCourseTemplate,
-        Location as AdmLocation, Instructor as AdmInstructor,
-    )
-    from administrate.models.venues import Venue as AdmVenue
+    from administrate.models import Event as AdmEvent
 
     if not api_event_id:
         logger.warning("Cannot create bridge record: no API event ID")
         return None
 
     try:
-        course_template = AdmCourseTemplate.objects.get(
-            external_id=row_data['course_template_id'])
-        location = AdmLocation.objects.get(
-            external_id=row_data['location_id'])
-
-        # Primary instructor — first from event, fall back to session list
-        primary_instructor = None
-        for id_list_key in ('instructor_ids', 'session_instructor_ids'):
-            ids = row_data.get(id_list_key, [])
-            if ids:
-                primary_instructor = AdmInstructor.objects.filter(
-                    external_id=ids[0]).first()
-                if primary_instructor:
-                    break
-
-        if not primary_instructor:
-            logger.warning(
-                "Cannot create bridge record: no instructor resolved")
-            return None
-
-        venue = None
-        if row_data.get('venue_id'):
-            venue = AdmVenue.objects.filter(
-                external_id=row_data['venue_id']).first()
-
-        learning_mode_map = {
-            'blended': 'BLENDED',
-            'lms': 'LMS',
-            'classroom': 'CLASSROOM',
-        }
-        learning_mode = learning_mode_map.get(
-            row_data.get('event_mode', 'blended'), 'BLENDED')
-
         bridge_event = AdmEvent.objects.create(
             external_id=api_event_id,
             tutorial_event=tutorial_event,
-            course_template=course_template,
-            title=row_data.get(
-                'event_title', row_data.get('Event title', '')),
-            location=location,
-            venue=venue,
-            primary_instructor=primary_instructor,
-            learning_mode=learning_mode,
-            max_places=row_data.get('Max places', 0),
-            sitting=row_data.get('sitting', row_data.get('Sitting', '')),
-            web_sale=row_data.get('Web sale', True),
         )
-
         if debug:
             logger.debug(
                 f"Created bridge record: {bridge_event.external_id}")
