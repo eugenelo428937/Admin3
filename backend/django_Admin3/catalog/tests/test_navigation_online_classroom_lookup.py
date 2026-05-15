@@ -80,7 +80,7 @@ class OnlineClassroomLookupTests(TestCase):
         StoreProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT,
+            kind=Purchasable.Kind.TUTORIAL,
             is_active=True,
             name='OC-PROD',
             product_code='OC-PROD-CODE',

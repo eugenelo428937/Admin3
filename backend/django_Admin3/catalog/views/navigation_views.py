@@ -57,6 +57,7 @@ def navigation_data(request):
     from filtering.models import FilterGroup
     from django.db.models import Exists, OuterRef
     from store.models import Purchasable
+    from store.models.purchasable import STORE_PRODUCT_KINDS
 
     def _has_available_store_product_for_catalog_product():
         """Subquery: True iff at least one listing-visible Purchasable
@@ -65,7 +66,7 @@ def navigation_data(request):
         products for upcoming sessions too."""
         return Exists(
             Purchasable.objects.available_for_listing().filter(
-                kind='product',
+                kind__in=STORE_PRODUCT_KINDS,
                 product__product_product_variation__product_id=OuterRef('pk'),
             )
         )
@@ -76,7 +77,7 @@ def navigation_data(request):
         helper for predicate choice rationale."""
         return Exists(
             Purchasable.objects.available_for_listing().filter(
-                kind='product',
+                kind__in=STORE_PRODUCT_KINDS,
                 product__product_product_variation__product_variation_id=OuterRef('pk'),
             )
         )
@@ -475,6 +476,7 @@ def advanced_product_search(request):
     """
     from django.contrib.postgres.search import TrigramSimilarity
     from store.models import Product as StoreProduct, Purchasable
+    from store.models.purchasable import STORE_PRODUCT_KINDS
 
     # Get search parameters
     search_query = request.query_params.get('q', '').strip()
@@ -491,7 +493,7 @@ def advanced_product_search(request):
     queryset = Product.objects.filter(is_active=True).filter(
         Exists(
             Purchasable.objects.available_for_listing().filter(
-                kind='product',
+                kind__in=STORE_PRODUCT_KINDS,
                 product__product_product_variation__product_id=OuterRef('pk'),
             )
         )

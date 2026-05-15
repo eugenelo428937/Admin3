@@ -130,11 +130,17 @@ class OrderItem(models.Model):
     # ─────────────────────────────────────────────────────────────────────
     @property
     def product(self):
-        """Returns the Product instance if purchasable.kind == 'product', else None."""
+        """Returns the Product instance if purchasable is a store product
+        (kind in {material, tutorial, marking}), else None.
+
+        Phase 4e: replaces the legacy `kind == 'product'` check — every
+        Product row now starts in its specialized kind directly.
+        """
         if self.purchasable_id is None:
             return None
         try:
-            if self.purchasable.kind != 'product':
+            from store.models.purchasable import STORE_PRODUCT_KINDS
+            if self.purchasable.kind not in STORE_PRODUCT_KINDS:
                 return None
             # Product is an MTI subclass of Purchasable; access via parent→child cast.
             return self.purchasable.product
@@ -157,11 +163,15 @@ class OrderItem(models.Model):
     def item_type(self):
         """Returns the legacy item_type string derived from purchasable.
 
-        Mapping:
-          - purchasable.code == 'FEE_GENERIC'     → 'fee'
-          - purchasable.kind == 'product'          → 'product'
-          - purchasable.kind == 'marking_voucher'  → 'marking_voucher'
-          - any other GenericItem kind             → 'fee'
+        Mapping (Phase 4e):
+          - purchasable.code == 'FEE_GENERIC'                       → 'fee'
+          - purchasable.kind in {material, tutorial, marking}       → 'product'
+          - purchasable.kind == 'marking_voucher'                   → 'marking_voucher'
+          - any other GenericItem kind                              → 'fee'
+
+        The 'product' return value is preserved for serializer
+        compatibility; what's changed is the source predicate (now
+        kind__in=STORE_PRODUCT_KINDS instead of kind=='product').
         """
         if self.purchasable_id is None:
             return None
@@ -172,6 +182,9 @@ class OrderItem(models.Model):
         if getattr(p, 'code', None) == 'FEE_GENERIC':
             return 'fee'
         kind = getattr(p, 'kind', None)
-        if kind in ('product', 'marking_voucher'):
-            return kind
+        from store.models.purchasable import STORE_PRODUCT_KINDS
+        if kind in STORE_PRODUCT_KINDS:
+            return 'product'
+        if kind == 'marking_voucher':
+            return 'marking_voucher'
         return 'fee'

@@ -148,4 +148,4 @@ class Command(BaseCommand):
             kind = WILDCARD_KIND_OVERRIDES.get(token, Purchasable.Kind.ADDITIONAL_CHARGE)
             return token, kind, token
         # Subject-specific code: store full string.
-        return source_code, Purchasable.Kind.PRODUCT, source_code
+        return source_code, Purchasable.Kind.MATERIAL, source_code

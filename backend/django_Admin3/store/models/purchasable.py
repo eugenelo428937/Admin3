@@ -9,6 +9,14 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+# Phase 4e: the kinds that represent "catalog-backed store products"
+# (have an associated store.Product row, route through PPV, etc.).
+# Generic kinds — marking_voucher, document_binder, additional_charge —
+# bypass the catalog and have leaf-only is_active semantics.
+# Replaces the legacy `kind='product'` discriminator (removed in Phase 4e
+# Task 5 — see docs/superpowers/plans/2026-05-15-product-mti-specialization-phase-4e-kind-cleanup.md).
+STORE_PRODUCT_KINDS = frozenset({'material', 'tutorial', 'marking'})
+
 
 class PurchasableQuerySet(models.QuerySet):
     """QuerySet for Purchasable with the canonical availability predicates.
@@ -29,7 +37,7 @@ class PurchasableQuerySet(models.QuerySet):
     # Listing-side conditions for store products. Date window NOT included
     # — that's the listing/purchase split. See class docstring.
     _LISTING_PRODUCT_CONDITIONS = dict(
-        kind='product',
+        kind__in=STORE_PRODUCT_KINDS,
         product__product_product_variation__is_active=True,
         product__product_product_variation__product__is_active=True,
         product__product_product_variation__product_variation__is_active=True,
@@ -57,7 +65,7 @@ class PurchasableQuerySet(models.QuerySet):
         return self.filter(
             Q(is_active=True) & (
                 # Generic purchasables (vouchers, charges) — leaf flag only.
-                ~Q(kind='product')
+                ~Q(kind__in=STORE_PRODUCT_KINDS)
                 |
                 # Store products — 7-condition listing chain (no date window).
                 Q(**self._LISTING_PRODUCT_CONDITIONS)
@@ -95,7 +103,7 @@ class PurchasableQuerySet(models.QuerySet):
         return self.filter(
             Q(is_active=True) & (
                 # Generic purchasables (vouchers, charges) — leaf flag only.
-                ~Q(kind='product')
+                ~Q(kind__in=STORE_PRODUCT_KINDS)
                 |
                 # Store products — listing chain + date window (8 conditions).
                 Q(
@@ -123,8 +131,6 @@ class Purchasable(models.Model):
         MARKING_VOUCHER = 'marking_voucher', 'Marking Voucher'
         DOCUMENT_BINDER = 'document_binder', 'Document Binder'
         ADDITIONAL_CHARGE = 'additional_charge', 'Additional Charge'
-        # Legacy — removed in Phase 4e after backfill completes
-        PRODUCT = 'product', 'Legacy Product (pre-split)'
 
     kind = models.CharField(max_length=32, choices=Kind.choices)
     code = models.CharField(max_length=64, unique=True)
@@ -159,6 +165,15 @@ class Purchasable(models.Model):
         indexes = [
             models.Index(fields=['kind']),
             models.Index(fields=['is_active']),
+        ]
+        constraints = [
+            # Phase 4e: defence-in-depth against raw SQL inserts that
+            # would otherwise resurrect the legacy 'product' kind value
+            # (removed from Kind.choices). Added by migration 0020.
+            models.CheckConstraint(
+                condition=~models.Q(kind='product'),
+                name='purchasable_kind_not_legacy_product',
+            ),
         ]
 
     def __str__(self):

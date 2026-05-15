@@ -46,7 +46,7 @@ class SearchAvailableTests(TestCase):
         self.sp = StoreProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT,
+            kind=Purchasable.Kind.MATERIAL,
             is_active=False,  # KEY: inactive at the leaf
             name='SearchableProduct eBook',
         )

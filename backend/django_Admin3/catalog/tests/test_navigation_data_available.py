@@ -62,7 +62,7 @@ class NavigationDataAvailableTests(TestCase):
             return cp, StoreProduct.objects.create(
                 exam_session_subject=ess,
                 product_product_variation=ppv,
-                kind=Purchasable.Kind.PRODUCT,
+                kind=Purchasable.Kind.TUTORIAL,
                 is_active=True,
                 name=code,
                 # Pre-set product_code to bypass Tutorial code auto-generation

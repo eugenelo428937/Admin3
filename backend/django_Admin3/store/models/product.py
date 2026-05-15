@@ -54,9 +54,11 @@ class Product(Purchasable):
 
     def save(self, *args, **kwargs):
         """Auto-generate product_code if not provided; mirror to Purchasable.code."""
-        # Ensure Purchasable.kind is populated for MTI parent on insert.
+        # Phase 4e: derive kind from variation_type rather than defaulting
+        # to the legacy Kind.PRODUCT. Every new Product row now starts in
+        # its specialized kind directly — material / tutorial / marking.
         if not self.kind:
-            self.kind = Purchasable.Kind.PRODUCT
+            self.kind = self._derive_kind_from_variation_type()
         # Code generation path — material/marking codes don't need PK, so we
         # can compute pre-save; tutorial/other codes include the PK, so we
         # must save once to get the PK, then regenerate and update.
@@ -80,6 +82,38 @@ class Product(Purchasable):
             # product_code already set — mirror it to Purchasable.code
             self.code = self.product_code
             super().save(*args, **kwargs)
+
+    def _derive_kind_from_variation_type(self):
+        """Phase 4e: derive Purchasable.kind from the linked PPV's variation_type.
+
+        Eliminates the legacy Kind.PRODUCT default — every new Product row
+        now starts in its specialized kind (material / tutorial / marking),
+        removing the need for the Phase 2 split command to retroactively
+        reclassify.
+
+        Returns one of `Purchasable.Kind.MATERIAL`,
+        `Purchasable.Kind.TUTORIAL`, or `Purchasable.Kind.MARKING`.
+
+        Raises:
+            ValueError if `variation_type` is unrecognised — callers should
+            set `self.kind` explicitly for any non-standard variation rather
+            than relying on a silent fallback.
+        """
+        variation_type = self.product_product_variation.product_variation.variation_type
+        if variation_type in {'eBook', 'Printed', 'Hub'}:
+            return Purchasable.Kind.MATERIAL
+        # Tutorial-family: 'Tutorial' is the canonical type; 'Online
+        # Classroom Recording' is a legacy variant some catalog rows
+        # still use (the corresponding TutorialProduct row has format=OC).
+        if variation_type in {'Tutorial', 'Online Classroom Recording'}:
+            return Purchasable.Kind.TUTORIAL
+        if variation_type == 'Marking':
+            return Purchasable.Kind.MARKING
+        raise ValueError(
+            f'Cannot derive Purchasable.kind from variation_type={variation_type!r}; '
+            'set Product.kind explicitly before save() or extend '
+            'Product._derive_kind_from_variation_type to handle the new type.'
+        )
 
     def _generate_product_code(self):
         """Generate product code from related entities.

@@ -23,8 +23,11 @@ class PriceSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         if obj.purchasable_id is None:
             return None
+        from store.models.purchasable import STORE_PRODUCT_KINDS
         kind = getattr(obj.purchasable, 'kind', None)
-        return obj.purchasable_id if kind == 'product' else None
+        # Phase 4e: STORE_PRODUCT_KINDS = {material, tutorial, marking}
+        # replaces the legacy 'product' marker for "is a store product".
+        return obj.purchasable_id if kind in STORE_PRODUCT_KINDS else None
 
     class Meta:
         model = Price

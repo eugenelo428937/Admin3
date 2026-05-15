@@ -958,7 +958,7 @@ def state_store_product_exists(params=None):
     # Create parent Purchasable first so auto_now_add fires on direct create.
     parent = Purchasable.objects.create(
         id=1,
-        kind='product',
+        kind='material',
         code='CM2/PCSM01P/2025-04',
         name='CM2 Printed Combined Study Material',
         is_active=True,
