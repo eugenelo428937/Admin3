@@ -64,7 +64,10 @@ class MarkingSubmissionListAdminViewSet(
                 'student__user',
                 'marking_paper',
                 'marking_paper__purchasable__product__exam_session_subject__subject',
-                'marking_paper__purchasable__product__product_product_variation__product',
+                # Phase 4d: drop the legacy PPV chain in favour of MarkingTemplate.
+                # MarkingPaper.marking_template is non-null as of Phase 4c (migration
+                # 0021) — every paper belongs to exactly one MarkingTemplate series.
+                'marking_paper__marking_template',
                 'redeemed_voucher',
                 'grading__marker__user',
                 'grading__feedback',
