@@ -55,7 +55,7 @@ class BundleContentsAvailableTests(TestCase):
             return StoreProduct.objects.create(
                 exam_session_subject=self.ess,
                 product_product_variation=ppv,
-                kind=Purchasable.Kind.PRODUCT,
+                kind=Purchasable.Kind.MATERIAL,
                 is_active=active,
                 name=code,
             )

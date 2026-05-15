@@ -72,12 +72,17 @@ class MarkingChainTestCase(APITestCase):
         cls.ppv = ProductProductVariation.objects.create(
             product=cls.cat_product, product_variation=cls.variation,
         )
+        from marking.models import MarkingTemplate  # local import — Phase 4c
+        cls.marking_template = MarkingTemplate.objects.create(
+            code='FIX', name='Fixture Marking Series',
+        )
         cls.store_product = StoreProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
         )
         cls.paper = MarkingPaper.objects.create(
             purchasable=cls.store_product,
+            marking_template=cls.marking_template,  # Phase 4c: NOT NULL
             name='FixPaper',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),

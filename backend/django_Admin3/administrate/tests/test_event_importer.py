@@ -37,7 +37,7 @@ class EventImporterTestMixin:
         from catalog.products.models.product import Product as CatalogProduct
         from catalog.products.models.product_variation import ProductVariation
         from catalog.products.models.product_product_variation import ProductProductVariation
-        from store.models import Product as StoreProduct
+        from store.models import Product as StoreProduct, TutorialProduct
 
         # Catalog chain: Subject → ExamSession → ESS → PPV → store.Product
         self.subject = Subject.objects.create(code='CM2', description='Models')
@@ -60,10 +60,11 @@ class EventImporterTestMixin:
             product=self.catalog_product,
             product_variation=self.product_variation,
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/TUT01/2026-04',
+            format='LO_6H',
         )
 
         # Tutorial models

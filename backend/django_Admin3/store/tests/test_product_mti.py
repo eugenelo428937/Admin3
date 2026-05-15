@@ -1,6 +1,7 @@
 """Verify Product is an MTI subclass of Purchasable after migration."""
 from django.test import TestCase
 from store.models import Product, Purchasable
+from store.models.purchasable import STORE_PRODUCT_KINDS
 
 
 class ProductMTITests(TestCase):
@@ -18,10 +19,15 @@ class ProductMTITests(TestCase):
 
     def test_every_product_has_purchasable_parent(self):
         """The MTI parent_link must be populated for all products (invariant
-        guarded by FK constraint from Task 7)."""
+        guarded by FK constraint from Task 7).
+
+        Phase 4e: store Products now carry specialised kinds
+        (material / tutorial / marking) instead of the legacy 'product' value.
+        All store.Product rows must have a kind in STORE_PRODUCT_KINDS.
+        """
         product_count = Product.objects.count()
         purchasable_product_count = Purchasable.objects.filter(
-            kind=Purchasable.Kind.PRODUCT
+            kind__in=STORE_PRODUCT_KINDS
         ).count()
         self.assertEqual(product_count, purchasable_product_count)
 

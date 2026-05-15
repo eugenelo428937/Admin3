@@ -54,8 +54,14 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
             product_product_variation=self.ppv,
             product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
         )
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='COV', name='Coverage Test Marking Series',
+        )
         self.paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper A',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40),

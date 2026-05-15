@@ -25,7 +25,7 @@ def _create_store_product():
         Product as CatalogProduct, ProductVariation,
         ProductProductVariation,
     )
-    from store.models import Product as StoreProduct
+    from store.models import TutorialProduct
 
     subject = Subject.objects.create(
         code='CM2', description='Economic Modelling', active=True
@@ -49,10 +49,11 @@ def _create_store_product():
     ppv = ProductProductVariation.objects.create(
         product=catalog_product, product_variation=variation
     )
-    store_product = StoreProduct.objects.create(
+    store_product = TutorialProduct.objects.create(
         exam_session_subject=ess,
         product_product_variation=ppv,
         product_code='CM2/TLONCM2_f2f_5/2025-04',
+        format='F2F_5F',
     )
     return store_product
 

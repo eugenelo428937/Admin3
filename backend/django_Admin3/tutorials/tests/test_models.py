@@ -17,7 +17,7 @@ from datetime import timedelta, date
 from decimal import Decimal
 
 from tutorials.models import TutorialEvents
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, TutorialProduct
 from catalog.models import ExamSession, ExamSessionSubject, Subject, Product, ProductProductVariation, ProductVariation
 
 
@@ -68,12 +68,13 @@ class TutorialEventTestCase(TestCase):
             product_variation=self.product_variation
         )
 
-        # Create store.Product (replaces old ESSP + ESSPV chain)
+        # Create store.TutorialProduct (Phase 4b: FK retargeted from Product to TutorialProduct)
         # Links exam_session_subject directly to product_product_variation
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.product_product_variation,
-            product_code='CM2/TWKDTUT001/JUNE2025'
+            product_code='CM2/TWKDTUT001/JUNE2025',
+            format='F2F_3F',
         )
 
     def test_tutorial_event_creation_with_required_fields(self):
@@ -444,7 +445,7 @@ class TutorialSessionsModelTest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from tutorials.models import TutorialEvents, TutorialSessions
-        from store.models import Product as StoreProduct
+        from store.models import TutorialProduct
         from catalog.models import (
             ExamSession, ExamSessionSubject, Subject,
             Product, ProductProductVariation, ProductVariation
@@ -480,10 +481,11 @@ class TutorialSessionsModelTest(TestCase):
             product=self.product,
             product_variation=self.product_variation
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.product_product_variation,
-            product_code='TS_CM2/TWKDTUT001/JUNE2025'
+            product_code='TS_CM2/TWKDTUT001/JUNE2025',
+            format='F2F_3F',
         )
         self.event = TutorialEvents.objects.create(
             code='TS-TUT-CM2-001',
@@ -1010,10 +1012,11 @@ class TutorialEventsInstructorsDerivedTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.pv
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
-            product_code='EIFK/T/2025'
+            product_code='EIFK/T/2025',
+            format='F2F_3F',
         )
         self.event = TutorialEvents.objects.create(
             code='EV-INSTR-001',
@@ -1092,10 +1095,11 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.pv
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
-            product_code='EVVL/T/2025'
+            product_code='EVVL/T/2025',
+            format='F2F_3F',
         )
         self.location = TutorialLocation.objects.create(name='London', code='LON')
         self.venue = TutorialVenue.objects.create(name='Hotel A', location=self.location)
@@ -1186,10 +1190,11 @@ class TutorialSessionsInstructorsM2MTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.pv
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
-            product_code='SEIN/T/2025'
+            product_code='SEIN/T/2025',
+            format='F2F_3F',
         )
         self.event = TutorialEvents.objects.create(
             code='SE-IN-EVT-001',
@@ -1288,10 +1293,11 @@ class TutorialSessionsVenueLocationFKTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.pv
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
-            product_code='SEVL/T/2025'
+            product_code='SEVL/T/2025',
+            format='F2F_3F',
         )
         self.event = TutorialEvents.objects.create(
             code='SE-VL-EVT-001',

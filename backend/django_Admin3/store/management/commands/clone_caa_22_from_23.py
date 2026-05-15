@@ -108,7 +108,7 @@ class Command(BaseCommand):
             for src, dst_code, dst_ess_id in plan:
                 ptr = src.purchasable_ptr
                 new_sp = StoreProduct.objects.create(
-                    kind=Purchasable.Kind.PRODUCT,
+                    kind=Purchasable.Kind.MATERIAL,
                     code=dst_code,
                     product_code=dst_code,
                     name=ptr.name,

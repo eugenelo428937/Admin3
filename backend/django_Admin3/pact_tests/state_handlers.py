@@ -546,7 +546,7 @@ def setup_tutorial_catalog_product():
         Product as CatalogProduct, ProductVariation,
         ProductProductVariation,
     )
-    from store.models import Product as StoreProduct
+    from store.models import TutorialProduct
 
     subject, exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
 
@@ -582,12 +582,13 @@ def setup_tutorial_catalog_product():
         tutorial_ppv.is_active = True
         tutorial_ppv.save(update_fields=['is_active'])
 
-    tutorial_store_product, _ = StoreProduct.objects.get_or_create(
+    tutorial_store_product, _ = TutorialProduct.objects.get_or_create(
         exam_session_subject=ess,
         product_product_variation=tutorial_ppv,
         defaults={
             'product_code': 'CM2/TLONCM2/2025-04',
             'is_active': True,
+            'format': 'F2F_3F',  # TLONCM2 = London Face-to-Face Tutorial
         },
     )
 
@@ -957,7 +958,7 @@ def state_store_product_exists(params=None):
     # Create parent Purchasable first so auto_now_add fires on direct create.
     parent = Purchasable.objects.create(
         id=1,
-        kind='product',
+        kind='material',
         code='CM2/PCSM01P/2025-04',
         name='CM2 Printed Combined Study Material',
         is_active=True,

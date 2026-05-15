@@ -16,7 +16,7 @@ from django.utils import timezone
 
 from tutorials.models import TutorialEvents, TutorialVenue
 from tutorials.serializers import TutorialEventsSerializer
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product, ProductProductVariation, ProductVariation,
@@ -49,10 +49,11 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
         self.ppv = ProductProductVariation.objects.create(
             product=self.product, product_variation=self.variation,
         )
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='COV1/TCOVWKCOVTUT/COV2025',
+            format='F2F_3F',
         )
         self.tv = TutorialVenue.objects.create(name='Coverage Venue')
         self.event = TutorialEvents.objects.create(

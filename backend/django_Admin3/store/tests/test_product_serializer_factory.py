@@ -176,3 +176,106 @@ class BackwardCompatibilityTests(_Fixtures, TestCase):
         k = self._marking()
         data = ProductSerializer(k).data
         self.assertEqual(data['product_code'], 'CS1/MP32T/2026-04')
+
+
+class SerializerDispatcherPhase4dTests(_Fixtures, TestCase):
+    """Phase 4d regression: dispatcher returns correct serializer class and
+    the serialized payload exposes subclass-level fields (not PPV fields).
+
+    Tests 1 and 2 assert that TutorialProductSerializer / MarkingProductSerializer
+    are returned and that the payload carries the *subclass* semantic fields:
+      - TutorialProduct: kind='tutorial', format=tp.format
+      - MarkingProduct:  kind='marking',  marking_template=tp.marking_template_id
+
+    Test 3 asserts that passing a *base* store.Product handle that points at a
+    Tutorial subclass row still resolves to TutorialProductSerializer — this is the
+    MTI-via-base-queryset path (e.g. Product.objects.get(pk=tp.pk)).
+    """
+
+    def _tutorial_p4d(self):
+        """Build a TutorialProduct with an isolated subject/session pair
+        so it does not collide with _Fixtures._tutorial()."""
+        from store.models import TutorialProduct
+        ess = self._ess(subject_code='P4DT', session_code='2026-10')
+        ppv, _ = self._ppv('Tutorial', 'F2F_3F')
+        tp = TutorialProduct(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
+            product_code='P4DT/F2F_3F/2026-10',
+            format='F2F_3F',
+        )
+        tp.save()
+        return tp
+
+    def _marking_p4d(self):
+        """Build a MarkingProduct with an isolated subject/session pair
+        so it does not collide with _Fixtures._marking()."""
+        from marking.models import MarkingTemplate
+        from store.models import MarkingProduct
+        ess = self._ess(subject_code='P4DM', session_code='2026-10')
+        ppv, cp = self._ppv('Marking', 'M01')
+        mt, _ = MarkingTemplate.objects.get_or_create(
+            pk=cp.pk,
+            defaults={'code': 'P4DM', 'name': 'Phase 4d Marking Test',
+                      'description': '', 'is_active': True},
+        )
+        return MarkingProduct.objects.create(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
+            product_code='P4DM/M01/2026-10',
+            marking_template=mt,
+            paper_count=2,
+        )
+
+    def test_dispatcher_returns_tutorial_serializer_and_exposes_subclass_fields(self):
+        """serializer_for(TutorialProduct) → TutorialProductSerializer;
+        payload has kind='tutorial' and format matching tp.format."""
+        from store.serializers.product import TutorialProductSerializer, serializer_for
+        tp = self._tutorial_p4d()
+        cls = serializer_for(tp)
+        self.assertIs(cls, TutorialProductSerializer,
+                      "serializer_for() must return TutorialProductSerializer "
+                      "when given a TutorialProduct instance")
+        data = cls(tp).data
+        self.assertEqual(data['kind'], 'tutorial',
+                         "TutorialProductSerializer must expose kind='tutorial'")
+        self.assertEqual(data['format'], tp.format,
+                         "TutorialProductSerializer must expose the format field "
+                         "directly from the TutorialProduct subclass row")
+
+    def test_dispatcher_returns_marking_serializer_and_exposes_subclass_fields(self):
+        """serializer_for(MarkingProduct) → MarkingProductSerializer;
+        payload has kind='marking' and marking_template=tp.marking_template_id."""
+        from store.serializers.product import MarkingProductSerializer, serializer_for
+        mp = self._marking_p4d()
+        cls = serializer_for(mp)
+        self.assertIs(cls, MarkingProductSerializer,
+                      "serializer_for() must return MarkingProductSerializer "
+                      "when given a MarkingProduct instance")
+        data = cls(mp).data
+        self.assertEqual(data['kind'], 'marking',
+                         "MarkingProductSerializer must expose kind='marking'")
+        self.assertEqual(data['marking_template'], mp.marking_template_id,
+                         "MarkingProductSerializer must expose the marking_template "
+                         "FK from the MarkingProduct subclass row")
+
+    def test_dispatcher_via_base_product_handle_resolves_tutorial_serializer(self):
+        """When the caller holds a base store.Product handle whose underlying DB
+        row is actually a TutorialProduct subclass, serializer_for() MUST still
+        return TutorialProductSerializer (MTI probe path, not isinstance check).
+
+        This test guards the Phase 4d contract that the dispatcher does not rely
+        on the caller pre-downcasting to a subclass before calling serializer_for.
+        """
+        from store.models import Product
+        from store.serializers.product import TutorialProductSerializer, serializer_for
+        tp = self._tutorial_p4d()
+        # Re-fetch as base Product — this exercises the MTI attribute-probe branch.
+        base_handle = Product.objects.get(pk=tp.pk)
+        # Confirm it is NOT already a TutorialProduct instance.
+        self.assertNotIsInstance(base_handle, type(tp),
+                                 "base_handle must be a plain Product, not a TutorialProduct")
+        cls = serializer_for(base_handle)
+        self.assertIs(cls, TutorialProductSerializer,
+                      "serializer_for() must dispatch to TutorialProductSerializer "
+                      "even when the caller holds a base store.Product handle")

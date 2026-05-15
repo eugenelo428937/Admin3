@@ -16,15 +16,16 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from students.models import Student
 from orders.models import Order, OrderItem
 from tutorials.models import TutorialChoice, TutorialEvents
 
 
 def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
-                         variation_type='Tutorial', variation_code='LO_6H'):
-    """Build a fully-wired TutorialEvent with linked store.Product."""
+                         variation_type='Tutorial', variation_code='LO_6H',
+                         format='LO_6H'):
+    """Build a fully-wired TutorialEvent with linked store.TutorialProduct."""
     es = ExamSession.objects.create(
         session_code=sitting_code,
         start_date=timezone.now(),
@@ -45,9 +46,10 @@ def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat_prod, product_variation=pv,
     )
-    sp = StoreProduct(
+    sp = TutorialProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject_code}/Live/{variation_code}/{sitting_code}',
+        format=format,
     )
     sp.save()
     event = TutorialEvents.objects.create(
@@ -64,7 +66,7 @@ def _make_student(username='alice'):
     return Student.objects.create(user=user)
 
 
-def _make_order_item(student: Student, store_product: StoreProduct) -> OrderItem:
+def _make_order_item(student: Student, store_product: TutorialProduct) -> OrderItem:
     order = Order.objects.create(user=student.user)
     return OrderItem.objects.create(order=order, purchasable=store_product.purchasable_ptr)
 
@@ -132,10 +134,11 @@ class TutorialChoiceTests(TestCase):
         oc_ppv, _ = ProductProductVariation.objects.get_or_create(
             product=oc_cat, product_variation=oc_pv,
         )
-        oc_sp = StoreProduct(
+        oc_sp = TutorialProduct(
             exam_session_subject=self.sp.exam_session_subject,
             product_product_variation=oc_ppv,
             product_code='CB1/OC/OC/24',
+            format='OC',
         )
         oc_sp.save()
         oc_event = TutorialEvents.objects.create(

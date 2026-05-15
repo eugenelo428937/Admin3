@@ -76,9 +76,16 @@ class MarkingPaperAPITestCase(APITestCase):
             product_product_variation=self.ppv2
         )
 
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='API', name='API Test Marking Series',
+        )
+
         # Create marking papers
         self.paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product1,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -86,6 +93,7 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product1,
+            marking_template=self.marking_template,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -93,6 +101,7 @@ class MarkingPaperAPITestCase(APITestCase):
 
         self.paper3 = MarkingPaper.objects.create(
             purchasable=self.store_product2,
+            marking_template=self.marking_template,
             name='Paper3',
             deadline=timezone.now() + timedelta(days=60),
             recommended_submit_date=timezone.now() + timedelta(days=55)
@@ -386,15 +395,23 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
             product=self.cat_product
         )
 
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='ESP', name='ESSP Compat Marking Series',
+        )
+
         # Create marking papers linked to the store product
         self.paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='EsspP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
         self.paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='EsspP2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -525,21 +542,30 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
             product=self.cat_product2
         )
 
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='BLK', name='Bulk ESSP Marking Series',
+        )
+
         # Create marking papers for each store product
         self.paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product1,
+            marking_template=self.marking_template,
             name='BulkP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
         self.paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product1,
+            marking_template=self.marking_template,
             name='BulkP2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
         )
         self.paper3 = MarkingPaper.objects.create(
             purchasable=self.store_product2,
+            marking_template=self.marking_template,
             name='BulkP3',
             deadline=timezone.now() + timedelta(days=55),
             recommended_submit_date=timezone.now() + timedelta(days=50)

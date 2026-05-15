@@ -18,7 +18,7 @@ class PurchasableModelTests(TestCase):
         self.assertFalse(obj.dynamic_pricing)
 
     def test_code_is_unique(self):
-        Purchasable.objects.create(kind='product', code='DUPE', name='First')
+        Purchasable.objects.create(kind='material', code='DUPE', name='First')
         with self.assertRaises(IntegrityError):
             Purchasable.objects.create(kind='marking_voucher', code='DUPE', name='Second')
 
@@ -32,7 +32,7 @@ class PurchasableModelTests(TestCase):
         self.assertFalse(obj.dynamic_pricing)
 
     def test_str(self):
-        obj = Purchasable.objects.create(kind='product', code='ABC', name='Thing')
+        obj = Purchasable.objects.create(kind='material', code='ABC', name='Thing')
         self.assertIn('ABC', str(obj))
 
     def test_db_table_in_acted_schema(self):
@@ -77,9 +77,12 @@ class KindEnumExtensionTests(TestCase):
         self.assertEqual(Purchasable.Kind.MARKING.value, 'marking')
         self.assertEqual(Purchasable.Kind.MARKING.label, 'Marking Product')
 
-    def test_kind_keeps_legacy_product_value(self):
-        """Legacy `'product'` must remain valid during Phase 1-4 transition."""
-        self.assertEqual(Purchasable.Kind.PRODUCT.value, 'product')
+    def test_kind_no_longer_has_legacy_product_value(self):
+        """Phase 4e: 'product' was removed from Kind choices. Every row now
+        starts in a specialized kind (material/tutorial/marking) and the
+        Phase 2 split command's reclassification step is dead code."""
+        self.assertNotIn('product', Purchasable.Kind.values)
+        self.assertFalse(hasattr(Purchasable.Kind, 'PRODUCT'))
 
     def test_kind_keeps_existing_generic_values(self):
         self.assertEqual(Purchasable.Kind.MARKING_VOUCHER.value, 'marking_voucher')

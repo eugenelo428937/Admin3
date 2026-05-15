@@ -95,8 +95,8 @@ class AdminOrderListSerializerTest(TestCase):
             user=self.user, total_amount=Decimal('540.00')
         )
         # Purchasables for items
-        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='product')
-        p2 = Purchasable.objects.create(code='CP2/CPBOR/26', name='CP2 BOR', kind='product')
+        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='material')
+        p2 = Purchasable.objects.create(code='CP2/CPBOR/26', name='CP2 BOR', kind='material')
         OrderItem.objects.create(order=self.order, purchasable=p1, quantity=1, gross_amount=Decimal('100.00'))
         OrderItem.objects.create(order=self.order, purchasable=p2, quantity=1, gross_amount=Decimal('200.00'))
 
@@ -140,7 +140,7 @@ class AdminOrderDetailSerializerTest(TestCase):
             vat_rate=Decimal('0.2000'),
             vat_country='GB',
         )
-        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='product')
+        p1 = Purchasable.objects.create(code='CM1/CC/26', name='CM1 Core', kind='material')
         OrderItem.objects.create(order=self.order, purchasable=p1, quantity=1, gross_amount=Decimal('540.00'))
         Payment.objects.create(
             order=self.order, payment_method='card',

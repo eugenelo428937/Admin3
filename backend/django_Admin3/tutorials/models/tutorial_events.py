@@ -3,9 +3,11 @@ Tutorial Event model.
 
 Updated 2026-01-16: Migrated FK from ExamSessionSubjectProductVariation
 to store.Product as part of T087 legacy app cleanup.
+Updated 2026-05-14: Phase 4b retarget FK from store.Product to
+store.TutorialProduct (MTI shared PK — no data migration needed).
 """
 from django.db import models
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 
 class TutorialEvents(models.Model):
     """
@@ -50,10 +52,16 @@ class TutorialEvents(models.Model):
         related_name='tutorial_events',
     )
     store_product = models.ForeignKey(
-        StoreProduct,
+        TutorialProduct,
         on_delete=models.CASCADE,
         related_name='tutorial_events',
-        db_column='product_id'
+        db_column='product_id',
+        help_text=(
+            'Phase 4b retarget: was store.Product, now store.TutorialProduct. '
+            'The PK column (product_id) is unchanged — MTI shared PK means '
+            'every TutorialProduct.pk equals its parent Product.pk, so all '
+            'existing FK values still resolve.'
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

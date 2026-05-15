@@ -34,7 +34,7 @@ class UnifiedSerializerDatesTests(TestCase):
         sp = StoreProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT,
+            kind=Purchasable.Kind.MATERIAL,
             name='X eBook',
         )
         data = UnifiedProductSerializer(sp).data

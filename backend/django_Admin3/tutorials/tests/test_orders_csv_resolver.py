@@ -15,7 +15,7 @@ from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from students.models import Student
 from tutorials.models import TutorialEvents
 from tutorials.services.orders_csv_parser import ParsedOrderRow
@@ -45,14 +45,15 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17',
                   'variation_type': 'Tutorial'},
     )
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
-    sp = StoreProduct(
+    tp = TutorialProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject_code}/{location_code}/{variation_code}/{sitting_session}',
+        format=variation_code,
     )
-    sp.save()
+    tp.save()
     event = TutorialEvents.objects.create(
         code=f'{subject_code}-{event_num}-{sitting_short}',
-        store_product=sp,
+        store_product=tp,
         start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
     )
     return event

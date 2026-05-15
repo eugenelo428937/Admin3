@@ -249,7 +249,7 @@ class CheckoutWithTutorialAndFeeTests(TestCase):
             Product as CatProduct, ProductVariation,
             ProductProductVariation,
         )
-        from store.models import Product as StoreProduct, Purchasable
+        from store.models import Product as StoreProduct, Purchasable, TutorialProduct
         from students.models import Student
         from tutorials.models import TutorialEvents, TutorialChoice
 
@@ -296,9 +296,10 @@ class CheckoutWithTutorialAndFeeTests(TestCase):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv,
             defaults={'is_active': True})
-        sp = StoreProduct(
+        sp = TutorialProduct(
             exam_session_subject=ess, product_product_variation=ppv,
-            product_code='CP1/Live/LO_6H/25')
+            product_code='CP1/Live/LO_6H/25',
+            format='LO_6H')
         sp.save()
         event = TutorialEvents.objects.create(
             code='CP1-01-25A', store_product=sp,

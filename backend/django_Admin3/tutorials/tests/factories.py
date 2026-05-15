@@ -8,7 +8,7 @@ from catalog.models import (
     Product as CatProduct, ProductVariation, ProductProductVariation,
 )
 from staff.models import Staff
-from store.models import Product as StoreProduct
+from store.models import TutorialProduct
 from students.models import Student
 from tutorials.models import (
     TutorialEvents, TutorialInstructor, TutorialLocation, TutorialSessions,
@@ -38,8 +38,14 @@ def make_exam_session(code='APR2026'):
 
 
 def make_store_product(subject=None, exam_session=None,
-                       variation_type='Tutorial', variation_code='F2F',
-                       cat_product_code='Live'):
+                       variation_type='Tutorial', variation_code='F2F_3F',
+                       cat_product_code='Live', format='F2F_3F'):
+    """Return a TutorialProduct for use in TutorialEvents fixtures.
+
+    Phase 4b: TutorialEvents.store_product is now typed as TutorialProduct.
+    The `format` parameter defaults to 'F2F_3F' (a valid TutorialProduct.Format
+    choice). Pass any valid TutorialProduct.Format value to override.
+    """
     subject = subject or make_subject()
     exam_session = exam_session or make_exam_session()
     ess, _ = ExamSessionSubject.objects.get_or_create(
@@ -57,12 +63,13 @@ def make_store_product(subject=None, exam_session=None,
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat_prod, product_variation=pv,
     )
-    sp = StoreProduct(
+    tp = TutorialProduct(
         exam_session_subject=ess, product_product_variation=ppv,
         product_code=f'{subject.code}/{cat_product_code}/{variation_code}/{exam_session.session_code}',
+        format=format,
     )
-    sp.save()
-    return sp
+    tp.save()
+    return tp
 
 
 def make_event(store_product=None, code='EV-001'):

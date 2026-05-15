@@ -51,7 +51,7 @@ class AvailableNowTests(TestCase):
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
             is_active=True,
-            kind=Purchasable.Kind.PRODUCT,
+            kind=Purchasable.Kind.MATERIAL,
             name='Z1 Test eBook 2099-04',
         )
 
@@ -174,14 +174,14 @@ class ProductAvailableNowTests(TestCase):
         )
         cls.active_sp = StoreProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT, is_active=True,
+            kind=Purchasable.Kind.MATERIAL, is_active=True,
             name='P-Avail eBook',
             product_code='ZP1/PA-EBKPA/2099-09-A',
             code='ZP1/PA-EBKPA/2099-09-A',
         )
         cls.inactive_sp = StoreProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv,
-            kind=Purchasable.Kind.PRODUCT, is_active=False,
+            kind=Purchasable.Kind.MATERIAL, is_active=False,
             name='P-Inactive eBook', is_addon=True,  # is_addon=True so it can share PPV with active_sp
             product_code='ZP1/PA-EBKPA/2099-09-B',
             code='ZP1/PA-EBKPA/2099-09-B',

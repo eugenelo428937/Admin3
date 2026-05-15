@@ -64,6 +64,12 @@ class MarkingPaperTestCase(TestCase):
             product_product_variation=self.ppv
         )
 
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='TST', name='Test Marking Series',
+        )
+
     def test_marking_paper_creation_with_required_fields(self):
         """Test MarkingPaper creation with all required fields."""
         deadline = timezone.now() + timedelta(days=45)
@@ -71,6 +77,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -91,6 +98,7 @@ class MarkingPaperTestCase(TestCase):
         name = 'A' * 10
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name=name,
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -104,6 +112,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -126,6 +135,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -145,6 +155,7 @@ class MarkingPaperTestCase(TestCase):
         with self.assertRaises(Exception):
             MarkingPaper.objects.create(
                 purchasable=self.store_product,
+                marking_template=self.marking_template,
                 name='Paper1',
                 recommended_submit_date=timezone.now() + timedelta(days=40)
             )
@@ -154,6 +165,7 @@ class MarkingPaperTestCase(TestCase):
         with self.assertRaises(Exception):
             MarkingPaper.objects.create(
                 purchasable=self.store_product,
+                marking_template=self.marking_template,
                 name='Paper1',
                 deadline=timezone.now() + timedelta(days=45)
             )
@@ -162,6 +174,7 @@ class MarkingPaperTestCase(TestCase):
         """Test __str__ method returns name and purchasable id."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -174,6 +187,7 @@ class MarkingPaperTestCase(TestCase):
         """Test __str__ returns '{name} ({code})' when purchasable has a code attribute."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -186,6 +200,7 @@ class MarkingPaperTestCase(TestCase):
         """Test __str__ includes the linked purchasable code (or id as fallback)."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -201,6 +216,7 @@ class MarkingPaperTestCase(TestCase):
         """Test __str__ handles None purchasable (nullable FK)."""
         paper = MarkingPaper.objects.create(
             purchasable=None,
+            marking_template=self.marking_template,
             name='OrphanP',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -220,6 +236,7 @@ class MarkingPaperTestCase(TestCase):
         """Test creating multiple marking papers for same purchasable."""
         paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -227,6 +244,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -241,6 +259,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=future_deadline,
             recommended_submit_date=timezone.now() + timedelta(days=80)
@@ -255,6 +274,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -269,6 +289,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=deadline,
             recommended_submit_date=recommended_date
@@ -280,6 +301,7 @@ class MarkingPaperTestCase(TestCase):
         """Test querying marking papers by purchasable."""
         paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -293,6 +315,7 @@ class MarkingPaperTestCase(TestCase):
         """Test querying marking papers by deadline range."""
         paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -300,6 +323,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=90),
             recommended_submit_date=timezone.now() + timedelta(days=85)
@@ -315,6 +339,7 @@ class MarkingPaperTestCase(TestCase):
         """Test deadline and recommended_submit_date are timezone-aware."""
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -327,6 +352,7 @@ class MarkingPaperTestCase(TestCase):
         """Test name field has no unique constraint (duplicates allowed)."""
         paper1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -334,6 +360,7 @@ class MarkingPaperTestCase(TestCase):
 
         paper2 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
@@ -348,6 +375,7 @@ class MarkingPaperTestCase(TestCase):
         from datetime import timedelta
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='ActiveTest',
             deadline=timezone.now() + timedelta(days=10),
             recommended_submit_date=timezone.now() + timedelta(days=5),
@@ -361,6 +389,7 @@ class MarkingPaperTestCase(TestCase):
         from datetime import timedelta
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='NoSeq',
             deadline=timezone.now() + timedelta(days=10),
             recommended_submit_date=timezone.now() + timedelta(days=5),
@@ -374,6 +403,7 @@ class MarkingPaperTestCase(TestCase):
         from datetime import timedelta
         paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='X',
             sequences=2,
             deadline=timezone.now() + timedelta(days=10),
@@ -389,12 +419,14 @@ class MarkingPaperTestCase(TestCase):
         from datetime import timedelta
         p1 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='X', sequences=1,
             deadline=timezone.now() + timedelta(days=10),
             recommended_submit_date=timezone.now() + timedelta(days=5),
         )
         p2 = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='X', sequences=2,
             deadline=timezone.now() + timedelta(days=10),
             recommended_submit_date=timezone.now() + timedelta(days=5),
@@ -455,9 +487,16 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
             product=self.cat_product
         )
 
+        # Phase 4c: every MarkingPaper now requires marking_template.
+        from marking.models import MarkingTemplate
+        self.marking_template = MarkingTemplate.objects.create(
+            code='CPT', name='Compat Test Marking Series',
+        )
+
         # Create marking paper
         self.paper = MarkingPaper.objects.create(
             purchasable=self.store_product,
+            marking_template=self.marking_template,
             name='CompatP1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
@@ -489,6 +528,7 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         )
         paper2 = MarkingPaper.objects.create(
             purchasable=store_product2,
+            marking_template=self.marking_template,
             name='NoEsspP',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
