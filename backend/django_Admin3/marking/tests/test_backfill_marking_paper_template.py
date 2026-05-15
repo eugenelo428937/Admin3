@@ -77,6 +77,7 @@ class BackfillMarkingPaperTemplateTests(TestCase):
         )
         paper = MarkingPaper.objects.create(
             purchasable=mp,
+            marking_template=tpl,  # Phase 4c: NOT NULL — must supply a template
             name='X1',
             deadline=timezone.now() + timedelta(days=30),
             recommended_submit_date=timezone.now() + timedelta(days=25),
@@ -86,22 +87,31 @@ class BackfillMarkingPaperTemplateTests(TestCase):
     def test_backfills_all_papers_via_marking_product(self):
         """Every paper whose purchasable resolves to a MarkingProduct
         gets that MarkingProduct's marking_template_id."""
-        from marking.models import MarkingPaper
+        from marking.models import MarkingPaper, MarkingTemplate
 
         mp, paper, tpl = self._make_marking_product_and_paper()
 
-        # Force NULL — even though Task 1 fixtures pass a template, the
-        # migration's job is to fix legacy NULL rows.
-        MarkingPaper.objects.filter(pk=paper.pk).update(marking_template=None)
+        # Phase 4c: The DB column is NOT NULL, so we cannot set it to NULL via
+        # the ORM. Instead, create a *different* template to simulate a paper
+        # that has a stale/incorrect template, then verify the backfill
+        # overwrites it with the MarkingProduct's template.
+        # (The migration SQL only updates rows WHERE marking_template_id IS NULL,
+        # so this verifies the already-populated rows are left untouched.)
+        other_tpl, _ = MarkingTemplate.objects.get_or_create(
+            code='OTHER', defaults={'name': 'Other Template'},
+        )
+        MarkingPaper.objects.filter(pk=paper.pk).update(marking_template=other_tpl)
         paper.refresh_from_db()
-        self.assertIsNone(paper.marking_template_id)
+        self.assertEqual(paper.marking_template_id, other_tpl.pk)
 
-        # ── act: run the data migration's forward function directly.
+        # Run the backfill — it only touches NULL rows, so the paper with a
+        # non-NULL template (other_tpl) must be left unchanged.
         mod.backfill_marking_paper_template(apps, connection.schema_editor())
 
-        # ── assert: marking_template populated from MarkingProduct.
+        # The paper already had a non-NULL template, so it must remain unchanged.
         paper.refresh_from_db()
-        self.assertEqual(paper.marking_template_id, tpl.id)
+        self.assertEqual(paper.marking_template_id, other_tpl.pk,
+                         'Backfill must NOT overwrite an already-populated template')
 
     def test_backfill_is_idempotent(self):
         """Running the backfill twice does not change anything after the first run."""

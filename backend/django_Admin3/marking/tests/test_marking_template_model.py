@@ -71,11 +71,16 @@ class MarkingPaperHasTemplateFKTests(TestCase):
     Becomes NOT NULL in Phase 4c after backfill.
     """
 
-    def test_marking_paper_has_marking_template_field(self):
+    def test_marking_paper_marking_template_is_not_null(self):
+        """Phase 4c: marking_template is now NOT NULL after the
+        backfill migration (0020) populated every row.
+
+        Going forward, every paper belongs to a series — there is no
+        legitimate 'series-less' paper in the data model.
+        """
         from marking.models import MarkingPaper
         field = MarkingPaper._meta.get_field('marking_template')
-        self.assertTrue(field.null, "Phase 1: marking_template must be nullable")
-        # related model resolves to MarkingTemplate
+        self.assertFalse(field.null, 'Phase 4c: marking_template must be NOT NULL')
         from marking.models import MarkingTemplate
         self.assertEqual(field.related_model, MarkingTemplate)
 
@@ -83,5 +88,55 @@ class MarkingPaperHasTemplateFKTests(TestCase):
         from marking.models import MarkingPaper
         from django.db import models as dj_models
         field = MarkingPaper._meta.get_field('marking_template')
-        # PROTECT prevents accidental cascade deletion of all papers for a series
+        # PROTECT prevents accidental cascade deletion of all papers for a series.
         self.assertEqual(field.remote_field.on_delete, dj_models.PROTECT)
+
+    def test_marking_paper_create_without_template_raises(self):
+        """Phase 4c: a MarkingPaper cannot be created without a
+        marking_template — IntegrityError at the DB layer."""
+        from django.db import IntegrityError, transaction
+        from django.utils import timezone
+        from datetime import timedelta
+        from marking.models import MarkingPaper
+        from store.models import Purchasable
+        from catalog.models import (
+            ExamSession, ExamSessionSubject, Subject,
+            Product as CatalogProduct, ProductVariation, ProductProductVariation,
+        )
+        from store.models import Product as StoreProduct
+        # Build a minimal store.Product (which IS a Purchasable) to satisfy
+        # the MarkingPaper.purchasable FK constraint that requires a row in
+        # acted.products (a legacy DB-level constraint from migration 0003).
+        exam_session = ExamSession.objects.create(
+            session_code='ORPHTEST2026',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=60),
+        )
+        subject = Subject.objects.create(
+            code='ORPH', description='Orphan test subject', active=True,
+        )
+        ess = ExamSessionSubject.objects.create(
+            exam_session=exam_session, subject=subject,
+        )
+        cat_product = CatalogProduct.objects.create(
+            code='ORPHPROD', fullname='Orphan Product', shortname='Orphan',
+        )
+        variation = ProductVariation.objects.create(
+            variation_type='Marking', name='OrphStd',
+        )
+        ppv = ProductProductVariation.objects.create(
+            product=cat_product, product_variation=variation,
+        )
+        p = StoreProduct.objects.create(
+            exam_session_subject=ess,
+            product_product_variation=ppv,
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                MarkingPaper.objects.create(
+                    purchasable=p,
+                    name='X',
+                    deadline=timezone.now() + timedelta(days=30),
+                    recommended_submit_date=timezone.now() + timedelta(days=25),
+                    # marking_template intentionally omitted
+                )

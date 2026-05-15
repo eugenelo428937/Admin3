@@ -10,6 +10,10 @@ Updated 2026-04-29 (Phase A5): Renamed FK from `store_product` to
 `store.Product.id` value is also a valid `store.Purchasable.id`
 (shared PK via `purchasable_ptr_id`). Added `is_active` and `sequences`
 fields.
+
+Updated 2026-05-14 (Phase 4c): `marking_template` made NOT NULL after
+the data backfill migration (0020) populated all 240 rows. Every paper
+now belongs to a marking series.
 """
 from django.db import models
 
@@ -38,11 +42,9 @@ class MarkingPaper(models.Model):
         'marking.MarkingTemplate',
         on_delete=models.PROTECT,
         related_name='marking_papers',
-        null=True,
-        blank=True,
         help_text=(
-            'The marking template this paper belongs to. Nullable during '
-            'Phase 1 (created); backfilled and made NOT NULL in Phase 4c.'
+            'The marking series this paper belongs to. Required as of '
+            'Phase 4c; backfilled by migration 0020 from MarkingProduct.'
         ),
     )
     name = models.CharField(max_length=10)
