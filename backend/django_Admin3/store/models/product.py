@@ -29,12 +29,6 @@ class Product(Purchasable):
         related_name='store_products',
         help_text='The exam session subject this product is available for'
     )
-    product_product_variation = models.ForeignKey(
-        'catalog_products.ProductProductVariation',
-        on_delete=models.CASCADE,
-        related_name='store_products',
-        help_text='The product variation (template + variation combination)'
-    )
     product_code = models.CharField(
         max_length=64,
         unique=True,
@@ -56,14 +50,12 @@ class Product(Purchasable):
         instantiates a bare Product without setting kind, raise ValueError
         — there is no longer a meaningful default for store products.
 
-        Code generation:
-        - Tutorial/Marking subclasses generate product_code in their own
-          save() before calling super(), so by the time we reach this
-          method, product_code is already set.
-        - Material rows: while migration 0024 has NOT yet landed, PPV is
-          still on the Product parent, so material code generation works
-          here. After 0024, MaterialProduct.save() will own this path
-          (with PPV now on the subclass).
+        Code generation is now owned by each subclass:
+        - MaterialProduct.save() generates {subject}/{variation_code}{product_code}/{exam_session}
+        - TutorialProduct.save() / MarkingProduct.save() generate their own codes.
+
+        By the time we reach this parent save(), product_code is already
+        set by the subclass.
         """
         if not self.kind:
             raise ValueError(
@@ -72,37 +64,10 @@ class Product(Purchasable):
                 'which set kind in their own save() methods, or pass '
                 'kind=Purchasable.Kind.MATERIAL/TUTORIAL/MARKING.'
             )
-        # Material code generation (pre-Task-4 location). Subclass save()
-        # for Tutorial/Marking already set product_code, so this only runs
-        # for Material rows whose code wasn't pre-set.
-        if not self.product_code and self.kind == self.Kind.MATERIAL:
-            ppv_id = getattr(self, 'product_product_variation_id', None)
-            if ppv_id:
-                self.product_code = self._generate_material_code()
-                self.code = self.product_code
-        if not self.product_code:
-            # product_code is still not set — mirror whatever is already there
-            # or let super handle it
-            pass
-        else:
+        if self.product_code:
             # Mirror product_code to Purchasable.code
             self.code = self.product_code
         super().save(*args, **kwargs)
-
-    def _generate_material_code(self):
-        """Material product code: {subject}/{variation_code}{product_code}/{exam_session}.
-
-        Lives on Product (parent) for now because PPV is still on the
-        parent until migration 0024. Will move to MaterialProduct.save()
-        when the field moves.
-        """
-        ess = self.exam_session_subject
-        ppv = self.product_product_variation
-        subject_code = ess.subject.code
-        exam_code = ess.exam_session.session_code
-        cat_product_code = ppv.product.code
-        variation_code = ppv.product_variation.code or ''
-        return f"{subject_code}/{variation_code}{cat_product_code}/{exam_code}"
 
     def __str__(self):
         return self.product_code
@@ -181,3 +146,24 @@ class Product(Purchasable):
         # Return a queryset containing just this product
         # This maintains compatibility with code that called .first() or iterated
         return Product.objects.filter(pk=self.pk)
+
+    @property
+    def product_product_variation(self):
+        """Phase 5: backward-compat accessor delegating to
+        ``MaterialProduct.product_product_variation``.
+
+        The FK was moved off the ``Product`` parent in migration 0024 and
+        now lives exclusively on ``MaterialProduct``. Tutorial and Marking
+        subclasses have no PPV (their variation semantics live in
+        ``TutorialProduct.format`` / ``tutorial_location`` and
+        ``MarkingProduct.marking_template`` respectively), so this returns
+        ``None`` for non-Material rows.
+
+        The bare ``except Exception`` swallows both
+        ``MaterialProduct.DoesNotExist`` (raised by the reverse OneToOne
+        accessor for non-Material rows) and ``AttributeError`` (defensive).
+        """
+        try:
+            return self.materialproduct.product_product_variation
+        except Exception:
+            return None
