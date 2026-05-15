@@ -1,0 +1,51 @@
+query GetEventsForSync(
+  $sitting: String!,
+  $state: String!,
+  $first: Int!,
+  $offset: Int
+) {
+  events(
+    filters: [
+      { field: title, operation: wordlike, value: $sitting },
+      { field: lifecycleState, operation: eq, value: $state }
+    ]
+    first: $first
+    offset: $offset
+  ) {
+    pageInfo {
+      totalRecords
+      hasNextPage
+    }
+    edges {
+      node {
+        id
+        title
+        lifecycleState
+        cancelledAt
+        isSoldOut
+        learningMode
+        maxPlaces
+        minPlaces
+        location { id }
+        venue { id }
+        courseTemplate { id }
+        timeZoneName
+        lmsStart
+        lmsEnd
+        registrationDeadline
+        updatedAt
+        customFieldValues {
+          definitionKey
+          value
+        }
+        staff(first: 1) {
+          edges {
+            node {
+              contact { id }
+            }
+          }
+        }
+      }
+    }
+  }
+}
