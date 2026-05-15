@@ -8,7 +8,7 @@ from datetime import datetime
 from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
 from catalog.models import ExamSessionSubject, Subject
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MarkingProduct
 
 
 class Command(BaseCommand):
@@ -78,11 +78,24 @@ class Command(BaseCommand):
                     if not recommended or not deadline:
                         self.stderr.write(f"Row {row_num}: Invalid date(s). Skipping.")
                         continue
+                    # Phase 4c: resolve the MarkingProduct subclass to
+                    # get the series template. The filter above already
+                    # restricted to variation_type='Marking', so
+                    # store_product.markingproduct must exist.
+                    try:
+                        marking_template = store_product.markingproduct.marking_template
+                    except MarkingProduct.DoesNotExist:
+                        self.stderr.write(
+                            f"Row {row_num}: store.Product {store_product.pk} "
+                            f"has no MarkingProduct subclass row. Skipping."
+                        )
+                        continue
                     MarkingPaper.objects.create(
                         purchasable=store_product,
+                        marking_template=marking_template,
                         name=paper_name.strip(),
                         recommended_submit_date=recommended,
-                        deadline=deadline
+                        deadline=deadline,
                     )
                     self.stdout.write(f"Row {row_num}: Imported {subject_code} {paper_name}")
         self.stdout.write(self.style.SUCCESS('Import completed successfully.'))
