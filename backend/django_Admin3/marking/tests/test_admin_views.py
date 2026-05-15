@@ -229,3 +229,92 @@ class MarkingAdminViewsTestCase(MarkingChainTestCase):
         results = data.get('results', data)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['rating'], 'G')
+
+
+class MarkingSubmissionListAdminViewSetTestCase(MarkingChainTestCase):
+    """Smoke tests for the Phase 4d-refactored MarkingSubmissionListAdminViewSet.
+
+    The view's select_related chain now uses 'marking_paper__marking_template'
+    instead of the legacy 'marking_paper__purchasable__product__product_product_variation__product'
+    path dropped in Phase 4d.
+    """
+
+    URL = '/api/markings/admin-submission-list/'
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        cls.superuser = User.objects.create_superuser(
+            username='lst_superuser',
+            email='lst_superuser@example.com',
+            password='pw',
+        )
+        cls.staff_only = User.objects.create_user(
+            username='lst_staff_only',
+            email='lst_staff_only@example.com',
+            password='pw',
+            is_staff=True,
+        )
+        cls.submission = MarkingPaperSubmission.objects.create(
+            student=cls.student,
+            marking_paper=cls.paper,
+            order_item=cls.order_item,
+            submission_date=timezone.now(),
+        )
+
+    # ── permission guard ─────────────────────────────────────────────────
+
+    def test_requires_superuser(self):
+        resp = self.client.get(self.URL)
+        self.assertIn(resp.status_code, (401, 403))
+
+        self.client.force_authenticate(user=self.staff_only)
+        resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 403)
+
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 200)
+
+    # ── listing ──────────────────────────────────────────────────────────
+
+    def test_returns_seeded_row_via_marking_template_path(self):
+        """GET returns 200 and the seeded submission row.
+
+        This confirms the Phase 4d select_related refactor (marking_template
+        instead of product_product_variation) does not break the list endpoint.
+        """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 200)
+
+        data = resp.json()
+        results = data.get('results', data)
+        self.assertGreaterEqual(len(results), 1)
+
+        first = results[0]
+        # student_ref and paper_name are serialized from marking_template-backed data
+        self.assertEqual(first['student_ref'], self.student.student_ref)
+        self.assertEqual(first['paper_name'], self.paper.name)
+        # status should be 'new' (no grading attached)
+        self.assertEqual(first['status'], 'new')
+
+    def test_subject_code_resolved_from_store_product(self):
+        """subject_code is derived via purchasable.product.exam_session_subject.subject."""
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.URL)
+        self.assertEqual(resp.status_code, 200)
+        results = resp.json().get('results', resp.json())
+        first = results[0]
+        self.assertEqual(first['subject_code'], self.subject.code)
+
+    def test_filter_options_endpoint_returns_200(self):
+        """The filter-options sub-endpoint should be reachable."""
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(f'{self.URL}filter-options/')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn('subjects', data)
+        self.assertIn('markers', data)
+        self.assertIn('sequences', data)

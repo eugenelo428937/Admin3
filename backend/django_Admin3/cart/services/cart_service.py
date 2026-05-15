@@ -342,8 +342,11 @@ class CartService:
         Choices grouped by event location, ordered by rank within each.
         """
         rows = list(item.tutorial_choices.select_related(
-            'tutorial_event__store_product__product_product_variation'
-            '__product_variation',
+            # Phase 4d: store_product is typed as TutorialProduct (Phase 4b
+            # retarget). Variation info reads from the subclass fields
+            # (format / tutorial_location), not the legacy PPV chain — which
+            # will be removed by Phase 5.
+            'tutorial_event__store_product__tutorial_location',
             'tutorial_event__store_product__exam_session_subject__subject',
             'tutorial_event__location',
             'tutorial_event__venue',
@@ -363,8 +366,7 @@ class CartService:
         by_location = {}
         for row in rows:
             ev = row.tutorial_event
-            sp = ev.store_product
-            ppv = sp.product_product_variation
+            sp = ev.store_product  # TutorialProduct (Phase 4b retarget)
             # ev.location and ev.venue are FKs to TutorialLocation /
             # TutorialVenue. Coerce to str() before writing to JSONB
             # metadata — both models' __str__ returns self.name.
@@ -380,10 +382,11 @@ class CartService:
                 'location': loc_label,
                 'startDate': ev.start_date.isoformat() if ev.start_date else None,
                 'endDate': ev.end_date.isoformat() if ev.end_date else None,
-                'variationId': ppv.id if ppv else None,
-                'variationName': (
-                    ppv.product_variation.name if ppv else None
-                ),
+                # Phase 4d: variation info from TutorialProduct subclass.
+                # variationId is the TutorialProduct PK (shared with Product via MTI);
+                # variationName is the human-readable Format choice label.
+                'variationId': sp.id,
+                'variationName': sp.get_format_display(),
             }
             by_location.setdefault(loc_label, []).append(choice_dict)
 
