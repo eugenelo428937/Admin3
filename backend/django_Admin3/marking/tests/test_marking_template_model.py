@@ -98,7 +98,6 @@ class MarkingPaperHasTemplateFKTests(TestCase):
         from django.utils import timezone
         from datetime import timedelta
         from marking.models import MarkingPaper
-        from store.models import Purchasable
         from catalog.models import (
             ExamSession, ExamSessionSubject, Subject,
             Product as CatalogProduct, ProductVariation, ProductProductVariation,

@@ -84,19 +84,17 @@ class BackfillMarkingPaperTemplateTests(TestCase):
         )
         return mp, paper, tpl
 
-    def test_backfills_all_papers_via_marking_product(self):
-        """Every paper whose purchasable resolves to a MarkingProduct
-        gets that MarkingProduct's marking_template_id."""
+    def test_backfill_does_not_overwrite_existing_template(self):
+        """The migration SQL is `WHERE marking_template_id IS NULL`, so a
+        paper that already has a (possibly stale) template must be left
+        alone. Under NOT NULL we can no longer simulate the forward-fill
+        path through the ORM — this branch is the only one reachable
+        from a Phase-4c-clean database.
+        """
         from marking.models import MarkingPaper, MarkingTemplate
 
         mp, paper, tpl = self._make_marking_product_and_paper()
 
-        # Phase 4c: The DB column is NOT NULL, so we cannot set it to NULL via
-        # the ORM. Instead, create a *different* template to simulate a paper
-        # that has a stale/incorrect template, then verify the backfill
-        # overwrites it with the MarkingProduct's template.
-        # (The migration SQL only updates rows WHERE marking_template_id IS NULL,
-        # so this verifies the already-populated rows are left untouched.)
         other_tpl, _ = MarkingTemplate.objects.get_or_create(
             code='OTHER', defaults={'name': 'Other Template'},
         )
@@ -104,11 +102,8 @@ class BackfillMarkingPaperTemplateTests(TestCase):
         paper.refresh_from_db()
         self.assertEqual(paper.marking_template_id, other_tpl.pk)
 
-        # Run the backfill — it only touches NULL rows, so the paper with a
-        # non-NULL template (other_tpl) must be left unchanged.
         mod.backfill_marking_paper_template(apps, connection.schema_editor())
 
-        # The paper already had a non-NULL template, so it must remain unchanged.
         paper.refresh_from_db()
         self.assertEqual(paper.marking_template_id, other_tpl.pk,
                          'Backfill must NOT overwrite an already-populated template')
