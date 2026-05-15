@@ -513,13 +513,13 @@ class TutorialProductListAllViewTestCase(APITestCase):
             product_variation=self.variation
         )
 
-        # Create store.Product (the actual purchasable item)
-        from store.models import Product as StoreProduct
-        self.store_product = StoreProduct.objects.create(
+        # Phase 4d: create TutorialProduct (MTI subclass) so the refactored
+        # TutorialProductListAllView query returns this row.
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.ppv,
             product_code='CM2/TUT001LDN/JUNE2025',
-            is_active=True
+            format='F2F_3F',
         )
 
         self.client = APIClient()
@@ -620,18 +620,22 @@ class TutorialProductVariationListViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create store.Product (replaces old ESSP + ESSPV chain)
-        self.store_product = StoreProduct.objects.create(
+        # Phase 4d: create TutorialProduct (MTI subclass). The variation
+        # endpoint now uses TutorialProduct PK as product_id, not catalog.Product.id.
+        self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
             product_product_variation=self.ppv,
-            product_code='TUT-CM2-WKD'
+            product_code='TUT-CM2-WKD',
+            format='F2F_3F',
         )
 
         self.client = APIClient()
 
     def test_list_product_variations(self):
-        """Test GET /api/tutorials/products/{id}/variations/."""
-        response = self.client.get(f'/api/tutorials/products/{self.product.id}/variations/')
+        """Test GET /api/tutorials/products/{id}/variations/.
+        Phase 4d: product_id in URL is now TutorialProduct PK, not catalog.Product.id.
+        """
+        response = self.client.get(f'/api/tutorials/products/{self.store_product.id}/variations/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
@@ -647,9 +651,11 @@ class TutorialProductVariationListViewTestCase(APITestCase):
         self.assertIn('product_code', variation_data)
 
     def test_list_product_variations_with_subject_filter(self):
-        """Test filtering variations by subject_code."""
+        """Test filtering variations by subject_code.
+        Phase 4d: product_id in URL is now TutorialProduct PK, not catalog.Product.id.
+        """
         response = self.client.get(
-            f'/api/tutorials/products/{self.product.id}/variations/?subject_code=CM2'
+            f'/api/tutorials/products/{self.store_product.id}/variations/?subject_code=CM2'
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -660,15 +666,9 @@ class TutorialProductVariationListViewTestCase(APITestCase):
             self.assertEqual(variation['product_code'], 'TUT-CM2-WKD')
 
     def test_list_product_variations_no_results(self):
-        """Test listing variations for product with no variations."""
-        # Create product with no variations
-        empty_product = Product.objects.create(
-            code='EMPTY',
-            fullname='Empty Product',
-            shortname='Empty'
-        )
-
-        response = self.client.get(f'/api/tutorials/products/{empty_product.id}/variations/')
+        """Test listing variations for product with no variations (non-existent TutorialProduct PK)."""
+        # Use a non-existent PK — TutorialProduct query returns empty set
+        response = self.client.get('/api/tutorials/products/999998/variations/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
@@ -1087,11 +1087,13 @@ class TutorialProductListAllViewCachedReturnTestCase(APITestCase):
         ppv = ProductProductVariation.objects.create(
             product=product, product_variation=pv
         )
-        StoreProduct.objects.create(
+        # Phase 4d: create TutorialProduct (MTI subclass) so the refactored
+        # TutorialProductListAllView query returns this row.
+        TutorialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
             product_code='CACHE_CM2/WKD/2025',
-            is_active=True
+            format='F2F_3F',
         )
         self.client = APIClient()
 
@@ -1177,35 +1179,45 @@ class TutorialProductVariationListViewFilterTestCase(APITestCase):
             product=self.product, product_variation=self.pv_day
         )
 
-        self.sp_cm2_wkd = StoreProduct.objects.create(
+        # Phase 4d: create TutorialProduct instances (MTI subclass).
+        # The variation endpoint now uses TutorialProduct PK as product_id.
+        self.sp_cm2_wkd = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
             product_product_variation=self.ppv_wkd,
-            product_code='VAR_CM2/WKD/2025'
+            product_code='VAR_CM2/WKD/2025',
+            format='F2F_3F',
         )
-        self.sp_sa1_day = StoreProduct.objects.create(
+        self.sp_sa1_day = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
             product_product_variation=self.ppv_day,
-            product_code='VAR_SA1/DAY/2025'
+            product_code='VAR_SA1/DAY/2025',
+            format='F2F_3F',
         )
 
         self.client = APIClient()
 
     def test_variation_list_with_subject_code_filter(self):
-        """Test subject_code filter in variation list (views.py:150-152)."""
+        """Test subject_code filter in variation list (views.py:150-152).
+        Phase 4d: product_id is now a TutorialProduct PK. Each TutorialProduct
+        is one format, so the endpoint returns exactly one row per product_id.
+        """
         response = self.client.get(
-            f'/api/tutorials/products/{self.product.id}/variations/?subject_code=VAR_CM2'
+            f'/api/tutorials/products/{self.sp_cm2_wkd.id}/variations/?subject_code=VAR_CM2'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['product_code'], 'VAR_CM2/WKD/2025')
 
     def test_variation_list_result_building(self):
-        """Test variation result building with all fields (views.py:155-157)."""
+        """Test variation result building with all fields (views.py:155-157).
+        Phase 4d: each product_id is a TutorialProduct PK → one row per call.
+        Verify field shapes for one of the two tutorial products.
+        """
         response = self.client.get(
-            f'/api/tutorials/products/{self.product.id}/variations/'
+            f'/api/tutorials/products/{self.sp_cm2_wkd.id}/variations/'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data), 1)
 
         # Verify all fields in results
         for v in response.data:
@@ -1217,14 +1229,17 @@ class TutorialProductVariationListViewFilterTestCase(APITestCase):
             self.assertIn('product_code', v)
 
     def test_variation_list_filter_excludes_other_subjects(self):
-        """Test subject_code filter excludes variations from other subjects."""
+        """Test subject_code filter excludes variations from other subjects.
+        Phase 4d: product_id is now a TutorialProduct PK (one format per row).
+        """
         response = self.client.get(
-            f'/api/tutorials/products/{self.product.id}/variations/?subject_code=VAR_SA1'
+            f'/api/tutorials/products/{self.sp_sa1_day.id}/variations/?subject_code=VAR_SA1'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['product_code'], 'VAR_SA1/DAY/2025')
-        self.assertEqual(response.data[0]['name'], 'Var Weekday')
+        # Phase 4d: name comes from get_format_display() not ProductVariation.name.
+        self.assertEqual(response.data[0]['name'], TutorialProduct.Format.F2F_3F.label)
 
 
 class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
@@ -1356,38 +1371,49 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.client = APIClient()
 
     def test_comprehensive_data_returns_grouped_structure(self):
-        """Test comprehensive view returns properly grouped data (views.py:174-243)."""
+        """Test comprehensive view returns properly grouped data (views.py:174-243).
+        Phase 4d: product_id is now TutorialProduct PK (not catalog.Product.id).
+        CM2 has two TutorialProducts (sp1, sp2), so there are 2 CM2 entries.
+        SA1 has one TutorialProduct (sp3), so 1 SA1 entry. Total >= 3 entries.
+        """
         response = self.client.get('/api/tutorials/data/comprehensive/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
 
-        # Should have entries for each subject-product combination
-        # CM2 + cat_product1 = 1 entry, SA1 + cat_product2 = 1 entry
-        self.assertGreaterEqual(len(response.data), 2)
+        # Should have entries for each TutorialProduct that has events:
+        # sp1 (CM2 wkd), sp2 (CM2 day), sp3 (SA1 wkd) = 3 entries minimum
+        self.assertGreaterEqual(len(response.data), 3)
 
-        # Find the CM2 entry
+        # Find any CM2 entry
         cm2_entries = [d for d in response.data if d['subject_code'] == 'COMP_CM2']
         self.assertGreaterEqual(len(cm2_entries), 1)
 
         cm2_entry = cm2_entries[0]
         self.assertEqual(cm2_entry['subject_code'], 'COMP_CM2')
         self.assertEqual(cm2_entry['subject_name'], 'Comp CM2')
-        self.assertEqual(cm2_entry['product_id'], self.cat_product1.id)
-        self.assertEqual(cm2_entry['location'], 'Comp Tutorial London')
+        # Phase 4d: product_id is TutorialProduct PK, not catalog.Product.id.
+        self.assertIn(cm2_entry['product_id'], [self.sp1.id, self.sp2.id])
+        # location is 'Online Classroom' because tutorial_location is null in fixture.
+        self.assertEqual(cm2_entry['location'], 'Online Classroom')
 
     def test_comprehensive_data_variation_grouping(self):
-        """Test that events are grouped by variation within subject-product (views.py:209-218)."""
+        """Test that events are grouped by variation within subject-product (views.py:209-218).
+        Phase 4d: each TutorialProduct is its own key, so each entry has exactly
+        one variation (the product's own format). The two CM2 TutorialProducts
+        now produce two separate top-level entries rather than one entry with two variations.
+        """
         response = self.client.get('/api/tutorials/data/comprehensive/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Find CM2 London entry (has two variations: weekend and weekday)
+        # Find any CM2 entry
         cm2_entries = [d for d in response.data if d['subject_code'] == 'COMP_CM2']
         self.assertGreaterEqual(len(cm2_entries), 1)
 
         cm2_entry = cm2_entries[0]
         variations = cm2_entry['variations']
         self.assertIsInstance(variations, list)
-        self.assertGreaterEqual(len(variations), 1)
+        # Phase 4d: each entry has exactly 1 variation (the TutorialProduct's format).
+        self.assertEqual(len(variations), 1)
 
         # Each variation should have proper structure
         for v in variations:
@@ -1421,21 +1447,25 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.assertIn('price', event)
 
     def test_comprehensive_data_multiple_events_per_variation(self):
-        """Test that multiple events are grouped under same variation (views.py:220-232)."""
+        """Test that multiple events are grouped under same variation (views.py:220-232).
+        Phase 4d: sp1 has 2 events (event1, event2). Its entry should have 1 variation
+        with 2 events. The variation key is the TutorialProduct PK (sp1.id).
+        """
         response = self.client.get('/api/tutorials/data/comprehensive/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Find CM2 London entry - weekend variation should have 2 events
-        cm2_entries = [d for d in response.data if d['subject_code'] == 'COMP_CM2']
-        self.assertGreaterEqual(len(cm2_entries), 1)
+        # Find the entry for sp1 (CM2, has 2 events: event1 and event2)
+        sp1_entries = [d for d in response.data if d['product_id'] == self.sp1.id]
+        self.assertEqual(len(sp1_entries), 1)
 
-        cm2_entry = cm2_entries[0]
-        # Find the weekend variation
-        wkd_variations = [v for v in cm2_entry['variations']
-                          if v['name'] == 'Comp Weekend']
-        self.assertEqual(len(wkd_variations), 1)
+        sp1_entry = sp1_entries[0]
+        # Phase 4d: exactly 1 variation (the TutorialProduct's own format)
+        self.assertEqual(len(sp1_entry['variations']), 1)
 
-        wkd_var = wkd_variations[0]
+        wkd_var = sp1_entry['variations'][0]
+        # sp1 has format F2F_3F — variation name is get_format_display()
+        self.assertEqual(wkd_var['name'], TutorialProduct.Format.F2F_3F.label)
+
         # Should have 2 events (event1 and event2)
         self.assertEqual(len(wkd_var['events']), 2)
         event_codes = [e['code'] for e in wkd_var['events']]
@@ -1480,7 +1510,10 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.assertEqual(response.data[0]['subject_code'], 'FAKE')
 
     def test_comprehensive_data_sa1_entry(self):
-        """Test SA1 subject-product entry in comprehensive data."""
+        """Test SA1 subject-product entry in comprehensive data.
+        Phase 4d: product_id is now TutorialProduct PK (sp3.id), not catalog.Product.id.
+        Location is 'Online Classroom' because tutorial_location is null in fixture.
+        """
         response = self.client.get('/api/tutorials/data/comprehensive/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -1489,8 +1522,10 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
 
         sa1_entry = sa1_entries[0]
         self.assertEqual(sa1_entry['subject_name'], 'Comp SA1')
-        self.assertEqual(sa1_entry['product_id'], self.cat_product2.id)
-        self.assertEqual(sa1_entry['location'], 'Comp Tutorial Manchester')
+        # Phase 4d: product_id is TutorialProduct PK, not catalog.Product.id.
+        self.assertEqual(sa1_entry['product_id'], self.sp3.id)
+        # tutorial_location is null in fixture → 'Online Classroom'
+        self.assertEqual(sa1_entry['location'], 'Online Classroom')
 
         # SA1 should have 1 variation with 1 event
         self.assertEqual(len(sa1_entry['variations']), 1)
