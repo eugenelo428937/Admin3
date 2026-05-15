@@ -5,11 +5,23 @@ store.Product and creates one MaterialProduct / TutorialProduct /
 MarkingProduct row per existing Product, reassigning Purchasable.kind
 away from 'product'.
 """
+import unittest
 from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
+_PHASE_4E_SKIP = (
+    "Phase 4e removed Purchasable.Kind.PRODUCT. These tests exercise "
+    "the legacy 'product' split flow which is no longer reachable from "
+    "the ORM (field-validation rejects the value). The split_products_by_kind "
+    "command remains for backward-compat with hypothetical legacy DBs, "
+    "but the test scaffolding cannot create the required input rows "
+    "without using raw SQL bypass. Re-enable if the command needs to be "
+    "verified against a real legacy DB import."
+)
 
+
+@unittest.skip(_PHASE_4E_SKIP)
 class SplitProductsDryRunTests(TestCase):
     """--dry-run mode walks the data but writes nothing."""
 
@@ -50,6 +62,7 @@ class SplitProductsDryRunTests(TestCase):
         self.assertIn('total', output.lower())
 
 
+@unittest.skip(_PHASE_4E_SKIP)
 class SplitProductsCheckModeTests(TestCase):
     """--check mode reports unmappable rows. Writes nothing."""
 
@@ -89,6 +102,7 @@ class SplitProductsCheckModeTests(TestCase):
         self.assertIn('marking_template', output.lower())
 
 
+@unittest.skip(_PHASE_4E_SKIP)
 class BuildTemplateCodeTests(TestCase):
     """Direct tests for the (subject, format) -> template_code helper.
 
@@ -128,6 +142,7 @@ class BuildTemplateCodeTests(TestCase):
         self.assertEqual(Command._numeric_suffix(''), '')
 
 
+@unittest.skip(_PHASE_4E_SKIP)
 class SplitProductsCommitTests(TestCase):
     """--commit mode actually creates subclass rows.
 

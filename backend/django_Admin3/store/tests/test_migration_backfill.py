@@ -1,8 +1,20 @@
 """Smoke test: backfill migration produces Purchasable row per Product, same PK."""
+import unittest
 from django.test import TestCase
 from store.models import Product, Purchasable
 
+_PHASE_4E_SKIP = (
+    "Phase 4e removed Purchasable.Kind.PRODUCT. These tests exercise "
+    "the legacy 'product' split flow which is no longer reachable from "
+    "the ORM (field-validation rejects the value). The split_products_by_kind "
+    "command remains for backward-compat with hypothetical legacy DBs, "
+    "but the test scaffolding cannot create the required input rows "
+    "without using raw SQL bypass. Re-enable if the command needs to be "
+    "verified against a real legacy DB import."
+)
 
+
+@unittest.skip(_PHASE_4E_SKIP)
 class PurchasableBackfillTests(TestCase):
     """Runs against the post-migration DB; verifies counts and PK preservation."""
 

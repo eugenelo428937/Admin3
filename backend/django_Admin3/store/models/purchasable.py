@@ -131,8 +131,6 @@ class Purchasable(models.Model):
         MARKING_VOUCHER = 'marking_voucher', 'Marking Voucher'
         DOCUMENT_BINDER = 'document_binder', 'Document Binder'
         ADDITIONAL_CHARGE = 'additional_charge', 'Additional Charge'
-        # Legacy — removed in Phase 4e after backfill completes
-        PRODUCT = 'product', 'Legacy Product (pre-split)'
 
     kind = models.CharField(max_length=32, choices=Kind.choices)
     code = models.CharField(max_length=64, unique=True)

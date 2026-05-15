@@ -77,9 +77,12 @@ class KindEnumExtensionTests(TestCase):
         self.assertEqual(Purchasable.Kind.MARKING.value, 'marking')
         self.assertEqual(Purchasable.Kind.MARKING.label, 'Marking Product')
 
-    def test_kind_keeps_legacy_product_value(self):
-        """Legacy `'product'` must remain valid during Phase 1-4 transition."""
-        self.assertEqual(Purchasable.Kind.PRODUCT.value, 'product')
+    def test_kind_no_longer_has_legacy_product_value(self):
+        """Phase 4e: 'product' was removed from Kind choices. Every row now
+        starts in a specialized kind (material/tutorial/marking) and the
+        Phase 2 split command's reclassification step is dead code."""
+        self.assertNotIn('product', Purchasable.Kind.values)
+        self.assertFalse(hasattr(Purchasable.Kind, 'PRODUCT'))
 
     def test_kind_keeps_existing_generic_values(self):
         self.assertEqual(Purchasable.Kind.MARKING_VOUCHER.value, 'marking_voucher')
