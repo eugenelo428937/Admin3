@@ -166,6 +166,15 @@ class Purchasable(models.Model):
             models.Index(fields=['kind']),
             models.Index(fields=['is_active']),
         ]
+        constraints = [
+            # Phase 4e: defence-in-depth against raw SQL inserts that
+            # would otherwise resurrect the legacy 'product' kind value
+            # (removed from Kind.choices). Added by migration 0020.
+            models.CheckConstraint(
+                condition=~models.Q(kind='product'),
+                name='purchasable_kind_not_legacy_product',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.code} ({self.kind})"
