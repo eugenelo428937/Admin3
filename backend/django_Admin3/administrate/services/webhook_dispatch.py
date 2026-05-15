@@ -87,6 +87,15 @@ def apply_inbox_row(inbox_id: int) -> None:
         _mark_applied(row)
 
     except Exception as exc:  # noqa: BLE001 — we re-raise transient, swallow terminal
+        # MissingDependencyError is the explicit "fail loud, dead-letter,
+        # manual replay" signal: no retry could possibly fix a missing FK
+        # without operator action (run sync_*, then replay). Going via FAILED
+        # would mask the row in transient-error noise and let lag accumulate
+        # indefinitely (since attempts only escalates if a retrying backend
+        # re-invokes the task; ImmediateBackend does not).
+        if isinstance(exc, MissingDependencyError):
+            _mark_dead(row, _format_error(exc))
+            return  # swallow — terminal, surfaces on operator dashboards
         if row.attempts >= MAX_ATTEMPTS:
             _mark_dead(row, _format_error(exc))
             return  # swallow — task is "done", no more retries
@@ -98,11 +107,16 @@ def _extract_node(raw_payload: dict) -> dict:
     """Pluck the `event` node out of the wrapped Administrate payload.
 
     Administrate wraps the GraphQL result under `payload` (the result of the
-    query the webhook was registered with). Our query is `event(id: $objectid)`
-    so the node is at `payload.event`.
+    query the webhook was registered with). Our query is
+    `node(id: $objectid) { ... on Event { ... } }` so the node is at
+    `payload.node` (the inline-fragment fields are flattened onto the node
+    object by Administrate's response).
     """
     payload = raw_payload.get('payload') or {}
-    return payload.get('event') or {}
+    # Administrate may emit either `node` (Relay singular fetch) or `event`
+    # (legacy/test fixtures). Accept both so existing fixtures and unit
+    # tests don't need a coordinated rewrite.
+    return payload.get('node') or payload.get('event') or {}
 
 
 def _mark_applied(row: WebhookInbox) -> None:

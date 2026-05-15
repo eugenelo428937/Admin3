@@ -45,15 +45,19 @@ class TestApplyInboxRow:
         assert received_row.attempts == 1
 
     @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={
-        'Event Updated': _raise(MissingDependencyError('CourseTemplate', 'ct_x')),
+        'Event Updated': _raise(ValueError('transient db lock')),
     })
-    def test_transient_failure_increments_and_reraises(self, received_row):
-        with pytest.raises(MissingDependencyError):
+    def test_generic_exception_marks_failed_and_reraises(self, received_row):
+        """Generic (non-MissingDependency) exceptions are treated as transient:
+        FAILED + re-raise so a retrying task backend can reschedule.
+        Exhaustion to DEAD is covered by test_attempts_exhausted_marks_dead.
+        """
+        with pytest.raises(ValueError):
             apply_inbox_row(received_row.id)
         received_row.refresh_from_db()
         assert received_row.status == WebhookInbox.STATUS_FAILED
         assert received_row.attempts == 1
-        assert 'CourseTemplate' in received_row.error_message
+        assert 'transient db lock' in received_row.error_message
 
     @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={})
     def test_unknown_webhook_type_marks_dead_immediately(self, received_row):
@@ -67,12 +71,20 @@ class TestApplyInboxRow:
     @patch('administrate.services.webhook_dispatch.EVENT_HANDLERS', new={
         'Event Updated': _raise(MissingDependencyError('Location', 'loc_999')),
     })
-    def test_missing_dependency_error_message_surfaces_structured_attrs(self, received_row):
-        """The error_message should surface MissingDependencyError's structured
-        attributes (model_name, external_id) for operator grep-ability."""
-        with pytest.raises(MissingDependencyError):
-            apply_inbox_row(received_row.id)
+    def test_missing_dependency_error_marks_dead_immediately(self, received_row):
+        """MissingDependencyError is the explicit "fail loud, dead-letter,
+        manual replay" signal. It must NOT enter the retry loop because
+        the missing FK won't materialize from a re-attempt: it requires
+        operator action (run sync_*, then replay). Going via FAILED
+        would just mask the row in transient-error noise and let lag
+        accumulate forever (since attempts never escalates without a
+        retrying backend or with attempts=0-resetting replay)."""
+        # Should NOT raise — terminal state, not transient.
+        apply_inbox_row(received_row.id)
         received_row.refresh_from_db()
+        assert received_row.status == WebhookInbox.STATUS_DEAD
+        assert received_row.attempts == 1  # one attempt, then dead
+        # Error message surfaces structured attrs for operator grep-ability.
         assert 'MissingDependencyError' in received_row.error_message
         assert 'Location' in received_row.error_message
         assert 'loc_999' in received_row.error_message

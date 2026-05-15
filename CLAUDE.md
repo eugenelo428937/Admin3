@@ -918,6 +918,33 @@ import { MessageRenderer } from '../Common/MessageRenderer';
 - Django and React servers are typically always running
 - Virtual environment activation: `.\.venv\Scripts\activate`
 
+### Shell snippets in docs and answers (zsh-safe)
+
+When producing shell commands the user will copy-paste into a terminal, ALL of the following are forbidden because they break in zsh (default shell on this project's macOS dev machine):
+
+- **Do not mix `python manage.py shell` with `>>>` REPL prompts inside a `bash` code block.** zsh's `nomatch` option (on by default) treats `>>>` as a glob redirection and errors out with `zsh: no matches found`. The Python interactive prompt is also not a shell-pasteable form — even copying only the `>>>` lines without the prompt would still be broken because the shell sees them as commands.
+- **Do not produce multi-line Python "type these one at a time" recipes** prefixed with `>>>` or `... ` even outside a code fence — they are not directly pasteable.
+
+Use one of these zsh-safe forms instead:
+
+1. **One-liner via `python manage.py shell -c "..."`** for short queries:
+   ```bash
+   python manage.py shell -c "from administrate.models import Event; print(Event.objects.get(external_id='evt_smoke_1').title)"
+   ```
+
+2. **Heredoc piped to shell** for multi-line scripts. The Python body MUST be at column 0 inside the heredoc (no markdown-bullet indent), or Python raises `IndentationError`:
+   ```bash
+   python manage.py shell <<'PY'
+   from administrate.models import Event
+   e = Event.objects.get(external_id='evt_smoke_1')
+   print(e.title, e.lifecycle_state)
+   PY
+   ```
+
+3. **A standalone `.py` script** invoked via `python manage.py runscript` or `python -m` for anything longer than ~10 lines.
+
+The same rule applies to any prose I write outside of code blocks: never include `>>>`-prefixed lines that look like a REPL transcript when the user will be pasting them.
+
 ## Git Workflow
 
 ### Branch Naming Convention
@@ -1333,6 +1360,25 @@ test('all buttons meet 44px touch target minimum', () => {
 - Test migrations on development data first
 - Follow conventional commit message format
 - Update documentation for setup changes
+
+## Shell Snippets in Docs & Replies
+
+The user runs `zsh` on macOS and copy-pastes whole code blocks straight into the terminal. **Every `bash`-tagged code block must be directly pasteable as a single unit.** Concretely:
+
+- **Never** use REPL-style prompts (`>>>`, `In [1]:`, etc.) inside a `bash` block. Zsh treats `>>>` as redirection and breaks at the first such line with `zsh: parse error near \`>\`` or `zsh: no matches found`.
+- For Django shell snippets, use one of these forms instead:
+  - **One-liner:** `python manage.py shell -c "from app.models import X; print(X.objects.count())"`
+  - **Multi-line:** quoted heredoc piped to shell — note that Python code inside the heredoc must be at column 0:
+
+    ```bash
+    python manage.py shell <<'PY'
+    from app.models import X
+    for row in X.objects.all()[:5]:
+        print(row.id, row.name)
+    PY
+    ```
+- If a multi-step interactive walkthrough is genuinely needed (rare), split into separate fenced blocks with prose between, and put REPL-style transcripts in a `python` or `text` block — never `bash`.
+- Same rule applies to `psql`/`mysql` snippets: use `psql -c "SELECT ..."` or a heredoc, not `psql` followed by `> SELECT ...`.
 
 ## Task Completion Protocol
 

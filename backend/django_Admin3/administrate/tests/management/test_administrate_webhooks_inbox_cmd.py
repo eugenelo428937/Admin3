@@ -167,3 +167,43 @@ class TestInboxCommand:
                 'administrate_webhooks_inbox', 'replay',
                 '--status', 'dead', '--since', 'yesterday',
             )
+
+    @patch(
+        'administrate.management.commands.administrate_webhooks_inbox'
+        '.dispatch_inbox_task'
+    )
+    def test_replay_status_is_case_insensitive(self, mock_dispatch, dead_row):
+        """Operators routinely type --status FAILED; argparse should normalize."""
+        call_command(
+            'administrate_webhooks_inbox', 'replay', '--status', 'DEAD',
+        )
+        assert mock_dispatch.call_count == 1
+        dead_row.refresh_from_db()
+        assert dead_row.status == WebhookInbox.STATUS_RECEIVED
+
+    @patch(
+        'administrate.management.commands.administrate_webhooks_inbox'
+        '.dispatch_inbox_task'
+    )
+    def test_replay_accepts_multiple_status_values(
+        self, mock_dispatch, dead_row, processing_row,
+    ):
+        """`--status dead --status processing` must replay BOTH kinds, not
+        silently drop the first as plain argparse default would."""
+        out = StringIO()
+        call_command(
+            'administrate_webhooks_inbox', 'replay',
+            '--status', 'dead', '--status', 'processing',
+            stdout=out,
+        )
+        assert mock_dispatch.call_count == 2
+        assert 'replayed 2 row(s)' in out.getvalue()
+
+    def test_replay_rejects_non_replayable_status(self, db):
+        """`--status applied` must be rejected by argparse choices, with the
+        accepted values listed in the error so the operator can self-correct."""
+        from django.core.management.base import CommandError
+        with pytest.raises(CommandError):
+            call_command(
+                'administrate_webhooks_inbox', 'replay', '--status', 'applied',
+            )

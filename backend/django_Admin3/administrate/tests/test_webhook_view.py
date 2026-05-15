@@ -10,15 +10,26 @@ def client():
 
 
 @pytest.fixture
-def valid_payload():
+def _registration(db):
+    """Local mapping for the webhook_id used in `valid_payload` below.
+    Administrate's webhook payload doesn't echo a type label, so the
+    ingress looks up the type by this id."""
+    from administrate.models import WebhookRegistration
+    return WebhookRegistration.objects.create(
+        administrate_webhook_id='wh_test_1',
+        name='Admin3 Event Updated (test)',
+        webhook_type_name='Event Updated',
+    )
+
+
+@pytest.fixture
+def valid_payload(_registration):
     return {
         'metadata': {
-            'webhookId': 'wh_test_1',
-            'webhookTypeName': 'Event Updated',
-            'eventTimestamp': '2026-05-14T12:00:00Z',
-            'entityId': 'evt_1',
+            'webhook_id': 'wh_test_1',
+            'triggered_at': '2026-05-14T12:00:00Z',
         },
-        'payload': {'event': {'id': 'evt_1'}},
+        'payload': {'node': {'id': 'evt_1'}},
         'configuration': {'secret': 'test-shared-secret'},
     }
 
@@ -67,10 +78,10 @@ class TestWebhookAuth:
         """
         body = {
             'metadata': {
-                'webhookId': 'wh_x', 'webhookTypeName': 'Event Updated',
-                'eventTimestamp': '2026-05-14T12:00:00Z', 'entityId': 'evt_x',
+                'webhook_id': 'wh_x',
+                'triggered_at': '2026-05-14T12:00:00Z',
             },
-            'payload': {'event': {'id': 'evt_x'}},
+            'payload': {'node': {'id': 'evt_x'}},
             'configuration': {'secret': ''},
         }
         resp = client.post(
@@ -125,7 +136,7 @@ class TestWebhookPersistence:
         row = WebhookInbox.objects.get(id=resp.json()['inbox_id'])
         assert row.raw_payload['configuration']['secret'] == '***'
         # And the rest of the payload is preserved.
-        assert row.raw_payload['metadata']['webhookId'] == valid_payload['metadata']['webhookId']
+        assert row.raw_payload['metadata']['webhook_id'] == valid_payload['metadata']['webhook_id']
 
     def test_duplicate_delivery_returns_200(self, client, valid_payload):
         client.post(self.URL, valid_payload, format='json')
@@ -144,12 +155,12 @@ class TestWebhookPersistence:
         assert WebhookInbox.objects.count() == 0
 
     def test_missing_webhook_id_returns_400(self, client, valid_payload):
-        del valid_payload['metadata']['webhookId']
+        del valid_payload['metadata']['webhook_id']
         resp = client.post(self.URL, valid_payload, format='json')
         assert resp.status_code == 400
 
     def test_invalid_timestamp_returns_400(self, client, valid_payload):
-        valid_payload['metadata']['eventTimestamp'] = 'not-a-real-date'
+        valid_payload['metadata']['triggered_at'] = 'not-a-real-date'
         resp = client.post(self.URL, valid_payload, format='json')
         assert resp.status_code == 400
         assert WebhookInbox.objects.count() == 0
@@ -161,8 +172,9 @@ class TestWebhookPersistence:
         assert WebhookInbox.objects.count() == 0
 
     def test_falsy_but_valid_entity_id_accepted(self, client, valid_payload):
-        """entityId='0' should NOT trigger the missing-keys validation."""
-        valid_payload['metadata']['entityId'] = '0'
+        """payload.node.id='0' should NOT trigger the missing-id validation —
+        '0' is falsy in Python but is a perfectly valid Administrate id."""
+        valid_payload['payload']['node']['id'] = '0'
         resp = client.post(self.URL, valid_payload, format='json')
         assert resp.status_code == 202
         assert WebhookInbox.objects.get().entity_external_id == '0'

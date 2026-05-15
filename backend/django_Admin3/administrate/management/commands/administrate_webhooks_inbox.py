@@ -49,7 +49,20 @@ class Command(BaseCommand):
 
         rp = sub.add_parser('replay')
         rp.add_argument('inbox_id', nargs='?', type=int)
-        rp.add_argument('--status', default=None)
+        # action='append' so `--status dead --status failed` collects both;
+        # type=str.lower normalizes `FAILED`→`failed` (statuses are stored
+        # lowercase in the DB);
+        # choices= bounds input to replayable values and produces a clear
+        # built-in error listing accepted values when violated.
+        rp.add_argument(
+            '--status',
+            action='append',
+            type=str.lower,
+            choices=sorted(REPLAYABLE_STATUSES),
+            default=None,
+            help='Replay rows with this status. Repeat the flag for more '
+                 'than one (e.g. --status dead --status failed).',
+        )
         rp.add_argument('--since', default=None)
         rp.add_argument('--dry-run', action='store_true', default=False,
                         help='Show what would be replayed without enqueuing tasks.')
@@ -101,12 +114,9 @@ class Command(BaseCommand):
             return
         if not status_filter:
             raise CommandError('replay requires <inbox_id> or --status')
-        if status_filter not in REPLAYABLE_STATUSES:
-            raise CommandError(
-                f'Cannot replay rows in status {status_filter!r}; '
-                f'replayable statuses: {sorted(REPLAYABLE_STATUSES)}'
-            )
-        qs = WebhookInbox.objects.filter(status=status_filter)
+        # status_filter is a list (action='append'); argparse choices= has
+        # already validated each entry against REPLAYABLE_STATUSES.
+        qs = WebhookInbox.objects.filter(status__in=status_filter)
         if since:
             try:
                 since_dt = parse_datetime(since)
@@ -121,7 +131,8 @@ class Command(BaseCommand):
         if dry_run:
             count = qs.count()
             self.stdout.write(
-                f'[dry-run] would replay {count} row(s) with status={status_filter!r}'
+                f'[dry-run] would replay {count} row(s) with '
+                f'status in {sorted(status_filter)}'
             )
             return
         count = 0

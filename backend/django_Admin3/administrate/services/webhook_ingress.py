@@ -3,20 +3,31 @@
 Kept separate from the view so the persistence + parsing logic is unit-testable
 without a request/response cycle, and so the same persist function can be
 called from operational replay paths in the future.
+
+Payload shape captured from a real UAT delivery 2026-05-15. Administrate's
+outbound webhook envelope is snake_case and intentionally minimal:
+
+    metadata: {
+        user, instance, triggered_at, sent_at, context, webhook_id, is_retry
+    }
+    payload: { node: { id, ...fields from the registered GraphQL query } }
+
+Critically, the metadata does NOT echo a webhook-type label. To route the
+delivery to the right handler, we look up `webhook_id` in our local
+`WebhookRegistration` table — populated by `administrate_webhooks register`
+when each outbound hook was created.
 """
 
 from typing import Any
 
 from django.utils.dateparse import parse_datetime
 
-from administrate.models import WebhookInbox
+from administrate.models import WebhookInbox, WebhookRegistration
 
 
 REQUIRED_METADATA_KEYS = (
-    'webhookId',
-    'webhookTypeName',
-    'eventTimestamp',
-    'entityId',
+    'webhook_id',
+    'triggered_at',
 )
 
 
@@ -28,10 +39,12 @@ def persist_inbox_row(body: dict, headers: dict) -> WebhookInbox:
     """Persist the raw delivery to `adm.webhook_inbox`.
 
     Raises:
-        InvalidPayload: if `metadata` is missing or required keys absent.
+        InvalidPayload: if metadata is malformed, `payload.node.id` is
+            missing, or the `webhook_id` is unknown to our local
+            registration table.
         django.db.IntegrityError: if a row with the same
-            (webhookId, entityId, eventTimestamp) already exists — the
-            caller (the view) translates this into HTTP 200 duplicate.
+            (webhook_id, entity_external_id, triggered_at) already exists —
+            the caller (the view) translates this into HTTP 200 duplicate.
     """
     metadata = body.get('metadata')
     if not isinstance(metadata, dict):
@@ -44,16 +57,41 @@ def persist_inbox_row(body: dict, headers: dict) -> WebhookInbox:
     if missing:
         raise InvalidPayload(f'metadata missing keys: {", ".join(missing)}')
 
-    timestamp = parse_datetime(metadata['eventTimestamp'])
+    timestamp = parse_datetime(metadata['triggered_at'])
     if timestamp is None:
-        raise InvalidPayload('metadata.eventTimestamp is not a valid ISO-8601 datetime')
+        raise InvalidPayload(
+            'metadata.triggered_at is not a valid ISO-8601 datetime'
+        )
+
+    # entity_external_id lives in payload.node.id — Administrate's metadata
+    # has no equivalent. A missing node is fatal because it's also the
+    # source of every field the downstream handler will need.
+    node = ((body.get('payload') or {}).get('node')) or {}
+    entity_id = node.get('id')
+    if not entity_id:
+        raise InvalidPayload('payload.node.id is missing')
+
+    # Route via local mapping — Administrate's payload doesn't carry a type
+    # label, so an unknown id means we have no handler. Fail loud rather
+    # than persisting an inbox row that would dead-letter anyway.
+    webhook_id = metadata['webhook_id']
+    try:
+        registration = WebhookRegistration.objects.get(
+            administrate_webhook_id=webhook_id,
+        )
+    except WebhookRegistration.DoesNotExist:
+        raise InvalidPayload(
+            f'unknown webhook_id {webhook_id!r}: not in local registration '
+            'table. Run `administrate_webhooks register` to backfill, or '
+            'check Administrate for webhooks created outside this code path.'
+        )
 
     return WebhookInbox.objects.create(
-        administrate_webhook_id=metadata['webhookId'],
+        administrate_webhook_id=webhook_id,
         administrate_event_timestamp=timestamp,
-        webhook_type_name=metadata['webhookTypeName'],
+        webhook_type_name=registration.webhook_type_name,
         entity_type='event',  # this slice is Event-only; future slices set per route
-        entity_external_id=str(metadata['entityId']),
+        entity_external_id=str(entity_id),
         raw_payload=_sanitize_body(body),
         raw_headers=_sanitize_headers(headers),
     )

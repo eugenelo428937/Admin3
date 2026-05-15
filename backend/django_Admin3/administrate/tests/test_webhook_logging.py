@@ -11,15 +11,26 @@ def _webhook_settings(settings):
 
 
 @pytest.fixture
-def valid_payload():
+def _registration(db):
+    """Local mapping for the webhook_id used in `valid_payload` below.
+    Required because `persist_inbox_row` now resolves type via this table
+    (Administrate's payload doesn't echo a type label)."""
+    from administrate.models import WebhookRegistration
+    return WebhookRegistration.objects.create(
+        administrate_webhook_id='wh_log_1',
+        name='Admin3 Event Updated (test)',
+        webhook_type_name='Event Updated',
+    )
+
+
+@pytest.fixture
+def valid_payload(_registration):
     return {
         'metadata': {
-            'webhookId': 'wh_log_1',
-            'webhookTypeName': 'Event Updated',
-            'eventTimestamp': '2026-05-14T12:00:00Z',
-            'entityId': 'evt_log_1',
+            'webhook_id': 'wh_log_1',
+            'triggered_at': '2026-05-14T12:00:00Z',
         },
-        'payload': {'event': {'id': 'evt_log_1'}},
+        'payload': {'node': {'id': 'evt_log_1'}},
         'configuration': {'secret': 'test-shared-secret'},
     }
 
