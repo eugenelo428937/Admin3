@@ -102,7 +102,10 @@ class Product(Purchasable):
         variation_type = self.product_product_variation.product_variation.variation_type
         if variation_type in {'eBook', 'Printed', 'Hub'}:
             return Purchasable.Kind.MATERIAL
-        if variation_type == 'Tutorial':
+        # Tutorial-family: 'Tutorial' is the canonical type; 'Online
+        # Classroom Recording' is a legacy variant some catalog rows
+        # still use (the corresponding TutorialProduct row has format=OC).
+        if variation_type in {'Tutorial', 'Online Classroom Recording'}:
             return Purchasable.Kind.TUTORIAL
         if variation_type == 'Marking':
             return Purchasable.Kind.MARKING
