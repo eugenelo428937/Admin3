@@ -145,9 +145,11 @@ class TestSessionSetupService(CatalogAPITestCase):
         new_products = StoreProduct.objects.filter(
             exam_session_subject__exam_session=self.session_sept
         )
-        tutorial_count = new_products.filter(
-            product_product_variation__product_variation__variation_type='Tutorial'
-        ).count()
+        # Phase 5 Task 4b: PPV is on MaterialProduct now. The session-setup
+        # service excludes tutorials by kind today, so counting tutorials
+        # via the (no-longer-on-Product) PPV path would always be 0; we
+        # check explicitly via the kind discriminator instead.
+        tutorial_count = new_products.filter(kind='tutorial').count()
         self.assertEqual(tutorial_count, 0)
 
     def test_inactive_products_excluded(self):

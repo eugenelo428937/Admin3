@@ -78,16 +78,17 @@ class TestSerializeGroupedProductsRecommendationIntegration(TestCase):
         # Re-fetch to get recommendation prefetch
         from store.models import Product as StoreProduct
         from django.db.models import Prefetch
+        # Phase 5 Task 4b: PPV lives on MaterialProduct now.
         sp = StoreProduct.objects.select_related(
             'exam_session_subject__subject',
             'exam_session_subject__exam_session',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
             Prefetch(
-                'product_product_variation__recommendation',
+                'materialproduct__product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
                     'recommended_product_product_variation__product',
                     'recommended_product_product_variation__product_variation'

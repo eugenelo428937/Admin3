@@ -73,10 +73,16 @@ class Product(Purchasable):
             )
 
         # If the caller used the legacy product_product_variation kwarg on
-        # a bare Product, materialise the row as a MaterialProduct so the
-        # PPV FK column gets populated.
+        # a bare Product with kind='material', materialise the row as a
+        # MaterialProduct so the PPV FK column gets populated. For
+        # tutorial/marking kinds, the pending PPV is dropped (those
+        # subclasses don't store PPVs anymore).
         pending_ppv = getattr(self, '_pending_ppv', None)
-        if pending_ppv is not None and type(self).__name__ == 'Product':
+        if (
+            pending_ppv is not None
+            and type(self).__name__ == 'Product'
+            and self.kind == self.Kind.MATERIAL
+        ):
             from store.models.material_product import MaterialProduct
             # Promote to MaterialProduct. Copy the attribute set, drop our
             # transient slot, and save through the subclass.
@@ -225,11 +231,22 @@ class Product(Purchasable):
         in :meth:`save` by creating/updating the corresponding
         ``MaterialProduct`` row.
 
-        Setting a PPV implies ``kind='material'``; the setter sets ``kind``
-        automatically if it has not been set yet. Callers passing
-        ``product_product_variation=None`` clear the pending write but do
-        NOT delete an existing MaterialProduct row.
+        For bare ``store.Product`` callers, setting a non-null PPV implies
+        ``kind='material'``; the setter sets ``kind`` automatically if it
+        has not been set yet. Subclass instances (Tutorial/Marking) leave
+        their kind alone — they don't store PPV anyway, so the pending
+        value is harmless and the subclass's own save() generates the
+        product_code.
+
+        Callers passing ``product_product_variation=None`` clear the
+        pending write but do NOT delete an existing MaterialProduct row.
         """
         self._pending_ppv = value
-        if value is not None and not self.kind:
+        # Only default kind for bare Product instances. Subclasses set
+        # their own kind in their save() method.
+        if (
+            value is not None
+            and not self.kind
+            and type(self).__name__ == 'Product'
+        ):
             self.kind = self.Kind.MATERIAL

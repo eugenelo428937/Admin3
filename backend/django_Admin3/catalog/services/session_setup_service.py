@@ -82,19 +82,42 @@ class SessionSetupService:
                 continue
 
             # Create new product (product_code auto-generates on save).
-            # Phase 5: carry over the source product's kind so Product.save()
-            # does not raise ValueError for missing kind.
-            new_product = Product(
-                exam_session_subject=new_ess,
-                product_product_variation=prev_product.product_product_variation,
-                kind=prev_product.kind,
-                is_active=True,
-            )
+            # Phase 5 Task 4b: PPV is on MaterialProduct, marking_template
+            # is on MarkingProduct. Dispatch to the subclass so the new
+            # row owns the correct subclass-local fields. Tutorial is
+            # excluded above (by kind filter), so only Material and
+            # Marking are handled here.
+            from store.models import MaterialProduct, MarkingProduct
+            if prev_product.kind == 'marking':
+                # Inherit marking_template from the previous MarkingProduct row.
+                prev_marking_template = getattr(
+                    getattr(prev_product, 'markingproduct', None),
+                    'marking_template', None,
+                )
+                new_product = MarkingProduct(
+                    exam_session_subject=new_ess,
+                    marking_template=prev_marking_template,
+                    is_active=True,
+                )
+            else:
+                # Default: treat as MaterialProduct (PPV is required).
+                new_product = MaterialProduct(
+                    exam_session_subject=new_ess,
+                    product_product_variation=prev_product.product_product_variation,
+                    is_active=True,
+                )
             new_product.save()
             products_created += 1
-            new_product_lookup[
-                (new_ess.id, prev_product.product_product_variation_id)
-            ] = new_product
+            # Phase 5 Task 4b: prev_product is a Product (parent); the PPV id
+            # lives on the materialproduct subclass now. Use getattr fallback
+            # for non-material rows (None) — they don't participate in the
+            # bundle template match anyway.
+            prev_ppv_id = getattr(
+                getattr(prev_product, 'materialproduct', None),
+                'product_product_variation_id',
+                None,
+            )
+            new_product_lookup[(new_ess.id, prev_ppv_id)] = new_product
 
             # 4. Copy prices for this product (Task 23: Price is keyed by
             # purchasable; Product is an MTI subclass so PK is shared).

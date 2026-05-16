@@ -191,8 +191,9 @@ class CartService:
 
         if not product and metadata.get('variationId'):
             ppv_id = metadata['variationId']
+            # Phase 5 Task 4b: PPV is on MaterialProduct now.
             product = StoreProduct.objects.filter(
-                product_product_variation_id=ppv_id
+                materialproduct__product_product_variation_id=ppv_id
             ).first()
             if product:
                 logger.info(
