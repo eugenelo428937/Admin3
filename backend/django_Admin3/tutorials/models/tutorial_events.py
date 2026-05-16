@@ -5,6 +5,9 @@ Updated 2026-01-16: Migrated FK from ExamSessionSubjectProductVariation
 to store.Product as part of T087 legacy app cleanup.
 Updated 2026-05-14: Phase 4b retarget FK from store.Product to
 store.TutorialProduct (MTI shared PK — no data migration needed).
+Updated 2026-05-15 (Phase 1): Added Administrate-derived fields so
+acted.tutorial_events can be the master and adm.events shrinks to a
+bridge. Plan: docs/superpowers/plans/2026-05-15-tutorial-events-as-master-refactor.md
 """
 from django.db import models
 from store.models import TutorialProduct
@@ -63,6 +66,58 @@ class TutorialEvents(models.Model):
             'existing FK values still resolve.'
         ),
     )
+
+    # ---- Administrate-derived fields (Phase 1, additive) -------------------
+    # Filled by webhook (Phase 2+) and the data backfill command (Phase 3).
+    # All nullable so the migration applies on existing legacy rows that
+    # have never been linked to Administrate.
+    external_id = models.CharField(
+        max_length=64, null=True, blank=True, unique=True,
+        help_text='Administrate event id (Relay base64). Unique join key '
+                  'between adm.events.external_id and acted.tutorial_events.',
+    )
+    lifecycle_state = models.CharField(max_length=20, null=True, blank=True)
+    learning_mode = models.CharField(max_length=20, null=True, blank=True)
+    tutorial_category = models.CharField(max_length=20, null=True, blank=True)
+    web_sale = models.BooleanField(null=True)
+    # Mirrors `is_soldout` from the Administrate side. Phase 5 will likely
+    # collapse the two into one column; keeping both for now lets legacy
+    # readers and the new webhook handler coexist.
+    sold_out = models.BooleanField(null=True)
+    max_places = models.PositiveIntegerField(null=True, blank=True)
+    min_places = models.PositiveIntegerField(null=True, blank=True)
+    # DateTime equivalents — replace start_date / end_date in Phase 5.
+    lms_start_date = models.DateTimeField(null=True, blank=True)
+    lms_end_date = models.DateTimeField(null=True, blank=True)
+    registration_deadline = models.DateTimeField(null=True, blank=True)
+    event_url = models.URLField(max_length=500, null=True, blank=True)
+    virtual_classroom = models.CharField(max_length=255, null=True, blank=True)
+    timezone = models.CharField(max_length=50, null=True, blank=True)
+    sitting = models.CharField(max_length=50, null=True, blank=True)
+    administrator = models.CharField(max_length=255, null=True, blank=True)
+    session_title = models.CharField(max_length=255, null=True, blank=True)
+    ocr_moodle_code = models.CharField(max_length=100, null=True, blank=True)
+    sage_code = models.CharField(max_length=100, null=True, blank=True)
+    recordings = models.BooleanField(null=True)
+    recording_pin = models.CharField(max_length=50, null=True, blank=True)
+    extra_information = models.TextField(null=True, blank=True)
+    tutors = models.CharField(max_length=255, null=True, blank=True)
+    access_duration = models.CharField(max_length=100, null=True, blank=True)
+    # Cross-schema FK: acted -> adm. PostgreSQL handles cross-schema FK
+    # constraints natively; Django emits the constraint via db_constraint=True
+    # (the default). The dependency direction now goes acted -> adm, so the
+    # `tutorials` app implicitly requires `administrate` to be migrated first;
+    # `tutorials/apps.py` doesn't need an explicit dependency declaration
+    # because the migration's `dependencies = [...]` covers that.
+    course_template = models.ForeignKey(
+        'administrate.CourseTemplate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tutorial_events',
+    )
+    # ------------------------------------------------------------------------
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

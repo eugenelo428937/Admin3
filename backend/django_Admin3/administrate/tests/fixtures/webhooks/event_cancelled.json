@@ -6,7 +6,7 @@
   "payload": {
     "node": {
       "id": "evt_external_42",
-      "title": "CB1 Tutorial — September 2026",
+      "title": "CB1-EVT42-26S",
       "lifecycleState": "CANCELLED",
       "cancelledAt": "2026-05-14T11:30:00Z",
       "isSoldOut": false,
