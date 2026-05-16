@@ -118,10 +118,10 @@ class SerializerForFactoryTests(_Fixtures, TestCase):
         from store.serializers.product import ProductSerializer, serializer_for
         from store.models import Product, Purchasable
         ess = self._ess(subject_code='CT1')
-        ppv, _ = self._ppv('Printed', 'P')
+        # Phase 5 Task 4b: bare Product (no PPV) — passing PPV now
+        # promotes the row to MaterialProduct via the property setter.
         p = Product(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CT1/BARE32/2026-04',
             kind=Purchasable.Kind.MATERIAL,
         )

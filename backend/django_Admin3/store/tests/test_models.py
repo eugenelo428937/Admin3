@@ -53,15 +53,21 @@ class TestProductModel(TestCase):
     """T015: Test store.Product model fields and constraints."""
 
     def test_product_fields(self):
-        """Test Product model has required fields."""
+        """Test Product model has required fields.
+
+        Phase 5 Task 4: ``product_product_variation`` moved off Product
+        onto MaterialProduct. The parent Product retains everything else.
+        """
         from store.models import Product
         field_names = [f.name for f in Product._meta.get_fields()]
         self.assertIn('exam_session_subject', field_names)
-        self.assertIn('product_product_variation', field_names)
         self.assertIn('product_code', field_names)
         self.assertIn('is_active', field_names)
         self.assertIn('created_at', field_names)
         self.assertIn('updated_at', field_names)
+        # `materialproduct` is the reverse-OneToOne accessor pointing at
+        # the subclass where PPV now lives.
+        self.assertIn('materialproduct', field_names)
 
     def test_product_exam_session_subject_fk(self):
         """Test Product has FK to catalog.ExamSessionSubject."""
@@ -71,10 +77,20 @@ class TestProductModel(TestCase):
         self.assertEqual(ess_field.related_model, ExamSessionSubject)
 
     def test_product_ppv_fk(self):
-        """Test Product has FK to catalog.ProductProductVariation."""
-        from store.models import Product
+        """Phase 5 Task 4: PPV FK moved from Product to MaterialProduct.
+
+        The FK now lives on the subclass. Querying from
+        ``Product._meta.get_field('product_product_variation')`` raises;
+        we instead assert the FK on ``MaterialProduct``.
+        """
+        from store.models import Product, MaterialProduct
         from catalog.models import ProductProductVariation
-        ppv_field = Product._meta.get_field('product_product_variation')
+        # Field no longer on Product parent.
+        from django.core.exceptions import FieldDoesNotExist
+        with self.assertRaises(FieldDoesNotExist):
+            Product._meta.get_field('product_product_variation')
+        # Field is now on the MaterialProduct subclass.
+        ppv_field = MaterialProduct._meta.get_field('product_product_variation')
         self.assertEqual(ppv_field.related_model, ProductProductVariation)
 
     def test_product_code_unique(self):

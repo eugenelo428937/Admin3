@@ -49,37 +49,35 @@ class MaterialProductMTITests(TestCase):
         self.assertEqual(field.model, Product)
 
     def test_inherits_product_product_variation_from_product(self):
-        """PPV FK stays on Product through Phases 1-4; MaterialProduct
-        inherits it via MTI. The 'move PPV to MaterialProduct' rewrite
-        happens in Phase 5 (see design doc §6 Phase 5).
+        """Phase 5 Task 4: PPV FK is moved from Product to MaterialProduct.
+
+        The field now lives on MaterialProduct itself, not the Product parent.
         """
-        from store.models import MaterialProduct, Product
+        from store.models import MaterialProduct
         field = MaterialProduct._meta.get_field('product_product_variation')
         self.assertEqual(
-            field.model, Product,
-            "Phase 1: PPV remains on Product; MaterialProduct inherits it",
+            field.model, MaterialProduct,
+            "Phase 5 Task 4: PPV is local to MaterialProduct",
         )
         self.assertEqual(
             field.related_model._meta.label,
             'catalog_products.ProductProductVariation',
         )
 
-    def test_no_local_fields_beyond_parent_link(self):
-        """Phase 1 / Phase 5 Task 3: MaterialProduct has no locally-declared
-        Python model fields beyond the MTI parent_link.
-
-        The `product_product_variation_id` column exists at the DB level
-        (added by migrations 0021-0023), but the Python field declaration
-        on MaterialProduct is deferred to Task 4, when the same-named field
-        is removed from the parent Product (Django MTI prohibits redeclaring
-        a parent's field in the subclass while both coexist in model state).
+    def test_local_fields_after_phase5_task4(self):
+        """Phase 5 Task 4: MaterialProduct now declares
+        ``product_product_variation`` as a local model field (moved off
+        the Product parent in migration 0024). The MTI parent_link
+        ``product_ptr`` is the only other local field.
         """
         from store.models import MaterialProduct
         local_field_names = {
             f.name for f in MaterialProduct._meta.local_fields
         }
-        # `product_ptr` is the auto-generated MTI parent_link OneToOneField
-        self.assertEqual(local_field_names, {'product_ptr'})
+        self.assertEqual(
+            local_field_names,
+            {'product_ptr', 'product_product_variation'},
+        )
 
 
 class MaterialProductPhase5MigrationTests(TestCase):
@@ -157,11 +155,10 @@ class MaterialProductPhase5MigrationTests(TestCase):
             'FK must reference acted.catalog_product_product_variations',
         )
 
-    def test_sync_trigger_exists(self):
-        """Migration 0023 installed a BEFORE INSERT/UPDATE trigger that
-        auto-populates product_product_variation_id from the parent products
-        table, allowing the NOT NULL constraint to be satisfied without a
-        Python field declaration on MaterialProduct.
+    def test_sync_trigger_removed(self):
+        """Phase 5 Task 4 (migration 0024) drops the transitional sync
+        trigger installed by migration 0023. The Python field on
+        MaterialProduct now writes the column directly.
         """
         from django.db import connection
         with connection.cursor() as cur:
@@ -175,7 +172,8 @@ class MaterialProductPhase5MigrationTests(TestCase):
                 """
             )
             rows = cur.fetchall()
-        self.assertGreater(
+        self.assertEqual(
             len(rows), 0,
-            'Phase 5 Task 3: sync trigger material_products_sync_ppv_from_parent not found',
+            'Phase 5 Task 4: transitional sync trigger should be dropped '
+            'after PPV moved onto MaterialProduct as a real field.',
         )

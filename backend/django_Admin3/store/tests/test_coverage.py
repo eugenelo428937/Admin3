@@ -473,11 +473,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings(record=True) as w:
@@ -495,11 +495,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings():
@@ -543,11 +543,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -571,11 +571,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -605,11 +605,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
