@@ -171,9 +171,12 @@ class StoreProductListSerializer:
         try:
             rec_ppv = recommendation.recommended_product_product_variation
 
-            # Find the store.Product for this recommendation in same exam session
+            # Find the store.Product for this recommendation in same exam session.
+            # Phase 5 Task 4b: PPV lives on MaterialProduct now — traverse via
+            # the materialproduct reverse-OneToOne (only material rows
+            # participate; tutorial/marking recommendations are not modelled).
             rec_store_product = StoreProduct.objects.filter(
-                product_product_variation=rec_ppv,
+                materialproduct__product_product_variation=rec_ppv,
                 exam_session_subject=exam_session_subject
             ).prefetch_related('prices').first()
 

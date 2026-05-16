@@ -356,8 +356,9 @@ class SearchService:
             'exam_session_subject__subject'
         ).prefetch_related(
             'bundle_products__product__prices',
-            'bundle_products__product__product_product_variation__product',
-            'bundle_products__product__product_product_variation__product_variation',
+            # Phase 5 Task 4b: PPV lives on MaterialProduct now.
+            'bundle_products__product__materialproduct__product_product_variation__product',
+            'bundle_products__product__materialproduct__product_product_variation__product_variation',
         )
 
         # Apply subject filter (at bundle level — bundles have their own ESS)
