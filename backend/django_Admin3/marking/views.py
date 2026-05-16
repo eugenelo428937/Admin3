@@ -53,9 +53,10 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 essp = ExamSessionSubjectProduct.objects.get(id=essp_id)
                 # Find store product matching the ESSP's exam session subject and product
+                # Phase 5 Task 4b: PPV is on MaterialProduct now.
                 store_product = StoreProduct.objects.filter(
                     exam_session_subject=essp.exam_session_subject,
-                    product_product_variation__product=essp.product
+                    materialproduct__product_product_variation__product=essp.product
                 ).first()
                 if not store_product:
                     return Response({'error': 'No store product found for ESSP'}, status=404)

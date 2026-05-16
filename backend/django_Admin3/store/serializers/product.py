@@ -4,11 +4,46 @@ from store.models import Product
 from store.models.purchasable import Purchasable
 
 
+class _LazyPPVRelatedField(serializers.PrimaryKeyRelatedField):
+    """PrimaryKeyRelatedField that defers its queryset binding to first
+    access. Required because the catalog app may not be fully loaded at
+    the time this serializers module is imported.
+    """
+
+    def __init__(self, **kwargs):
+        # Pass a sentinel queryset so the parent __init__ assertion
+        # passes; the real queryset is fetched lazily.
+        kwargs.setdefault('queryset', _PPVQuerysetSentinel())
+        super().__init__(**kwargs)
+
+    def get_queryset(self):
+        from catalog.products.models import ProductProductVariation
+        return ProductProductVariation.objects.all()
+
+
+class _PPVQuerysetSentinel:
+    """Sentinel object that satisfies DRF's ``queryset is not None``
+    assertion without performing any DB work; the real queryset is
+    resolved on demand via ``_LazyPPVRelatedField.get_queryset()``.
+    """
+
+    def all(self):
+        from catalog.products.models import ProductProductVariation
+        return ProductProductVariation.objects.all()
+
+
 class ProductSerializer(serializers.ModelSerializer):
     """
     Serializer for store.Product model.
 
     Provides product data with related ESS and PPV information.
+
+    Phase 5 Task 4b: ``product_product_variation`` lives on MaterialProduct
+    now. We expose its primary key here as an integer field sourced from
+    the legacy ``@property`` accessor on Product (delegates to
+    ``materialproduct.product_product_variation``). Writes through this
+    field are routed by ``Product.product_product_variation.setter`` to
+    create/save a MaterialProduct row.
     """
     subject_code = serializers.CharField(
         source='exam_session_subject.subject.code',
@@ -18,13 +53,16 @@ class ProductSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.session_code',
         read_only=True
     )
-    variation_type = serializers.CharField(
-        source='product_product_variation.product_variation.variation_type',
-        read_only=True
-    )
-    product_name = serializers.CharField(
-        source='product_product_variation.product.fullname',
-        read_only=True
+    variation_type = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
+    # Phase 5 Task 4b: PPV is no longer a Product model field. Declare a
+    # writable PK-relation field whose queryset binding is deferred to
+    # first access (catalog app may not be loaded at module-import time);
+    # the legacy @property setter on Product routes writes through to a
+    # MaterialProduct row at save().
+    product_product_variation = _LazyPPVRelatedField(
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -44,6 +82,18 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['product_code', 'created_at', 'updated_at']
 
+    def get_variation_type(self, obj):
+        ppv = obj.product_product_variation
+        if ppv is None:
+            return None
+        return ppv.product_variation.variation_type
+
+    def get_product_name(self, obj):
+        ppv = obj.product_product_variation
+        if ppv is None:
+            return None
+        return ppv.product.fullname
+
     def validate(self, attrs):
         """Reject duplicate (ESS, PPV) for non-addon writes.
 
@@ -61,9 +111,12 @@ class ProductSerializer(serializers.ModelSerializer):
         if ess is None or ppv is None:
             return attrs
 
+        # Phase 5 Task 4b: PPV lives on MaterialProduct now. The legacy
+        # invariant (one non-addon Product per (ESS, PPV)) only meaningfully
+        # applies to materials; filter via the materialproduct relation.
         qs = Product.objects.filter(
             exam_session_subject=ess,
-            product_product_variation=ppv,
+            materialproduct__product_product_variation=ppv,
             is_addon=False,
         )
         if self.instance is not None:

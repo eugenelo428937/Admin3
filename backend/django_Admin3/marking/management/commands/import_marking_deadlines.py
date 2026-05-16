@@ -57,10 +57,16 @@ class Command(BaseCommand):
                     # value below. This avoids ambiguity when multiple catalog
                     # products share the same code (e.g., M1 exists for both Mock
                     # Exam eBook and Mock Exam Marking).
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now. Legacy
+                    # marking-deadline imports lookup by PPV match — only
+                    # rows that still carry a PPV (i.e. MaterialProduct) can
+                    # resolve. MarkingProduct rows (no PPV) are out of scope
+                    # for this importer and must be matched via their
+                    # subclass-local marking_template.
                     store_product = StoreProduct.objects.filter(
                         exam_session_subject=ess,
-                        product_product_variation__product__code=product_code,
-                        product_product_variation__product_variation__variation_type='Marking'
+                        materialproduct__product_product_variation__product__code=product_code,
+                        materialproduct__product_product_variation__product_variation__variation_type='Marking'
                     ).first()
                     if not store_product:
                         self.stderr.write(

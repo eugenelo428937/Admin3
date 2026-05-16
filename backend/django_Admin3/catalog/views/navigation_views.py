@@ -363,18 +363,20 @@ def fuzzy_search(request):
         # Listing-side fuzzy search: include out-of-window items so the
         # frontend can disable Add-to-cart for them. The cart-add gate
         # uses the 8-condition predicate to reject direct purchases.
+        # Phase 5 Task 4b: product_product_variation moved off Product onto
+        # MaterialProduct. Traverse via the reverse-OneToOne accessor.
         store_products_queryset = StoreProduct.available_for_listing().filter(
             is_active=True
         ).select_related(
             'exam_session_subject__subject',
             'exam_session_subject__exam_session',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
             Prefetch(
-                'product_product_variation__recommendation',
+                'materialproduct__product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
                     'recommended_product_product_variation__product',
                     'recommended_product_product_variation__product_variation'

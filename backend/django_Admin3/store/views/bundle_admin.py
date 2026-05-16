@@ -58,9 +58,10 @@ class StoreBundleAdminViewSet(viewsets.ModelViewSet):
     def products(self, request, pk=None):
         """Get all products in a bundle with full nested data."""
         bundle = self.get_object()
+        # Phase 5 Task 4b: PPV is on MaterialProduct now.
         bundle_products = bundle.bundle_products.select_related(
-            'product__product_product_variation__product',
-            'product__product_product_variation__product_variation',
+            'product__materialproduct__product_product_variation__product',
+            'product__materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'product__prices'
         ).order_by('sort_order')

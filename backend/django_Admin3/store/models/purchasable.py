@@ -34,17 +34,38 @@ class PurchasableQuerySet(models.QuerySet):
       keeping the product visible.
     """
 
-    # Listing-side conditions for store products. Date window NOT included
-    # — that's the listing/purchase split. See class docstring.
-    _LISTING_PRODUCT_CONDITIONS = dict(
-        kind__in=STORE_PRODUCT_KINDS,
-        product__product_product_variation__is_active=True,
-        product__product_product_variation__product__is_active=True,
-        product__product_product_variation__product_variation__is_active=True,
+    # ESS chain (shared by Material/Tutorial/Marking — every store-backed
+    # product lives under an ExamSessionSubject).
+    _LISTING_ESS_CONDITIONS = dict(
         product__exam_session_subject__is_active=True,
         product__exam_session_subject__subject__active=True,
         product__exam_session_subject__exam_session__is_active=True,
     )
+
+    # PPV chain — only Materials carry a PPV after Phase 5 Task 4
+    # (the FK was moved off Product onto MaterialProduct). Tutorial and
+    # Marking products bypass the catalog entirely, so their listing
+    # predicate is the ESS chain only.
+    _LISTING_MATERIAL_PPV_CONDITIONS = dict(
+        product__materialproduct__product_product_variation__is_active=True,
+        product__materialproduct__product_product_variation__product__is_active=True,
+        product__materialproduct__product_product_variation__product_variation__is_active=True,
+    )
+
+    @classmethod
+    def _store_product_listing_q(cls):
+        """Q expression for store-product listing eligibility (no date window).
+
+        Materials require the full ESS + PPV chain; Tutorials/Marking
+        require only the ESS chain (they have no catalog PPV).
+        """
+        ess_q = models.Q(**cls._LISTING_ESS_CONDITIONS)
+        material_q = (
+            models.Q(kind='material')
+            & models.Q(**cls._LISTING_MATERIAL_PPV_CONDITIONS)
+        )
+        non_material_store_q = models.Q(kind__in=('tutorial', 'marking'))
+        return ess_q & (material_q | non_material_store_q)
 
     def available_for_listing(self):
         """Filter to purchasables that should appear in customer listings.
@@ -67,8 +88,8 @@ class PurchasableQuerySet(models.QuerySet):
                 # Generic purchasables (vouchers, charges) — leaf flag only.
                 ~Q(kind__in=STORE_PRODUCT_KINDS)
                 |
-                # Store products — 7-condition listing chain (no date window).
-                Q(**self._LISTING_PRODUCT_CONDITIONS)
+                # Store products — listing chain (per-kind, no date window).
+                self._store_product_listing_q()
             )
         )
 
@@ -100,17 +121,17 @@ class PurchasableQuerySet(models.QuerySet):
                     "Use django.utils.timezone.now() or pass an aware datetime."
                 )
             now = at
+        date_window_q = Q(
+            product__exam_session_subject__exam_session__start_date__lte=now,
+            product__exam_session_subject__exam_session__end_date__gte=now,
+        )
         return self.filter(
             Q(is_active=True) & (
                 # Generic purchasables (vouchers, charges) — leaf flag only.
                 ~Q(kind__in=STORE_PRODUCT_KINDS)
                 |
-                # Store products — listing chain + date window (8 conditions).
-                Q(
-                    **self._LISTING_PRODUCT_CONDITIONS,
-                    product__exam_session_subject__exam_session__start_date__lte=now,
-                    product__exam_session_subject__exam_session__end_date__gte=now,
-                )
+                # Store products — listing chain (per-kind) + date window.
+                (self._store_product_listing_q() & date_window_q)
             )
         )
 

@@ -78,10 +78,14 @@ class Command(BaseCommand):
         tally = Counter()
         unresolved = 0
 
+        # Phase 5 Task 4b: PPV is on MaterialProduct now. This command
+        # operates on legacy 'product'-kind rows; with the kind value
+        # removed in Phase 4e the query is effectively dead-code, but the
+        # select_related still needs to resolve against the live schema.
         legacy = (
             Product.objects
             .filter(purchasable_ptr__kind='product')
-            .select_related('product_product_variation__product_variation')
+            .select_related('materialproduct__product_product_variation__product_variation')
         )
 
         for product in legacy.iterator():
@@ -141,13 +145,15 @@ class Command(BaseCommand):
         non_oc_no_location = []    # list of product pks
         missing_marking_templates = []  # list of (product pk, catalog product id)
 
+        # Phase 5 Task 4b: PPV is on MaterialProduct now. Same dead-code
+        # caveat as above; we just need select_related to parse.
         legacy = (
             Product.objects
             .filter(purchasable_ptr__kind='product')
             .select_related(
                 'exam_session_subject__subject',
-                'product_product_variation__product_variation',
-                'product_product_variation__product',
+                'materialproduct__product_product_variation__product_variation',
+                'materialproduct__product_product_variation__product',
             )
         )
 
@@ -240,13 +246,14 @@ class Command(BaseCommand):
 
         tally = Counter()
         with transaction.atomic():
+            # Phase 5 Task 4b: dead-code parse-fix (see _dry_run docstring).
             legacy = (
                 Product.objects
                 .filter(purchasable_ptr__kind='product')
                 .select_related(
                     'exam_session_subject__subject',
-                    'product_product_variation__product_variation',
-                    'product_product_variation__product',
+                    'materialproduct__product_product_variation__product_variation',
+                    'materialproduct__product_product_variation__product',
                 )
             )
 

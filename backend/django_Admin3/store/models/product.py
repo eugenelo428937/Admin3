@@ -56,6 +56,13 @@ class Product(Purchasable):
 
         By the time we reach this parent save(), product_code is already
         set by the subclass.
+
+        Legacy-kwarg fallback: when a caller uses
+        ``Product(product_product_variation=ppv)`` the PPV is stashed on
+        ``_pending_ppv`` via the property setter (kind defaults to
+        ``material``). If we reach Product.save() with a pending PPV and
+        kind='material', we delegate to MaterialProduct.save() so the
+        subclass row gets created with its PPV column populated.
         """
         if not self.kind:
             raise ValueError(
@@ -64,6 +71,38 @@ class Product(Purchasable):
                 'which set kind in their own save() methods, or pass '
                 'kind=Purchasable.Kind.MATERIAL/TUTORIAL/MARKING.'
             )
+
+        # If the caller used the legacy product_product_variation kwarg on
+        # a bare Product, materialise the row as a MaterialProduct so the
+        # PPV FK column gets populated.
+        pending_ppv = getattr(self, '_pending_ppv', None)
+        if pending_ppv is not None and type(self).__name__ == 'Product':
+            from store.models.material_product import MaterialProduct
+            # Promote to MaterialProduct. Copy the attribute set, drop our
+            # transient slot, and save through the subclass.
+            mp = MaterialProduct(
+                kind=self.kind,
+                code=getattr(self, 'code', '') or '',
+                name=self.name,
+                description=self.description,
+                is_active=self.is_active,
+                dynamic_pricing=self.dynamic_pricing,
+                is_addon=self.is_addon,
+                vat_classification=self.vat_classification or '',
+                exam_session_subject=self.exam_session_subject,
+                product_code=self.product_code or '',
+                product_product_variation=pending_ppv,
+            )
+            mp.save(*args, **kwargs)
+            # Mirror the saved PK / product_code back to self so callers
+            # holding the original instance see the persisted state.
+            self.pk = mp.pk
+            self.product_code = mp.product_code
+            self.code = mp.code
+            # Clear the pending slot so subsequent saves do not retry.
+            self._pending_ppv = None
+            return
+
         if self.product_code:
             # Mirror product_code to Purchasable.code
             self.code = self.product_code
@@ -162,8 +201,35 @@ class Product(Purchasable):
         The bare ``except Exception`` swallows both
         ``MaterialProduct.DoesNotExist`` (raised by the reverse OneToOne
         accessor for non-Material rows) and ``AttributeError`` (defensive).
+
+        Pending writes (set via the setter before ``save()`` runs) are
+        kept on the in-memory ``_pending_ppv`` slot so callers using the
+        legacy kwarg pattern ``Product(product_product_variation=ppv)``
+        see the value back before it lands on the DB row.
         """
+        pending = getattr(self, '_pending_ppv', None)
+        if pending is not None:
+            return pending
         try:
             return self.materialproduct.product_product_variation
         except Exception:
             return None
+
+    @product_product_variation.setter
+    def product_product_variation(self, value):
+        """Phase 5 backward-compat setter.
+
+        Allows legacy callers like ``Product(product_product_variation=ppv)``
+        or ``Product.objects.create(product_product_variation=ppv, ...)`` to
+        continue working. The value is stashed on the instance and applied
+        in :meth:`save` by creating/updating the corresponding
+        ``MaterialProduct`` row.
+
+        Setting a PPV implies ``kind='material'``; the setter sets ``kind``
+        automatically if it has not been set yet. Callers passing
+        ``product_product_variation=None`` clear the pending write but do
+        NOT delete an existing MaterialProduct row.
+        """
+        self._pending_ppv = value
+        if value is not None and not self.kind:
+            self.kind = self.Kind.MATERIAL

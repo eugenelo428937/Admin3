@@ -52,15 +52,18 @@ class SessionSetupService:
 
         subject_to_new_ess = {ess.subject_id: ess for ess in new_ess_records}
 
-        # 2. Get active products from previous session, excluding tutorials
+        # 2. Get active products from previous session, excluding tutorials.
+        # Phase 5 Task 4b: product_product_variation moved from Product to
+        # MaterialProduct subclass. Exclude tutorials by kind (cheap) rather
+        # than by traversing the now-removed PPV path off Product.
         previous_products = Product.objects.filter(
             exam_session_subject__exam_session_id=previous_session_id,
             is_active=True,
         ).exclude(
-            product_product_variation__product_variation__variation_type='Tutorial'
+            kind='tutorial',
         ).select_related(
             'exam_session_subject__subject',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product_variation',
         )
 
         products_created = 0

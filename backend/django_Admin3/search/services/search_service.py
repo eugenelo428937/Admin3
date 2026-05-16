@@ -191,16 +191,18 @@ class SearchService:
         """
         from catalog.models import ProductVariationRecommendation
 
+        # Phase 5 Task 4b: PPV is on MaterialProduct now (not on Product
+        # parent). Traverse via the materialproduct reverse-OneToOne.
         return StoreProduct.available_for_listing().select_related(
             'exam_session_subject__subject',
             'exam_session_subject__exam_session',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
             Prefetch(
-                'product_product_variation__recommendation',
+                'materialproduct__product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
                     'recommended_product_product_variation__product',
                     'recommended_product_product_variation__product_variation'
@@ -208,7 +210,7 @@ class SearchService:
             )
         ).order_by(
             'exam_session_subject__subject__code',
-            'product_product_variation__product__shortname'
+            'materialproduct__product_product_variation__product__shortname',
         )
 
     def _fuzzy_search_ids(self, queryset, query: str) -> List[int]:
