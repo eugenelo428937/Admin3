@@ -677,8 +677,9 @@ class SearchService:
             )
 
         if category_ids:
+            # Phase 5 Task 4b: PPV is on MaterialProduct now.
             base_queryset = base_queryset.filter(
-                product_product_variation__product_groups__product_group__id__in=category_ids
+                materialproduct__product_product_variation__product_groups__product_group__id__in=category_ids
             ).distinct()
 
         if not query or len(query.strip()) < 2:
