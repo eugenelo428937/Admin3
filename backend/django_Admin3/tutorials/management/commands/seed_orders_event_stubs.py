@@ -68,11 +68,13 @@ class Command(BaseCommand):
                 continue
 
             store_product = self._resolve_store_product(spec)
+            # Phase 5b (2026-05-16): legacy Date columns dropped; the
+            # canonical fields are lms_start_date / lms_end_date (DateTime).
+            # These rows are stubs for cancelled events with no real
+            # schedule; lms_start_date / lms_end_date are nullable now.
             TutorialEvents.objects.create(
                 code=spec.code,
                 store_product=store_product,
-                start_date=date(2024, 1, 1),  # placeholder; cancelled events have no real schedule
-                end_date=date(2024, 1, 1),
                 cancelled=True,
             )
             created += 1

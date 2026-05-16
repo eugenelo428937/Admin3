@@ -75,8 +75,8 @@ def tutorial_event(store_product):
     """Pre-existing tutorial_events row matching the default fixture title."""
     return TutorialEvents.objects.create(
         code='CB1-1-26S',
-        start_date=date(2026, 9, 1),
-        end_date=date(2026, 12, 1),
+        lms_start_date=date(2026, 9, 1),
+        lms_end_date=date(2026, 12, 1),
         store_product=store_product,
     )
 
@@ -201,12 +201,12 @@ class TestSyncEventsCommand:
         # Seed two tutorial_events rows so both nodes find a match.
         TutorialEvents.objects.create(
             code='CB1-1-26S',
-            start_date=date(2026, 9, 1), end_date=date(2026, 12, 1),
+            lms_start_date=date(2026, 9, 1), lms_end_date=date(2026, 12, 1),
             store_product=store_product,
         )
         TutorialEvents.objects.create(
             code='CB1-2-26S',
-            start_date=date(2026, 9, 1), end_date=date(2026, 12, 1),
+            lms_start_date=date(2026, 9, 1), lms_end_date=date(2026, 12, 1),
             store_product=store_product,
         )
         responses = [
@@ -238,7 +238,7 @@ class TestSyncEventsCommand:
         from datetime import date
         TutorialEvents.objects.create(
             code='CB1-BAD-26S',
-            start_date=date(2026, 9, 1), end_date=date(2026, 12, 1),
+            lms_start_date=date(2026, 9, 1), lms_end_date=date(2026, 12, 1),
             store_product=tutorial_event.store_product,
         )
         MockAPI.return_value.execute_query.return_value = _api_response([

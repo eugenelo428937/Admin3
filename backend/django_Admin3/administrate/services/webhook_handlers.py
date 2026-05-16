@@ -242,14 +242,8 @@ def _upsert_tutorial_event(node: dict) -> Event:
         raise MissingDependencyError('TutorialEvents', code)
 
     defaults = map_node_to_tutorial_event_fields(node)
-    # Dual-write the new DateTime values into the legacy Date columns so
-    # readers using `start_date`/`end_date` keep working through Phases 2-4.
-    # Phase 5 drops the legacy columns and the dual-write goes with them.
-    if defaults.get('lms_start_date'):
-        defaults['start_date'] = _truncate_to_date(defaults['lms_start_date'])
-    if defaults.get('lms_end_date'):
-        defaults['end_date'] = _truncate_to_date(defaults['lms_end_date'])
-
+    # Phase 5b (2026-05-16): the legacy start_date/end_date columns were
+    # dropped; the dual-write that used to live here is gone.
     with transaction.atomic():
         for field, value in defaults.items():
             setattr(tutorial_event, field, value)
@@ -263,21 +257,6 @@ def _upsert_tutorial_event(node: dict) -> Event:
             defaults={'tutorial_event': tutorial_event},
         )
     return bridge
-
-
-def _truncate_to_date(value):
-    """Convert a DateTime or ISO string to a date for legacy column dual-write."""
-    if value is None:
-        return None
-    if isinstance(value, str):
-        from django.utils.dateparse import parse_datetime, parse_date
-        dt = parse_datetime(value)
-        if dt is not None:
-            return dt.date()
-        return parse_date(value)
-    if hasattr(value, 'date'):
-        return value.date()
-    return value
 
 
 # NOTE: the original `_upsert_event` and `map_node_to_event_fields` —

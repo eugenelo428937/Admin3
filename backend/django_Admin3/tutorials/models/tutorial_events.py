@@ -43,10 +43,13 @@ class TutorialEvents(models.Model):
             "rows have a valid FK target."
         ),
     )
-    finalisation_date = models.DateField(null=True, blank=True)
+    # Phase 5b (2026-05-16): finalisation_date converted from Date to
+    # DateTime to match lms_start_date / lms_end_date. Existing data
+    # backfilled to midnight Europe/London by the migration.
+    finalisation_date = models.DateTimeField(null=True, blank=True)
     remain_space = models.IntegerField(default=0)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    # `start_date` / `end_date` (Date) were dropped in Phase 5b — readers
+    # use `lms_start_date` / `lms_end_date` (DateTime, defined below).
     main_instructor = models.ForeignKey(
         'tutorials.TutorialInstructor',
         on_delete=models.SET_NULL,
@@ -124,7 +127,7 @@ class TutorialEvents(models.Model):
     class Meta:
         app_label = 'tutorials'
         db_table = '"acted"."tutorial_events"'
-        ordering = ['start_date', 'code']
+        ordering = ['lms_start_date', 'code']
         verbose_name = 'Tutorial Event'
         verbose_name_plural = 'Tutorial Events'
 

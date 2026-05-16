@@ -94,7 +94,9 @@ class OrchestratorTests(TestCase):
         self.assertEqual(TutorialSessions.objects.count(), 2)
         ev = TutorialEvents.objects.get()
         self.assertEqual(ev.code, 'CB1-01-24A')
-        self.assertEqual(ev.start_date, date(2023, 11, 30))
+        # Phase 5b: importer writes lms_start_date (DateTime, midnight
+        # Europe/London) instead of the dropped start_date (Date).
+        self.assertEqual(ev.lms_start_date.date(), date(2023, 11, 30))
         self.assertTrue(ev.is_soldout)
         self.assertEqual(ev.remain_space, 0)
         self.assertIsNotNone(ev.store_product)
@@ -135,7 +137,7 @@ class OrchestratorTests(TestCase):
         sp_old.save()
         ev_old = TutorialEvents.objects.create(
             code='OLD-01-24A', store_product=sp_old,
-            start_date=date(2023, 1, 1), end_date=date(2023, 1, 2),
+            lms_start_date=date(2023, 1, 1), lms_end_date=date(2023, 1, 2),
         )
         TutorialSessions.objects.create(
             tutorial_event=ev_old, title='OLD-01-24A-1', sequence=1,

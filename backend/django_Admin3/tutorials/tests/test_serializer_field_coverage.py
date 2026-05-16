@@ -59,11 +59,11 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
         self.event = TutorialEvents.objects.create(
             code='COV-TUT-001',
             venue=self.tv,
-            start_date=timezone.now().date() + timedelta(days=30),
-            end_date=timezone.now().date() + timedelta(days=31),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=31),
             store_product=self.store_product,
             is_soldout=True,
-            finalisation_date=timezone.now().date() + timedelta(days=25),
+            finalisation_date=timezone.now() + timedelta(days=25),
         )
         self.data = TutorialEventsSerializer(self.event).data
 
@@ -91,11 +91,11 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
     def test_read_remain_space(self):
         _ = self.data['remain_space']
 
-    def test_read_start_date(self):
-        _ = self.data['start_date']
+    def test_read_lms_start_date(self):
+        _ = self.data['lms_start_date']
 
-    def test_read_end_date(self):
-        _ = self.data['end_date']
+    def test_read_lms_end_date(self):
+        _ = self.data['lms_end_date']
 
     def test_read_store_product(self):
         _ = self.data['store_product']
@@ -128,8 +128,8 @@ class TutorialEventsSerializerWriteCoverageTest(TestCase):
             'is_soldout': True,
             'finalisation_date': '2025-06-01',
             'remain_space': 10,
-            'start_date': '2025-07-01',
-            'end_date': '2025-07-02',
+            'lms_start_date': '2025-07-01T00:00:00Z',
+            'lms_end_date': '2025-07-02T00:00:00Z',
             'store_product': 1,
             'created_at': '2025-01-01T00:00:00Z',
             'updated_at': '2025-01-01T00:00:00Z',

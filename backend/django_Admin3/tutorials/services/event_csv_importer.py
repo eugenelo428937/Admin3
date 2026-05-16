@@ -19,11 +19,33 @@ operator.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List
+from datetime import date, datetime, time
+from typing import List, Optional
+from zoneinfo import ZoneInfo
 
 from django.db import transaction
 from django.utils import timezone
+
+
+# Phase 5b (2026-05-16): the legacy Date columns on tutorial_events were
+# replaced by DateTime equivalents. CSV input is still date-only; the
+# canonical conversion is midnight Europe/London (matches the
+# tutorial_events.timezone field default and the webhook handler's
+# Date->DateTime conversion in administrate.management.commands.
+# migrate_adm_events_to_tutorial_events / sync_events).
+_LONDON = ZoneInfo('Europe/London')
+
+
+def _to_datetime_midnight_london(value: Optional[date]) -> Optional[datetime]:
+    """Convert a date to a tz-aware datetime at midnight Europe/London.
+
+    Returns None unchanged. Already-datetime inputs pass through (defensive
+    for callers that resolve the value via DateTime helpers)."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value
+    return datetime.combine(value, time(0, 0), tzinfo=_LONDON)
 
 from tutorials.models import (
     TutorialEvents, TutorialSessions,
@@ -77,15 +99,19 @@ def import_parsed_events(parsed: ParseResult, *, dry_run: bool) -> ImportReport:
                 })
                 continue
 
+            # Phase 5b (2026-05-16): write DateTime columns directly. Parser
+            # produces date objects; combine with midnight Europe/London so
+            # the timezone matches the canonical conversion used by the
+            # webhook handler / sync command.
             event = TutorialEvents.objects.create(
                 code=parsed_event.title,
                 store_product=resolution.store_product,
-                start_date=parsed_event.start_date,
-                end_date=parsed_event.end_date,
+                lms_start_date=_to_datetime_midnight_london(parsed_event.start_date),
+                lms_end_date=_to_datetime_midnight_london(parsed_event.end_date),
                 venue=resolution.tutorial_venue,
                 location=resolution.tutorial_location,
                 is_soldout=parsed_event.is_soldout,
-                finalisation_date=parsed_event.finalisation_date,
+                finalisation_date=_to_datetime_midnight_london(parsed_event.finalisation_date),
                 remain_space=parsed_event.remain_space,
                 main_instructor=resolution.instructors[0] if resolution.instructors else None,
             )

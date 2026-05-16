@@ -114,10 +114,14 @@ class TutorialEventsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TutorialEvents
+        # Phase 5b (2026-05-16): start_date/end_date dropped, replaced by
+        # lms_start_date/lms_end_date (DateTime). API consumers receive ISO
+        # datetime strings now (was: date-only strings). If we ever need to
+        # restore the date-only contract, derive a SerializerMethodField.
         fields = [
             'id', 'code', 'venue', 'venue_id', 'location', 'location_id',
             'is_soldout', 'finalisation_date', 'remain_space',
-            'start_date', 'end_date', 'store_product',
+            'lms_start_date', 'lms_end_date', 'store_product',
             'created_at', 'updated_at',
             'store_product_code', 'subject_code', 'instructors',
         ]

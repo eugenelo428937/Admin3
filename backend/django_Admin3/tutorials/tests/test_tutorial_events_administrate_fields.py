@@ -112,10 +112,13 @@ class TestNewAdministrateFieldsExist:
                 f"new column {col} must be nullable in Phase 1 (got {cols[col]})"
             )
 
-    def test_legacy_date_columns_still_present(self):
-        """`start_date` / `end_date` (Date) MUST stay alongside the new
-        DateTime columns until Phase 5. Removing them in Phase 1 would
-        break every existing reader."""
+    def test_legacy_date_columns_dropped(self):
+        """Phase 5b (2026-05-16): `start_date` / `end_date` (Date) were
+        dropped from `acted.tutorial_events`. The canonical fields are
+        `lms_start_date` / `lms_end_date` (DateTime).
+
+        Pin the absence so a future migration that re-introduces those
+        names with a different type would fail loudly here."""
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT column_name, data_type
@@ -125,10 +128,8 @@ class TestNewAdministrateFieldsExist:
                   AND column_name IN ('start_date', 'end_date')
             """)
             cols = dict(cursor.fetchall())
-        assert cols.get('start_date') == 'date', \
-            f"legacy start_date must still be DATE in Phase 1, got {cols.get('start_date')!r}"
-        assert cols.get('end_date') == 'date', \
-            f"legacy end_date must still be DATE in Phase 1, got {cols.get('end_date')!r}"
+        assert cols == {}, \
+            f"legacy start_date/end_date must NOT exist after Phase 5b; found {cols!r}"
 
 
 @pytest.mark.django_db
@@ -141,10 +142,10 @@ class TestNewFieldRoundTrip:
         midnight_utc = datetime(2026, 9, 1, 0, 0, tzinfo=tz.utc)
         event = TutorialEvents.objects.create(
             code='CB1-PHASE1-26S',
-            start_date=date(2026, 9, 1),       # legacy
-            end_date=date(2026, 12, 1),        # legacy
             store_product=store_product,
-            # New Administrate-derived fields
+            # Administrate-derived fields (Phase 5b dropped the legacy
+            # Date columns; lms_start_date / lms_end_date below are the
+            # canonical ones now)
             external_id='evt_phase1_001',
             lifecycle_state='PUBLISHED',
             learning_mode='CLASSROOM',
@@ -181,12 +182,12 @@ class TestNewFieldRoundTrip:
         """external_id is the Administrate join key — duplicates would
         break the inbound webhook's idempotency."""
         TutorialEvents.objects.create(
-            code='UNIQ-A', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+            code='UNIQ-A', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
             store_product=store_product, external_id='evt_uniq',
         )
         with pytest.raises(IntegrityError):
             TutorialEvents.objects.create(
-                code='UNIQ-B', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+                code='UNIQ-B', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
                 store_product=store_product, external_id='evt_uniq',
             )
 
@@ -194,11 +195,11 @@ class TestNewFieldRoundTrip:
         """Legacy tutorial_events rows that pre-date Administrate
         integration must still be valid (external_id = NULL)."""
         a = TutorialEvents.objects.create(
-            code='LEGACY-A', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+            code='LEGACY-A', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
             store_product=store_product,
         )
         b = TutorialEvents.objects.create(
-            code='LEGACY-B', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+            code='LEGACY-B', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
             store_product=store_product,
         )
         # Two rows with NULL external_id must coexist (UNIQUE constraint
@@ -215,7 +216,7 @@ class TestCrossSchemaCourseTemplateFK:
 
     def test_course_template_resolves_to_adm_row(self, store_product, course_template):
         event = TutorialEvents.objects.create(
-            code='FK-A', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+            code='FK-A', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
             store_product=store_product, course_template=course_template,
         )
         event.refresh_from_db()
@@ -224,7 +225,7 @@ class TestCrossSchemaCourseTemplateFK:
     def test_course_template_nullable(self, store_product):
         """In Phase 1 the FK is nullable (Phase 3 backfills from adm.events)."""
         event = TutorialEvents.objects.create(
-            code='FK-NULL', start_date=date(2026, 1, 1), end_date=date(2026, 1, 2),
+            code='FK-NULL', lms_start_date=date(2026, 1, 1), lms_end_date=date(2026, 1, 2),
             store_product=store_product,
         )
         assert event.course_template is None

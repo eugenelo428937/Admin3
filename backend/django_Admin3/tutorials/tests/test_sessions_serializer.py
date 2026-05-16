@@ -74,8 +74,8 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
             venue=self.tv_camden,
             is_soldout=False,
             remain_space=11,
-            start_date=date(2025, 7, 22),
-            end_date=date(2025, 8, 21),
+            lms_start_date=date(2025, 7, 22),
+            lms_end_date=date(2025, 8, 21),
             store_product=self.store_product,
         )
 
@@ -157,8 +157,8 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
             venue=tv_london,
             is_soldout=False,
             remain_space=5,
-            start_date=date(2025, 9, 1),
-            end_date=date(2025, 9, 30),
+            lms_start_date=date(2025, 9, 1),
+            lms_end_date=date(2025, 9, 30),
             store_product=self.store_product,
         )
 
@@ -206,8 +206,8 @@ class TutorialSessionsModelSerializerTest(TestCase):
             venue=tv_office,
             is_soldout=False,
             remain_space=8,
-            start_date=date(2025, 8, 1),
-            end_date=date(2025, 8, 3),
+            lms_start_date=date(2025, 8, 1),
+            lms_end_date=date(2025, 8, 3),
             store_product=store_product,
         )
 

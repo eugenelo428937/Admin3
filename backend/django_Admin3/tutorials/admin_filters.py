@@ -44,12 +44,15 @@ def apply_code_icontains(qs, params):
 
 
 def apply_start_date_range(qs, params):
+    # Phase 5b (2026-05-16): legacy start_date column dropped on
+    # tutorial_events; the canonical filter target is lms_start_date
+    # (DateTime). Query-string param names stay readable.
     start_from = params.get('start_from')
     if start_from:
-        qs = qs.filter(start_date__gte=start_from)
+        qs = qs.filter(lms_start_date__date__gte=start_from)
     start_to = params.get('start_to')
     if start_to:
-        qs = qs.filter(start_date__lte=start_to)
+        qs = qs.filter(lms_start_date__date__lte=start_to)
     return qs
 
 
