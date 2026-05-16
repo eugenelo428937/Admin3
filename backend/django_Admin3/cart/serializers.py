@@ -93,25 +93,40 @@ class CartItemSerializer(serializers.ModelSerializer):
         return None
 
     def get_product_name(self, obj):
-        """Get product name - handles marking vouchers"""
+        """Get product name - handles marking vouchers.
+
+        Phase 5 Task 4b: tutorial/marking rows have no catalog PPV, so
+        ``product.product`` is None. Fall back to the store-product's
+        own ``name`` (set by the subclass save()).
+        """
         item_type = self._item_type(obj)
         voucher = self._marking_voucher(obj)
         if item_type == 'marking_voucher' and voucher:
             return voucher.name or 'Marking Voucher'
         product = self._product(obj)
         if product:
-            return product.product.fullname
+            catalog_product = product.product
+            if catalog_product is not None:
+                return catalog_product.fullname
+            return product.name or product.product_code
         return None
 
     def get_product_code(self, obj):
-        """Get product code - handles marking vouchers"""
+        """Get product code - handles marking vouchers.
+
+        Phase 5 Task 4b: tutorial/marking rows have no catalog PPV, so
+        fall back to the store-product's own product_code.
+        """
         item_type = self._item_type(obj)
         voucher = self._marking_voucher(obj)
         if item_type == 'marking_voucher' and voucher:
             return voucher.code
         product = self._product(obj)
         if product:
-            return product.product.code
+            catalog_product = product.product
+            if catalog_product is not None:
+                return catalog_product.code
+            return product.product_code
         return None
 
     def get_exam_session_code(self, obj):
@@ -135,14 +150,22 @@ class CartItemSerializer(serializers.ModelSerializer):
         return None
 
     def get_product_id(self, obj):
-        """Get product ID - returns voucher ID for marking vouchers"""
+        """Get product ID - returns voucher ID for marking vouchers.
+
+        Phase 5 Task 4b: TutorialProduct and MarkingProduct don't have a
+        PPV, so ``product.product`` (the catalog template) is None for
+        those rows. Falls back to the store-product id in that case.
+        """
         item_type = self._item_type(obj)
         voucher = self._marking_voucher(obj)
         if item_type == 'marking_voucher' and voucher:
             return voucher.id
         product = self._product(obj)
         if product:
-            return product.product.id
+            catalog_product = product.product
+            if catalog_product is not None:
+                return catalog_product.id
+            return product.id
         return None
 
     def get_net_amount(self, obj):
@@ -177,10 +200,23 @@ class CartItemSerializer(serializers.ModelSerializer):
         if not product:
             return None
 
-        product_name = product.product.fullname.lower()
+        # Phase 5 Task 4b: prefer the kind discriminator on Purchasable.
+        # Tutorial/Marking subclasses don't have a catalog PPV, so we
+        # cannot rely on product.product.fullname for them.
+        kind = getattr(product, 'kind', None)
+        if kind == 'tutorial':
+            return 'tutorial'
+        if kind == 'marking':
+            return 'marking'
 
-        if hasattr(product.product, 'group_name') and product.product.group_name:
-            group_name = product.product.group_name.lower()
+        catalog_product = product.product  # None for tutorial/marking
+        if catalog_product is None:
+            return 'material'
+
+        product_name = catalog_product.fullname.lower()
+
+        if hasattr(catalog_product, 'group_name') and catalog_product.group_name:
+            group_name = catalog_product.group_name.lower()
             if 'tutorial' in group_name:
                 return 'tutorial'
             elif 'marking' in group_name:
@@ -400,23 +436,35 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
         return self._item_type(obj)
 
     def get_product_name(self, obj):
-        """Get product name or fee name"""
+        """Get product name or fee name.
+
+        Phase 5 Task 4b: tutorial/marking rows have no catalog PPV.
+        """
         item_type = self._item_type(obj)
         if item_type == 'fee':
             return obj.metadata.get('fee_name', 'Fee') if obj.metadata else 'Fee'
         product = self._product(obj)
         if product:
-            return product.product.fullname
+            catalog_product = product.product
+            if catalog_product is not None:
+                return catalog_product.fullname
+            return product.name or product.product_code
         return None
 
     def get_product_code(self, obj):
-        """Get product code or fee type"""
+        """Get product code or fee type.
+
+        Phase 5 Task 4b: tutorial/marking rows have no catalog PPV.
+        """
         item_type = self._item_type(obj)
         if item_type == 'fee':
             return obj.metadata.get('fee_type', 'fee') if obj.metadata else 'fee'
         product = self._product(obj)
         if product:
-            return product.product.code
+            catalog_product = product.product
+            if catalog_product is not None:
+                return catalog_product.code
+            return product.product_code
         return None
 
     def get_subject_code(self, obj):
@@ -440,16 +488,30 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
         return None
 
     def get_product_type(self, obj):
-        """Determine product type based on item type and product info"""
+        """Determine product type based on item type and product info.
+
+        Phase 5 Task 4b: prefer the Purchasable kind discriminator;
+        tutorial/marking subclasses have no catalog PPV.
+        """
         item_type = self._item_type(obj)
         if item_type == 'fee':
             return 'fee'
         product = self._product(obj)
         if product:
-            product_name = product.product.fullname.lower()
+            kind = getattr(product, 'kind', None)
+            if kind == 'tutorial':
+                return 'tutorial'
+            if kind == 'marking':
+                return 'marking'
 
-            if hasattr(product.product, 'group_name') and product.product.group_name:
-                group_name = product.product.group_name.lower()
+            catalog_product = product.product  # None for tutorial/marking
+            if catalog_product is None:
+                return 'material'
+
+            product_name = catalog_product.fullname.lower()
+
+            if hasattr(catalog_product, 'group_name') and catalog_product.group_name:
+                group_name = catalog_product.group_name.lower()
                 if 'tutorial' in group_name:
                     return 'tutorial'
                 elif 'marking' in group_name:

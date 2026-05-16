@@ -161,20 +161,30 @@ class Product(Purchasable):
         This provides backward compatibility with code that used
         `cart_item.product.product` when product was an ESSP.
 
+        Phase 5 Task 4b: PPV lives only on MaterialProduct. Tutorial and
+        Marking rows return None — the caller is expected to branch on
+        the row's kind or check for None.
+
         Returns:
-            catalog.Product: The master product template
+            catalog.Product or None: master product template (None for
+            tutorial/marking rows).
         """
-        return self.product_product_variation.product
+        ppv = self.product_product_variation
+        return ppv.product if ppv is not None else None
 
     @property
     def product_variation(self):
         """
         Access the catalog.ProductVariation through the product_product_variation.
 
+        Phase 5 Task 4b: returns None for tutorial/marking rows (no PPV).
+
         Returns:
-            catalog.ProductVariation: The variation type (eBook, Printed, etc.)
+            catalog.ProductVariation or None: variation (None for
+            tutorial/marking rows).
         """
-        return self.product_product_variation.product_variation
+        ppv = self.product_product_variation
+        return ppv.product_variation if ppv is not None else None
 
     @property
     def variations(self):

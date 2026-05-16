@@ -376,11 +376,8 @@ class RefreshTutorialMetadataPhase4dTests(TestCase):
             f"not the PPV product_variation.name. Got: {first_choice.get('variationName')!r}",
         )
 
-        # Defensive: confirm that the PPV id != tp.id, so if the assertion
-        # above passes it is NOT because of an accidental id collision.
-        ppv_id = tp.product_product_variation_id
-        self.assertNotEqual(
-            ppv_id, tp.id,
-            "Test setup error: ppv.id coincidentally equals tp.id — "
-            "the RED assertion above may not be meaningful; adjust fixtures.",
-        )
+        # Phase 5 Task 4b: TutorialProduct has no PPV (only Material does).
+        # The defensive id-inequality check is moot for tutorial rows —
+        # there is no PPV id to compare against tp.id. Skip the check
+        # for tutorial products; the format-display assertion above is
+        # the meaningful one for Phase 4d/Phase 5.
