@@ -80,8 +80,11 @@ class TutorialProductConcurrentSaveTests(TestCase):
             product_product_variation=tutorial_ppvs[1],
         )
         # If we reach here, the UUID placeholder worked and both saved.
+        # Phase 5 Task 4b: PPV is on MaterialProduct now; the legacy
+        # @property setter promoted both Products to MaterialProduct rows
+        # at save time, so they're queryable via materialproduct.
         tutorial_products = Product.objects.filter(
-            product_product_variation__in=tutorial_ppvs
+            materialproduct__product_product_variation__in=tutorial_ppvs
         )
         self.assertGreaterEqual(tutorial_products.count(), 2)
         # Both should have non-pending product_codes now

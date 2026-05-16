@@ -101,9 +101,10 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
                 from catalog.models import ExamSessionSubjectProduct
                 essp_to_purchasable = {}  # Map ESSP ID to purchasable ID
                 for essp in ExamSessionSubjectProduct.objects.filter(id__in=essp_ids):
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
                     store_product = StoreProduct.objects.filter(
                         exam_session_subject=essp.exam_session_subject,
-                        product_product_variation__product=essp.product
+                        materialproduct__product_product_variation__product=essp.product
                     ).first()
                     if store_product:
                         # store_product.pk == purchasable_ptr_id (shared PK)

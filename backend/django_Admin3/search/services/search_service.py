@@ -540,7 +540,8 @@ class SearchService:
                 elif isinstance(pid, str) and pid.isdigit():
                     int_product_ids.append(int(pid))
             if int_product_ids:
-                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
+                # Phase 5 Task 4b: PPV is on MaterialProduct now.
+                q_filter &= Q(materialproduct__product_product_variation__product__id__in=int_product_ids)
 
         if q_filter:
             product_qs = product_qs.filter(q_filter)
@@ -556,8 +557,9 @@ class SearchService:
             if values:
                 names = [v for v in values if v not in exclude]
                 if names:
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
                     product_qs = product_qs.filter(
-                        product_product_variation__product_groups__product_group__name__in=names
+                        materialproduct__product_product_variation__product_groups__product_group__name__in=names
                     )
 
         return set(product_qs.distinct().values_list('id', flat=True))

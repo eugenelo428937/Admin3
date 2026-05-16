@@ -323,13 +323,14 @@ class ProductViewSet(viewsets.ModelViewSet):
                     store_bundles = store_bundles.filter(
                         bundle_template__is_featured=True)
 
+                # Phase 5 Task 4b: PPV lives on MaterialProduct now.
                 store_bundles = store_bundles.select_related(
                     'bundle_template__subject',
                     'exam_session_subject__exam_session',
                     'exam_session_subject__subject'
                 ).prefetch_related(
-                    'bundle_products__product__product_product_variation__product',
-                    'bundle_products__product__product_product_variation__product_variation'
+                    'bundle_products__product__materialproduct__product_product_variation__product',
+                    'bundle_products__product__materialproduct__product_product_variation__product_variation'
                 ).order_by('display_order', 'bundle_template__bundle_name')
 
                 for bundle in store_bundles:

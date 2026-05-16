@@ -63,22 +63,27 @@ def navigation_data(request):
         """Subquery: True iff at least one listing-visible Purchasable
         points (via PPV) at the outer catalog.Product. Uses the listing
         predicate (7 conditions, no date window) so navbar dropdowns show
-        products for upcoming sessions too."""
+        products for upcoming sessions too.
+
+        Phase 5 Task 4b: PPV lives on MaterialProduct now, so only material
+        rows participate in this lookup (tutorial/marking have no PPV).
+        """
         return Exists(
             Purchasable.objects.available_for_listing().filter(
                 kind__in=STORE_PRODUCT_KINDS,
-                product__product_product_variation__product_id=OuterRef('pk'),
+                product__materialproduct__product_product_variation__product_id=OuterRef('pk'),
             )
         )
 
     def _has_available_store_product_for_variation():
         """Subquery: True iff at least one listing-visible Purchasable
         points (via PPV) at the outer ProductVariation. See sibling
-        helper for predicate choice rationale."""
+        helper for predicate choice rationale.
+        """
         return Exists(
             Purchasable.objects.available_for_listing().filter(
                 kind__in=STORE_PRODUCT_KINDS,
-                product__product_product_variation__product_variation_id=OuterRef('pk'),
+                product__materialproduct__product_product_variation__product_variation_id=OuterRef('pk'),
             )
         )
 
@@ -492,11 +497,12 @@ def advanced_product_search(request):
     # Exists() pattern used by navigation_data — listing predicate (7
     # conditions) so out-of-window products still surface; cart-add
     # rejects direct purchase via the 8-condition predicate.
+    # Phase 5 Task 4b: PPV is on MaterialProduct now.
     queryset = Product.objects.filter(is_active=True).filter(
         Exists(
             Purchasable.objects.available_for_listing().filter(
                 kind__in=STORE_PRODUCT_KINDS,
-                product__product_product_variation__product_id=OuterRef('pk'),
+                product__materialproduct__product_product_variation__product_id=OuterRef('pk'),
             )
         )
     )
@@ -519,9 +525,12 @@ def advanced_product_search(request):
         subjects = Subject.objects.filter(code__in=subject_codes)
         # Get catalog.Product IDs through store.Product's product_product_variation FK.
         # Listing predicate keeps the result aligned with the navbar/list views.
+        # Phase 5 Task 4b: PPV is on MaterialProduct now.
         filtered_product_ids = StoreProduct.available_for_listing().filter(
             exam_session_subject__subject__in=subjects
-        ).values_list('product_product_variation__product_id', flat=True).distinct()
+        ).values_list(
+            'materialproduct__product_product_variation__product_id', flat=True,
+        ).distinct()
 
         queryset = queryset.filter(id__in=filtered_product_ids)
 

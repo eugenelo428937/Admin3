@@ -75,8 +75,9 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
             for gid in group_param.split(','):
                 gid = gid.strip()
                 if gid:
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
                     qs = qs.filter(
-                        product_product_variation__product__groups__id=gid
+                        materialproduct__product_product_variation__product__groups__id=gid
                     )
         # Order: active first, then by product_code
         return qs.order_by('-is_active', 'product_code')
