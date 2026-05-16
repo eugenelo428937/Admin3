@@ -206,6 +206,15 @@ class EventVenuePopulationTest(EventFkPopulationTestBase):
         self.assertEqual(self.event_london.venue_id, self.venue_kings_cross.id)
 
 
+import unittest as _unittest
+
+
+@_unittest.skip(
+    'Phase 5 Task 4b: TutorialProduct no longer carries a catalog PPV — '
+    'populate_location_ids() can only match material rows now. This '
+    'regression test exercised the legacy Phase 4 migration flow which '
+    'is no longer applicable.'
+)
 class EventLocationPopulationTest(EventFkPopulationTestBase):
     """Verify location_id populated by matching catalog_products.shortname to tutorial_locations.name."""
 

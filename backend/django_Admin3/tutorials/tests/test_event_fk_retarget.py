@@ -52,7 +52,6 @@ class _Fixtures:
         ppv = self._ppv()
         tp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CB1/F2F_3F/2026-04',
             format='F2F_3F',
         )

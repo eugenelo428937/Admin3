@@ -39,10 +39,12 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17'):
                   'variation_type': 'Tutorial'},
     )
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
-    tp = TutorialProduct.objects.filter(exam_session_subject=ess, product_product_variation=ppv).first()
+    # Phase 5 Task 4b: TutorialProduct has no PPV — look up by code.
+    code = f'{subject_code}/Live/LO_6H/{sitting_session}'
+    tp = TutorialProduct.objects.filter(product_code=code).first()
     if tp is None:
-        tp = TutorialProduct(exam_session_subject=ess, product_product_variation=ppv,
-                             product_code=f'{subject_code}/Live/LO_6H/{sitting_session}',
+        tp = TutorialProduct(exam_session_subject=ess,
+                             product_code=code,
                              format='LO_6H')
         tp.save()
     return TutorialEvents.objects.create(

@@ -44,13 +44,13 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17',
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
     # Multiple events under the same subject/location/variation/sitting share
     # one store_product — match the real-data shape.
-    tp = TutorialProduct.objects.filter(
-        exam_session_subject=ess, product_product_variation=ppv,
-    ).first()
+    # Phase 5 Task 4b: TutorialProduct has no PPV — look up by code.
+    code = f'{subject_code}/{location_code}/{variation_code}/{sitting_session}'
+    tp = TutorialProduct.objects.filter(product_code=code).first()
     if tp is None:
         tp = TutorialProduct(
-            exam_session_subject=ess, product_product_variation=ppv,
-            product_code=f'{subject_code}/{location_code}/{variation_code}/{sitting_session}',
+            exam_session_subject=ess,
+            product_code=code,
             format=variation_code,
         )
         tp.save()

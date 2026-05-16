@@ -262,22 +262,22 @@ def _get_or_create_store_product(
     skips the Product.save() auto-generation path (which would fail because
     no TutorialEvent is linked yet — chicken-and-egg).
     """
-    # First try to find an existing TutorialProduct (MTI child row must exist)
-    tp = TutorialProduct.objects.filter(
-        exam_session_subject=ess, product_product_variation=ppv,
-    ).first()
-    if tp is not None:
-        return tp
-
+    # Phase 5 Task 4b: TutorialProduct has no PPV — match by the same
+    # signature used to derive the canonical code below.
     subject_code = ess.subject.code
     sitting_code = ess.exam_session.session_code
     variation_code = ppv.product_variation.code
     location_code = ppv.product.code  # 'Lon', 'Live', 'Edi', etc.
     canonical_code = f"{subject_code}/{location_code}/{variation_code}/{sitting_code}"
 
+    # First try to find an existing TutorialProduct by canonical code
+    # (subject + location + format + sitting uniquely identifies it).
+    tp = TutorialProduct.objects.filter(product_code=canonical_code).first()
+    if tp is not None:
+        return tp
+
     tp = TutorialProduct(
         exam_session_subject=ess,
-        product_product_variation=ppv,
         product_code=canonical_code,
         format=variation_code,  # ProductVariation.code == TutorialProduct.Format value
     )

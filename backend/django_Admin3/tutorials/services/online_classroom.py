@@ -1,26 +1,40 @@
 """Helpers for Online Classroom detection and shared tutorial-choice validation.
 
-The OC marker lives several joins from a TutorialEvent
-(event → store_product → product_product_variation → product_variation
-→ variation_type). Rather than encoding this in DB constraints, we keep it
-application-side. Both TutorialChoice.clean() and CartTutorialChoice.clean()
-will delegate to validate_tutorial_choice_event().
+Phase 5 Task 4b: TutorialProduct no longer carries a catalog PPV — the
+Online Classroom marker lives on the subclass-local ``format`` field
+('OC') instead of a deep PPV→variation_type traversal. We keep the
+legacy ``ONLINE_CLASSROOM_VARIATION_TYPE`` constant for reference.
+
+Both TutorialChoice.clean() and CartTutorialChoice.clean() delegate to
+validate_tutorial_choice_event().
 """
 ONLINE_CLASSROOM_VARIATION_TYPE = 'Online Classroom Recording'
+ONLINE_CLASSROOM_FORMAT = 'OC'  # TutorialProduct.Format.OC
 
 
 def is_online_classroom_event(event) -> bool:
-    """True if the event's store_product variation type is Online Classroom."""
+    """True if the event's store_product is an Online Classroom tutorial.
+
+    Phase 5 Task 4b: prefer the TutorialProduct.format field; fall back
+    to the legacy PPV chain for material rows whose PPV variation_type
+    is 'Online Classroom Recording' (legacy data shape).
+    """
+    store_product = getattr(event, 'store_product', None)
+    if store_product is None:
+        return False
+    # Preferred path: TutorialProduct subclass with format='OC'.
+    fmt = getattr(store_product, 'format', None)
+    if fmt == ONLINE_CLASSROOM_FORMAT:
+        return True
+    # Legacy fallback: catalog PPV chain (only resolves for material rows
+    # that happen to carry an OC-style variation).
     try:
-        variation_type = (
-            event.store_product
-            .product_product_variation
-            .product_variation
-            .variation_type
-        )
+        ppv = store_product.product_product_variation
+        if ppv is None:
+            return False
+        return ppv.product_variation.variation_type == ONLINE_CLASSROOM_VARIATION_TYPE
     except AttributeError:
         return False
-    return variation_type == ONLINE_CLASSROOM_VARIATION_TYPE
 
 
 def validate_tutorial_choice_event(tutorial_event, line_purchasable):

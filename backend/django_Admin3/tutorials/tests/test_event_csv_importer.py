@@ -128,7 +128,7 @@ class OrchestratorTests(TestCase):
             product_variation=ProductVariation.objects.get(code='LO_6H'),
         )
         sp_old = TutorialProduct(
-            exam_session_subject=ess_old, product_product_variation=ppv_old,
+            exam_session_subject=ess_old,
             product_code='OLD_PRODUCT_CODE',
             format='LO_6H',
         )
