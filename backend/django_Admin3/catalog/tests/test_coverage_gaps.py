@@ -377,7 +377,10 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
         from django.utils import timezone as _tz
         from catalog.models import ExamSessionSubject
         from catalog.exam_session.models import ExamSession
-        from store.models import Product as StoreProduct, Purchasable
+        # Phase 5 Task 4b: product_product_variation lives on MaterialProduct
+        # (not on the bare Product parent). Use the MaterialProduct subclass
+        # directly so the get_or_create() lookup uses a real DB column.
+        from store.models import MaterialProduct as StoreMaterialProduct
 
         # Ensure upstream is_active flags are True (fixture defaults from
         # CatalogTestDataMixin may be stale under --keepdb).
@@ -409,11 +412,10 @@ class TestNavigationDataWithFilterGroups(CatalogAPITestCase):
         ess.is_active = True
         ess.save(update_fields=['is_active'])
 
-        StoreProduct.objects.get_or_create(
+        StoreMaterialProduct.objects.get_or_create(
             exam_session_subject=ess,
             product_product_variation=self.ppv_core_ebook,
             defaults={
-                'kind': Purchasable.Kind.MATERIAL,
                 'is_active': True,
                 'name': 'CSM-AVAIL',
                 'product_code': 'CSM-AVAIL-CODE',
