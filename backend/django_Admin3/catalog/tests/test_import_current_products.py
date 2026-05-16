@@ -172,10 +172,20 @@ class TestMockExamGrouping(ImportCurrentProductsTestBase):
                      '--session-code', '26', stdout=StringIO())
         mock_product = Product.objects.get(fullname='Mock Exam Marking', code='M')
         ppv = ProductProductVariation.objects.get(product=mock_product)
-        # CM1 has 3 mock exam rows → 1 store product
+        # CM1 has 3 mock exam rows → 1 store product.
+        # Phase 5 Task 4b: mock-exam-marking rows are Material-kind (fmt='M'
+        # in CSV maps to MarkingProduct subclass, see
+        # import_current_products.py — but the previous semantic was that
+        # they were material-PPV). For this assertion we want the count of
+        # store rows in this ESS that link to the catalog mock product —
+        # since mock-marking rows are now MarkingProduct (no PPV), match
+        # via either path.
+        from django.db.models import Q as _Q
         cm1_store = StoreProduct.objects.filter(
-            exam_session_subject=self.ess_cm1,
-            product_product_variation=ppv,
+            _Q(exam_session_subject=self.ess_cm1) & (
+                _Q(materialproduct__product_product_variation=ppv)
+                | _Q(markingproduct__marking_template_id=mock_product.pk)
+            )
         )
         self.assertEqual(cm1_store.count(), 1)
 
