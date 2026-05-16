@@ -469,9 +469,10 @@ class Command(BaseCommand):
                 # Skip if this (ess, ppv) already has a non-addon Product.
                 # (We cannot rely on unique_together — it was dropped to
                 # accommodate addons sharing a PPV with their base.)
+                # Phase 5 Task 4b: PPV is on MaterialProduct now.
                 existing = StoreProduct.objects.filter(
                     exam_session_subject=ess,
-                    product_product_variation=ppv,
+                    materialproduct__product_product_variation=ppv,
                     is_addon=False,
                 ).first()
                 if existing:
@@ -509,9 +510,11 @@ class Command(BaseCommand):
                             stats['marking_templates_created'] = (
                                 stats.get('marking_templates_created', 0) + 1
                             )
+                        # Phase 5 Task 4b: MarkingProduct has no PPV
+                        # field (the catalog template lives in
+                        # marking_template now).
                         sp = MarkingProduct(
                             exam_session_subject=ess,
-                            product_product_variation=ppv,
                             product_code=code,
                             marking_template=mt,
                         )

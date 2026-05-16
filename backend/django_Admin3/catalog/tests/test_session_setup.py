@@ -76,22 +76,27 @@ class TestSessionSetupService(CatalogAPITestCase):
             product_product_variation=self.ppv_core_printed,
             is_active=True,
         )
-        self.store_prod_marking = StoreProduct.objects.create(
+        # Phase 5 Task 4b: marking products are MarkingProduct subclass
+        # rows with their own marking_template FK (no PPV on subclass).
+        from store.models import MarkingProduct as StoreMarkingProduct
+        from marking.models import MarkingTemplate
+        self._marking_template = MarkingTemplate.objects.create(
+            code='VAR-MARK', name='Test Marking Series',
+            description='', is_active=True,
+        )
+        self.store_prod_marking = StoreMarkingProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
-            product_product_variation=self.ppv_marking,
-            kind=Purchasable.Kind.MARKING,
+            marking_template=self._marking_template,
             is_active=True,
-            product_code='CM2/VAR-MARK/2026-04',
         )
         # Tutorial product (should be excluded from copy).
-        # Pass product_code explicitly: tutorial codes are auto-generated
-        # from subclass fields in Phase 5.
-        self.store_prod_tutorial = StoreProduct.objects.create(
+        # Phase 5 Task 4b: tutorials are TutorialProduct subclass rows
+        # with their own format/location fields (no PPV).
+        from store.models import TutorialProduct as StoreTutorialProduct
+        self.store_prod_tutorial = StoreTutorialProduct.objects.create(
             exam_session_subject=self.ess_prev_cm2,
-            product_product_variation=self.ppv_tutorial,
-            kind=Purchasable.Kind.TUTORIAL,
+            format='LO_6H',
             is_active=True,
-            product_code='CM2/TUT/2026-04',
         )
         # Inactive product (should be excluded from copy).
         # ppv_marking_hub uses variation_type='Hub' — treated as material.
@@ -231,9 +236,10 @@ class TestSessionSetupService(CatalogAPITestCase):
         SessionSetupService.copy_products_and_bundles(
             self.session_sept.id, self.session_april.id
         )
+        # Phase 5 Task 4b: PPV is on MaterialProduct now.
         new_ebook = StoreProduct.objects.filter(
             exam_session_subject=self.ess_new_cm2,
-            product_product_variation=self.ppv_core_ebook,
+            materialproduct__product_product_variation=self.ppv_core_ebook,
         ).first()
         self.assertIsNotNone(new_ebook)
         std_price = Price.objects.get(purchasable_id=new_ebook.pk, price_type='standard')
