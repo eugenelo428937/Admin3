@@ -70,7 +70,17 @@ class MarkingPaper(models.Model):
 
     @property
     def exam_session_subject_product(self):
-        """Backward-compatible accessor — only meaningful when purchasable is a Product."""
+        """Backward-compatible accessor returning a legacy
+        ExamSessionSubjectProduct (ESSP) for the linked store.Product.
+
+        Phase 5 Task 4b: PPV moved off Product onto MaterialProduct.
+        For Material rows we still look up via the (now-on-subclass) PPV
+        chain. For Marking rows the PPV is gone — the catalog template is
+        instead reachable via ``markingproduct.marking_template`` (whose
+        pk equals the original catalog.Product.pk per the Phase 3.1
+        backfill). For Tutorial rows there is no catalog link, so this
+        returns None.
+        """
         from catalog.models import ExamSessionSubjectProduct
         from store.models import Product as StoreProduct
         if not self.purchasable_id:
@@ -79,9 +89,23 @@ class MarkingPaper(models.Model):
             store_product = StoreProduct.objects.get(pk=self.purchasable_id)
         except StoreProduct.DoesNotExist:
             return None
+
+        catalog_product_id = None
+        # Material rows: PPV chain on the subclass.
+        ppv = store_product.product_product_variation
+        if ppv is not None:
+            catalog_product_id = ppv.product_id
+        else:
+            # Marking rows: marking_template.pk == catalog.Product.pk.
+            marking_subclass = getattr(store_product, 'markingproduct', None)
+            if marking_subclass is not None:
+                catalog_product_id = marking_subclass.marking_template_id
+
+        if catalog_product_id is None:
+            return None
         return ExamSessionSubjectProduct.objects.filter(
             exam_session_subject=store_product.exam_session_subject,
-            product=store_product.product_product_variation.product,
+            product_id=catalog_product_id,
         ).first()
 
     def __str__(self):

@@ -483,8 +483,13 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         )
 
         # Phase 4c: every MarkingPaper now requires marking_template.
+        # Phase 5 Task 4b: MarkingTemplate.pk must equal catalog.Product.pk
+        # (the Phase 3.1 backfill invariant) so the legacy ESSP backward-
+        # compat accessor can resolve the catalog template via the
+        # MarkingProduct.marking_template_id without going through PPV.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
+            pk=self.cat_product.pk,
             code='CPT', name='Compat Test Marking Series',
         )
 

@@ -403,8 +403,11 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
         )
 
         # Phase 4c: every MarkingPaper now requires marking_template.
+        # Phase 5 Task 4b: pin marking_template.pk to catalog.Product.pk
+        # so the legacy ESSP backward-compat accessor resolves.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
+            pk=self.cat_product.pk,
             code='ESP', name='ESSP Compat Marking Series',
         )
 
@@ -550,11 +553,17 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
         # Phase 5: Each MarkingProduct needs its own template since the product_code
         # is generated as {subject}/{template_code}/{session} — two products with
         # the same template+ESS would produce duplicate codes.
+        # Phase 5 Task 4b: MarkingTemplate.pk must equal catalog.Product.pk
+        # (Phase 3.1 backfill invariant) so the legacy ESSP backward-compat
+        # accessor can resolve the catalog template from the MarkingProduct
+        # without going through PPV.
         from marking.models import MarkingTemplate
         self.marking_template = MarkingTemplate.objects.create(
+            pk=self.cat_product1.pk,
             code='BLK1', name='Bulk ESSP Marking Series 1',
         )
         self.marking_template2 = MarkingTemplate.objects.create(
+            pk=self.cat_product2.pk,
             code='BLK2', name='Bulk ESSP Marking Series 2',
         )
 

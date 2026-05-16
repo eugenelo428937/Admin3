@@ -53,10 +53,14 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 essp = ExamSessionSubjectProduct.objects.get(id=essp_id)
                 # Find store product matching the ESSP's exam session subject and product
-                # Phase 5 Task 4b: PPV is on MaterialProduct now.
+                # Phase 5 Task 4b: PPV is on MaterialProduct; marking
+                # rows link via marking_template (pk == catalog Product pk).
+                from django.db.models import Q as _Q
                 store_product = StoreProduct.objects.filter(
-                    exam_session_subject=essp.exam_session_subject,
-                    materialproduct__product_product_variation__product=essp.product
+                    _Q(exam_session_subject=essp.exam_session_subject) & (
+                        _Q(materialproduct__product_product_variation__product=essp.product)
+                        | _Q(markingproduct__marking_template_id=essp.product_id)
+                    )
                 ).first()
                 if not store_product:
                     return Response({'error': 'No store product found for ESSP'}, status=404)
@@ -100,11 +104,19 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 from catalog.models import ExamSessionSubjectProduct
                 essp_to_purchasable = {}  # Map ESSP ID to purchasable ID
+                from django.db.models import Q as _Q
                 for essp in ExamSessionSubjectProduct.objects.filter(id__in=essp_ids):
-                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now, and
+                    # MarkingProduct has no PPV — it links to the catalog
+                    # template via marking_template (whose pk equals the
+                    # original catalog.Product.pk per the Phase 3.1
+                    # backfill). Match either path so legacy ESSP lookups
+                    # still resolve for both material and marking rows.
                     store_product = StoreProduct.objects.filter(
-                        exam_session_subject=essp.exam_session_subject,
-                        materialproduct__product_product_variation__product=essp.product
+                        _Q(exam_session_subject=essp.exam_session_subject) & (
+                            _Q(materialproduct__product_product_variation__product=essp.product)
+                            | _Q(markingproduct__marking_template_id=essp.product_id)
+                        )
                     ).first()
                     if store_product:
                         # store_product.pk == purchasable_ptr_id (shared PK)
