@@ -539,32 +539,23 @@ def state_acted_rules_exist(params=None):
 # ---------------------------------------------------------------------------
 
 def setup_tutorial_catalog_product():
-    """Create a tutorial-type catalog product with variation and store product.
+    """Create the TutorialProduct row that the tutorial pact states rely on.
 
-    Returns (store_product, catalog_product).
+    Phase 5 decoupled TutorialProduct from ``catalog.Product`` /
+    ``ProductProductVariation``; identity now lives on the subclass
+    fields ``(exam_session_subject, tutorial_location, format)``.
+    The legacy catalog ``TUT01`` row that was created here previously
+    was dead-link data — ``TutorialProductListAllView`` queries
+    ``TutorialProduct`` directly, so nothing else asserted on a catalog
+    row with fullname containing 'tutorial'. Dropped in Phase 6 cleanup.
+
+    Returns the ``TutorialProduct`` instance.
     """
-    from catalog.models import Product as CatalogProduct
     from store.models import TutorialProduct
     from tutorials.models import TutorialLocation
 
-    subject, exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
+    _subject, _exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
 
-    # Catalog "tutorial" product/variation/PPV are kept for any caller that
-    # asserts on a catalog row with fullname containing 'tutorial' (e.g.
-    # `products/all/`). Phase 5 decoupled TutorialProduct from these — they
-    # exist purely as catalog data now, not linked to the store row.
-    tutorial_product, _ = CatalogProduct.objects.get_or_create(
-        code='TUT01',
-        defaults={
-            'fullname': 'CM2 Tutorial London',
-            'shortname': 'CM2 Tutorial',
-            'is_active': True,
-        },
-    )
-
-    # Phase 5: TutorialProduct identifies itself by
-    # (exam_session_subject, tutorial_location, format) — not PPV.
-    # product_code is auto-generated as {subject}/{location}/{format}/{session}.
     location, _ = TutorialLocation.objects.get_or_create(
         code='LON',
         defaults={'name': 'London'},
@@ -577,7 +568,7 @@ def setup_tutorial_catalog_product():
         defaults={'is_active': True},
     )
 
-    return tutorial_store_product, tutorial_product
+    return tutorial_store_product
 
 
 def state_tutorial_events_exist(params=None):
@@ -589,7 +580,7 @@ def state_tutorial_events_exist(params=None):
     from tutorials.models import TutorialEvents, TutorialVenue
     import datetime
 
-    tutorial_store_product, _cp = setup_tutorial_catalog_product()
+    tutorial_store_product = setup_tutorial_catalog_product()
 
     venue, _ = TutorialVenue.objects.get_or_create(
         name='London',
@@ -617,8 +608,11 @@ def state_tutorial_events_exist(params=None):
 def state_tutorial_products_exist(params=None):
     """State: tutorial products exist
 
-    Creates tutorial store products so products/all/ returns data.
-    The view filters by fullname__icontains='tutorial'.
+    Creates a TutorialProduct row so ``/api/tutorials/products/all/``
+    returns data. Phase 4d refactored that endpoint to query
+    ``TutorialProduct`` directly (subject + tutorial_location), so the
+    legacy catalog ``fullname__icontains='tutorial'`` filter no longer
+    applies.
     """
     setup_tutorial_catalog_product()
 

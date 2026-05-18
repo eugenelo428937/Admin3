@@ -62,6 +62,19 @@ def noop_reverse(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
+    # Non-atomic: the RunPython below UPDATEs tutorial_events, then we
+    # ALTER tutorial_events to drop/convert columns. Several FKs on this
+    # table (see 0005_add_fks_to_events_sessions.py) are DEFERRABLE
+    # INITIALLY DEFERRED, so the UPDATE queues AFTER trigger events that
+    # don't fire until COMMIT. PostgreSQL refuses ALTER TABLE while those
+    # events are pending ("cannot ALTER TABLE because it has pending
+    # trigger events"). Running each operation in its own transaction
+    # lets the RunPython commit (flushing the deferred triggers) before
+    # the schema changes start. Same pattern as 0007_populate_event_fks.
+    # Safe here because the backfill is idempotent (WHERE ... IS NULL)
+    # and this migration is already forward-only by design.
+    atomic = False
+
     dependencies = [
         ('tutorials', '0026_add_administrate_fields'),
     ]
