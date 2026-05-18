@@ -107,9 +107,18 @@ class TestHandlers:
     would just double maintenance for no extra coverage. The one test we
     keep pins that the dispatch table still has three entries."""
 
-    def test_registry_has_three_handlers(self):
+    def test_registry_has_all_expected_handlers(self):
+        # Post Phase 5 (2026-05-18): the registry grew from 3 Event-only
+        # handlers to 8 (Event + Session triples + Learner pair).
+        # `Learner Attended Session` was deliberately NOT registered —
+        # attendance writes through CSV / public-attendance views, not
+        # webhook. New handlers are registered via the same
+        # `@register(...)` decorator so the dispatcher's lookup is
+        # identical.
         assert set(EVENT_HANDLERS.keys()) == {
             'Event Created', 'Event Updated', 'Event Cancelled',
+            'Session Created', 'Session Updated', 'Session Deleted',
+            'Learner Created', 'Learner Cancelled',
         }
 
 

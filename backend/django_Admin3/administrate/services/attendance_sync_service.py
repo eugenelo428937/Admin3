@@ -156,12 +156,10 @@ class AdministrateAttendanceSyncService:
     ) -> Optional[str]:
         """Return Administrate session id, using cache or fresh GraphQL data.
 
-        Cache lookup chain:
+        Cache lookup chain (post Phase 2 thin-bridge refactor):
             tutorials.TutorialSessions  (input)
-            └─ tutorial_event (FK)
-                └─ administrate.Event.tutorial_event (reverse)
-                    └─ adm.Session where day_number == TutorialSessions.sequence
-                        └─ .external_id  ← returned if present
+            └─ adm.Session where tutorial_session FK == this row
+                └─ .external_id  ← returned if present
         """
         adm_session = self._find_adm_session(tutorial_session)
         if adm_session and adm_session.external_id:
@@ -176,15 +174,15 @@ class AdministrateAttendanceSyncService:
         return matched_id
 
     def _find_adm_session(self, tutorial_session) -> Optional[AdmSession]:
-        """Locate the adm.Session row for this tutorial session, if any."""
-        adm_event = AdmEvent.objects.filter(
-            tutorial_event=tutorial_session.tutorial_event,
-        ).first()
-        if adm_event is None:
-            return None
+        """Locate the adm.Session row for this tutorial session, if any.
+
+        Post-Phase-2 (2026-05-18): the lookup is a direct FK match. The
+        old path went through `adm.events` and matched `day_number ==
+        sequence`, but `adm.sessions` now FKs straight to the master
+        and the (event, day_number) columns were dropped.
+        """
         return AdmSession.objects.filter(
-            event=adm_event,
-            day_number=tutorial_session.sequence,
+            tutorial_session=tutorial_session,
         ).first()
 
     def _match_session_in_event(

@@ -103,31 +103,18 @@ class AdministrateSchemaMigrationTest(TestCase):
         self.assertEqual(field.remote_field.related_name, 'adm_events')
 
     def test_event_session_crud(self):
-        """Verify CRUD works for Event and Session models in adm schema."""
-        from administrate.models import (
-            Event, Session, CourseTemplate, Location,
-            Venue, Instructor,
-        )
-        from datetime import date, time
+        """Verify CRUD works for Event and Session bridges in adm schema."""
+        from administrate.models import Event, Session
 
-        # Phase 5 (2026-05-15): adm.events is a thin bridge — these
-        # master-data rows aren't carried by the bridge anymore, but the
-        # adm.Session below still references the Instructor.
-        instr = Instructor.objects.create(external_id='INSTR-EVT')
-
+        # Phase 2 (2026-05-18): adm.sessions is also a thin bridge now.
+        # The Session row holds only external_id + tutorial_session FK;
+        # we exercise the no-FK / unlinked path here (matches the
+        # "received an Administrate id we don't have a master for yet"
+        # state that the webhook dead-letters on).
         event = Event.objects.create(external_id='EVT-1')
         self.assertEqual(event.external_id, 'EVT-1')
         self.assertIsNone(event.tutorial_event)
 
-        session = Session.objects.create(
-            event=event,
-            title='Day 1',
-            day_number=1,
-            classroom_start_date=date(2026, 3, 1),
-            classroom_start_time=time(9, 0),
-            classroom_end_date=date(2026, 3, 1),
-            classroom_end_time=time(17, 0),
-            session_instructor=instr,
-        )
-        self.assertEqual(session.event, event)
-        self.assertEqual(event.sessions.count(), 1)
+        session = Session.objects.create(external_id='SESS-1')
+        self.assertEqual(session.external_id, 'SESS-1')
+        self.assertIsNone(session.tutorial_session)

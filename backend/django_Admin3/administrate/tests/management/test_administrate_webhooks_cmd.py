@@ -18,9 +18,18 @@ class _FakeAPI:
                 'data': {
                     'webhookTypes': {
                         'edges': [
-                            {'node': {'id': 'wt_updated', 'name': 'Event Updated'}},
-                            {'node': {'id': 'wt_created', 'name': 'Event Created'}},
-                            {'node': {'id': 'wt_cancelled', 'name': 'Event Cancelled'}},
+                            # Event types (existing).
+                            {'node': {'id': 'wt_e_updated',   'name': 'Event Updated'}},
+                            {'node': {'id': 'wt_e_created',   'name': 'Event Created'}},
+                            {'node': {'id': 'wt_e_cancelled', 'name': 'Event Cancelled'}},
+                            # Session types (Phase 4, 2026-05-18).
+                            {'node': {'id': 'wt_s_created', 'name': 'Session Created'}},
+                            {'node': {'id': 'wt_s_updated', 'name': 'Session Updated'}},
+                            {'node': {'id': 'wt_s_deleted', 'name': 'Session Deleted'}},
+                            # Learner types (Phase 4, 2026-05-18).
+                            {'node': {'id': 'wt_l_created',  'name': 'Learner Created'}},
+                            {'node': {'id': 'wt_l_cancelled', 'name': 'Learner Cancelled'}},
+                            {'node': {'id': 'wt_l_attended', 'name': 'Learner Attended Session'}},
                         ]
                     }
                 }
@@ -70,12 +79,16 @@ class TestAdministrateWebhooksCommand:
         )
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
-    def test_register_idempotent_creates_three(self, MockAPI):
+    def test_register_creates_one_per_spec(self, MockAPI):
+        # Post Phase 4 (2026-05-18): WEBHOOK_DEFINITIONS expanded from
+        # 3 Event-only specs to 9 (Event + Session + Learner). One
+        # create call per spec on a fresh install.
         fake = _FakeAPI()
         MockAPI.return_value = fake
         call_command('administrate_webhooks', 'register')
         create_calls = [v for q, v in fake.calls if 'webhooks { create' in q]
-        assert len(create_calls) == 3
+        from administrate.management.commands import administrate_webhooks as cmd
+        assert len(create_calls) == len(cmd.WEBHOOK_DEFINITIONS)
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
     def test_register_persists_webhook_id_to_type_mapping(self, MockAPI):
@@ -87,13 +100,25 @@ class TestAdministrateWebhooksCommand:
         """
         from administrate.models import WebhookRegistration
 
+        from administrate.management.commands import administrate_webhooks as cmd
+
+        # Map each spec.name → a distinct fake webhook id, so we can
+        # assert every spec persisted a row keyed to its own id.
+        # Order matches WEBHOOK_DEFINITIONS so the iterator yields the
+        # right id for the right spec on each create call.
+        fake_ids = [f'wh_{i}' for i in range(len(cmd.WEBHOOK_DEFINITIONS))]
+        expected_pairs = dict(zip(
+            fake_ids,
+            [s['type_name'] for s in cmd.WEBHOOK_DEFINITIONS],
+        ))
+
         class _DistinctIdAPI(_FakeAPI):
             """Returns a different webhook id per create call so we can verify
-            all three specs persist distinct rows (vs. update_or_create
+            each spec persists a distinct row (vs. update_or_create
             collapsing into one)."""
             def __init__(self):
                 super().__init__()
-                self._next_id = iter(['wh_evt_upd', 'wh_evt_crt', 'wh_evt_cnl'])
+                self._next_id = iter(fake_ids)
 
             def execute_query(self, query, variables=None):
                 self.calls.append((query, variables))
@@ -110,16 +135,12 @@ class TestAdministrateWebhooksCommand:
         MockAPI.return_value = _DistinctIdAPI()
         call_command('administrate_webhooks', 'register')
 
-        # All three webhooks persisted, keyed by Administrate-side id.
+        # Every spec persisted, keyed by Administrate-side id.
         rows = {
             r.administrate_webhook_id: r.webhook_type_name
             for r in WebhookRegistration.objects.all()
         }
-        assert rows == {
-            'wh_evt_upd': 'Event Updated',
-            'wh_evt_crt': 'Event Created',
-            'wh_evt_cnl': 'Event Cancelled',
-        }
+        assert rows == expected_pairs
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
     def test_register_persistence_is_idempotent_on_rerun(self, MockAPI):
@@ -259,20 +280,39 @@ class TestAdministrateWebhooksCommand:
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')
     def test_register_query_uses_relay_node_pattern(self, MockAPI):
         """Administrate exposes singular-object fetches via Relay's
-        node(id:) interface with inline fragment, not via `event(id:)`
-        (the singular Query field doesn't exist; their schema only has
-        `events` plural and the `node` interface)."""
+        node(id:) interface with inline fragment, not via singular-
+        field accessors (e.g. there is no `event(id:)` — only `events`
+        plural and the `node` interface). Every registered query must
+        target an inline fragment matching the spec's entity type."""
+        from administrate.management.commands import administrate_webhooks as cmd
+
+        # Spec name -> expected inline-fragment type. Defined here
+        # rather than via `entity_path` capitalization to keep the
+        # mapping explicit (and to catch typos in the type-name).
+        fragment_by_path = {
+            'event':   '... on Event',
+            'session': '... on Session',
+            'learner': '... on Learner',
+        }
+
         fake = _FakeAPI()
         MockAPI.return_value = fake
         call_command('administrate_webhooks', 'register')
         create_calls = [v for q, v in fake.calls if 'webhooks { create' in q]
+        # Build a name → spec lookup to know which fragment each call
+        # should carry.
+        spec_by_name = {s['name']: s for s in cmd.WEBHOOK_DEFINITIONS}
         for variables in create_calls:
-            query = variables['input']['query']
+            inp = variables['input']
+            query = inp['query']
+            spec = spec_by_name[inp['name']]
+            expected_fragment = fragment_by_path[spec['entity_path']]
             assert 'node(id: $objectid)' in query, (
                 f'query must use Relay node pattern, got: {query[:200]}'
             )
-            assert '... on Event' in query, (
-                f'query must use inline fragment for Event, got: {query[:200]}'
+            assert expected_fragment in query, (
+                f'query for {spec["name"]} must use inline fragment '
+                f'{expected_fragment!r}, got: {query[:200]}'
             )
 
     @patch('administrate.management.commands.administrate_webhooks.AdministrateAPIService')

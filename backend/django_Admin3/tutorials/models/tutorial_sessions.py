@@ -37,10 +37,22 @@ class TutorialSessions(models.Model):
         blank=True,
         related_name='sessions',
     )
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    # Nullable since 2026-05-18: the Session GraphQL webhook payload does
+    # not expose dates as typed fields (sessions inherit timing context
+    # from the parent Event in Administrate's model). Sessions created via
+    # webhook land with NULL dates and are filled by CSV bulk import. The
+    # clean() validation below short-circuits when either date is None, so
+    # the start<=end invariant still holds for rows that do have dates.
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
     sequence = models.PositiveIntegerField()
     url = models.URLField(max_length=500, null=True, blank=True)
+    # Receives the cancellation state that previously lived on
+    # `adm.sessions.cancelled` (dropped in the same PR as a redundant
+    # column). The Session Deleted webhook flips this to True rather than
+    # hard-deleting — preserves audit history and lets attendance rows
+    # keep their FK.
+    cancelled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

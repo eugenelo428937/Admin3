@@ -12,7 +12,6 @@ Each test drives the public ``sync_job(job)`` entry point with a mocked
 """
 from __future__ import annotations
 
-from datetime import date, time
 from unittest.mock import MagicMock
 
 from django.test import TestCase
@@ -35,30 +34,19 @@ from tutorials.tests.factories import (
 
 # ---- factories ---------------------------------------------------------
 
-def _make_adm_session(*, suffix, day_number=1, external_id=None,
-                     tutorial_event=None):
-    """Create an adm.Event + adm.Session pair (optionally linked to a
-    tutorials.TutorialEvents row), returning the adm.Session.
+def _make_adm_session(*, suffix, tutorial_session, external_id=None):
+    """Create the adm.Session thin-bridge row.
 
-    Phase 5 (2026-05-15): adm.events is now a thin bridge — we only
-    persist external_id + tutorial_event there. The instructor is still
-    needed by adm.Session.session_instructor, so we still seed the
-    Instructor row, just not via the bridge."""
-    ins = AdmInstructor.objects.create(external_id=f'ins-{suffix}')
-    ev = AdmEvent.objects.create(
-        external_id=f'evt-{suffix}',
-        tutorial_event=tutorial_event,
-    )
+    Post-Phase-2 (2026-05-18): adm.sessions is just `external_id +
+    tutorial_session FK + timestamps`. All formerly-redundant data
+    (title, day_number, classroom_*, session_instructor, session_url,
+    cancelled) was moved to / already lived on acted.tutorial_sessions.
+    Callers seed the tutorials.TutorialSessions row separately (typically
+    via `make_session(event=..., title=...)`) and pass it in here.
+    """
     return AdmSession.objects.create(
-        event=ev,
         external_id=external_id,
-        title=f'Day {day_number}',
-        day_number=day_number,
-        classroom_start_date=date(2026, 5, 12),
-        classroom_start_time=time(9, 0),
-        classroom_end_date=date(2026, 5, 12),
-        classroom_end_time=time(17, 0),
-        session_instructor=ins,
+        tutorial_session=tutorial_session,
     )
 
 
@@ -150,7 +138,7 @@ class SyncJobHappyPathTests(TestCase):
         # need to query for it.
         self.adm_session = _make_adm_session(
             suffix='1', external_id='adm-sess-cached',
-            tutorial_event=self.t_event,
+            tutorial_session=self.t_session,
         )
         self.reg_attended, _ = _make_registration_with_student(
             self.t_session, student_ref=500, suffix='attended',
@@ -269,7 +257,7 @@ class SyncJobTitleLookupAndWriteThroughTests(TestCase):
         # adm.Session exists but external_id is empty — should be filled in.
         self.adm_session = _make_adm_session(
             suffix='2', external_id=None,
-            tutorial_event=self.t_event, day_number=1,
+            tutorial_session=self.t_session,
         )
         self.reg, _ = _make_registration_with_student(
             self.t_session, student_ref=600, suffix='wt',
@@ -318,7 +306,7 @@ class SyncJobErrorTests(TestCase):
         self.t_session = make_session(event=self.t_event, title='Tutorial Day 1')
         self.adm_session = _make_adm_session(
             suffix='3', external_id='adm-sess-3',
-            tutorial_event=self.t_event,
+            tutorial_session=self.t_session,
         )
         self.reg, _ = _make_registration_with_student(
             self.t_session, student_ref=700, suffix='err',
