@@ -242,7 +242,7 @@ def state_authenticated_user_with_items_in_cart(params=None):
         price_type='standard',
         actual_price=price.amount,
         metadata={
-            'variationId': store_product.product_product_variation.id,
+            'variationId': store_product.get_material_ppv().id,
             'variationName': 'Printed',
             'variationType': 'Material',
             'is_digital': False,

@@ -105,7 +105,8 @@ class CartItemSerializer(serializers.ModelSerializer):
             return voucher.name or 'Marking Voucher'
         product = self._product(obj)
         if product:
-            catalog_product = product.product
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv is not None else None
             if catalog_product is not None:
                 return catalog_product.fullname
             return product.name or product.product_code
@@ -123,7 +124,8 @@ class CartItemSerializer(serializers.ModelSerializer):
             return voucher.code
         product = self._product(obj)
         if product:
-            catalog_product = product.product
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv is not None else None
             if catalog_product is not None:
                 return catalog_product.code
             return product.product_code
@@ -152,9 +154,10 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_product_id(self, obj):
         """Get product ID - returns voucher ID for marking vouchers.
 
-        Phase 5 Task 4b: TutorialProduct and MarkingProduct don't have a
-        PPV, so ``product.product`` (the catalog template) is None for
-        those rows. Falls back to the store-product id in that case.
+        Phase 6: TutorialProduct and MarkingProduct don't carry a PPV
+        chain back to a catalog template; ``get_material_ppv()`` returns
+        ``None`` for those rows. Falls back to the store-product id in
+        that case so non-material cart lines still surface a stable id.
         """
         item_type = self._item_type(obj)
         voucher = self._marking_voucher(obj)
@@ -162,9 +165,9 @@ class CartItemSerializer(serializers.ModelSerializer):
             return voucher.id
         product = self._product(obj)
         if product:
-            catalog_product = product.product
-            if catalog_product is not None:
-                return catalog_product.id
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            if ppv is not None and ppv.product is not None:
+                return ppv.product.id
             return product.id
         return None
 
@@ -209,7 +212,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         if kind == 'marking':
             return 'marking'
 
-        catalog_product = product.product  # None for tutorial/marking
+        ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+        catalog_product = ppv.product if ppv is not None else None
         if catalog_product is None:
             return 'material'
 
@@ -445,7 +449,8 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
             return obj.metadata.get('fee_name', 'Fee') if obj.metadata else 'Fee'
         product = self._product(obj)
         if product:
-            catalog_product = product.product
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv is not None else None
             if catalog_product is not None:
                 return catalog_product.fullname
             return product.name or product.product_code
@@ -461,7 +466,8 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
             return obj.metadata.get('fee_type', 'fee') if obj.metadata else 'fee'
         product = self._product(obj)
         if product:
-            catalog_product = product.product
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv is not None else None
             if catalog_product is not None:
                 return catalog_product.code
             return product.product_code
@@ -504,7 +510,8 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
             if kind == 'marking':
                 return 'marking'
 
-            catalog_product = product.product  # None for tutorial/marking
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv is not None else None  # None for tutorial/marking
             if catalog_product is None:
                 return 'material'
 

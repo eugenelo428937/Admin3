@@ -36,9 +36,9 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.end_date',
         read_only=True
     )
-    # Phase 5 Task 4b: PPV lives on MaterialProduct now. The legacy
-    # @property on Product returns None for non-material rows, so traverse
-    # via SerializerMethodField to defend against AttributeError on None.
+    # Phase 6: PPV lives on MaterialProduct. Polymorphic access goes
+    # through Product.get_material_ppv(), which returns None for
+    # tutorial/marking rows — we defend against that in each getter.
     variation_type = serializers.SerializerMethodField()
     variation_name = serializers.SerializerMethodField()
     product_name = serializers.SerializerMethodField()
@@ -72,25 +72,25 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         """Get display name from product variation."""
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         if ppv and ppv.product:
             return ppv.product.fullname
         return obj.product_code
 
     def get_variation_type(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         return ppv.product_variation.variation_type if ppv else None
 
     def get_variation_name(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         return ppv.product_variation.name if ppv else None
 
     def get_product_name(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         return ppv.product.fullname if ppv else None
 
     def get_product_shortname(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         return ppv.product.shortname if ppv else None
 
 
@@ -121,7 +121,7 @@ class BundleComponentSerializer(serializers.Serializer):
 
     def get_product(self, obj):
         """Get nested product object with fullname."""
-        ppv = obj.product.product_product_variation
+        ppv = obj.product.get_material_ppv()
         if ppv and ppv.product:
             return {
                 'id': ppv.product.id,
@@ -134,7 +134,7 @@ class BundleComponentSerializer(serializers.Serializer):
 
     def get_product_variation(self, obj):
         """Get nested product_variation object."""
-        ppv = obj.product.product_product_variation
+        ppv = obj.product.get_material_ppv()
         if ppv and ppv.product_variation:
             return {
                 'id': ppv.product_variation.id,

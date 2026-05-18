@@ -112,7 +112,6 @@ class TutorialAddViewGuestTests(TestCase):
             defaults={'is_active': True})
         sp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CB1/Live/LO_6H/25',
             format='LO_6H')
         sp.save()

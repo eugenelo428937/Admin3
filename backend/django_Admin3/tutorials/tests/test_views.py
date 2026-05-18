@@ -73,7 +73,6 @@ class TutorialEventsAPITestCase(APITestCase):
         # Create store.TutorialProduct (Phase 4b: FK retargeted to TutorialProduct)
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.product_product_variation,
             product_code='CM2/TWKDTUT001/JUNE2025',
             format='F2F_3F',
         )
@@ -360,14 +359,12 @@ class TutorialEventsListViewTestCase(APITestCase):
         # Create store.TutorialProduct instances (Phase 4b: FK retargeted)
         self.store_product1 = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject1,
-            product_product_variation=self.ppv1,
             product_code='CM2/TWKDTUT001/JUNE2025',
             format='F2F_3F',
         )
 
         self.store_product2 = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject2,
-            product_product_variation=self.ppv2,
             product_code='SA1/TWKDTUT002/JUNE2025',
             format='F2F_3F',
         )
@@ -530,7 +527,6 @@ class TutorialProductListAllViewTestCase(APITestCase):
         # TutorialProductListAllView query returns this row.
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             product_code='CM2/TUT001LDN/JUNE2025',
             format='F2F_3F',
         )
@@ -637,7 +633,6 @@ class TutorialProductVariationListViewTestCase(APITestCase):
         # endpoint now uses TutorialProduct PK as product_id, not catalog.Product.id.
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             product_code='TUT-CM2-WKD',
             format='F2F_3F',
         )
@@ -746,7 +741,6 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
         # Create store.TutorialProduct (Phase 4b: FK retargeted to TutorialProduct)
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             product_code='CM2/TWKDTUT001/JUNE2025-comp',
             format='F2F_3F',
         )
@@ -886,7 +880,6 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
         )
         store_product = TutorialProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='TUT_BC/STORE',
             format='F2F_3F',
         )
@@ -927,7 +920,6 @@ class TutorialProductListViewWithStoreProductTestCase(APITestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='TUT_PL/STORE',
             format='F2F_3F',
         )
@@ -1017,13 +1009,11 @@ class TutorialEventsListViewSubjectFilterTestCase(APITestCase):
 
         self.sp_cm2 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
-            product_product_variation=ppv_cm2,
             product_code='FLT_CM2/WKD/2025',
             format='F2F_3F',
         )
         self.sp_sa1 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
-            product_product_variation=ppv_sa1,
             product_code='FLT_SA1/WKD/2025',
             format='F2F_3F',
         )
@@ -1106,7 +1096,6 @@ class TutorialProductListAllViewCachedReturnTestCase(APITestCase):
         # TutorialProductListAllView query returns this row.
         TutorialProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CACHE_CM2/WKD/2025',
             format='F2F_3F',
         )
@@ -1198,13 +1187,11 @@ class TutorialProductVariationListViewFilterTestCase(APITestCase):
         # The variation endpoint now uses TutorialProduct PK as product_id.
         self.sp_cm2_wkd = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
-            product_product_variation=self.ppv_wkd,
             product_code='VAR_CM2/WKD/2025',
             format='F2F_3F',
         )
         self.sp_sa1_day = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
-            product_product_variation=self.ppv_day,
             product_code='VAR_SA1/DAY/2025',
             format='F2F_3F',
         )
@@ -1330,19 +1317,16 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         # Create store products (TutorialProduct after Phase 4b retarget)
         self.sp1 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
-            product_product_variation=self.ppv_p1_wkd,
             product_code='COMP_CM2/WKD_LON/2025',
             format='F2F_3F',
         )
         self.sp2 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_cm2,
-            product_product_variation=self.ppv_p1_day,
             product_code='COMP_CM2/DAY_LON/2025',
             format='F2F_3F',
         )
         self.sp3 = TutorialProduct.objects.create(
             exam_session_subject=self.ess_sa1,
-            product_product_variation=self.ppv_p2_wkd,
             product_code='COMP_SA1/WKD_MAN/2025',
             format='F2F_3F',
         )

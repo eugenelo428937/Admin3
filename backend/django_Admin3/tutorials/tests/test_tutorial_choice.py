@@ -47,7 +47,7 @@ def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
         product=cat_prod, product_variation=pv,
     )
     sp = TutorialProduct(
-        exam_session_subject=ess, product_product_variation=ppv,
+        exam_session_subject=ess,
         product_code=f'{subject_code}/Live/{variation_code}/{sitting_code}',
         format=format,
     )
@@ -136,7 +136,6 @@ class TutorialChoiceTests(TestCase):
         )
         oc_sp = TutorialProduct(
             exam_session_subject=self.sp.exam_session_subject,
-            product_product_variation=oc_ppv,
             product_code='CB1/OC/OC/24',
             format='OC',
         )

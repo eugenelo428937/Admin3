@@ -18,6 +18,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct
+from store.models import MaterialProduct
 from store.models.purchasable import Purchasable
 
 
@@ -43,10 +44,9 @@ class SearchAvailableTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cp, product_variation=v, is_active=True,
         )
-        self.sp = StoreProduct.objects.create(
-            exam_session_subject=ess,
+        self.sp = MaterialProduct.objects.create(
+exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL,
             is_active=False,  # KEY: inactive at the leaf
             name='SearchableProduct eBook',
         )

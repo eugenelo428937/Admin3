@@ -62,8 +62,8 @@ class _AvailableNowFixtureMixin:
             product_code=f'{subject_code}/PP/{session_code}',
         )
         # The factory get_or_creates the PPV; flip its flag to True too.
-        sp.product_product_variation.is_active = True
-        sp.product_product_variation.save()
+        sp.get_material_ppv().is_active = True
+        sp.get_material_ppv().save()
         return sp
 
 
@@ -129,14 +129,14 @@ class TestUnifiedSearchAppliesAvailableNow(_AvailableNowFixtureMixin, TestCase):
     def test_excludes_when_product_product_variation_inactive(self):
         """PPV.is_active=False hides the product (Condition 2)."""
         sp = self._build_visible_product('AVN4', '2026-04')
-        sp.product_product_variation.is_active = False
-        sp.product_product_variation.save()
+        sp.get_material_ppv().is_active = False
+        sp.get_material_ppv().save()
         self.assertNotIn(sp.id, self._ids_returned())
 
     def test_excludes_when_product_variation_inactive(self):
         """ProductVariation.is_active=False hides the product (Condition 4)."""
         sp = self._build_visible_product('AVN5', '2026-04')
-        pv = sp.product_product_variation.product_variation
+        pv = sp.get_material_ppv().product_variation
         pv.is_active = False
         pv.save()
         self.assertNotIn(sp.id, self._ids_returned())

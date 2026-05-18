@@ -77,7 +77,7 @@ class BundleComponentSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         """Get nested product object with id and fullname."""
         store_product = obj.product
-        ppv = getattr(store_product, 'product_product_variation', None)
+        ppv = store_product.get_material_ppv() if hasattr(store_product, 'get_material_ppv') else None
 
         # Get product info from the linked catalog product if available
         if ppv and ppv.product:
@@ -95,7 +95,7 @@ class BundleComponentSerializer(serializers.ModelSerializer):
     def get_product_variation(self, obj):
         """Get nested product variation object if available."""
         store_product = obj.product
-        ppv = getattr(store_product, 'product_product_variation', None)
+        ppv = store_product.get_material_ppv() if hasattr(store_product, 'get_material_ppv') else None
 
         if ppv and ppv.product_variation:
             pv = ppv.product_variation

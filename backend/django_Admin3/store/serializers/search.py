@@ -92,7 +92,9 @@ def group_store_products_for_search(store_products):
     catalog_products = {}
 
     for store_product in store_products:
-        ppv = store_product.product_product_variation
+        ppv = store_product.get_material_ppv()
+        if ppv is None:
+            continue  # Tutorial/Marking rows don't fit the grouped shape.
         catalog_product = ppv.product
         catalog_products[catalog_product.id] = {
             'catalog_product': catalog_product,
@@ -108,7 +110,7 @@ def group_store_products_for_search(store_products):
         ess = info['ess']
 
         # Compute type from PPV filter groups
-        first_ppv = store_prods[0].product_product_variation
+        first_ppv = store_prods[0].get_material_ppv()
         group_names = [pg.product_group.name for pg in first_ppv.product_groups.select_related('product_group')]
         if 'Tutorial' in group_names:
             product_type = 'Tutorial'
@@ -120,7 +122,7 @@ def group_store_products_for_search(store_products):
         # Build variations array
         variations = []
         for sp in store_prods:
-            pv = sp.product_product_variation.product_variation
+            pv = sp.get_material_ppv().product_variation
             prices = [
                 {
                     'id': p.id,

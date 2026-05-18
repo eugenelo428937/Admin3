@@ -14,6 +14,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct
 from store.serializers import UnifiedProductSerializer
 
 
@@ -31,10 +32,9 @@ class UnifiedSerializerDatesTests(TestCase):
             variation_type='eBook', name='X eBook', code='X-EBK',
         )
         ppv = ProductProductVariation.objects.create(product=cp, product_variation=v)
-        sp = StoreProduct.objects.create(
-            exam_session_subject=ess,
+        sp = MaterialProduct.objects.create(
+exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL,
             name='X eBook',
         )
         data = UnifiedProductSerializer(sp).data

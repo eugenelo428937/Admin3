@@ -71,9 +71,11 @@ def _build_order_email_data(order, user, user_country: str) -> dict:
         }
 
         if item.product:
+            ppv = item.product.get_material_ppv() if hasattr(item.product, 'get_material_ppv') else None
+            display_name = ppv.product.fullname if (ppv and ppv.product) else str(item.product)
             item_data.update({
-                'name': item.product.product.fullname if hasattr(item.product, 'product') else str(item.product),
-                'product_name': item.product.product.fullname if hasattr(item.product, 'product') else str(item.product),
+                'name': display_name,
+                'product_name': display_name,
             })
         elif item.item_type == 'fee':
             item_data['name'] = item.metadata.get('fee_name', 'Fee')

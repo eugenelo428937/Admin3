@@ -69,10 +69,8 @@ class TutorialEventTestCase(TestCase):
         )
 
         # Create store.TutorialProduct (Phase 4b: FK retargeted from Product to TutorialProduct)
-        # Links exam_session_subject directly to product_product_variation
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.product_product_variation,
             product_code='CM2/TWKDTUT001/JUNE2025',
             format='F2F_3F',
         )
@@ -494,7 +492,6 @@ class TutorialSessionsModelTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.product_product_variation,
             product_code='TS_CM2/TWKDTUT001/JUNE2025',
             format='F2F_3F',
         )
@@ -1025,7 +1022,6 @@ class TutorialEventsInstructorsDerivedTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='EIFK/T/2025',
             format='F2F_3F',
         )
@@ -1108,7 +1104,6 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='EVVL/T/2025',
             format='F2F_3F',
         )
@@ -1203,7 +1198,6 @@ class TutorialSessionsInstructorsM2MTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='SEIN/T/2025',
             format='F2F_3F',
         )
@@ -1306,7 +1300,6 @@ class TutorialSessionsVenueLocationFKTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='SEVL/T/2025',
             format='F2F_3F',
         )

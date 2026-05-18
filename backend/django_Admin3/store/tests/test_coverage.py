@@ -300,15 +300,16 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
     def setUpTestData(cls):
         cls._create_test_data()
 
-    def test_product_property_returns_catalog_product(self):
-        """Product.product returns catalog product (line 110 - already covered, but validating)."""
-        result = self.store_product_printed.product
-        self.assertEqual(result, self.catalog_product)
-
-    def test_product_variation_property_returns_variation(self):
-        """Product.product_variation returns variation (line 120)."""
-        result = self.store_product_printed.product_variation
-        self.assertEqual(result, self.variation_printed)
+    def test_get_material_ppv_returns_ppv_for_material(self):
+        """Product.get_material_ppv() returns the MaterialProduct PPV — the
+        explicit polymorphic accessor that replaced the removed
+        ``.product_product_variation`` / ``.product`` / ``.product_variation``
+        backward-compat properties in Phase 6.
+        """
+        ppv = self.store_product_printed.get_material_ppv()
+        self.assertEqual(ppv, self.ppv_printed)
+        self.assertEqual(ppv.product, self.catalog_product)
+        self.assertEqual(ppv.product_variation, self.variation_printed)
 
     def test_variations_property_returns_queryset(self):
         """Product.variations returns single-item queryset (line 136).
@@ -335,7 +336,6 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
 
         product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv_tutorial,
             is_active=True,
             format='LO_6H',
             tutorial_location=location,
@@ -361,7 +361,6 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
 
         product = MarkingProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv_marking,
             marking_template=marking_template,
             is_active=True
         )
@@ -751,7 +750,7 @@ class TestBundleComponentSerializerFallback(StoreCoverageTestDataMixin, TestCase
         mock_product = MagicMock()
         mock_product.id = 999
         mock_product.product_code = 'TEST/CODE/123'
-        mock_product.product_product_variation = None
+        mock_product.get_material_ppv.return_value = None
         mock_bp.product = mock_product
 
         result = serializer.get_product(mock_bp)
@@ -778,7 +777,7 @@ class TestBundleComponentSerializerFallback(StoreCoverageTestDataMixin, TestCase
 
         mock_bp = MagicMock()
         mock_product = MagicMock()
-        mock_product.product_product_variation = None
+        mock_product.get_material_ppv.return_value = None
         mock_bp.product = mock_product
 
         result = serializer.get_product_variation(mock_bp)
@@ -827,7 +826,7 @@ class TestUnifiedProductSerializerFallback(StoreCoverageTestDataMixin, TestCase)
         mock_product.product_code = 'FALLBACK/CODE'
         mock_ppv = MagicMock()
         mock_ppv.product = None
-        mock_product.product_product_variation = mock_ppv
+        mock_product.get_material_ppv.return_value = mock_ppv
 
         result = serializer.get_name(mock_product)
         self.assertEqual(result, 'FALLBACK/CODE')
@@ -870,7 +869,7 @@ class TestUnifiedBundleComponentSerializer(StoreCoverageTestDataMixin, TestCase)
         mock_product.product_code = 'FALLBACK/CODE'
         mock_ppv = MagicMock()
         mock_ppv.product = None
-        mock_product.product_product_variation = mock_ppv
+        mock_product.get_material_ppv.return_value = mock_ppv
         mock_bp.product = mock_product
 
         result = serializer.get_product(mock_bp)
@@ -898,7 +897,7 @@ class TestUnifiedBundleComponentSerializer(StoreCoverageTestDataMixin, TestCase)
         mock_product = MagicMock()
         mock_ppv = MagicMock()
         mock_ppv.product_variation = None
-        mock_product.product_product_variation = mock_ppv
+        mock_product.get_material_ppv.return_value = mock_ppv
         mock_bp.product = mock_product
 
         result = serializer.get_product_variation(mock_bp)

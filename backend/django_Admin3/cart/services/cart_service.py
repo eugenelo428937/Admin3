@@ -487,7 +487,8 @@ class CartService:
         try:
             if getattr(product, 'kind', None) == 'marking':
                 return True
-            catalog_product = product.product  # may be None for tutorial/marking
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            catalog_product = ppv.product if ppv else None
             if catalog_product is None:
                 return False
             product_name = catalog_product.fullname.lower()
@@ -526,7 +527,8 @@ class CartService:
                 return True
 
             if cart_item.product:
-                product = cart_item.product.product
+                ppv = cart_item.product.get_material_ppv()
+                product = ppv.product if ppv else None
                 if product and hasattr(product, 'code') and product.code == 'OC':
                     return True
             return False
@@ -550,7 +552,8 @@ class CartService:
             if metadata.get('type') == 'tutorial':
                 return True
             if cart_item.product:
-                product = cart_item.product.product
+                ppv = cart_item.product.get_material_ppv()
+                product = ppv.product if ppv else None
                 if product and hasattr(product, 'code'):
                     if (product.code in ['T', 'TUT']
                             or 'tutorial' in product.fullname.lower()):
@@ -578,7 +581,8 @@ class CartService:
                 return True
 
             if cart_item.product:
-                product = cart_item.product.product
+                ppv = cart_item.product.get_material_ppv()
+                product = ppv.product if ppv else None
                 if product and hasattr(product, 'code'):
                     if product.code in ['M', 'MAT', 'BOOK'] or 'material' in product.fullname.lower():
                         return True
@@ -757,8 +761,10 @@ class CartService:
     def _get_item_product_code(self, cart_item):
         """Extract product code for rules engine (FC, PBOR, etc.)."""
         try:
-            if cart_item.product and cart_item.product.product:
-                return cart_item.product.product.code or ''
+            if cart_item.product:
+                ppv = cart_item.product.get_material_ppv()
+                if ppv and ppv.product:
+                    return ppv.product.code or ''
         except (AttributeError, Exception):
             pass
         return ''
