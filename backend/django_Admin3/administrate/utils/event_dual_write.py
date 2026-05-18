@@ -186,7 +186,21 @@ def create_tutorial_event(row_data, debug=False):
         )
         return None
 
-    # Use LMS dates as outer bounds; fall back to classroom dates
+    # Phase 5b (2026-05-16): TutorialEvents.start_date/end_date were
+    # dropped; the canonical fields are lms_start_date/lms_end_date
+    # (DateTime). Convert the parsed date values to tz-aware datetimes
+    # at midnight Europe/London (matches the canonical conversion the
+    # webhook handler uses for new deliveries).
+    from zoneinfo import ZoneInfo
+    _LONDON = ZoneInfo('Europe/London')
+
+    def _to_dt(d):
+        if d is None:
+            return None
+        if isinstance(d, datetime):
+            return d
+        return datetime.combine(d, datetime.min.time(), tzinfo=_LONDON)
+
     start_date = _parse_iso_date(
         row_data.get('formatted_lms_start_datetime')
         or row_data.get('formatted_classroom_start_datetime')
@@ -212,10 +226,10 @@ def create_tutorial_event(row_data, debug=False):
             store_product=store_product,
             location=tutorial_location,
             venue=tutorial_venue,
-            start_date=start_date,
-            end_date=end_date,
+            lms_start_date=_to_dt(start_date),
+            lms_end_date=_to_dt(end_date),
             remain_space=row_data.get('Max places', 0),
-            finalisation_date=finalisation_date,
+            finalisation_date=_to_dt(finalisation_date),
         )
         if debug:
             logger.debug(f"Created tutorial event: {tutorial_event.code}")

@@ -164,8 +164,10 @@ class CreateTutorialEventTest(EventImporterTestMixin, TestCase):
         self.assertEqual(event.store_product, self.store_product)
         self.assertEqual(event.location, self.tutorial_location)
         self.assertEqual(event.venue, self.tutorial_venue)
-        self.assertEqual(event.start_date, date(2026, 4, 1))
-        self.assertEqual(event.end_date, date(2026, 9, 30))
+        # Phase 5b: legacy Date columns dropped; assert via the new
+        # DateTime fields' .date() projection instead.
+        self.assertEqual(event.lms_start_date.date(), date(2026, 4, 1))
+        self.assertEqual(event.lms_end_date.date(), date(2026, 9, 30))
 
     def test_returns_none_when_store_product_unresolvable(self):
         """Should return None if the store product FK chain can't be resolved."""
@@ -220,8 +222,8 @@ class CreateTutorialSessionTest(EventImporterTestMixin, TestCase):
             store_product=self.store_product,
             location=self.tutorial_location,
             venue=self.tutorial_venue,
-            start_date=date(2026, 4, 1),
-            end_date=date(2026, 9, 30),
+            lms_start_date=date(2026, 4, 1),
+            lms_end_date=date(2026, 9, 30),
         )
 
     def test_creates_session_linked_to_event(self):
@@ -280,8 +282,8 @@ class CreateEventBridgeRecordTest(EventImporterTestMixin, TestCase):
             store_product=self.store_product,
             location=self.tutorial_location,
             venue=self.tutorial_venue,
-            start_date=date(2026, 4, 1),
-            end_date=date(2026, 9, 30),
+            lms_start_date=date(2026, 4, 1),
+            lms_end_date=date(2026, 9, 30),
         )
 
     def test_creates_bridge_record(self):

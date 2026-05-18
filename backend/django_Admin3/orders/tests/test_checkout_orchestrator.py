@@ -303,7 +303,7 @@ class CheckoutWithTutorialAndFeeTests(TestCase):
         sp.save()
         event = TutorialEvents.objects.create(
             code='CP1-01-25A', store_product=sp,
-            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+            lms_start_date=date(2025, 1, 1), lms_end_date=date(2025, 2, 1))
 
         # Add tutorial via the cart service (relational path).
         item, err = cart_service.add_item(

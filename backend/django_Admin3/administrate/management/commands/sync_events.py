@@ -185,14 +185,8 @@ class Command(BaseCommand):
         if main_instructor is not None:
             defaults['main_instructor'] = main_instructor
 
-        # Dual-write legacy Date columns from the new DateTime values
-        # so readers using start_date/end_date stay current through Phase 5.
-        from administrate.services.webhook_handlers import _truncate_to_date
-        if defaults.get('lms_start_date'):
-            defaults['start_date'] = _truncate_to_date(defaults['lms_start_date'])
-        if defaults.get('lms_end_date'):
-            defaults['end_date'] = _truncate_to_date(defaults['lms_end_date'])
-
+        # Phase 5b (2026-05-16): the legacy Date columns were dropped;
+        # the dual-write that used to live here is gone.
         for field, value in defaults.items():
             setattr(tutorial_event, field, value)
         tutorial_event.save()

@@ -122,14 +122,14 @@ def existing_events(deps, store_product):
     from tutorials.models import TutorialEvents
     te_42 = TutorialEvents.objects.create(
         code='CB1-EVT42-26S',
-        start_date=date(2026, 9, 1),
-        end_date=date(2026, 12, 1),
+        lms_start_date=date(2026, 9, 1),
+        lms_end_date=date(2026, 12, 1),
         store_product=store_product,
     )
     te_43 = TutorialEvents.objects.create(
         code='CB1-EVT43-26S',
-        start_date=date(2026, 9, 1),
-        end_date=date(2026, 12, 1),
+        lms_start_date=date(2026, 9, 1),
+        lms_end_date=date(2026, 12, 1),
         store_product=store_product,
     )
     return {**deps, 'tutorial_event_42': te_42, 'tutorial_event_43': te_43}

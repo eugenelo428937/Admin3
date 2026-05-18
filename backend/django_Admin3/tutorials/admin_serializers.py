@@ -79,10 +79,11 @@ class AdminTutorialEventListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TutorialEvents
+        # Phase 5b (2026-05-16): start_date/end_date dropped on TutorialEvents.
         fields = [
             'id', 'code',
             'subject', 'exam_session',
-            'start_date', 'end_date',
+            'lms_start_date', 'lms_end_date',
             'location', 'venue',
             'main_instructor', 'all_instructors',
             'finalisation_date',

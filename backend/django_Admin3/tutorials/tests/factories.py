@@ -73,11 +73,13 @@ def make_store_product(subject=None, exam_session=None,
 
 
 def make_event(store_product=None, code='EV-001'):
+    # Phase 5b (2026-05-16): legacy start_date/end_date dropped; the
+    # canonical fields are lms_start_date / lms_end_date (DateTime).
     sp = store_product or make_store_product()
     return TutorialEvents.objects.create(
         code=code, store_product=sp,
-        start_date=timezone.now().date(),
-        end_date=(timezone.now() + timedelta(days=2)).date(),
+        lms_start_date=timezone.now(),
+        lms_end_date=timezone.now() + timedelta(days=2),
     )
 
 

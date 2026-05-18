@@ -255,10 +255,15 @@ class TutorialComprehensiveDataView(APIView):
                 'venue': str(event.venue) if event.venue else None,
                 'location': str(event.location) if event.location else None,
                 'is_soldout': event.is_soldout,
-                'finalisation_date': event.finalisation_date,
+                # finalisation_date is now DateTime — `.date()` preserves the
+                # date-only API shape callers depend on. (Phase 5b, 2026-05-16)
+                'finalisation_date': event.finalisation_date.date() if event.finalisation_date else None,
                 'remain_space': event.remain_space,
-                'start_date': event.start_date,
-                'end_date': event.end_date,
+                # Sourced from `lms_start_date`/`lms_end_date` (DateTime) since
+                # the legacy Date columns were dropped. `.date()` keeps the API
+                # contract date-only as before.
+                'start_date': event.lms_start_date.date() if event.lms_start_date else None,
+                'end_date': event.lms_end_date.date() if event.lms_end_date else None,
                 'title': f"{event.code}",
                 'price': None  # Add price logic if available
             })

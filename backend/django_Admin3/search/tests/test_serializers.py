@@ -255,17 +255,22 @@ class TestStoreProductListSerializerTutorialEvents(TestCase):
         self.assertEqual(events[0]['remain_space'], 10)
 
     def test_serialize_tutorial_events_with_dates(self):
-        """Tutorial events with dates serialize dates as ISO format."""
-        from datetime import date
+        """Tutorial events with dates serialize dates as ISO format.
+
+        Phase 5b (2026-05-16): the serializer sources from lms_start_date /
+        lms_end_date / finalisation_date (DateTime) but emits date-only
+        ISO strings via .date().isoformat() — preserving the public API
+        shape callers depend on."""
+        from datetime import date, datetime, timezone as tz
         mock_event = MagicMock()
         mock_event.id = 2
         mock_event.code = 'TUT-BRM-001'
         mock_event.venue = 'Birmingham'
         mock_event.is_soldout = True
-        mock_event.finalisation_date = date(2025, 3, 15)
+        mock_event.finalisation_date = datetime(2025, 3, 15, tzinfo=tz.utc)
         mock_event.remain_space = 0
-        mock_event.start_date = date(2025, 4, 1)
-        mock_event.end_date = date(2025, 4, 5)
+        mock_event.lms_start_date = datetime(2025, 4, 1, tzinfo=tz.utc)
+        mock_event.lms_end_date = datetime(2025, 4, 5, tzinfo=tz.utc)
 
         mock_product = MagicMock()
         mock_product.tutorial_events.all.return_value = [mock_event]

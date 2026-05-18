@@ -34,8 +34,10 @@ from tutorials.services.attendance_save_service import save_attendance_items
 
 
 ALLOWED_ORDERING = {
-    'start_date', '-start_date',
-    'end_date', '-end_date',
+    # Phase 5b (2026-05-16): start_date / end_date dropped on TutorialEvents.
+    # The query-param values stay readable but map to the new DateTime cols.
+    'lms_start_date', '-lms_start_date',
+    'lms_end_date', '-lms_end_date',
     'code', '-code',
 }
 
@@ -87,7 +89,7 @@ class AdminTutorialEventViewSet(viewsets.ReadOnlyModelViewSet):
         if ordering and ordering in ALLOWED_ORDERING:
             qs = qs.order_by(ordering)
         else:
-            qs = qs.order_by('start_date')
+            qs = qs.order_by('lms_start_date')
         return qs
 
     @action(detail=False, methods=['get'], url_path='filter-options')

@@ -81,8 +81,8 @@ class TutorialEventTestCase(TestCase):
         """Test TutorialEvent creation with all required fields."""
         event = TutorialEvents.objects.create(
             code='TUT-CM2-LON-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -103,8 +103,8 @@ class TutorialEventTestCase(TestCase):
             is_soldout=True,
             finalisation_date=finalisation,
             remain_space=15,
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -117,8 +117,8 @@ class TutorialEventTestCase(TestCase):
         """Test code field has unique constraint."""
         TutorialEvents.objects.create(
             code='TUT-UNIQUE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -127,8 +127,8 @@ class TutorialEventTestCase(TestCase):
         with self.assertRaises(IntegrityError):
             TutorialEvents.objects.create(
                 code='TUT-UNIQUE-001',  # Duplicate code
-                start_date=date.today() + timedelta(days=40),
-                end_date=date.today() + timedelta(days=42),
+                lms_start_date=timezone.now() + timedelta(days=40),
+                lms_end_date=timezone.now() + timedelta(days=42),
                 store_product=self.store_product
             )
 
@@ -137,8 +137,8 @@ class TutorialEventTestCase(TestCase):
         code = 'A' * 100
         event = TutorialEvents.objects.create(
             code=code,
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertEqual(len(event.code), 100)
@@ -147,8 +147,8 @@ class TutorialEventTestCase(TestCase):
         """Test venue FK is nullable (was CharField, now FK)."""
         event = TutorialEvents.objects.create(
             code='TUT-VENUE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertIsNone(event.venue)
@@ -157,8 +157,8 @@ class TutorialEventTestCase(TestCase):
         """Test is_soldout defaults to False."""
         event = TutorialEvents.objects.create(
             code='TUT-DEFAULT-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertFalse(event.is_soldout)
@@ -167,8 +167,8 @@ class TutorialEventTestCase(TestCase):
         """Test remain_space defaults to 0."""
         event = TutorialEvents.objects.create(
             code='TUT-SPACE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertEqual(event.remain_space, 0)
@@ -177,8 +177,8 @@ class TutorialEventTestCase(TestCase):
         """Test finalisation_date is optional (null=True, blank=True)."""
         event = TutorialEvents.objects.create(
             code='TUT-FINALISATION-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertIsNone(event.finalisation_date)
@@ -187,8 +187,8 @@ class TutorialEventTestCase(TestCase):
         """Test ForeignKey relationship with ExamSessionSubjectProductVariation."""
         event = TutorialEvents.objects.create(
             code='TUT-RELATION-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -202,8 +202,8 @@ class TutorialEventTestCase(TestCase):
         """Test cascading delete - deleting ESSP variation deletes tutorial events."""
         event = TutorialEvents.objects.create(
             code='TUT-CASCADE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         event_id = event.id
@@ -218,8 +218,8 @@ class TutorialEventTestCase(TestCase):
         """Test subject_code property returns correct subject code."""
         event = TutorialEvents.objects.create(
             code='TUT-PROPERTY-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -232,8 +232,8 @@ class TutorialEventTestCase(TestCase):
         event = TutorialEvents.objects.create(
             code='TUT-STR-001',
             venue=venue,
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertEqual(str(event), "TUT-STR-001 - London Training Center")
@@ -242,71 +242,82 @@ class TutorialEventTestCase(TestCase):
         """Test __str__ with null venue."""
         event = TutorialEvents.objects.create(
             code='TUT-STR-002',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertEqual(str(event), "TUT-STR-002 - No Venue")
 
     def test_date_field_validation(self):
-        """Test start_date and end_date are DateField types."""
+        """Phase 5b: lms_start_date / lms_end_date are DateTimeField types
+        (replacing the old Date columns)."""
+        from datetime import datetime
         event = TutorialEvents.objects.create(
             code='TUT-DATE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
-        self.assertIsInstance(event.start_date, date)
-        self.assertIsInstance(event.end_date, date)
+        self.assertIsInstance(event.lms_start_date, datetime)
+        self.assertIsInstance(event.lms_end_date, datetime)
 
-    def test_start_date_required(self):
-        """Test start_date is a required field."""
-        with self.assertRaises(Exception):  # IntegrityError or ValidationError
-            TutorialEvents.objects.create(
-                code='TUT-NO-START-001',
-                end_date=date.today() + timedelta(days=32),
-                store_product=self.store_product
-            )
+    def test_start_date_optional_after_phase_5b(self):
+        """Phase 5b (2026-05-16) made lms_start_date / lms_end_date nullable.
+        Was previously a hard constraint on the legacy Date columns; the new
+        DateTime columns allow null because a brand-new tutorial_events row
+        can exist before its dates are known (e.g. webhook waiting on sync)."""
+        event = TutorialEvents.objects.create(
+            code='TUT-NO-START-001',
+            lms_end_date=timezone.now() + timedelta(days=32),
+            store_product=self.store_product
+        )
+        self.assertIsNone(event.lms_start_date)
 
-    def test_end_date_required(self):
-        """Test end_date is a required field."""
-        with self.assertRaises(Exception):  # IntegrityError or ValidationError
-            TutorialEvents.objects.create(
-                code='TUT-NO-END-001',
-                start_date=date.today() + timedelta(days=30),
-                store_product=self.store_product
-            )
+    def test_end_date_optional_after_phase_5b(self):
+        """Same as test_start_date_optional_after_phase_5b but for lms_end_date."""
+        event = TutorialEvents.objects.create(
+            code='TUT-NO-END-001',
+            lms_start_date=timezone.now() + timedelta(days=30),
+            store_product=self.store_product
+        )
+        self.assertIsNone(event.lms_end_date)
 
     def test_ordering_by_start_date_and_code(self):
-        """Test default ordering is by start_date, then code."""
-        # Create three events with different dates
+        """Phase 5b: ordering uses lms_start_date now (was start_date).
+
+        The secondary `code` ordering only kicks in when two rows have
+        identical lms_start_date — so we share a single base timestamp
+        across event2 and event3 instead of calling timezone.now() twice
+        (which would give microseconds-different values)."""
+        early = timezone.now() + timedelta(days=30)
+        late = timezone.now() + timedelta(days=40)
         event1 = TutorialEvents.objects.create(
             code='TUT-A-001',
-            start_date=date.today() + timedelta(days=40),
-            end_date=date.today() + timedelta(days=42),
+            lms_start_date=late,
+            lms_end_date=late + timedelta(days=2),
             store_product=self.store_product
         )
 
         event2 = TutorialEvents.objects.create(
             code='TUT-B-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=early,
+            lms_end_date=early + timedelta(days=2),
             store_product=self.store_product
         )
 
         event3 = TutorialEvents.objects.create(
             code='TUT-A-002',
-            start_date=date.today() + timedelta(days=30),  # Same date as event2
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=early,  # exact same datetime as event2
+            lms_end_date=early + timedelta(days=2),
             store_product=self.store_product
         )
 
-        # Query all - should be ordered by start_date, then code
+        # Query all — should be ordered by lms_start_date, then code
         events = list(TutorialEvents.objects.all())
-        self.assertEqual(events[0].id, event3.id)  # Earliest date, code 'A'
-        self.assertEqual(events[1].id, event2.id)  # Earliest date, code 'B'
-        self.assertEqual(events[2].id, event1.id)  # Later date
+        self.assertEqual(events[0].id, event3.id)  # earliest, code 'TUT-A-002'
+        self.assertEqual(events[1].id, event2.id)  # earliest, code 'TUT-B-001'
+        self.assertEqual(events[2].id, event1.id)  # later date
 
     def test_db_table_name(self):
         """Test custom database table name."""
@@ -333,8 +344,8 @@ class TutorialEventTestCase(TestCase):
         """Test created_at and updated_at are automatically set."""
         event = TutorialEvents.objects.create(
             code='TUT-TIMESTAMP-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -351,8 +362,8 @@ class TutorialEventTestCase(TestCase):
 
         event = TutorialEvents.objects.create(
             code='TUT-UPDATE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
         original_updated = event.updated_at
@@ -370,15 +381,15 @@ class TutorialEventTestCase(TestCase):
         """Test querying tutorial events by ESSP variation."""
         event1 = TutorialEvents.objects.create(
             code='TUT-QUERY-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
         event2 = TutorialEvents.objects.create(
             code='TUT-QUERY-002',
-            start_date=date.today() + timedelta(days=35),
-            end_date=date.today() + timedelta(days=37),
+            lms_start_date=timezone.now() + timedelta(days=35),
+            lms_end_date=timezone.now() + timedelta(days=37),
             store_product=self.store_product
         )
 
@@ -395,21 +406,21 @@ class TutorialEventTestCase(TestCase):
         """Test querying tutorial events by date range."""
         event1 = TutorialEvents.objects.create(
             code='TUT-DATE-RANGE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
         event2 = TutorialEvents.objects.create(
             code='TUT-DATE-RANGE-002',
-            start_date=date.today() + timedelta(days=60),
-            end_date=date.today() + timedelta(days=62),
+            lms_start_date=timezone.now() + timedelta(days=60),
+            lms_end_date=timezone.now() + timedelta(days=62),
             store_product=self.store_product
         )
 
         # Query events starting within 45 days
-        cutoff_date = date.today() + timedelta(days=45)
-        events = TutorialEvents.objects.filter(start_date__lte=cutoff_date)
+        cutoff = timezone.now() + timedelta(days=45)
+        events = TutorialEvents.objects.filter(lms_start_date__lte=cutoff)
 
         self.assertIn(event1, events)
         self.assertNotIn(event2, events)
@@ -419,16 +430,16 @@ class TutorialEventTestCase(TestCase):
         available_event = TutorialEvents.objects.create(
             code='TUT-AVAILABLE-001',
             is_soldout=False,
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
         soldout_event = TutorialEvents.objects.create(
             code='TUT-SOLDOUT-001',
             is_soldout=True,
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -489,8 +500,8 @@ class TutorialSessionsModelTest(TestCase):
         )
         self.event = TutorialEvents.objects.create(
             code='TS-TUT-CM2-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -1020,8 +1031,8 @@ class TutorialEventsInstructorsDerivedTest(TestCase):
         )
         self.event = TutorialEvents.objects.create(
             code='EV-INSTR-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
         )
         self.instructor1 = TutorialInstructor.objects.create(staff=None)
@@ -1108,8 +1119,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         """Verify event can have venue FK."""
         event = TutorialEvents.objects.create(
             code='EV-VENUE-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
             venue=self.venue,
         )
@@ -1119,8 +1130,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         """Verify event can have location FK."""
         event = TutorialEvents.objects.create(
             code='EV-LOC-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
             location=self.location,
         )
@@ -1130,8 +1141,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         """Verify venue FK is nullable."""
         event = TutorialEvents.objects.create(
             code='EV-VENUE-NULL',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
             venue=None,
         )
@@ -1141,8 +1152,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         """Verify SET_NULL when venue is deleted."""
         event = TutorialEvents.objects.create(
             code='EV-VENUE-DEL',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
             venue=self.venue,
         )
@@ -1154,8 +1165,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         """Verify SET_NULL when location is deleted."""
         event = TutorialEvents.objects.create(
             code='EV-LOC-DEL',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
             location=self.location,
         )
@@ -1198,8 +1209,8 @@ class TutorialSessionsInstructorsM2MTest(TestCase):
         )
         self.event = TutorialEvents.objects.create(
             code='SE-IN-EVT-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
         )
         self.instructor1 = TutorialInstructor.objects.create(staff=None)
@@ -1301,8 +1312,8 @@ class TutorialSessionsVenueLocationFKTest(TestCase):
         )
         self.event = TutorialEvents.objects.create(
             code='SE-VL-EVT-001',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product,
         )
         self.location = TutorialLocation.objects.create(name='Edinburgh', code='EDI')

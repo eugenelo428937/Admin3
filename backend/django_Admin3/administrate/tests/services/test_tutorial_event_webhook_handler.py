@@ -81,8 +81,8 @@ def tutorial_event(store_product):
     lookup target. The webhook will update this row (not create one)."""
     return TutorialEvents.objects.create(
         code='CB1-PHASE2-26S',
-        start_date=date(2026, 9, 1),
-        end_date=date(2026, 12, 1),
+        lms_start_date=date(2026, 9, 1),
+        lms_end_date=date(2026, 12, 1),
         store_product=store_product,
     )
 

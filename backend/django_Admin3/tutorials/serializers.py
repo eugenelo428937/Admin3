@@ -111,6 +111,53 @@ class TutorialEventsSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    # Phase 5b (2026-05-16): the underlying columns are now DateTime
+    # (`lms_start_date` / `lms_end_date`), but the consumer pact
+    # contract at /api/tutorials/list/ expects date-only `start_date`
+    # / `end_date` strings. DRF's DateField refuses to auto-coerce
+    # DateTime to Date ("may mean losing timezone information"), so
+    # we expose explicit SerializerMethodFields for reads and a write
+    # path via lms_*_input that accepts a date (input is date-only,
+    # converted to midnight UTC at serializer-validation time).
+    start_date = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
+    # Write-side: accept a date input, write to the DateTime column.
+    # Used by POST/PUT/PATCH; not surfaced on reads (write_only=True).
+    lms_start_date_input = serializers.DateField(
+        source='lms_start_date', required=False, allow_null=True, write_only=True,
+    )
+    lms_end_date_input = serializers.DateField(
+        source='lms_end_date', required=False, allow_null=True, write_only=True,
+    )
+
+    @staticmethod
+    def _to_date_iso(value):
+        """Tolerant of date / datetime / None. Post-write the in-memory
+        instance still holds whatever DRF's DateField validated (a date),
+        not the DateTime Django produces after a fresh fetch."""
+        if value is None:
+            return None
+        if hasattr(value, 'date') and callable(value.date):
+            return value.date().isoformat()
+        return value.isoformat()
+
+    def get_start_date(self, obj):
+        return self._to_date_iso(obj.lms_start_date)
+
+    def get_end_date(self, obj):
+        return self._to_date_iso(obj.lms_end_date)
+
+    def to_internal_value(self, data):
+        # Accept the legacy 'start_date' / 'end_date' input keys as date
+        # inputs writing to lms_start_date / lms_end_date — preserves the
+        # write contract for existing callers (the consumer pact only does
+        # GET, but the test suite exercises POST too).
+        data = data.copy() if hasattr(data, 'copy') else dict(data)
+        if 'start_date' in data and 'lms_start_date_input' not in data:
+            data['lms_start_date_input'] = data.pop('start_date')
+        if 'end_date' in data and 'lms_end_date_input' not in data:
+            data['lms_end_date_input'] = data.pop('end_date')
+        return super().to_internal_value(data)
 
     class Meta:
         model = TutorialEvents
@@ -118,6 +165,7 @@ class TutorialEventsSerializer(serializers.ModelSerializer):
             'id', 'code', 'venue', 'venue_id', 'location', 'location_id',
             'is_soldout', 'finalisation_date', 'remain_space',
             'start_date', 'end_date', 'store_product',
+            'lms_start_date_input', 'lms_end_date_input',
             'created_at', 'updated_at',
             'store_product_code', 'subject_code', 'instructors',
         ]
