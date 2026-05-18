@@ -234,20 +234,31 @@ class SearchService:
         return [pid for pid, _ in products_with_scores]
 
     def _build_searchable_text(self, store_product: StoreProduct) -> str:
-        """Build searchable text from store.Product fields."""
+        """Build searchable text from store.Product fields.
+
+        Phase 5: Tutorial and Marking subclasses don't link to
+        catalog.Product via ``product_product_variation`` (the parent's
+        backward-compat property returns ``None`` for those kinds).
+        Fall back to the subject code + product_code so those rows
+        still produce some matchable text instead of crashing.
+        """
         parts = []
 
-        catalog_product = store_product.product_product_variation.product
-        pv = store_product.product_product_variation.product_variation
+        ppv = store_product.product_product_variation
+        if ppv is not None:
+            catalog_product = ppv.product
+            pv = ppv.product_variation
+            if catalog_product.fullname:
+                parts.append(catalog_product.fullname)
+            if catalog_product.shortname:
+                parts.append(catalog_product.shortname)
+            if pv.name:
+                parts.append(pv.name)
 
-        if catalog_product.fullname:
-            parts.append(catalog_product.fullname)
-        if catalog_product.shortname:
-            parts.append(catalog_product.shortname)
         if store_product.exam_session_subject.subject.code:
             parts.append(store_product.exam_session_subject.subject.code)
-        if pv.name:
-            parts.append(pv.name)
+        if ppv is None and store_product.product_code:
+            parts.append(store_product.product_code)
 
         return ' '.join(parts).lower()
 
@@ -261,9 +272,15 @@ class SearchService:
         This replaces the previous max(scores) approach which flattened ranking
         by letting subject_bonus (95) dominate all other signals.
         """
-        catalog_product = store_product.product_product_variation.product
+        ppv = store_product.product_product_variation
+        catalog_product = ppv.product if ppv is not None else None
         subject_code = store_product.exam_session_subject.subject.code.lower()
-        product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
+        if catalog_product is not None:
+            product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
+        else:
+            # Phase 5: Tutorial/Marking rows have no catalog product — use
+            # the product_code as the matchable "name" segment.
+            product_name = (store_product.product_code or '').lower()
 
         # Subject code exact match bonus (binary: 0 or 100)
         subject_bonus = 100 if query.startswith(subject_code) else 0

@@ -30,11 +30,19 @@ class StoreProductListSerializer:
         Returns:
             List of dicts in the expected frontend format
         """
-        # Group products by (exam_session_subject_id, catalog_product_id)
+        # Group products by (exam_session_subject_id, catalog_product_id).
+        # Phase 5: Tutorial/Marking subclasses don't carry a PPV (their
+        # variation semantics live on the subclass). They are skipped here
+        # because the grouped response shape (catalog product + variations)
+        # only makes sense for Material rows — Tutorial/Marking products
+        # are surfaced through their own kind-specific endpoints.
         grouped = defaultdict(list)
 
         for sp in store_products:
-            key = (sp.exam_session_subject_id, sp.product_product_variation.product_id)
+            ppv = sp.product_product_variation
+            if ppv is None:
+                continue
+            key = (sp.exam_session_subject_id, ppv.product_id)
             grouped[key].append(sp)
 
         results = []
