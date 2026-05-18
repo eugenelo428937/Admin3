@@ -35,8 +35,20 @@ class InvalidPayload(Exception):
     """Raised when the incoming webhook body cannot be parsed into an inbox row."""
 
 
-def persist_inbox_row(body: dict, headers: dict) -> WebhookInbox:
+def persist_inbox_row(
+    body: dict, headers: dict, *, entity_type: str = 'event',
+) -> WebhookInbox:
     """Persist the raw delivery to `adm.webhook_inbox`.
+
+    Args:
+        body: parsed JSON body of the inbound webhook request.
+        headers: request headers dict for audit storage (filtered).
+        entity_type: which entity domain this delivery is for. Passed
+            from the URL path segment (`event` / `session` / `learner`)
+            so the inbox row records the URL-level routing decision
+            alongside the body. Default `'event'` preserves the
+            previous hardcoded behavior for any caller (tests, replay
+            tooling) that hasn't been updated.
 
     Raises:
         InvalidPayload: if metadata is malformed, `payload.node.id` is
@@ -90,7 +102,7 @@ def persist_inbox_row(body: dict, headers: dict) -> WebhookInbox:
         administrate_webhook_id=webhook_id,
         administrate_event_timestamp=timestamp,
         webhook_type_name=registration.webhook_type_name,
-        entity_type='event',  # this slice is Event-only; future slices set per route
+        entity_type=entity_type,
         entity_external_id=str(entity_id),
         raw_payload=_sanitize_body(body),
         raw_headers=_sanitize_headers(headers),

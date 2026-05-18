@@ -25,16 +25,20 @@ Field-name decisions verified against UAT introspection (2026-05-15):
     dispatcher routes it to DEAD on first attempt.
 """
 
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
 from django.db import transaction
+from django.utils import timezone
 
 from administrate.exceptions import MissingDependencyError
 from administrate.models import (
+    Contact,
     CourseTemplate,
     CustomField,
     Event,
+    Learner,
     Location,
+    Session as AdmSession,
     Venue,
 )
 
@@ -266,3 +270,298 @@ def _upsert_tutorial_event(node: dict) -> Event:
 # `_upsert_tutorial_event` above, which updates `acted.tutorial_events`
 # (the master) and upserts a thin `adm.events` row (external_id +
 # tutorial_event_id only).
+
+
+# ===========================================================================
+# Session + Learner handlers (Phase 5 of session+learner webhook expansion,
+# 2026-05-18). All six handlers share the master-row-as-source-of-truth
+# philosophy: each writes to `acted.tutorial_*` and upserts the matching
+# `adm.*` bridge. Missing dependencies (parent event not bridged yet,
+# Student not found by middleName, etc.) raise MissingDependencyError so
+# the dispatcher dead-letters the row and the operator's recovery
+# workflow is: fix upstream data, then `administrate_webhooks_inbox replay`.
+# ===========================================================================
+
+
+# Custom field definition keys for Session payloads. Verified against UAT
+# introspection 2026-05-18; if Administrate's admins rename a field's
+# label, the key stays stable.
+_SESSION_CF_URL_KEY = 'Q3VzdG9tRmllbGREZWZpbml0aW9uOjM5'  # "URL"
+# Sequence (Q3VzdG9tRmllbGREZWZpbml0aW9uOjUx) and Recording links
+# (Q3VzdG9tRmllbGREZWZpbml0aW9uOjYx) are fetched but not currently
+# applied — the master's `sequence` is the canonical source (set by
+# CSV import) and recordings have no destination column yet.
+
+
+def _session_custom_field(node: dict, definition_key: str) -> Optional[str]:
+    """Return the customFieldValues entry value for the given stable
+    definition key, or None."""
+    for cfv in node.get('customFieldValues') or []:
+        if cfv.get('definitionKey') == definition_key:
+            return cfv.get('value')
+    return None
+
+
+def _find_tutorial_session_by_title(tutorial_event, title: str):
+    """Locate the master tutorials.TutorialSessions row by
+    (tutorial_event, title). Title is the join key from Administrate's
+    Session — it's expected to be unique within an event (set by CSV
+    bulk import). If somehow not unique, lowest `sequence` wins for
+    determinism."""
+    from tutorials.models import TutorialSessions
+    return TutorialSessions.objects.filter(
+        tutorial_event=tutorial_event,
+        title=title.strip(),
+    ).order_by('sequence').first()
+
+
+def _upsert_tutorial_session_from_node(node: dict, *, cancelled: bool):
+    """Shared core for Session Created/Updated/Deleted.
+
+    Created and Updated share field-sync semantics; Deleted is the same
+    payload but with `cancelled=True` propagated to the master. We
+    don't hard-delete — the bridge row references the master, and
+    setting cancelled=True preserves audit trail while signalling
+    the consumer.
+    """
+    external_id = node['id']
+
+    title = (node.get('title') or '').strip()
+    if not title:
+        raise MissingDependencyError(
+            'TutorialSessions', f'<empty title for session {external_id!r}>'
+        )
+
+    # The Session payload carries `event { id }` — added to the query
+    # specifically so the handler can locate the parent tutorial_event.
+    event_node = node.get('event') or {}
+    adm_event_id = event_node.get('id')
+    if not adm_event_id:
+        raise MissingDependencyError(
+            'Event', f'<missing event.id on session payload {external_id!r}>'
+        )
+
+    adm_event = _resolve_fk(Event, adm_event_id)
+    tutorial_event = adm_event.tutorial_event
+    if tutorial_event is None:
+        # The adm.Event bridge exists but isn't linked to a master row.
+        # Operator workflow: replay the parent Event Created webhook
+        # (which links the bridge), then replay this Session row.
+        raise MissingDependencyError(
+            'TutorialEvents',
+            f'<adm.Event {adm_event_id!r} has tutorial_event=NULL>',
+        )
+
+    tutorial_session = _find_tutorial_session_by_title(tutorial_event, title)
+    if tutorial_session is None:
+        raise MissingDependencyError(
+            'TutorialSessions',
+            f'<no master row matching ({tutorial_event.code}, title={title!r})>',
+        )
+
+    with transaction.atomic():
+        # Sync the small set of fields the webhook is authoritative for.
+        # `title` is the join key — never overwritten. `sequence`,
+        # `start_date`, `end_date`, `instructors`, `venue`, `location`
+        # are owned by CSV bulk import. The webhook contributes:
+        #   - the URL custom-field (if present)
+        #   - the cancelled flag (for Session Deleted)
+        cf_url = _session_custom_field(node, _SESSION_CF_URL_KEY)
+        if cf_url is not None:
+            tutorial_session.url = cf_url
+        tutorial_session.cancelled = cancelled
+        tutorial_session.save()
+
+        bridge, _ = AdmSession.objects.update_or_create(
+            external_id=external_id,
+            defaults={'tutorial_session': tutorial_session},
+        )
+    return bridge
+
+
+@register('Session Created')
+def handle_session_created(node: dict):
+    return _upsert_tutorial_session_from_node(node, cancelled=False)
+
+
+@register('Session Updated')
+def handle_session_updated(node: dict):
+    return _upsert_tutorial_session_from_node(node, cancelled=False)
+
+
+@register('Session Deleted')
+def handle_session_deleted(node: dict):
+    # Soft-delete via `cancelled=True` rather than DELETE; preserves the
+    # TutorialAttendance/Registration history pointing at this session.
+    return _upsert_tutorial_session_from_node(node, cancelled=True)
+
+
+# ---------------------------------------------------------------------------
+# Learner handlers
+# ---------------------------------------------------------------------------
+
+def _resolve_student_from_contact_node(contact_node: dict):
+    """Walk `contact.personalName.middleName` → Student.student_ref.
+
+    This is a long-standing domain convention: Administrate stores our
+    student_ref (an integer PK) in the contact's middleName field.
+    Empty / non-numeric / no-such-student → dead-letter with a precise
+    error message so the operator knows exactly what to fix.
+    """
+    from students.models import Student
+    contact_id = contact_node.get('id', '<unknown>')
+    middle = ((contact_node.get('personalName') or {}).get('middleName') or '').strip()
+    if not middle:
+        raise MissingDependencyError(
+            'Student',
+            f'<contact {contact_id!r} has empty personalName.middleName>',
+        )
+    try:
+        student_ref = int(middle)
+    except (TypeError, ValueError):
+        raise MissingDependencyError(
+            'Student',
+            f'<contact {contact_id!r} has non-numeric middleName={middle!r}>',
+        )
+    try:
+        return Student.objects.get(student_ref=student_ref)
+    except Student.DoesNotExist:
+        raise MissingDependencyError(
+            'Student', f'student_ref={student_ref}',
+        )
+
+
+def _lazy_upsert_adm_contact(contact_node: dict) -> Contact:
+    """Create-or-update the adm.Contact bridge from a learner payload.
+
+    Lazy-resolution path documented in the to-do list (D-contact-gap):
+    we don't have a separate `Contact Created` webhook in the registered
+    set, so Learner Created upserts the bridge on first encounter.
+    """
+    contact_id = contact_node.get('id')
+    if not contact_id:
+        raise MissingDependencyError(
+            'Contact', '<missing contact.id on learner payload>',
+        )
+    student = _resolve_student_from_contact_node(contact_node)
+    bridge, _ = Contact.objects.update_or_create(
+        external_id=contact_id,
+        defaults={'student': student},
+    )
+    return bridge
+
+
+def _iter_session_ids(node: dict):
+    """Yield session ids from a Learner payload's attendance subtree.
+
+    The Administrate payload nests session ids under
+    `attendance.sessionDetail.edges[].node.session.id`. We use the
+    subtree purely as an enumeration of "which sessions is this
+    learner enrolled in"; attendanceMark and any other per-edge data
+    is ignored (attendance state isn't webhook-driven).
+
+    Tolerant of missing intermediate keys (`attendance` /
+    `sessionDetail` / `edges` can each be None or absent) — yields
+    nothing in those cases rather than raising.
+    """
+    attendance = node.get('attendance') or {}
+    sd = attendance.get('sessionDetail') or {}
+    for edge in sd.get('edges') or []:
+        edge_node = edge.get('node') or {}
+        session_node = edge_node.get('session') or {}
+        session_id = session_node.get('id')
+        if not session_id:
+            continue
+        yield session_id
+
+
+@register('Learner Created')
+def handle_learner_created(node: dict) -> List[Learner]:
+    """Create one TutorialRegistration + adm.Learner bridge per session.
+
+    An Administrate Learner spans N sessions (one Event with N Sessions).
+    Per Option α (2026-05-18), one `adm.Learner` row per (Administrate-
+    learner, our-registration) pair — composite unique on
+    (external_id, tutorial_registration).
+    """
+    from tutorials.models import TutorialRegistration
+
+    learner_id = node['id']
+    contact_node = node.get('contact') or {}
+    adm_contact = _lazy_upsert_adm_contact(contact_node)
+    if adm_contact.student_id is None:
+        raise MissingDependencyError(
+            'Student', f'<adm.Contact {adm_contact.external_id!r} has student=NULL>',
+        )
+
+    event_node = node.get('event') or {}
+    adm_event_id = event_node.get('id')
+    if not adm_event_id:
+        raise MissingDependencyError(
+            'Event', f'<missing event.id on learner payload {learner_id!r}>',
+        )
+    adm_event = _resolve_fk(Event, adm_event_id)
+    if adm_event.tutorial_event is None:
+        raise MissingDependencyError(
+            'TutorialEvents',
+            f'<adm.Event {adm_event_id!r} has tutorial_event=NULL>',
+        )
+
+    created_bridges: List[Learner] = []
+    with transaction.atomic():
+        for session_id in _iter_session_ids(node):
+            adm_session = _resolve_fk(AdmSession, session_id)
+            tutorial_session = adm_session.tutorial_session
+            if tutorial_session is None:
+                raise MissingDependencyError(
+                    'TutorialSessions',
+                    f'<adm.Session {session_id!r} has tutorial_session=NULL>',
+                )
+
+            registration, _ = TutorialRegistration.objects_all.update_or_create(
+                student=adm_contact.student,
+                tutorial_session=tutorial_session,
+                defaults={'is_active': True, 'deactivated_at': None},
+            )
+            bridge, _ = Learner.objects.update_or_create(
+                external_id=learner_id,
+                tutorial_registration=registration,
+                defaults={},
+            )
+            created_bridges.append(bridge)
+    return created_bridges
+
+
+@register('Learner Cancelled')
+def handle_learner_cancelled(node: dict) -> List[Learner]:
+    """Deactivate all TutorialRegistration rows linked to this learner.
+
+    Uses the bridge to find every (learner, session) pair, then soft-
+    deletes each registration via the `is_active=False` /
+    `deactivated_at` pattern. The bridge rows themselves survive so
+    historical audit queries can still resolve learner_id → student.
+    """
+    learner_id = node['id']
+    bridges = list(Learner.objects.filter(external_id=learner_id))
+    if not bridges:
+        raise MissingDependencyError(
+            'Learner', f'<no adm.Learner rows for {learner_id!r}>',
+        )
+    now = timezone.now()
+    with transaction.atomic():
+        for bridge in bridges:
+            reg = bridge.tutorial_registration
+            if reg is None or not reg.is_active:
+                continue
+            reg.is_active = False
+            reg.deactivated_at = now
+            reg.save(update_fields=['is_active', 'deactivated_at', 'updated_at'])
+    return bridges
+
+
+# NOTE: the `Learner Attended Session` webhook handler and its
+# attendanceMark → status mapping previously lived here. They were
+# removed (2026-05-18) in favor of the existing TutorialAttendance
+# write paths (CSV import, public-attendance views). Webhooks cover
+# enrolment lifecycle (Created / Cancelled) only; attendance is owned
+# by the master row.

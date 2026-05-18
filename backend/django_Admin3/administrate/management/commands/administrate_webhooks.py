@@ -61,10 +61,122 @@ query EventWebhook($objectid: ID!) {
 }
 """
 
+# Session GraphQL slice — per UAT introspection 2026-05-18. The typed
+# Session interface exposes id/title/venue/location; everything else
+# we care about lives in `customFieldValues`:
+#   - Q3VzdG9tRmllbGREZWZpbml0aW9uOjM5 ("URL")          → session_url
+#   - Q3VzdG9tRmllbGREZWZpbml0aW9uOjUx ("Sequence")     → session.sequence
+#   - Q3VzdG9tRmllbGREZWZpbml0aW9uOjYx ("Recording")    → session.recording_links
+# We fetch customFieldValues in bulk (no `filter:` arg) and let the
+# handler filter by `definitionKey` against the local `CustomField`
+# lookup, mirroring how the Event handler resolves "Web sale" / "URL".
+#
+# NOTE: Administrate's Session type does NOT expose typed start/end
+# date fields — sessions inherit timing context from the parent Event.
+# We don't fetch dates here; rows created by the Session Created
+# handler land with NULL `tutorial_sessions.start_date` / `end_date`
+# (Phase 1 of this PR made those columns nullable). CSV bulk import
+# remains the source of truth for session dates.
+SESSION_WEBHOOK_QUERY = """
+query SessionWebhook($objectid: ID!) {
+  node(id: $objectid) {
+    id
+    ... on Session {
+      title
+      event { id }
+      venue { id }
+      location { id }
+      customFieldValues {
+        definitionKey
+        value
+      }
+    }
+  }
+}
+"""
+
+# Learner GraphQL slice — per UAT introspection 2026-05-18. A Learner
+# is an enrolment in an Event (single Event on Administrate's side);
+# the attendance subtree enumerates per-session attendance records,
+# which we use ONLY to discover which sessions the learner is enrolled
+# in (so `Learner Created` can write one TutorialRegistration per
+# session). We do NOT fetch `attendanceMark` — attendance writes
+# through the existing CSV / public-attendance paths, not this flow.
+# Fields explained:
+#   - contact + personalName.middleName → resolves to our Student via
+#     the domain-specific convention (Administrate stores `student_ref`
+#     in the contact's middleName field). See `adm.contacts` model
+#     docstring for full context.
+#   - event.id → walks to `adm.events` → `tutorials.TutorialEvents`,
+#     which gives us the set of session-level TutorialRegistration
+#     rows the Learner Created handler should write.
+#   - attendance.sessionDetail.edges → enumerates the sessions to
+#     create registrations for (via `session.id` resolved through the
+#     `adm.sessions` bridge).
+#
+# The same query is registered for Learner Created and Learner
+# Cancelled — Administrate's webhook envelope's `webhook_type_name`
+# distinguishes the trigger; the payload shape is uniform so the
+# handler dispatches by type after parsing.
+LEARNER_WEBHOOK_QUERY = """
+query LearnerWebhook($objectid: ID!) {
+  node(id: $objectid) {
+    id
+    ... on Learner {
+      lifecycleState
+      contact {
+        id
+        personalName {
+          middleName
+        }
+      }
+      event {
+        id
+      }
+      attendance {
+        sessionDetail {
+          edges {
+            node {
+              session {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+
 WEBHOOK_DEFINITIONS = [
-    {'name': 'Admin3 Event Updated',   'type_name': 'Event Updated'},
-    {'name': 'Admin3 Event Created',   'type_name': 'Event Created'},
-    {'name': 'Admin3 Event Cancelled', 'type_name': 'Event Cancelled'},
+    # Existing Event hooks (preserved).
+    {'name': 'Admin3 Event Updated',   'type_name': 'Event Updated',
+     'entity_path': 'event', 'query': EVENT_WEBHOOK_QUERY},
+    {'name': 'Admin3 Event Created',   'type_name': 'Event Created',
+     'entity_path': 'event', 'query': EVENT_WEBHOOK_QUERY},
+    {'name': 'Admin3 Event Cancelled', 'type_name': 'Event Cancelled',
+     'entity_path': 'event', 'query': EVENT_WEBHOOK_QUERY},
+
+    # Session hooks — new 2026-05-18. All three share the same query
+    # because Administrate's payload is shape-uniform; the handler
+    # branches on webhook_type_name (Created/Updated/Deleted) to set
+    # `tutorial_sessions.cancelled` or upsert / mark-deleted.
+    {'name': 'Admin3 Session Created', 'type_name': 'Session Created',
+     'entity_path': 'session', 'query': SESSION_WEBHOOK_QUERY},
+    {'name': 'Admin3 Session Updated', 'type_name': 'Session Updated',
+     'entity_path': 'session', 'query': SESSION_WEBHOOK_QUERY},
+    {'name': 'Admin3 Session Deleted', 'type_name': 'Session Deleted',
+     'entity_path': 'session', 'query': SESSION_WEBHOOK_QUERY},
+
+    # Learner hooks — new 2026-05-18. Attendance is intentionally NOT
+    # webhook-driven (handled by CSV import / public-attendance views);
+    # the `Learner Attended Session` webhook type is not registered.
+    {'name': 'Admin3 Learner Created',   'type_name': 'Learner Created',
+     'entity_path': 'learner', 'query': LEARNER_WEBHOOK_QUERY},
+    {'name': 'Admin3 Learner Cancelled', 'type_name': 'Learner Cancelled',
+     'entity_path': 'learner', 'query': LEARNER_WEBHOOK_QUERY},
 ]
 
 
@@ -115,10 +227,10 @@ class Command(BaseCommand):
 
     def _register(self, api, dry_run):
         type_index = self._resolve_webhook_types(api)
-        url = (
+        base = (
             f"{settings.ADMINISTRATE_WEBHOOK_BASE_URL.rstrip('/')}"
             f"/api/administrate/webhooks/"
-            f"{settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN}/event/"
+            f"{settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN}"
         )
         for spec in WEBHOOK_DEFINITIONS:
             webhook_type_id = type_index.get(spec['type_name'])
@@ -126,6 +238,11 @@ class Command(BaseCommand):
                 raise CommandError(
                     f"Unknown webhook type from Administrate: {spec['type_name']}"
                 )
+            # Per-entity URL (Phase 6 / 2026-05-18): the ingress view
+            # reads `entity_type` from the URL path so the inbox row
+            # records which entity this delivery is for. Format:
+            # /api/administrate/webhooks/<token>/<entity_path>/
+            url = f"{base}/{spec['entity_path']}/"
             # Administrate types `config` as a String scalar that they
             # `json.loads` server-side (see
             # developer.getadministrate.com/docs/core/Webhooks/02_setup.md
@@ -137,7 +254,7 @@ class Command(BaseCommand):
             create_input = {
                 'name': spec['name'],
                 'webhookTypeId': webhook_type_id,
-                'query': EVENT_WEBHOOK_QUERY,
+                'query': spec['query'],
                 'url': url,
                 'config': json.dumps(
                     {'secret': settings.ADMINISTRATE_WEBHOOK_SECRET}
@@ -169,7 +286,7 @@ class Command(BaseCommand):
                 update_input = {
                     'webhookId': existing,
                     'name': spec['name'],
-                    'query': EVENT_WEBHOOK_QUERY,
+                    'query': spec['query'],
                     'url': url,
                     'config': json.dumps(
                         {'secret': settings.ADMINISTRATE_WEBHOOK_SECRET}

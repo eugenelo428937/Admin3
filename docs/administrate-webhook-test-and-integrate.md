@@ -681,3 +681,120 @@ These items were unknowns when the slice first shipped; all were resolved during
 - The view's `dispatch_inbox_task` indirection and the `apply_inbox_row` retry logic stay unchanged.
 
 **`store_product` NOT NULL on `tutorial_events`.** Brand-new Administrate events without a pre-existing `tutorial_events` row dead-letter (since the webhook payload doesn't carry store_product info). Operator workflow: create the master row first, then replay. This is by design — see [`docs/superpowers/plans/2026-05-15-tutorial-events-as-master-refactor.md`](superpowers/plans/2026-05-15-tutorial-events-as-master-refactor.md) §"Risks and edge cases" #4.
+
+---
+
+## 8. Session + Learner webhook expansion (2026-05-18)
+
+Extended the original Event-only slice to cover 5 new webhook types
+across 2 new entity domains. CSV bulk import remains the source of
+truth for *initial setup* (and for ongoing attendance); webhooks handle
+*daily enrolment-lifecycle updates*.
+
+### 8.1 New webhook types and routes
+
+**Session events** — ingress URL `/api/administrate/webhooks/<token>/session/`:
+
+- `Session Created` → `handle_session_created`
+- `Session Updated` → `handle_session_updated`
+- `Session Deleted` → `handle_session_deleted`
+
+**Learner events** — ingress URL `/api/administrate/webhooks/<token>/learner/`:
+
+- `Learner Created` → `handle_learner_created`
+- `Learner Cancelled` → `handle_learner_cancelled`
+
+**Not registered (by design):** `Learner Attended Session`. Attendance
+flows through `tutorials.TutorialAttendance` via the existing CSV import
+and public-attendance views path. We don't mirror attendance state on
+the Administrate side — there's no `adm.learner_attendance` bridge.
+
+Per-entity routes (instead of one polymorphic route) preserve the
+existing per-entity deployment kill-switch — disabling a route at the
+load-balancer level stops only that entity's webhooks from being
+accepted. Handler dispatch is still keyed off `webhook_type_name`
+from the local `WebhookRegistration` table (Administrate's payload
+doesn't echo a type label).
+
+### 8.2 New bridge models (`adm` schema)
+
+All four are thin "mapper-only" bridges following the
+`adm.events` / `adm.sessions` thin-bridge pattern (PR #120, Phase 2 of
+this PR). No data columns — `external_id` + FK to the acted master +
+timestamps.
+
+- **`adm.contacts`** → `students.Student`. 1:1 OneToOne with unique
+  `external_id`.
+- **`adm.sessions`** → `tutorials.TutorialSessions`. 1:1, refactored
+  from data-carrying model in Phase 2 of this PR.
+- **`adm.learners`** → `tutorials.TutorialRegistration`. Composite
+  unique on `(external_id, tutorial_registration)` — one Administrate
+  Learner spans N session-level registrations (Option α cardinality).
+
+### 8.3 Recovery workflow per entity
+
+The standard dead-letter recovery pattern (fix upstream, then replay)
+applies, with these per-entity nuances:
+
+- **Session Created/Updated/Deleted**: handler resolves the parent
+  `adm.events.Event` from `payload.node.event.id` and walks to the
+  `tutorial_events` row. Dead-letters if: the bridge doesn't exist
+  (replay parent Event webhook first), the bridge has `tutorial_event=NULL`
+  (link the bridge first), or no `tutorial_sessions` row matches
+  `(tutorial_event, title)` (operator workflow: run the session CSV
+  import for that event, then replay).
+- **Learner Created**: lazy-creates `adm.contacts` from
+  `learner.contact` via `personalName.middleName` → `Student.student_ref`.
+  Dead-letters on empty/non-numeric middleName or unknown student_ref.
+  Then iterates `attendance.sessionDetail.edges` and creates one
+  `TutorialRegistration` + `adm.Learner` per session; dead-letters if any
+  `adm.sessions` bridge is missing or unlinked.
+- **Learner Cancelled**: deactivates every `TutorialRegistration` reached
+  via the bridge — soft-delete via `is_active=False` + `deactivated_at`.
+  Bridge rows survive (audit history). Dead-letters if no
+  `adm.Learner` row exists for the learner id.
+
+### 8.4 Schema prep that landed alongside this work
+
+- `tutorial_sessions.cancelled` (BooleanField, default False): receives
+  the cancellation state. The Session Deleted webhook sets this rather
+  than hard-deleting — preserves attendance/registration history.
+- `tutorial_sessions.start_date` / `end_date`: now nullable. Administrate's
+  Session typed interface doesn't expose dates (sessions inherit
+  scheduling from the parent Event in their model), so webhook-created
+  rows land with NULL dates until CSV bulk import populates them.
+- `adm.sessions`: refactored from data-carrying (title, day_number,
+  classroom_*, session_instructor, session_url, cancelled, event FK) into
+  a thin bridge (external_id + tutorial_session FK only). Data backfill
+  and column drop both live in
+  [migration 0014](../backend/django_Admin3/administrate/migrations/0014_session_thin_bridge_refactor.py).
+
+### 8.5 GraphQL queries (registered)
+
+Three query strings ship as Python constants in
+[`administrate_webhooks.py`](../backend/django_Admin3/administrate/management/commands/administrate_webhooks.py):
+
+- `EVENT_WEBHOOK_QUERY` (unchanged from §2)
+- `SESSION_WEBHOOK_QUERY`: fetches `title`, `event.id`, `venue.id`,
+  `location.id`, and `customFieldValues` (handler filters by
+  `definitionKey` for URL / sequence / recording).
+- `LEARNER_WEBHOOK_QUERY`: fetches `lifecycleState`, `contact.id`,
+  `contact.personalName.middleName`, `event.id`, and the
+  `attendance.sessionDetail` subtree with `session.id` only (we don't
+  fetch `attendanceMark` — attendance writes through other paths, not
+  this flow). Same query is registered for `Learner Created` and
+  `Learner Cancelled` (handler dispatches by `webhook_type_name`).
+
+Re-running `python manage.py administrate_webhooks register` is
+idempotent — it updates existing webhooks by name rather than duplicating.
+
+### 8.6 Contact gap (intentional)
+
+We did *not* register `Contact Created` / `Contact Updated` webhooks in
+this slice. Reasoning: Learner Created already needs the contact data
+(to resolve student), so it lazy-creates the `adm.Contact` bridge on
+first encounter. Adding a separate Contact webhook would double-write
+the bridge with no functional benefit. If we ever need
+contact-only updates (rename / email change without a fresh enrolment),
+add the webhook + a `handle_contact_updated` that re-resolves the
+student and updates the bridge.

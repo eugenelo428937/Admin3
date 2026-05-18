@@ -21,10 +21,16 @@ logger = logging.getLogger('administrate.webhook')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AdministrateEventWebhookView(APIView):
-    """Receives Administrate `Event` Created/Updated/Cancelled webhooks.
+class AdministrateWebhookView(APIView):
+    """Receives Administrate webhooks for one entity domain.
 
-    Authentication is two-layered:
+    Phase 6 (2026-05-18): generalized from the Event-only slice into a
+    polymorphic view. The URL pattern injects an `entity_type` kwarg
+    (`'event'` / `'session'` / `'learner'`) so the persisted inbox row
+    records which domain each delivery is for, even though the handler
+    dispatch is keyed off `webhook_type_name` regardless of route.
+
+    Authentication is two-layered (unchanged):
       1. The path-segment `route_token` must match
          settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN (404 on mismatch — we
          deliberately do not confirm the URL exists).
@@ -35,6 +41,11 @@ class AdministrateEventWebhookView(APIView):
     """
 
     permission_classes = [AllowAny]
+
+    # Default kept for any callers that hit the view directly without
+    # routing through the URL conf (defensive). Real traffic always
+    # goes through `urls.py`, which sets entity_type explicitly.
+    entity_type = 'event'
 
     def post(self, request, route_token, *args, **kwargs):
         expected_token = settings.ADMINISTRATE_WEBHOOK_ROUTE_TOKEN
@@ -54,7 +65,10 @@ class AdministrateEventWebhookView(APIView):
             # UniqueConstraint doesn't poison the surrounding transaction
             # (e.g. the pytest-django outer atomic block).
             with transaction.atomic():
-                row = persist_inbox_row(request.data, dict(request.headers))
+                row = persist_inbox_row(
+                    request.data, dict(request.headers),
+                    entity_type=self.entity_type,
+                )
         except InvalidPayload as exc:
             incr_received('', 'bad_request')
             return Response({'error': str(exc)}, status=400)

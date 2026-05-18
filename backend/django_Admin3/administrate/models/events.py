@@ -16,8 +16,6 @@ Plan: docs/superpowers/plans/2026-05-15-tutorial-events-as-master-refactor.md
 """
 
 from django.db import models
-from django.core.validators import URLValidator
-from .instructors import Instructor
 
 
 class Event(models.Model):
@@ -58,49 +56,40 @@ class Event(models.Model):
 
 
 class Session(models.Model):
-    """Tutorial Session — individual day within a tutorial event.
+    """adm.sessions: thin bridge between Administrate and acted.tutorial_sessions.
 
-    Still FKs to the (now thin) Event bridge so the Administrate id
-    chain stays intact for attendance sync. The session-level data
-    fields stay here for now; a future refactor may move them to
-    `tutorials.TutorialSessions` parallel to the events refactor.
+    Per the session+learner webhook expansion (2026-05-18), this model
+    carries ONLY the join key and the FK to the master row. All session
+    data (title, sequence, dates, instructors, url, cancelled) lives on
+    `acted.tutorial_sessions`. Mirrors the `adm.Event` thin-bridge
+    refactor (PR #120, 2026-05-15).
+
+    The bridge exists so that:
+      - Administrate `Session Created/Updated/Deleted` webhooks can
+        deduplicate by `external_id` without touching the master's
+        column set.
+      - Attendance sync can hop directly from a tutorial session to its
+        Administrate id without going through the parent event.
     """
 
     # Administrate Integration — opaque Administrate session ID, cached
-    # lazily by the attendance-sync service on first successful lookup.
+    # lazily by the attendance-sync service on first successful lookup
+    # OR written eagerly by the Session Created webhook handler.
     external_id = models.CharField(
         max_length=50, null=True, blank=True, unique=True,
     )
 
-    # Event relationship
-    event = models.ForeignKey(
-        Event, on_delete=models.CASCADE, related_name='sessions',
+    # The master row carrying every session field. Cross-schema FK
+    # (adm -> acted). SET_NULL on delete so deleting the master row
+    # doesn't cascade-kill the bridge (which may still be referenced
+    # by inbound webhook receipt history in `adm.webhook_inbox`).
+    tutorial_session = models.ForeignKey(
+        'tutorials.TutorialSessions',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='adm_sessions',
     )
-
-    # Session Information
-    title = models.CharField(max_length=255)
-    day_number = models.PositiveIntegerField()  # Day 1, 2, 3, etc.
-
-    # Classroom Schedule
-    classroom_start_date = models.DateField()
-    classroom_start_time = models.TimeField()
-    classroom_end_date = models.DateField()
-    classroom_end_time = models.TimeField()
-
-    # Session Instructor (may differ from event primary instructor)
-    session_instructor = models.ForeignKey(
-        Instructor,
-        on_delete=models.CASCADE,
-        related_name='session_instructions',
-    )
-
-    # Session URL (for online sessions)
-    session_url = models.URLField(
-        max_length=500, blank=True, validators=[URLValidator()],
-    )
-
-    # Session Status
-    cancelled = models.BooleanField(default=False)
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -109,47 +98,14 @@ class Session(models.Model):
     class Meta:
         app_label = 'administrate'
         db_table = '"adm"."sessions"'
-        ordering = ['event', 'day_number']
-        verbose_name = 'Tutorial Session'
-        verbose_name_plural = 'Tutorial Sessions'
-        unique_together = ['event', 'day_number']
+        ordering = ['external_id']
+        verbose_name = 'Administrate Session Bridge'
+        verbose_name_plural = 'Administrate Session Bridges'
 
     def __str__(self):
-        # Prefer the master row's code; fall back to the bridge external_id
-        # when the bridge is unlinked (legacy data).
-        te = self.event.tutorial_event if self.event_id else None
-        label = te.code if te else (self.event.external_id if self.event_id else '?')
-        return f"{label} - Day {self.day_number} ({self.classroom_start_date})"
-
-    @property
-    def duration_hours(self):
-        """Calculate the duration of the session in hours"""
-        from datetime import datetime
-
-        start_datetime = datetime.combine(
-            self.classroom_start_date, self.classroom_start_time,
-        )
-        end_datetime = datetime.combine(
-            self.classroom_end_date, self.classroom_end_time,
-        )
-
-        duration = end_datetime - start_datetime
-        return duration.total_seconds() / 3600
-
-    @property
-    def is_today(self):
-        """Check if this session is scheduled for today"""
-        from datetime import date
-        return self.classroom_start_date == date.today()
-
-    @property
-    def is_past(self):
-        """Check if this session is in the past"""
-        from datetime import date
-        return self.classroom_start_date < date.today()
-
-    @property
-    def is_future(self):
-        """Check if this session is in the future"""
-        from datetime import date
-        return self.classroom_start_date > date.today()
+        if self.tutorial_session_id and self.tutorial_session:
+            return (
+                f"adm.Session[{self.external_id}] -> "
+                f"{self.tutorial_session.title} (seq {self.tutorial_session.sequence})"
+            )
+        return f"adm.Session[{self.external_id}] (unlinked)"
