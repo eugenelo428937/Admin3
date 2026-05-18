@@ -8,6 +8,12 @@ class _LazyPPVRelatedField(serializers.PrimaryKeyRelatedField):
     """PrimaryKeyRelatedField that defers its queryset binding to first
     access. Required because the catalog app may not be fully loaded at
     the time this serializers module is imported.
+
+    Phase 6: the underlying ``Product.product_product_variation`` attribute
+    no longer exists on the parent model — it lives on the
+    ``MaterialProduct`` subclass. Reads route through
+    ``Product.get_material_ppv()`` so the PK appears in the output for
+    material rows and serializes as ``null`` for tutorial/marking rows.
     """
 
     def __init__(self, **kwargs):
@@ -19,6 +25,15 @@ class _LazyPPVRelatedField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         from catalog.products.models import ProductProductVariation
         return ProductProductVariation.objects.all()
+
+    def get_attribute(self, instance):
+        # The field is named ``product_product_variation`` but no longer
+        # matches a model attribute on ``Product``. Pull the PPV from the
+        # explicit polymorphic accessor instead so non-material rows emit
+        # ``null`` instead of raising AttributeError.
+        if hasattr(instance, 'get_material_ppv'):
+            return instance.get_material_ppv()
+        return None
 
 
 class _PPVQuerysetSentinel:
