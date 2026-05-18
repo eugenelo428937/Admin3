@@ -165,9 +165,15 @@ def create_store_product(exam_session_subject, catalog_product, variation, produ
         'is_active': True,
     }
     defaults.update(kwargs)
-    # Phase 5: use MaterialProduct subclass so kind is set automatically.
-    # Callers can override by passing kind= or a different subclass via kwargs.
-    return StoreMaterialProduct.objects.create(**defaults)
+    # Phase 5: create via MaterialProduct subclass so kind='material' is set
+    # automatically via the subclass save() override. Return the parent
+    # ``StoreProduct`` view of the row so test assertions against
+    # ``StoreProduct.objects.filter(...)`` querysets compare equal — Django
+    # MTI's ``Model.__eq__`` checks ``_meta.concrete_model``, so a
+    # ``MaterialProduct`` instance is never equal to a ``Product`` instance
+    # even when they back the same row.
+    material = StoreMaterialProduct.objects.create(**defaults)
+    return StoreProduct.objects.get(pk=material.pk)
 
 
 def create_bundle_template(subject, bundle_name='Study Bundle', **kwargs):
