@@ -543,14 +543,16 @@ def setup_tutorial_catalog_product():
 
     Returns (store_product, catalog_product).
     """
-    from catalog.models import (
-        Product as CatalogProduct, ProductVariation,
-        ProductProductVariation,
-    )
+    from catalog.models import Product as CatalogProduct
     from store.models import TutorialProduct
+    from tutorials.models import TutorialLocation
 
     subject, exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
 
+    # Catalog "tutorial" product/variation/PPV are kept for any caller that
+    # asserts on a catalog row with fullname containing 'tutorial' (e.g.
+    # `products/all/`). Phase 5 decoupled TutorialProduct from these — they
+    # exist purely as catalog data now, not linked to the store row.
     tutorial_product, _ = CatalogProduct.objects.get_or_create(
         code='TUT01',
         defaults={
@@ -560,37 +562,19 @@ def setup_tutorial_catalog_product():
         },
     )
 
-    tutorial_variation, tv_created = ProductVariation.objects.get_or_create(
-        code='TLONCM2',
-        defaults={
-            'variation_type': 'Tutorial',
-            'name': 'London Face-to-Face Tutorial',
-            'description': 'Face-to-face tutorial in London',
-            'description_short': 'London tutorial',
-            'is_active': True,
-        },
+    # Phase 5: TutorialProduct identifies itself by
+    # (exam_session_subject, tutorial_location, format) — not PPV.
+    # product_code is auto-generated as {subject}/{location}/{format}/{session}.
+    location, _ = TutorialLocation.objects.get_or_create(
+        code='LON',
+        defaults={'name': 'London'},
     )
-    if not tv_created and not tutorial_variation.is_active:
-        tutorial_variation.is_active = True
-        tutorial_variation.save(update_fields=['is_active'])
-
-    tutorial_ppv, tppv_created = ProductProductVariation.objects.get_or_create(
-        product=tutorial_product,
-        product_variation=tutorial_variation,
-        defaults={'is_active': True},
-    )
-    if not tppv_created and not tutorial_ppv.is_active:
-        tutorial_ppv.is_active = True
-        tutorial_ppv.save(update_fields=['is_active'])
 
     tutorial_store_product, _ = TutorialProduct.objects.get_or_create(
         exam_session_subject=ess,
-        product_product_variation=tutorial_ppv,
-        defaults={
-            'product_code': 'CM2/TLONCM2/2025-04',
-            'is_active': True,
-            'format': 'F2F_3F',  # TLONCM2 = London Face-to-Face Tutorial
-        },
+        tutorial_location=location,
+        format='F2F_3F',
+        defaults={'is_active': True},
     )
 
     return tutorial_store_product, tutorial_product
