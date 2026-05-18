@@ -45,10 +45,10 @@ def make_active_product(code_suffix='1'):
     ppv = ProductProductVariation.objects.create(
         product=cp, product_variation=v, is_active=True,
     )
-    return StoreProduct.objects.create(
+    from store.models import MaterialProduct
+    return MaterialProduct.objects.create(
         exam_session_subject=ess,
         product_product_variation=ppv,
-        kind=Purchasable.Kind.MATERIAL,
         is_active=True,
         name=f'Product {code_suffix} eBook',
     )

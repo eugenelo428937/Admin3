@@ -38,12 +38,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
     Provides product data with related ESS and PPV information.
 
-    Phase 5 Task 4b: ``product_product_variation`` lives on MaterialProduct
-    now. We expose its primary key here as an integer field sourced from
-    the legacy ``@property`` accessor on Product (delegates to
-    ``materialproduct.product_product_variation``). Writes through this
-    field are routed by ``Product.product_product_variation.setter`` to
-    create/save a MaterialProduct row.
+    Phase 6: ``product_product_variation`` lives exclusively on
+    MaterialProduct. The legacy parent-level @property + setter on
+    ``store.Product`` are gone. Reads go through
+    ``Product.get_material_ppv()`` (returns ``None`` for tutorial/marking
+    rows); the writable PPV input field is consumed by ``create()`` to
+    route to a MaterialProduct row and dropped on ``update()``.
     """
     subject_code = serializers.CharField(
         source='exam_session_subject.subject.code',
@@ -55,11 +55,12 @@ class ProductSerializer(serializers.ModelSerializer):
     )
     variation_type = serializers.SerializerMethodField()
     product_name = serializers.SerializerMethodField()
-    # Phase 5 Task 4b: PPV is no longer a Product model field. Declare a
-    # writable PK-relation field whose queryset binding is deferred to
-    # first access (catalog app may not be loaded at module-import time);
-    # the legacy @property setter on Product routes writes through to a
-    # MaterialProduct row at save().
+    # Phase 6: PPV is no longer a Product model field. Declare a writable
+    # PK-relation field whose queryset binding is deferred to first access
+    # (catalog app may not be loaded at module-import time). The value is
+    # consumed by ``create()`` to dispatch to the MaterialProduct subclass;
+    # ``update()`` drops it (changing PPV on an existing row would replace
+    # the product, not edit it).
     product_product_variation = _LazyPPVRelatedField(
         allow_null=True,
         required=False,
@@ -83,13 +84,13 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['product_code', 'created_at', 'updated_at']
 
     def get_variation_type(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         if ppv is None:
             return None
         return ppv.product_variation.variation_type
 
     def get_product_name(self, obj):
-        ppv = obj.product_product_variation
+        ppv = obj.get_material_ppv()
         if ppv is None:
             return None
         return ppv.product.fullname
@@ -105,9 +106,9 @@ class ProductSerializer(serializers.ModelSerializer):
         ess = attrs.get('exam_session_subject') or getattr(
             self.instance, 'exam_session_subject', None
         )
-        ppv = attrs.get('product_product_variation') or getattr(
-            self.instance, 'product_product_variation', None
-        )
+        ppv = attrs.get('product_product_variation')
+        if ppv is None and self.instance is not None:
+            ppv = self.instance.get_material_ppv()
         if ess is None or ppv is None:
             return attrs
 
@@ -129,9 +130,9 @@ class ProductSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        """Phase 5: dispatch to the appropriate MTI subclass on create.
+        """Phase 6: dispatch to the appropriate MTI subclass on create.
 
-        Product.save() now raises ValueError if kind is not set. This
+        Product.save() raises ValueError if kind is not set. This
         create() method determines the correct subclass from the PPV's
         variation_type and delegates to it so kind is set automatically
         by the subclass's own save().
@@ -139,6 +140,10 @@ class ProductSerializer(serializers.ModelSerializer):
         Material (eBook, Printed, Hub): MaterialProduct
         Tutorial / Online Classroom Recording: TutorialProduct
         Marking: MarkingProduct
+
+        Tutorial/Marking subclasses no longer accept ``product_product_variation``
+        as a model field, so it is popped from ``validated_data`` before
+        delegating to those subclasses.
         """
         from store.models import MaterialProduct, TutorialProduct, MarkingProduct
         ppv = validated_data.get('product_product_variation')
@@ -146,14 +151,30 @@ class ProductSerializer(serializers.ModelSerializer):
             variation_type = ppv.product_variation.variation_type
             if variation_type in {'eBook', 'Printed', 'Hub'}:
                 return MaterialProduct.objects.create(**validated_data)
+            # Tutorial/Marking subclasses don't carry a PPV; drop it.
+            validated_data.pop('product_product_variation', None)
             if variation_type in {'Tutorial', 'Online Classroom Recording'}:
                 return TutorialProduct.objects.create(**validated_data)
             if variation_type == 'Marking':
                 return MarkingProduct.objects.create(**validated_data)
-        # Fallback: set kind=MATERIAL so Product.save() doesn't raise.
-        # This path should not be reached in normal operation.
+        # Fallback: bare Product is no longer instantiable with a PPV
+        # kwarg now that the backward-compat setter is gone. Drop the PPV
+        # and default to MATERIAL kind. This path should not be reached
+        # in normal operation.
+        validated_data.pop('product_product_variation', None)
         validated_data.setdefault('kind', Purchasable.Kind.MATERIAL)
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """Phase 6: drop the PPV input on update.
+
+        Changing the PPV on an existing product effectively replaces the
+        product; surfacing it as an in-place edit hid the resulting data
+        churn. The PPV input is accepted (for symmetry with create) but
+        silently dropped here.
+        """
+        validated_data.pop('product_product_variation', None)
+        return super().update(instance, validated_data)
 
 
 class ProductListSerializer(serializers.ModelSerializer):

@@ -89,19 +89,16 @@ class EventFkPopulationTestBase(TestCase):
 
         self.sp_london = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv_london,
             product_code='CM2/TWKDLON/APR2025',
             format='F2F_3F',
         )
         self.sp_live = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv_live,
             product_code='CM2/TWKDLIVE/APR2025',
             format='LO_3F',
         )
         self.sp_bham = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv_bham,
             product_code='CM2/TWKDBIR/APR2025',
             format='F2F_3F',
         )

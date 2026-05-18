@@ -164,8 +164,8 @@ class TestFormatCleanup(TestCase):
         assign_group_to_config(self.modes_config, ebook_group, display_order=1)
 
         # Link PPVs to the mode groups via ProductProductGroup
-        ppv_printed = sp_printed.product_product_variation
-        ppv_ebook = sp_ebook.product_product_variation
+        ppv_printed = sp_printed.get_material_ppv()
+        ppv_ebook = sp_ebook.get_material_ppv()
         ProductProductGroup.objects.create(
             product_product_variation=ppv_printed, product_group=printed_group,
         )

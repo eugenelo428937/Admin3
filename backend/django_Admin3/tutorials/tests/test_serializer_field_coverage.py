@@ -51,7 +51,6 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='COV1/TCOVWKCOVTUT/COV2025',
             format='F2F_3F',
         )

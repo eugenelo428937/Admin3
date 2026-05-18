@@ -903,10 +903,10 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
         self.assertFalse(self.service._is_marking_product(self.store_product))
 
     def test_is_marking_product_exception(self):
-        """Exception returns False."""
+        """Exception while traversing the PPV chain returns False."""
         mock_product = MagicMock()
-        mock_product.product = None  # will cause AttributeError
-        type(mock_product).product = PropertyMock(side_effect=AttributeError)
+        mock_product.kind = 'material'  # bypass the marking-kind short-circuit
+        mock_product.get_material_ppv.side_effect = AttributeError
         self.assertFalse(self.service._is_marking_product(mock_product))
 
     # ── _is_digital_product ──
@@ -1101,7 +1101,7 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
         """Handle products with broken product chain."""
         mock_item = MagicMock()
         mock_item.product = MagicMock()
-        mock_item.product.product = None
+        mock_item.product.get_material_ppv.return_value = None
         self.assertEqual(self.service._get_item_product_code(mock_item), '')
 
     # ── _update_cart_flags ──
@@ -1688,19 +1688,22 @@ class IsMarkingProductExceptionCoverageTest(TestCase):
         self.service = CartService()
 
     def test_is_marking_product_raises_attribute_error(self):
-        """Lines 286-287: accessing product.product raises -> returns False."""
+        """Accessing catalog.fullname raises -> returns False."""
         mock_product = MagicMock()
-        # Make product.product.fullname raise AttributeError
-        type(mock_product.product).fullname = PropertyMock(
+        mock_product.kind = 'material'  # bypass marking-kind short-circuit
+        mock_ppv = MagicMock()
+        type(mock_ppv.product).fullname = PropertyMock(
             side_effect=AttributeError("no fullname")
         )
+        mock_product.get_material_ppv.return_value = mock_ppv
         self.assertFalse(self.service._is_marking_product(mock_product))
 
     def test_is_marking_product_raises_generic_exception(self):
-        """Lines 286-287: any exception -> returns False."""
+        """Any exception during PPV traversal -> returns False."""
         mock_product = MagicMock()
-        type(mock_product).product = PropertyMock(
-            side_effect=RuntimeError("db connection lost")
+        mock_product.kind = 'material'
+        mock_product.get_material_ppv.side_effect = RuntimeError(
+            "db connection lost"
         )
         self.assertFalse(self.service._is_marking_product(mock_product))
 
@@ -1881,31 +1884,36 @@ class GetItemProductCodeExceptionTest(TestCase, CartTestDataMixin):
         self.service = CartService()
 
     def test_exception_during_product_access_returns_empty(self):
-        """Lines 541-542: exception accessing product chain returns ''."""
+        """An exception raised while reaching catalog code returns ''."""
 
         class ExplodingProduct:
-            """A product whose .code property raises."""
+            """A catalog product whose .code property raises."""
             @property
             def code(self):
                 raise AttributeError("code not loadable")
 
+        mock_ppv = MagicMock()
+        mock_ppv.product = ExplodingProduct()
         mock_store_product = MagicMock()
-        mock_store_product.product = ExplodingProduct()
+        mock_store_product.get_material_ppv.return_value = mock_ppv
         mock_item = MagicMock()
         mock_item.product = mock_store_product
         self.assertEqual(self.service._get_item_product_code(mock_item), '')
 
     def test_generic_exception_returns_empty(self):
-        """Lines 541-542: any exception returns ''."""
+        """A generic exception while traversing the chain returns ''."""
         mock_item = MagicMock()
         mock_item.product = MagicMock()
-        type(mock_item.product).product = PropertyMock(
-            side_effect=RuntimeError("unexpected error")
+        mock_item.product.get_material_ppv.side_effect = RuntimeError(
+            "unexpected error"
         )
         self.assertEqual(self.service._get_item_product_code(mock_item), '')
 
     def test_product_code_is_none_returns_empty(self):
-        """Line 540: product.product.code is None -> returns '' via 'or'."""
+        """When ppv.product.code is None, returns '' via the ``or`` fallback."""
         mock_item = MagicMock()
-        mock_item.product.product.code = None
+        mock_item.product = MagicMock()
+        mock_ppv = MagicMock()
+        mock_ppv.product.code = None
+        mock_item.product.get_material_ppv.return_value = mock_ppv
         self.assertEqual(self.service._get_item_product_code(mock_item), '')

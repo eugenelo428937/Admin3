@@ -58,7 +58,6 @@ class _Fixtures:
         ppv, _ = self._ppv('Tutorial', 'F2F_3F')
         tp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CM2/P32T2/2026-04',
             format='F2F_3F',
         )
@@ -77,7 +76,6 @@ class _Fixtures:
         )
         return MarkingProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CS1/MP32T/2026-04',
             marking_template=mt,
             paper_count=4,
@@ -207,7 +205,6 @@ class SerializerDispatcherPhase4dTests(_Fixtures, TestCase):
         ppv, _ = self._ppv('Tutorial', 'F2F_3F')
         tp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='P4DT/F2F_3F/2026-10',
             format='F2F_3F',
         )
@@ -228,7 +225,6 @@ class SerializerDispatcherPhase4dTests(_Fixtures, TestCase):
         )
         return MarkingProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='P4DM/M01/2026-10',
             marking_template=mt,
             paper_count=2,

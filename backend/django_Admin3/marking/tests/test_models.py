@@ -67,7 +67,6 @@ class MarkingPaperTestCase(TestCase):
         # Create store product (Phase 5: use MarkingProduct subclass)
         self.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             marking_template=self.marking_template,
         )
 
@@ -496,7 +495,6 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         # Create store product (Phase 5: use MarkingProduct subclass)
         self.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             marking_template=self.marking_template,
         )
 
@@ -535,7 +533,6 @@ class MarkingPaperBackwardCompatTestCase(TestCase):
         )
         store_product2 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=ppv2,
             marking_template=marking_template2,
         )
         paper2 = MarkingPaper.objects.create(

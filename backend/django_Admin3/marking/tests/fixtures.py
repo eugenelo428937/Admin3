@@ -79,7 +79,6 @@ class MarkingChainTestCase(APITestCase):
         # Phase 5: use MarkingProduct subclass which sets kind='marking'
         cls.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=cls.ess,
-            product_product_variation=cls.ppv,
             marking_template=cls.marking_template,
         )
         cls.paper = MarkingPaper.objects.create(

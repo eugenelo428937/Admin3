@@ -81,12 +81,10 @@ class MarkingPaperAPITestCase(APITestCase):
         # Create store products (Phase 5: use MarkingProduct subclass)
         self.store_product1 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv1,
             marking_template=self.marking_template,
         )
         self.store_product2 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv2,
             marking_template=self.marking_template2,
         )
 
@@ -183,7 +181,6 @@ class MarkingPaperAPITestCase(APITestCase):
         )
         store_product_no_papers = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=ppv3,
             marking_template=marking_template3,
         )
 
@@ -414,7 +411,6 @@ class DeadlinesEsspBackwardCompatTestCase(APITestCase):
         # Create store product (Phase 5: use MarkingProduct subclass)
         self.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv,
             marking_template=self.marking_template,
         )
 
@@ -570,12 +566,10 @@ class BulkDeadlinesEsspBackwardCompatTestCase(APITestCase):
         # Create store products (Phase 5: use MarkingProduct subclass)
         self.store_product1 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv1,
             marking_template=self.marking_template,
         )
         self.store_product2 = StoreMarkingProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product_product_variation=self.ppv2,
             marking_template=self.marking_template2,
         )
 

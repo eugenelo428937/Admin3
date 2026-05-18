@@ -51,7 +51,6 @@ def _create_store_product():
     )
     store_product = TutorialProduct.objects.create(
         exam_session_subject=ess,
-        product_product_variation=ppv,
         product_code='CM2/TLONCM2_f2f_5/2025-04',
         format='F2F_5F',
     )

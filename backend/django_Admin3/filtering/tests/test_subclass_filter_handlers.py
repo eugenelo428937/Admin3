@@ -47,7 +47,6 @@ class _Fixtures:
         ppv, _ = self._ppv('Tutorial', format_code)
         tp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code=f'{subject_code}/{format_code}/2026-04',
             format=format_code,
             tutorial_location=location,
@@ -66,7 +65,6 @@ class _Fixtures:
         )
         return MarkingProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code=f'{subject_code}/M{template_code}/2026-04',
             marking_template=mt,
         )

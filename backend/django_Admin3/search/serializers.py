@@ -39,7 +39,7 @@ class StoreProductListSerializer:
         grouped = defaultdict(list)
 
         for sp in store_products:
-            ppv = sp.product_product_variation
+            ppv = sp.get_material_ppv()
             if ppv is None:
                 continue
             key = (sp.exam_session_subject_id, ppv.product_id)
@@ -50,15 +50,16 @@ class StoreProductListSerializer:
             # Use first variation to get common fields
             first = variations[0]
             ess = first.exam_session_subject
-            catalog_product = first.product_product_variation.product
+            first_ppv = first.get_material_ppv()
+            catalog_product = first_ppv.product
 
             # Determine product type from first PPV's filter groups
-            product_type = cls._get_product_type(first.product_product_variation)
+            product_type = cls._get_product_type(first_ppv)
 
             # Build variations array
             variations_data = []
             for sp in variations:
-                ppv = sp.product_product_variation
+                ppv = sp.get_material_ppv()
                 pv = ppv.product_variation
 
                 variation_data = {

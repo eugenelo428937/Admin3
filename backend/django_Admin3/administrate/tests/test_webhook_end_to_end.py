@@ -101,8 +101,7 @@ def store_product(db):
     )
     ppv = ProductProductVariation.objects.create(product=p, product_variation=pv)
     return TutorialProduct.objects.create(
-        exam_session_subject=ess, product_product_variation=ppv,
-        product_code='CB1/TUTE2EWKD/E2E26S',
+        exam_session_subject=ess,product_code='CB1/TUTE2EWKD/E2E26S',
         format='LO_6H',
     )
 

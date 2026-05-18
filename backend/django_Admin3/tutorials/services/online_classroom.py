@@ -29,7 +29,7 @@ def is_online_classroom_event(event) -> bool:
     # Legacy fallback: catalog PPV chain (only resolves for material rows
     # that happen to carry an OC-style variation).
     try:
-        ppv = store_product.product_product_variation
+        ppv = store_product.get_material_ppv() if hasattr(store_product, 'get_material_ppv') else None
         if ppv is None:
             return False
         return ppv.product_variation.variation_type == ONLINE_CLASSROOM_VARIATION_TYPE

@@ -17,6 +17,7 @@ from catalog.products.models import (
 from catalog.products.bundle.models import ProductBundle
 from store.models import (
     Product as StoreProduct, Purchasable, Bundle, BundleProduct,
+    MaterialProduct,
 )
 
 
@@ -52,10 +53,9 @@ class BundleContentsAvailableTests(TestCase):
             ppv = ProductProductVariation.objects.create(
                 product=cp, product_variation=v, is_active=True,
             )
-            return StoreProduct.objects.create(
-                exam_session_subject=self.ess,
+            return MaterialProduct.objects.create(
+exam_session_subject=self.ess,
                 product_product_variation=ppv,
-                kind=Purchasable.Kind.MATERIAL,
                 is_active=active,
                 name=code,
             )

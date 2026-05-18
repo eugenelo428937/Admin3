@@ -15,10 +15,11 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
     Surfaces catalog product, variation, and exam session info via
     the ProductProductVariation and ExamSessionSubject FK chains.
 
-    Phase 5 Task 4b: ``product_product_variation`` lives on MaterialProduct
-    now. The legacy ``@property`` on Product delegates reads to
-    ``materialproduct.product_product_variation``, and the matching
-    setter routes writes through to a MaterialProduct row at save().
+    Phase 6: ``product_product_variation`` lives exclusively on
+    MaterialProduct. The parent-level @property + setter on
+    ``store.Product`` are gone; reads go through ``get_material_ppv()``
+    and the writable PPV input is consumed by ``create()`` / dropped on
+    ``update()`` via the base ``ProductSerializer`` overrides.
     PPV-derived display fields are computed via SerializerMethodField so
     they tolerate non-material (tutorial/marking) rows that lack a PPV.
     """
@@ -54,7 +55,7 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ['product_code', 'created_at', 'updated_at']
 
     def _ppv(self, obj):
-        return obj.product_product_variation
+        return obj.get_material_ppv()
 
     def get_variation_type(self, obj):
         ppv = self._ppv(obj)
@@ -92,9 +93,9 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
         ess = attrs.get('exam_session_subject') or getattr(
             self.instance, 'exam_session_subject', None
         )
-        ppv = attrs.get('product_product_variation') or getattr(
-            self.instance, 'product_product_variation', None
-        )
+        ppv = attrs.get('product_product_variation')
+        if ppv is None and self.instance is not None:
+            ppv = self.instance.get_material_ppv()
         if ess is None or ppv is None:
             return attrs
 
@@ -112,3 +113,31 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
                 'subject and product variation.'
             )
         return attrs
+
+    def create(self, validated_data):
+        """Phase 6: route PPV writes through the correct MTI subclass.
+
+        Mirrors ``ProductSerializer.create()``: a non-null PPV dispatches
+        to MaterialProduct (the only subclass that carries a PPV column);
+        tutorial/marking writes drop the PPV before delegating.
+        """
+        from store.models import MaterialProduct, TutorialProduct, MarkingProduct
+        from store.models.purchasable import Purchasable
+        ppv = validated_data.get('product_product_variation')
+        if ppv is not None:
+            variation_type = ppv.product_variation.variation_type
+            if variation_type in {'eBook', 'Printed', 'Hub'}:
+                return MaterialProduct.objects.create(**validated_data)
+            validated_data.pop('product_product_variation', None)
+            if variation_type in {'Tutorial', 'Online Classroom Recording'}:
+                return TutorialProduct.objects.create(**validated_data)
+            if variation_type == 'Marking':
+                return MarkingProduct.objects.create(**validated_data)
+        validated_data.pop('product_product_variation', None)
+        validated_data.setdefault('kind', Purchasable.Kind.MATERIAL)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """Phase 6: drop PPV input on update — see ProductSerializer.update."""
+        validated_data.pop('product_product_variation', None)
+        return super().update(instance, validated_data)

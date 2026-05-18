@@ -62,7 +62,6 @@ class EventImporterTestMixin:
         )
         self.store_product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='CM2/TUT01/2026-04',
             format='LO_6H',
         )

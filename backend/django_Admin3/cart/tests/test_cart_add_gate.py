@@ -15,6 +15,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct
 
 
 class CartAddGateTests(TestCase):
@@ -38,10 +39,9 @@ class CartAddGateTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cp, product_variation=v, is_active=True,
         )
-        self.inactive = StoreProduct.objects.create(
-            exam_session_subject=ess,
+        self.inactive = MaterialProduct.objects.create(
+exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL,
             is_active=False,  # KEY
             name='Gate Product eBook',
         )

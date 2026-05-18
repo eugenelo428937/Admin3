@@ -133,7 +133,6 @@ class MarkingPaperHasTemplateFKTests(TestCase):
         # Phase 5: use MarkingProduct subclass which sets kind='marking'
         p = StoreMarkingProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             marking_template=marking_template,
         )
         with self.assertRaises(IntegrityError):

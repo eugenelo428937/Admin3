@@ -46,7 +46,7 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17',
     )
     ppv, _ = ProductProductVariation.objects.get_or_create(product=cat_prod, product_variation=pv)
     tp = TutorialProduct(
-        exam_session_subject=ess, product_product_variation=ppv,
+        exam_session_subject=ess,
         product_code=f'{subject_code}/{location_code}/{variation_code}/{sitting_session}',
         format=variation_code,
     )
