@@ -153,10 +153,15 @@ class StoreProductListSerializer:
                     'code': event.code,
                     'venue': str(event.venue) if event.venue else None,
                     'is_soldout': event.is_soldout,
-                    'finalisation_date': event.finalisation_date.isoformat() if event.finalisation_date else None,
+                    # finalisation_date is now DateTime; .date().isoformat()
+                    # preserves the date-only API shape callers expect.
+                    # (Phase 5b, 2026-05-16)
+                    'finalisation_date': event.finalisation_date.date().isoformat() if event.finalisation_date else None,
                     'remain_space': event.remain_space,
-                    'start_date': event.start_date.isoformat() if event.start_date else None,
-                    'end_date': event.end_date.isoformat() if event.end_date else None,
+                    # Sourced from lms_start_date / lms_end_date (DateTime) since
+                    # the legacy Date columns were dropped.
+                    'start_date': event.lms_start_date.date().isoformat() if event.lms_start_date else None,
+                    'end_date': event.lms_end_date.date().isoformat() if event.lms_end_date else None,
                     'title': event.code,
                     'price': None,
                     'sessions': sessions,

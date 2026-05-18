@@ -612,14 +612,19 @@ def state_tutorial_events_exist(params=None):
         defaults={'description': 'London venue'},
     )
 
+    # Phase 5b (2026-05-16): legacy Date columns dropped; use
+    # lms_start_date / lms_end_date (DateTime) — Django auto-promotes a
+    # date to midnight at the session timezone (UTC), which is fine for
+    # the pact contract (consumer only asserts on the date component
+    # extracted via .date()).
     TutorialEvents.objects.get_or_create(
         code='TUT-CM2-LON-2025',
         defaults={
             'venue': venue,
             'is_soldout': False,
             'remain_space': 20,
-            'start_date': datetime.date(2025, 4, 1),
-            'end_date': datetime.date(2025, 4, 5),
+            'lms_start_date': datetime.date(2025, 4, 1),
+            'lms_end_date': datetime.date(2025, 4, 5),
             'store_product': tutorial_store_product,
         },
     )

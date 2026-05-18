@@ -55,8 +55,8 @@ def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
     event = TutorialEvents.objects.create(
         code=f'{subject_code}-01-{sitting_code}A',
         store_product=sp,
-        start_date=date(2024, 1, 1),
-        end_date=date(2024, 2, 1),
+        lms_start_date=date(2024, 1, 1),
+        lms_end_date=date(2024, 2, 1),
     )
     return event, sp, subj
 
@@ -78,7 +78,7 @@ class TutorialChoiceTests(TestCase):
         # Second event in the same product so unique_together(order_item, event) tests work.
         self.event_b = TutorialEvents.objects.create(
             code='CB1-02-24A', store_product=self.sp,
-            start_date=date(2024, 1, 8), end_date=date(2024, 2, 8),
+            lms_start_date=date(2024, 1, 8), lms_end_date=date(2024, 2, 8),
         )
         self.order_item = _make_order_item(self.student, self.sp)
 
@@ -143,7 +143,7 @@ class TutorialChoiceTests(TestCase):
         oc_sp.save()
         oc_event = TutorialEvents.objects.create(
             code='CB1-OC-24A', store_product=oc_sp,
-            start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
+            lms_start_date=date(2024, 1, 1), lms_end_date=date(2024, 2, 1),
         )
         choice = TutorialChoice(
             order_item=self.order_item, student=self.student,

@@ -1,6 +1,7 @@
 """Admin event list — permission, basic shape, ordering, pagination."""
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -134,9 +135,9 @@ class AdminEventListOrderingTests(APITestCase):
         sp1 = factories.make_store_product(cat_product_code='Live1')
         sp2 = factories.make_store_product(cat_product_code='Live2')
         e1 = factories.make_event(store_product=sp1, code='EV-LATE')
-        e1.start_date = date(2026, 8, 1); e1.save()
+        e1.lms_start_date = timezone.make_aware(timezone.datetime(2026, 8, 1)); e1.save()
         e2 = factories.make_event(store_product=sp2, code='EV-EARLY')
-        e2.start_date = date(2026, 6, 1); e2.save()
+        e2.lms_start_date = timezone.make_aware(timezone.datetime(2026, 6, 1)); e2.save()
 
         response = self.client.get(self.url)
         codes = [e['code'] for e in response.data['results']]
@@ -147,22 +148,21 @@ class AdminEventListOrderingTests(APITestCase):
         sp1 = factories.make_store_product(cat_product_code='Live3')
         sp2 = factories.make_store_product(cat_product_code='Live4')
         e1 = factories.make_event(store_product=sp1, code='EV-LATE')
-        e1.start_date = date(2026, 8, 1); e1.save()
+        e1.lms_start_date = timezone.make_aware(timezone.datetime(2026, 8, 1)); e1.save()
         e2 = factories.make_event(store_product=sp2, code='EV-EARLY')
-        e2.start_date = date(2026, 6, 1); e2.save()
+        e2.lms_start_date = timezone.make_aware(timezone.datetime(2026, 6, 1)); e2.save()
 
-        response = self.client.get(self.url, {'ordering': '-start_date'})
+        response = self.client.get(self.url, {'ordering': '-lms_start_date'})
         codes = [e['code'] for e in response.data['results']]
         self.assertEqual(codes, ['EV-LATE', 'EV-EARLY'])
 
     def test_ordering_param_ignored_when_not_whitelisted(self):
-        from datetime import date
         sp1 = factories.make_store_product(cat_product_code='Live5')
         sp2 = factories.make_store_product(cat_product_code='Live6')
         e1 = factories.make_event(store_product=sp1, code='EV-A')
-        e1.start_date = date(2026, 6, 1); e1.save()
+        e1.lms_start_date = timezone.make_aware(timezone.datetime(2026, 6, 1)); e1.save()
         e2 = factories.make_event(store_product=sp2, code='EV-B')
-        e2.start_date = date(2026, 8, 1); e2.save()
+        e2.lms_start_date = timezone.make_aware(timezone.datetime(2026, 8, 1)); e2.save()
 
         # Reject 'unsafe_field' — fall back to default (start_date asc).
         response = self.client.get(self.url, {'ordering': 'unsafe_field'})

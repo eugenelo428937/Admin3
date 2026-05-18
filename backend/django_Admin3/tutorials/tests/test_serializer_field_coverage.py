@@ -59,11 +59,11 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
         self.event = TutorialEvents.objects.create(
             code='COV-TUT-001',
             venue=self.tv,
-            start_date=timezone.now().date() + timedelta(days=30),
-            end_date=timezone.now().date() + timedelta(days=31),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=31),
             store_product=self.store_product,
             is_soldout=True,
-            finalisation_date=timezone.now().date() + timedelta(days=25),
+            finalisation_date=timezone.now() + timedelta(days=25),
         )
         self.data = TutorialEventsSerializer(self.event).data
 
@@ -92,6 +92,9 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
         _ = self.data['remain_space']
 
     def test_read_start_date(self):
+        # Serializer exposes the legacy 'start_date' key (date-only) sourced
+        # from the model's lms_start_date column (DateTime) — preserved
+        # for pact contract compatibility after Phase 5b.
         _ = self.data['start_date']
 
     def test_read_end_date(self):

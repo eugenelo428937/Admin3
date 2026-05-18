@@ -49,7 +49,7 @@ def _seed_event(subject_code='CP2', sitting_short='24A', event_num='17'):
         tp.save()
     return TutorialEvents.objects.create(
         code=f'{subject_code}-{event_num}-{sitting_short}', store_product=tp,
-        start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
+        lms_start_date=date(2024, 1, 1), lms_end_date=date(2024, 2, 1),
     )
 
 

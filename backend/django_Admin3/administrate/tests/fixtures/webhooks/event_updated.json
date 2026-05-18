@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "webhook_id": "wh_test_updated_1",
+    "triggered_at": "2026-05-14T12:00:00Z"
+  },
+  "payload": {
+    "node": {
+      "id": "evt_external_42",
+      "title": "CB1-EVT42-26S",
+      "lifecycleState": "PUBLISHED",
+      "cancelledAt": null,
+      "isSoldOut": false,
+      "learningMode": "CLASSROOM",
+      "maxPlaces": 30,
+      "minPlaces": 5,
+      "location": {"id": "loc_external_1"},
+      "venue": {"id": "ven_external_1"},
+      "courseTemplate": {"id": "ct_external_1"},
+      "timeZoneName": "Europe/London",
+      "lmsStart": "2026-09-01T09:00:00Z",
+      "lmsEnd": "2026-12-01T17:00:00Z",
+      "registrationDeadline": "2026-08-25T23:59:59Z",
+      "updatedAt": "2026-05-14T12:00:00Z",
+      "customFieldValues": [
+        {"definitionKey": "Q3VzdG9tRmllbGREZWZpbml0aW9uOjI0", "value": "true"},
+        {"definitionKey": "Q3VzdG9tRmllbGREZWZpbml0aW9uOjM5", "value": "https://example.com/event/42"}
+      ]
+    }
+  },
+  "configuration": {"secret": "test-shared-secret"}
+}

@@ -38,18 +38,15 @@ from tutorials.tests.factories import (
 def _make_adm_session(*, suffix, day_number=1, external_id=None,
                      tutorial_event=None):
     """Create an adm.Event + adm.Session pair (optionally linked to a
-    tutorials.TutorialEvents row), returning the adm.Session."""
-    ct = CourseTemplate.objects.create(external_id=f'ct-{suffix}')
-    loc = AdmLocation.objects.create(external_id=f'loc-{suffix}')
-    ven = AdmVenue.objects.create(external_id=f'ven-{suffix}', location=loc)
+    tutorials.TutorialEvents row), returning the adm.Session.
+
+    Phase 5 (2026-05-15): adm.events is now a thin bridge — we only
+    persist external_id + tutorial_event there. The instructor is still
+    needed by adm.Session.session_instructor, so we still seed the
+    Instructor row, just not via the bridge."""
     ins = AdmInstructor.objects.create(external_id=f'ins-{suffix}')
     ev = AdmEvent.objects.create(
         external_id=f'evt-{suffix}',
-        course_template=ct,
-        title=f'Tutorial Event {suffix}',
-        location=loc,
-        venue=ven,
-        primary_instructor=ins,
         tutorial_event=tutorial_event,
     )
     return AdmSession.objects.create(

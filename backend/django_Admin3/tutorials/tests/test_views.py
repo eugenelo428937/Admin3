@@ -82,8 +82,8 @@ class TutorialEventsAPITestCase(APITestCase):
         self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-001',
             venue=TutorialVenue.objects.create(name='London Convention Center'),
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             remain_space=20,
             store_product=self.store_product
         )
@@ -91,8 +91,8 @@ class TutorialEventsAPITestCase(APITestCase):
         self.event2 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-002',
             venue=TutorialVenue.objects.create(name='Manchester Training Centre'),
-            start_date=date.today() + timedelta(days=40),
-            end_date=date.today() + timedelta(days=42),
+            lms_start_date=timezone.now() + timedelta(days=40),
+            lms_end_date=timezone.now() + timedelta(days=42),
             is_soldout=True,
             remain_space=0,
             store_product=self.store_product
@@ -125,12 +125,18 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_tutorial_event(self):
-        """Test POST /api/tutorials/events/ to create new event."""
+        """Test POST /api/tutorials/events/ to create new event.
+
+        Phase 5b: API keys stay as start_date/end_date (date-only) for
+        backward compatibility with the consumer pact contract — the
+        serializer's start_date/end_date fields read from / write to
+        the underlying lms_start_date / lms_end_date DateTime columns."""
+        from datetime import date
         data = {
             'code': 'TUT-CM2-NEW-001',
             'venue': 'Birmingham Conference Hall',
-            'start_date': (date.today() + timedelta(days=50)).isoformat(),
-            'end_date': (date.today() + timedelta(days=52)).isoformat(),
+            'start_date': date.today().isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'remain_space': 25,
             'store_product': self.store_product.id
         }
@@ -144,25 +150,28 @@ class TutorialEventsAPITestCase(APITestCase):
 
     def test_create_tutorial_event_missing_required_fields(self):
         """Test POST /api/tutorials/events/ with missing required fields."""
-        # Missing start_date
+        from datetime import date
         data = {
             'code': 'TUT-INVALID-001',
             'venue': 'Test Venue',
-            'end_date': (date.today() + timedelta(days=52)).isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'store_product': self.store_product.id
         }
 
         response = self.client.post('/api/tutorials/events/', data, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Phase 5b (2026-05-16): lms_start_date / lms_end_date are nullable
+        # now (was: required). The serializer accepts the partial payload.
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_tutorial_event_duplicate_code(self):
         """Test POST /api/tutorials/events/ with duplicate code."""
+        from datetime import date
         data = {
             'code': 'TUT-CM2-LON-001',  # Duplicate code
             'venue': 'Test Venue',
-            'start_date': (date.today() + timedelta(days=50)).isoformat(),
-            'end_date': (date.today() + timedelta(days=52)).isoformat(),
+            'start_date': date.today().isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'store_product': self.store_product.id
         }
 
@@ -176,8 +185,8 @@ class TutorialEventsAPITestCase(APITestCase):
         data = {
             'code': 'TUT-CM2-LON-001-UPDATED',
             'venue_id': updated_venue.id,
-            'start_date': self.event1.start_date.isoformat(),
-            'end_date': self.event1.end_date.isoformat(),
+            'start_date': self.event1.lms_start_date.date().isoformat(),
+            'end_date': self.event1.lms_end_date.date().isoformat(),
             'store_product': self.store_product.id
         }
 
@@ -230,6 +239,8 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertIn('venue', event_data)
         self.assertIn('is_soldout', event_data)
         self.assertIn('remain_space', event_data)
+        # Serializer keeps the legacy 'start_date'/'end_date' API keys
+        # for pact compatibility (sourced from lms_* via DRF source=).
         self.assertIn('start_date', event_data)
         self.assertIn('end_date', event_data)
 
@@ -246,6 +257,8 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertIn('is_soldout', response.data)
         self.assertIn('finalisation_date', response.data)
         self.assertIn('remain_space', response.data)
+        # Serializer keeps the legacy 'start_date'/'end_date' API keys
+        # for pact compatibility (sourced from lms_* via DRF source=).
         self.assertIn('start_date', response.data)
         self.assertIn('end_date', response.data)
         self.assertIn('created_at', response.data)
@@ -363,16 +376,16 @@ class TutorialEventsListViewTestCase(APITestCase):
         self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-001',
             venue=TutorialVenue.objects.create(name='London'),
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product1
         )
 
         self.event2 = TutorialEvents.objects.create(
             code='TUT-SA1-001',
             venue=TutorialVenue.objects.create(name='Manchester'),
-            start_date=date.today() + timedelta(days=40),
-            end_date=date.today() + timedelta(days=42),
+            lms_start_date=timezone.now() + timedelta(days=40),
+            lms_end_date=timezone.now() + timedelta(days=42),
             store_product=self.store_product2
         )
 
@@ -742,8 +755,8 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
         self.event = TutorialEvents.objects.create(
             code='TUT-CM2-001',
             venue=TutorialVenue.objects.create(name='London'),
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.store_product
         )
 
@@ -784,6 +797,8 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
                 self.assertIn('code', event)
                 self.assertIn('venue', event)
                 self.assertIn('is_soldout', event)
+                # views.py preserves the legacy 'start_date' / 'end_date'
+                # keys for API compatibility (sourcing from lms_* internally).
                 self.assertIn('start_date', event)
                 self.assertIn('end_date', event)
 
@@ -878,8 +893,8 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
         event = TutorialEvents.objects.create(
             code='TUT-BC-001',
             venue=TutorialVenue.objects.create(name='Test Venue'),
-            start_date='2026-06-01',
-            end_date='2026-06-03',
+            lms_start_date='2026-06-01',
+            lms_end_date='2026-06-03',
             store_product=store_product
         )
         # This exercises the backward compat property (line 51)
@@ -1016,15 +1031,15 @@ class TutorialEventsListViewSubjectFilterTestCase(APITestCase):
         self.event_cm2 = TutorialEvents.objects.create(
             code='FLT-CM2-EVT',
             venue=TutorialVenue.objects.create(name='London Filter'),
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             store_product=self.sp_cm2
         )
         self.event_sa1 = TutorialEvents.objects.create(
             code='FLT-SA1-EVT',
             venue=TutorialVenue.objects.create(name='Manchester Filter'),
-            start_date=date.today() + timedelta(days=40),
-            end_date=date.today() + timedelta(days=42),
+            lms_start_date=timezone.now() + timedelta(days=40),
+            lms_end_date=timezone.now() + timedelta(days=42),
             store_product=self.sp_sa1
         )
         self.client = APIClient()
@@ -1336,16 +1351,16 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.event1 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-001',
             venue=TutorialVenue.objects.create(name='London Venue A'),
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
+            lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32),
             remain_space=20,
             store_product=self.sp1
         )
         self.event2 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-002',
             venue=TutorialVenue.objects.create(name='London Venue B'),
-            start_date=date.today() + timedelta(days=40),
-            end_date=date.today() + timedelta(days=42),
+            lms_start_date=timezone.now() + timedelta(days=40),
+            lms_end_date=timezone.now() + timedelta(days=42),
             is_soldout=True,
             remain_space=0,
             finalisation_date=date.today() + timedelta(days=25),
@@ -1354,16 +1369,16 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.event3 = TutorialEvents.objects.create(
             code='COMP-CM2-DAY-001',
             venue=TutorialVenue.objects.create(name='London Day Venue'),
-            start_date=date.today() + timedelta(days=35),
-            end_date=date.today() + timedelta(days=37),
+            lms_start_date=timezone.now() + timedelta(days=35),
+            lms_end_date=timezone.now() + timedelta(days=37),
             remain_space=15,
             store_product=self.sp2
         )
         self.event4 = TutorialEvents.objects.create(
             code='COMP-SA1-WKD-001',
             venue=TutorialVenue.objects.create(name='Manchester Venue'),
-            start_date=date.today() + timedelta(days=50),
-            end_date=date.today() + timedelta(days=52),
+            lms_start_date=timezone.now() + timedelta(days=50),
+            lms_end_date=timezone.now() + timedelta(days=52),
             remain_space=25,
             store_product=self.sp3
         )
@@ -1441,6 +1456,8 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         self.assertIn('is_soldout', event)
         self.assertIn('finalisation_date', event)
         self.assertIn('remain_space', event)
+        # views.py still serializes as start_date/end_date (date-only) for
+        # API compatibility, sourcing from lms_start_date / lms_end_date.
         self.assertIn('start_date', event)
         self.assertIn('end_date', event)
         self.assertIn('title', event)

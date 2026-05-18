@@ -44,6 +44,7 @@ urlpatterns = [
     path('api/search/', include('search.urls')),
     # Store API - purchasable items (20250115-store-app-consolidation)
     path('api/store/', include('store.urls')),
+    path('api/administrate/', include('administrate.urls')),
     # Email system API - email admin panel (20260220-email-system-admin)
     path('api/email/', include('email_system.urls')),
     # Legacy product archive - search historical products (20260408-legacy-product-migration)

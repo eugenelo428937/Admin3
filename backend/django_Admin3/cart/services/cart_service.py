@@ -381,8 +381,11 @@ class CartService:
                 'eventTitle': str(ev),
                 'venue': venue,
                 'location': loc_label,
-                'startDate': ev.start_date.isoformat() if ev.start_date else None,
-                'endDate': ev.end_date.isoformat() if ev.end_date else None,
+                # Phase 5b (2026-05-16): legacy Date columns dropped; sourced
+                # from lms_start_date / lms_end_date (DateTime). .date()
+                # preserves the date-only API shape the cart UI expects.
+                'startDate': ev.lms_start_date.date().isoformat() if ev.lms_start_date else None,
+                'endDate': ev.lms_end_date.date().isoformat() if ev.lms_end_date else None,
                 # Phase 4d: variation info from TutorialProduct subclass.
                 # variationId is the TutorialProduct PK (shared with Product via MTI);
                 # variationName is the human-readable Format choice label.

@@ -150,6 +150,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.tasks',
     'django_extensions',
     'rest_framework',
     'corsheaders',
@@ -394,4 +395,22 @@ MIGRATION_ASSERT_MODE = os.environ.get('MIGRATION_ASSERT_MODE', 'false').lower()
 # Machine Token Auto-Login
 # Trusted VPN subnets for machine token authentication
 MACHINE_LOGIN_TRUSTED_SUBNETS = ['7.32.0.0/16']
+
+# django.tasks configuration
+# NOTE: ImmediateBackend runs tasks synchronously in-process. When a real
+# DB-backed backend ships (django.tasks.backends.database, or we adopt
+# django-q2), change BACKEND below and add a worker process to deployment.
+TASKS = {
+    'default': {
+        'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
+    },
+}
+
+# Administrate webhook settings — never commit real values, only read from env
+ADMINISTRATE_WEBHOOK_ROUTE_TOKEN = env('ADMINISTRATE_WEBHOOK_ROUTE_TOKEN', default='')
+ADMINISTRATE_WEBHOOK_SECRET = env('ADMINISTRATE_WEBHOOK_SECRET', default='')
+ADMINISTRATE_WEBHOOK_BASE_URL = env('ADMINISTRATE_WEBHOOK_BASE_URL', default='')
+ADMINISTRATE_WEBHOOK_NOTIFICATION_EMAILS = env.list(
+    'ADMINISTRATE_WEBHOOK_NOTIFICATION_EMAILS', default=[]
+)
 

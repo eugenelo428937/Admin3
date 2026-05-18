@@ -7,5 +7,7 @@ from .instructors import Instructor
 from .venues import Venue
 from .events import Event, Session
 from .api_audit_log import ApiAuditLog
+from .webhook_inbox import WebhookInbox  # noqa: F401
+from .webhook_registration import WebhookRegistration  # noqa: F401
 # Import any other models to maintain backward compatibility
 # This ensures that imports like `from administrate.models import CustomField` still work

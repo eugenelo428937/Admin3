@@ -73,15 +73,19 @@ def _seed_tutorial_product(subject_code='CB1', sitting='24'):
         format='LO_6H',
     )
     sp.save()
+    # Phase 5b (2026-05-16): legacy Date columns dropped; the canonical
+    # fields are lms_start_date / lms_end_date (DateTime).
     event_a = TutorialEvents.objects.create(
         code=f'{subject_code}-01-{sitting}A',
         store_product=sp,
-        start_date=date(2024, 1, 1), end_date=date(2024, 2, 1),
+        lms_start_date=now + timedelta(days=1),
+        lms_end_date=now + timedelta(days=31),
     )
     event_b = TutorialEvents.objects.create(
         code=f'{subject_code}-02-{sitting}A',
         store_product=sp,
-        start_date=date(2024, 1, 8), end_date=date(2024, 2, 8),
+        lms_start_date=now + timedelta(days=8),
+        lms_end_date=now + timedelta(days=38),
     )
     return sp, event_a, event_b, subj
 

@@ -125,16 +125,16 @@ class EventFkPopulationTestBase(TestCase):
 
         # Create events with NULL venue_id and location_id
         self.event_london = TutorialEvents.objects.create(
-            code='CM2-LON-01', start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32), store_product=self.sp_london,
+            code='CM2-LON-01', lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32), store_product=self.sp_london,
         )
         self.event_live = TutorialEvents.objects.create(
-            code='CM2-LIVE-01', start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32), store_product=self.sp_live,
+            code='CM2-LIVE-01', lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32), store_product=self.sp_live,
         )
         self.event_bham = TutorialEvents.objects.create(
-            code='CM2-BIR-01', start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32), store_product=self.sp_bham,
+            code='CM2-BIR-01', lms_start_date=timezone.now() + timedelta(days=30),
+            lms_end_date=timezone.now() + timedelta(days=32), store_product=self.sp_bham,
         )
 
         # Set old venue text values so populate_venue_ids can match

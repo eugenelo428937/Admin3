@@ -175,9 +175,9 @@ class StartDateRangeFilterTests(_AuthedAdminCase):
         )
 
         e1 = factories.make_event(store_product=sp1, code='EV-PAST')
-        e1.start_date = date(2026, 1, 1); e1.end_date = date(2026, 1, 2); e1.save()
+        e1.lms_start_date = timezone.make_aware(timezone.datetime(2026, 1, 1)); e1.lms_end_date = timezone.make_aware(timezone.datetime(2026, 1, 2)); e1.save()
         e2 = factories.make_event(store_product=sp2, code='EV-CURR')
-        e2.start_date = date(2026, 6, 1); e2.end_date = date(2026, 6, 2); e2.save()
+        e2.lms_start_date = timezone.make_aware(timezone.datetime(2026, 6, 1)); e2.lms_end_date = timezone.make_aware(timezone.datetime(2026, 6, 2)); e2.save()
 
         response = self.client.get(self.url, {'start_from': '2026-06-01', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]
@@ -212,9 +212,9 @@ class StartDateRangeFilterTests(_AuthedAdminCase):
         )
 
         e1 = factories.make_event(store_product=sp1, code='EV-PAST2')
-        e1.start_date = date(2026, 1, 1); e1.end_date = date(2026, 1, 2); e1.save()
+        e1.lms_start_date = timezone.make_aware(timezone.datetime(2026, 1, 1)); e1.lms_end_date = timezone.make_aware(timezone.datetime(2026, 1, 2)); e1.save()
         e2 = factories.make_event(store_product=sp2, code='EV-CURR2')
-        e2.start_date = date(2026, 6, 1); e2.end_date = date(2026, 6, 2); e2.save()
+        e2.lms_start_date = timezone.make_aware(timezone.datetime(2026, 6, 1)); e2.lms_end_date = timezone.make_aware(timezone.datetime(2026, 6, 2)); e2.save()
 
         response = self.client.get(self.url, {'start_to': '2026-01-31', 'sitting_id': 'all'})
         codes = [e['code'] for e in response.data['results']]

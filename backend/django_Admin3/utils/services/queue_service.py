@@ -115,7 +115,11 @@ class EmailQueueService:
                     cc_emails=cc_emails or [],
                     bcc_emails=bcc_emails or [],
                     from_email=from_email or self.email_service.from_email,
-                    reply_to_email=reply_to_email,
+                    # EmailQueue.reply_to_email is blank=True / NOT NULL — model
+                    # intent is empty string for "unset", not None. Coalesce so
+                    # callers passing the default-None kwarg don't hit an
+                    # IntegrityError that poisons the surrounding transaction.
+                    reply_to_email=reply_to_email or '',
                     subject=subject,
                     email_context=serialized_context,
                     priority=priority,

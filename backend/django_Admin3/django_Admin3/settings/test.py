@@ -63,3 +63,16 @@ DEV_EMAIL_OVERRIDE = False
 DEV_EMAIL_RECIPIENTS = []
 EMAIL_BCC_MONITORING = False
 EMAIL_BCC_RECIPIENTS = []
+
+# Tasks run synchronously in tests; same as prod for slice 1 but kept
+# explicit here to insulate the test config from any future prod-side change.
+TASKS = {
+    'default': {
+        'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
+    },
+}
+
+ADMINISTRATE_WEBHOOK_ROUTE_TOKEN = 'test-route-token'
+ADMINISTRATE_WEBHOOK_SECRET = 'test-shared-secret'
+ADMINISTRATE_WEBHOOK_BASE_URL = 'http://testserver'
+ADMINISTRATE_WEBHOOK_NOTIFICATION_EMAILS = ['ops@example.test']

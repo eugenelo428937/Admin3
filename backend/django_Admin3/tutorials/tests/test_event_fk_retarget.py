@@ -71,8 +71,8 @@ class TutorialEventStoreProductTypeTests(_Fixtures, TestCase):
         event = TutorialEvents.objects.create(
             code='P4B_TEST_EVT',
             store_product=tp,
-            start_date='2026-05-01',
-            end_date='2026-05-03',
+            lms_start_date='2026-05-01',
+            lms_end_date='2026-05-03',
             location=loc,
         )
         event = TutorialEvents.objects.get(pk=event.pk)
@@ -84,8 +84,8 @@ class TutorialEventStoreProductTypeTests(_Fixtures, TestCase):
         event = TutorialEvents.objects.create(
             code='P4B_TEST_EVT2',
             store_product=tp,
-            start_date='2026-05-01',
-            end_date='2026-05-03',
+            lms_start_date='2026-05-01',
+            lms_end_date='2026-05-03',
         )
         event = TutorialEvents.objects.get(pk=event.pk)
         self.assertEqual(event.store_product.format, 'F2F_3F')
@@ -96,8 +96,8 @@ class TutorialEventStoreProductTypeTests(_Fixtures, TestCase):
         event = TutorialEvents.objects.create(
             code='P4B_TEST_EVT3',
             store_product=tp,
-            start_date='2026-05-01',
-            end_date='2026-05-03',
+            lms_start_date='2026-05-01',
+            lms_end_date='2026-05-03',
         )
         event = TutorialEvents.objects.get(pk=event.pk)
         self.assertEqual(event.subject_code, 'CB1')
@@ -108,8 +108,8 @@ class TutorialEventStoreProductTypeTests(_Fixtures, TestCase):
         event = TutorialEvents.objects.create(
             code='P4B_TEST_EVT4',
             store_product=tp,
-            start_date='2026-05-01',
-            end_date='2026-05-03',
+            lms_start_date='2026-05-01',
+            lms_end_date='2026-05-03',
         )
         related = list(tp.tutorial_events.all())
         self.assertEqual(len(related), 1)

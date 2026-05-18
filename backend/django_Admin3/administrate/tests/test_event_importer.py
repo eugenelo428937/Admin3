@@ -164,8 +164,10 @@ class CreateTutorialEventTest(EventImporterTestMixin, TestCase):
         self.assertEqual(event.store_product, self.store_product)
         self.assertEqual(event.location, self.tutorial_location)
         self.assertEqual(event.venue, self.tutorial_venue)
-        self.assertEqual(event.start_date, date(2026, 4, 1))
-        self.assertEqual(event.end_date, date(2026, 9, 30))
+        # Phase 5b: legacy Date columns dropped; assert via the new
+        # DateTime fields' .date() projection instead.
+        self.assertEqual(event.lms_start_date.date(), date(2026, 4, 1))
+        self.assertEqual(event.lms_end_date.date(), date(2026, 9, 30))
 
     def test_returns_none_when_store_product_unresolvable(self):
         """Should return None if the store product FK chain can't be resolved."""
@@ -220,8 +222,8 @@ class CreateTutorialSessionTest(EventImporterTestMixin, TestCase):
             store_product=self.store_product,
             location=self.tutorial_location,
             venue=self.tutorial_venue,
-            start_date=date(2026, 4, 1),
-            end_date=date(2026, 9, 30),
+            lms_start_date=date(2026, 4, 1),
+            lms_end_date=date(2026, 9, 30),
         )
 
     def test_creates_session_linked_to_event(self):
@@ -280,12 +282,16 @@ class CreateEventBridgeRecordTest(EventImporterTestMixin, TestCase):
             store_product=self.store_product,
             location=self.tutorial_location,
             venue=self.tutorial_venue,
-            start_date=date(2026, 4, 1),
-            end_date=date(2026, 9, 30),
+            lms_start_date=date(2026, 4, 1),
+            lms_end_date=date(2026, 9, 30),
         )
 
     def test_creates_bridge_record(self):
-        """T027: Creates adm.Event with external_id and tutorial_event FK."""
+        """T027: bridge stores only (external_id, tutorial_event).
+
+        Per the tutorial-events-as-master refactor (Phase 5, 2026-05-15),
+        the bridge no longer carries title/location/instructor/etc — those
+        live on acted.tutorial_events. Only the join key + FK remain."""
         from administrate.utils.event_dual_write import create_event_bridge_record
 
         row = self._make_event_row_data()
@@ -297,9 +303,6 @@ class CreateEventBridgeRecordTest(EventImporterTestMixin, TestCase):
         self.assertIsInstance(bridge, AdmEvent)
         self.assertEqual(bridge.external_id, 'ADM-EVT-123')
         self.assertEqual(bridge.tutorial_event, self.tutorial_event)
-        self.assertEqual(bridge.course_template, self.adm_ct)
-        self.assertEqual(bridge.location, self.adm_location)
-        self.assertEqual(bridge.primary_instructor, self.adm_instructor)
 
     def test_returns_none_without_api_event_id(self):
         """Should return None when no API event ID is provided."""
@@ -310,19 +313,11 @@ class CreateEventBridgeRecordTest(EventImporterTestMixin, TestCase):
 
         self.assertIsNone(bridge)
 
-    def test_sets_learning_mode_from_event_mode(self):
-        """Bridge record should map event_mode to learning_mode correctly."""
-        from administrate.utils.event_dual_write import create_event_bridge_record
-
-        for excel_mode, expected_mode in [
-            ('blended', 'BLENDED'), ('lms', 'LMS'), ('classroom', 'CLASSROOM'),
-        ]:
-            row = self._make_event_row_data(event_mode=excel_mode)
-            bridge = create_event_bridge_record(
-                self.tutorial_event, f'EVT-{excel_mode}', row,
-            )
-            self.assertEqual(bridge.learning_mode, expected_mode,
-                             f'{excel_mode} should map to {expected_mode}')
+    # NOTE: test_sets_learning_mode_from_event_mode was removed because
+    # learning_mode no longer lives on adm.events (Phase 5 refactor). Its
+    # role is now covered by the webhook handler / sync command writing
+    # learning_mode onto tutorial_events. See:
+    # administrate/tests/services/test_tutorial_event_webhook_handler.py
 
 
 class APIFailureHandlingTest(EventImporterTestMixin, TestCase):
@@ -355,7 +350,13 @@ class APIFailureHandlingTest(EventImporterTestMixin, TestCase):
         )
 
     def test_bridge_record_failure_preserves_tutorial_event(self):
-        """Bridge record creation failure should not affect tutorial records."""
+        """Bridge record creation failure should not affect tutorial records.
+
+        Phase 5 refactor (2026-05-15): the bridge no longer carries an
+        instructor FK, so 'missing instructor' is no longer a failure
+        mode. The realistic failure is 'no API event id' (caller didn't
+        get one back from Administrate) — that path returns None without
+        touching the DB, so the tutorial_events row is unaffected."""
         from administrate.utils.event_dual_write import (
             create_tutorial_event, create_event_bridge_record,
         )
@@ -364,13 +365,12 @@ class APIFailureHandlingTest(EventImporterTestMixin, TestCase):
         tutorial_event = create_tutorial_event(row)
         self.assertIsNotNone(tutorial_event)
 
-        # Attempt bridge creation with missing data (no instructor)
-        bad_row = self._make_event_row_data(instructor_ids=[], session_instructor_ids=[])
-        bridge = create_event_bridge_record(tutorial_event, 'EVT-FAIL', bad_row)
-
-        # Bridge failed (no instructor to resolve)
+        # Bridge creation without an api_event_id returns None — the
+        # caller's contract for "Administrate didn't issue an id".
+        bridge = create_event_bridge_record(tutorial_event, None, row)
         self.assertIsNone(bridge)
-        # But tutorial event still exists
+
+        # Tutorial event survives the bridge no-op.
         self.assertTrue(
             TutorialEvents.objects.filter(pk=tutorial_event.pk).exists()
         )
