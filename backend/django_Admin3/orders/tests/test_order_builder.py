@@ -239,7 +239,7 @@ class TransferTutorialChoicesTests(TestCase):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv)
         sp = TutorialProduct(
-            exam_session_subject=ess, product_product_variation=ppv,
+            exam_session_subject=ess,
             product_code='CM2/Live/LO_6H/25',
             format='LO_6H')
         sp.save()
@@ -331,7 +331,7 @@ class TutorialCheckoutAuthGateTests(TestCase):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat, product_variation=pv)
         sp = TutorialProduct(
-            exam_session_subject=ess, product_product_variation=ppv,
+            exam_session_subject=ess,
             product_code='CM2/Live/LO_6H/25',
             format='LO_6H')
         sp.save()

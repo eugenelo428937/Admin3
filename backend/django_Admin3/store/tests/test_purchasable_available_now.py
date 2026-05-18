@@ -17,6 +17,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct
 
 
 class AvailableNowTests(TestCase):
@@ -47,11 +48,10 @@ class AvailableNowTests(TestCase):
             product_variation=cls.variation,
             is_active=True,
         )
-        cls.store_product = StoreProduct.objects.create(
-            exam_session_subject=cls.ess,
+        cls.store_product = MaterialProduct.objects.create(
+exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
             is_active=True,
-            kind=Purchasable.Kind.MATERIAL,
             name='Z1 Test eBook 2099-04',
         )
 
@@ -172,16 +172,14 @@ class ProductAvailableNowTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cp, product_variation=v, is_active=True,
         )
-        cls.active_sp = StoreProduct.objects.create(
-            exam_session_subject=ess, product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL, is_active=True,
+        cls.active_sp = MaterialProduct.objects.create(
+exam_session_subject=ess, product_product_variation=ppv, is_active=True,
             name='P-Avail eBook',
             product_code='ZP1/PA-EBKPA/2099-09-A',
             code='ZP1/PA-EBKPA/2099-09-A',
         )
-        cls.inactive_sp = StoreProduct.objects.create(
-            exam_session_subject=ess, product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL, is_active=False,
+        cls.inactive_sp = MaterialProduct.objects.create(
+exam_session_subject=ess, product_product_variation=ppv, is_active=False,
             name='P-Inactive eBook', is_addon=True,  # is_addon=True so it can share PPV with active_sp
             product_code='ZP1/PA-EBKPA/2099-09-B',
             code='ZP1/PA-EBKPA/2099-09-B',

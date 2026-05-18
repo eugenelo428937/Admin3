@@ -76,7 +76,10 @@ class Command(BaseCommand):
             score = service._calculate_fuzzy_score(query, searchable_text, sp)
 
             if score >= min_score:
-                catalog_product = sp.product_product_variation.product
+                ppv = sp.get_material_ppv()
+                if ppv is None:
+                    continue  # Tutorial/Marking rows have no catalog product chain.
+                catalog_product = ppv.product
                 subject_code = sp.exam_session_subject.subject.code.lower()
                 product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
 

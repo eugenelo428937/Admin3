@@ -57,7 +57,6 @@ class MarkingPaperSerializerReadCoverageTest(TestCase):
         # Phase 5: use MarkingProduct subclass which sets kind='marking'
         self.store_product = StoreMarkingProduct.objects.create(
             exam_session_subject=self.ess,
-            product_product_variation=self.ppv,
             product_code='MKC1/MKV01MKCOVPROD/MKCOV2025',
             marking_template=self.marking_template,
         )

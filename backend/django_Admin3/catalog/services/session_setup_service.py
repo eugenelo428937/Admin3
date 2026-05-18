@@ -100,10 +100,15 @@ class SessionSetupService:
                     is_active=True,
                 )
             else:
-                # Default: treat as MaterialProduct (PPV is required).
+                # Default: treat as MaterialProduct (PPV is required). The
+                # previous-session row is polymorphic; fetch its PPV via the
+                # explicit subclass accessor (None for non-material rows is
+                # not expected here because the queryset excludes tutorials
+                # and the marking branch above handles markings).
+                prev_ppv = prev_product.get_material_ppv()
                 new_product = MaterialProduct(
                     exam_session_subject=new_ess,
-                    product_product_variation=prev_product.product_product_variation,
+                    product_product_variation=prev_ppv,
                     is_active=True,
                 )
             new_product.save()

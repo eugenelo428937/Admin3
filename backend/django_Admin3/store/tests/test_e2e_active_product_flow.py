@@ -17,6 +17,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct
 
 
 class E2EActiveProductFlowTests(TestCase):
@@ -43,10 +44,9 @@ class E2EActiveProductFlowTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cp, product_variation=v, is_active=False,
         )
-        self.sp = StoreProduct.objects.create(
-            exam_session_subject=ess,
+        self.sp = MaterialProduct.objects.create(
+exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL,
             is_active=True,
             name='E2E P eBook',
         )

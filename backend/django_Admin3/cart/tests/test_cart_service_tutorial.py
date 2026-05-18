@@ -68,7 +68,7 @@ def _seed_tutorial_product(subject_code='CB1', sitting='24'):
         cat.is_active = True
         cat.save(update_fields=['is_active'])
     sp = TutorialProduct(
-        exam_session_subject=ess, product_product_variation=ppv,
+        exam_session_subject=ess,
         product_code=f'{subject_code}/Live/LO_6H/{sitting}',
         format='LO_6H',
     )

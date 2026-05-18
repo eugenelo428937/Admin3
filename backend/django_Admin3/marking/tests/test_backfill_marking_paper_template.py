@@ -71,7 +71,6 @@ class BackfillMarkingPaperTemplateTests(TestCase):
         # auto-generate (keeps kind as-set by save() internals).
         mp = MarkingProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code=f'{subject_code}/M{tpl_code}/APR2026',
             marking_template=tpl,
         )

@@ -159,7 +159,7 @@ class TestCartMultipleMaterialsBug(TestCase):
         cart = Cart.objects.get(user=self.user)
         cart_items = cart.items.all()
         self.assertEqual(cart_items.count(), 1, "Should have 1 item after first add")
-        self.assertEqual(cart_items[0].product.product.fullname, 'Course Notes')
+        self.assertEqual(cart_items[0].product.get_material_ppv().product.fullname, 'Course Notes')
 
         # Add second product (The Vault) to cart
         add_payload_2 = {
@@ -194,7 +194,7 @@ class TestCartMultipleMaterialsBug(TestCase):
         )
 
         # Verify both products are in cart
-        product_names = [item.product.product.fullname for item in cart_items]
+        product_names = [item.product.get_material_ppv().product.fullname for item in cart_items]
         self.assertIn('Course Notes', product_names, "Course Notes should be in cart")
         self.assertIn('The Vault', product_names, "The Vault should be in cart")
 

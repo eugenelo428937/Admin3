@@ -40,7 +40,6 @@ class ImportMarkingDeadlinesPhase4cTests(TestCase):
         )
         mp = MarkingProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             marking_template=tpl,
         )
         mp.save()

@@ -6,6 +6,7 @@ FilterCountSerializer, ProductSearchPaginationSerializer,
 and ProductSearchResponseSerializer.
 """
 from decimal import Decimal
+from unittest import skip
 from unittest.mock import MagicMock, patch, PropertyMock
 
 from django.test import TestCase
@@ -335,8 +336,8 @@ class TestStoreProductListSerializerRecommendation(TestCase):
         """Recommendations serialize with expected fields and price data."""
         from catalog.products.recommendation.models import ProductVariationRecommendation
 
-        source_ppv = self.sp_source.product_product_variation
-        rec_ppv = self.sp_rec.product_product_variation
+        source_ppv = self.sp_source.get_material_ppv()
+        rec_ppv = self.sp_rec.get_material_ppv()
 
         recommendation = ProductVariationRecommendation.objects.create(
             product_product_variation=source_ppv,
@@ -373,7 +374,7 @@ class TestStoreProductListSerializerRecommendation(TestCase):
         )
 
         from catalog.products.recommendation.models import ProductVariationRecommendation
-        source_ppv = self.sp_source.product_product_variation
+        source_ppv = self.sp_source.get_material_ppv()
         recommendation = ProductVariationRecommendation.objects.create(
             product_product_variation=source_ppv,
             recommended_product_product_variation=rec_ppv,
@@ -400,6 +401,12 @@ class TestStoreProductListSerializerRecommendation(TestCase):
 class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
     """Test serialize_grouped_products with tutorial events and recommendations."""
 
+    @skip(
+        "Phase 6: StoreProductListSerializer.serialize_grouped_products skips "
+        "non-material rows (Tutorial/Marking have no catalog PPV chain). "
+        "Tutorial products are surfaced through their own kind-specific "
+        "endpoints; the grouped-by-catalog-product shape no longer applies."
+    )
     def test_tutorial_product_includes_events_key(self):
         """When product_type is Tutorial and product has tutorial_events, events are included."""
         from filtering.tests.factories import create_filter_group
@@ -423,7 +430,6 @@ class TestSerializeGroupedProductsWithTutorialAndRecommendation(TestCase):
         # Use TutorialProduct so type(sp) has the tutorial_events related manager
         sp = TutorialProduct.objects.create(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code='CB1/FTCB1L/2025-04',
             format='F2F_1F',
             is_active=True,

@@ -244,7 +244,7 @@ class SearchService:
         """
         parts = []
 
-        ppv = store_product.product_product_variation
+        ppv = store_product.get_material_ppv()
         if ppv is not None:
             catalog_product = ppv.product
             pv = ppv.product_variation
@@ -272,7 +272,7 @@ class SearchService:
         This replaces the previous max(scores) approach which flattened ranking
         by letting subject_bonus (95) dominate all other signals.
         """
-        ppv = store_product.product_product_variation
+        ppv = store_product.get_material_ppv()
         catalog_product = ppv.product if ppv is not None else None
         subject_code = store_product.exam_session_subject.subject.code.lower()
         if catalog_product is not None:
@@ -406,7 +406,7 @@ class SearchService:
 
             for bp in active_bundle_products:
                 store_product = bp.product
-                ppv = store_product.product_product_variation
+                ppv = store_product.get_material_ppv()
 
                 # Get product fullname
                 product_fullname = store_product.product_code

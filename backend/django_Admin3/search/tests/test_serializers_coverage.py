@@ -67,8 +67,8 @@ class TestSerializeGroupedProductsRecommendationIntegration(TestCase):
         """When PPV has recommendation, it appears in variation data."""
         from catalog.products.recommendation.models import ProductVariationRecommendation
 
-        source_ppv = self.sp_printed.product_product_variation
-        rec_ppv = self.sp_rec.product_product_variation
+        source_ppv = self.sp_printed.get_material_ppv()
+        rec_ppv = self.sp_rec.get_material_ppv()
 
         ProductVariationRecommendation.objects.create(
             product_product_variation=source_ppv,

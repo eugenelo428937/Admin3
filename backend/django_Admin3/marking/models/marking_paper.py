@@ -92,7 +92,7 @@ class MarkingPaper(models.Model):
 
         catalog_product_id = None
         # Material rows: PPV chain on the subclass.
-        ppv = store_product.product_product_variation
+        ppv = store_product.get_material_ppv()
         if ppv is not None:
             catalog_product_id = ppv.product_id
         else:

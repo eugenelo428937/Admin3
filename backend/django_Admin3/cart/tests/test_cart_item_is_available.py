@@ -13,6 +13,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct
 from cart.models import Cart, CartItem
 from cart.serializers import CartItemSerializer
 
@@ -37,10 +38,9 @@ class CartItemIsAvailableTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cp, product_variation=v, is_active=True,
         )
-        self.product = StoreProduct.objects.create(
-            exam_session_subject=ess,
+        self.product = MaterialProduct.objects.create(
+exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.MATERIAL,
             is_active=True,
             name='Item P eBook',
         )
