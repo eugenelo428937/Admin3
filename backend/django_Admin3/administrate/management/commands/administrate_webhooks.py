@@ -100,9 +100,8 @@ query SessionWebhook($objectid: ID!) {
 # the attendance subtree enumerates per-session attendance records,
 # which we use ONLY to discover which sessions the learner is enrolled
 # in (so `Learner Created` can write one TutorialRegistration per
-# session). The `attendanceMark` value is fetched for shape symmetry
-# but isn't consumed — attendance is written through the existing CSV
-# / public-attendance paths, not this webhook flow.
+# session). We do NOT fetch `attendanceMark` — attendance writes
+# through the existing CSV / public-attendance paths, not this flow.
 # Fields explained:
 #   - contact + personalName.middleName → resolves to our Student via
 #     the domain-specific convention (Administrate stores `student_ref`

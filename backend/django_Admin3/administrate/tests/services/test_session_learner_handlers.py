@@ -21,15 +21,11 @@ from administrate.services.webhook_handlers import (
     handle_session_created, handle_session_updated, handle_session_deleted,
     handle_learner_created, handle_learner_cancelled,
 )
-from catalog.models import (
-    ExamSession, ExamSessionSubject, Subject,
-    Product as CatalogProduct, ProductProductVariation, ProductVariation,
-)
-from store.models import TutorialProduct
 from students.models import Student
 from tutorials.models import (
     TutorialEvents, TutorialSessions, TutorialRegistration,
 )
+from tutorials.tests.factories import make_store_product
 
 
 # ---------------------------------------------------------------------------
@@ -38,25 +34,9 @@ from tutorials.models import (
 
 @pytest.fixture
 def chain(db):
-    """Build: ExamSession → Subject → Product → TutorialProduct → TutorialEvents
-    → TutorialSessions × 2 → adm.Event → adm.Session × 2."""
-    es = ExamSession.objects.create(
-        session_code='SL26',
-        start_date=timezone.now(),
-        end_date=timezone.now() + timedelta(days=60),
-    )
-    sub = Subject.objects.create(code='SL1', description='SL', active=True)
-    ess = ExamSessionSubject.objects.create(exam_session=es, subject=sub)
-    p = CatalogProduct.objects.create(code='TUTSL', fullname='SL', shortname='SL')
-    pv = ProductVariation.objects.create(
-        code='WK', name='Weekend', description='W',
-        description_short='W', variation_type='Tutorial',
-    )
-    ppv = ProductProductVariation.objects.create(product=p, product_variation=pv)
-    sp = TutorialProduct.objects.create(
-        exam_session_subject=ess, product_product_variation=ppv,
-        product_code='SL1/TUTSLWK/SL26', format='LO_6H',
-    )
+    """Build: store_product → TutorialEvents → TutorialSessions × 2
+    → adm.Event → adm.Session × 2."""
+    sp = make_store_product(variation_code='SLWK', cat_product_code='SL_SL')
     te = TutorialEvents.objects.create(
         code='SL-EV-1',
         lms_start_date=timezone.now(),

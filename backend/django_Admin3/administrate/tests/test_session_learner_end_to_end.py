@@ -16,15 +16,11 @@ from administrate.models import (
     Contact, Event as AdmEvent, Learner, Session as AdmSession,
     WebhookInbox, WebhookRegistration,
 )
-from catalog.models import (
-    ExamSession, ExamSessionSubject, Subject,
-    Product as CatalogProduct, ProductProductVariation, ProductVariation,
-)
-from store.models import TutorialProduct
 from students.models import Student
 from tutorials.models import (
     TutorialEvents, TutorialSessions, TutorialRegistration,
 )
+from tutorials.tests.factories import make_store_product
 
 
 @pytest.fixture(autouse=True)
@@ -36,23 +32,7 @@ def _settings(settings):
 @pytest.fixture
 def chain(db):
     """Master + bridge graph the handlers traverse end-to-end."""
-    es = ExamSession.objects.create(
-        session_code='E2E_SL',
-        start_date=timezone.now(),
-        end_date=timezone.now() + timedelta(days=60),
-    )
-    sub = Subject.objects.create(code='SL2', description='SL', active=True)
-    ess = ExamSessionSubject.objects.create(exam_session=es, subject=sub)
-    p = CatalogProduct.objects.create(code='TUTSL2', fullname='SL2', shortname='SL2')
-    pv = ProductVariation.objects.create(
-        code='WK2', name='Weekend2', description='W2',
-        description_short='W2', variation_type='Tutorial',
-    )
-    ppv = ProductProductVariation.objects.create(product=p, product_variation=pv)
-    sp = TutorialProduct.objects.create(
-        exam_session_subject=ess, product_product_variation=ppv,
-        product_code='SL2/TUTSL2WK2/E2E_SL', format='LO_6H',
-    )
+    sp = make_store_product(variation_code='E2EWK', cat_product_code='E2E_SL')
     te = TutorialEvents.objects.create(
         code='E2E-SL-EV',
         lms_start_date=timezone.now(),

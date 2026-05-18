@@ -451,13 +451,18 @@ def _lazy_upsert_adm_contact(contact_node: dict) -> Contact:
     return bridge
 
 
-def _iter_session_attendance_edges(node: dict):
-    """Yield `(session_id, attendance_mark)` pairs from a Learner payload.
+def _iter_session_ids(node: dict):
+    """Yield session ids from a Learner payload's attendance subtree.
+
+    The Administrate payload nests session ids under
+    `attendance.sessionDetail.edges[].node.session.id`. We use the
+    subtree purely as an enumeration of "which sessions is this
+    learner enrolled in"; attendanceMark and any other per-edge data
+    is ignored (attendance state isn't webhook-driven).
 
     Tolerant of missing intermediate keys (`attendance` /
     `sessionDetail` / `edges` can each be None or absent) — yields
-    nothing in those cases rather than raising. The handler decides
-    whether the empty case is fatal.
+    nothing in those cases rather than raising.
     """
     attendance = node.get('attendance') or {}
     sd = attendance.get('sessionDetail') or {}
@@ -467,7 +472,7 @@ def _iter_session_attendance_edges(node: dict):
         session_id = session_node.get('id')
         if not session_id:
             continue
-        yield session_id, edge_node.get('attendanceMark')
+        yield session_id
 
 
 @register('Learner Created')
@@ -504,7 +509,7 @@ def handle_learner_created(node: dict) -> List[Learner]:
 
     created_bridges: List[Learner] = []
     with transaction.atomic():
-        for session_id, _mark in _iter_session_attendance_edges(node):
+        for session_id in _iter_session_ids(node):
             adm_session = _resolve_fk(AdmSession, session_id)
             tutorial_session = adm_session.tutorial_session
             if tutorial_session is None:
