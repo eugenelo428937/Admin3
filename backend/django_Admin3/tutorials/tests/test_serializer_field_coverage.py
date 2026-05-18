@@ -91,11 +91,14 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
     def test_read_remain_space(self):
         _ = self.data['remain_space']
 
-    def test_read_lms_start_date(self):
-        _ = self.data['lms_start_date']
+    def test_read_start_date(self):
+        # Serializer exposes the legacy 'start_date' key (date-only) sourced
+        # from the model's lms_start_date column (DateTime) — preserved
+        # for pact contract compatibility after Phase 5b.
+        _ = self.data['start_date']
 
-    def test_read_lms_end_date(self):
-        _ = self.data['lms_end_date']
+    def test_read_end_date(self):
+        _ = self.data['end_date']
 
     def test_read_store_product(self):
         _ = self.data['store_product']
@@ -128,8 +131,8 @@ class TutorialEventsSerializerWriteCoverageTest(TestCase):
             'is_soldout': True,
             'finalisation_date': '2025-06-01',
             'remain_space': 10,
-            'lms_start_date': '2025-07-01T00:00:00Z',
-            'lms_end_date': '2025-07-02T00:00:00Z',
+            'start_date': '2025-07-01',
+            'end_date': '2025-07-02',
             'store_product': 1,
             'created_at': '2025-01-01T00:00:00Z',
             'updated_at': '2025-01-01T00:00:00Z',

@@ -125,12 +125,18 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_tutorial_event(self):
-        """Test POST /api/tutorials/events/ to create new event."""
+        """Test POST /api/tutorials/events/ to create new event.
+
+        Phase 5b: API keys stay as start_date/end_date (date-only) for
+        backward compatibility with the consumer pact contract — the
+        serializer's start_date/end_date fields read from / write to
+        the underlying lms_start_date / lms_end_date DateTime columns."""
+        from datetime import date
         data = {
             'code': 'TUT-CM2-NEW-001',
             'venue': 'Birmingham Conference Hall',
-            'lms_start_date': timezone.now().isoformat(),
-            'lms_end_date': (timezone.now() + timedelta(days=2)).isoformat(),
+            'start_date': date.today().isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'remain_space': 25,
             'store_product': self.store_product.id
         }
@@ -144,11 +150,11 @@ class TutorialEventsAPITestCase(APITestCase):
 
     def test_create_tutorial_event_missing_required_fields(self):
         """Test POST /api/tutorials/events/ with missing required fields."""
-        # Missing start_date
+        from datetime import date
         data = {
             'code': 'TUT-INVALID-001',
             'venue': 'Test Venue',
-            'lms_end_date': (timezone.now() + timedelta(days=2)).isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'store_product': self.store_product.id
         }
 
@@ -160,11 +166,12 @@ class TutorialEventsAPITestCase(APITestCase):
 
     def test_create_tutorial_event_duplicate_code(self):
         """Test POST /api/tutorials/events/ with duplicate code."""
+        from datetime import date
         data = {
             'code': 'TUT-CM2-LON-001',  # Duplicate code
             'venue': 'Test Venue',
-            'lms_start_date': timezone.now().isoformat(),
-            'lms_end_date': (timezone.now() + timedelta(days=2)).isoformat(),
+            'start_date': date.today().isoformat(),
+            'end_date': (date.today() + timedelta(days=2)).isoformat(),
             'store_product': self.store_product.id
         }
 
@@ -178,8 +185,8 @@ class TutorialEventsAPITestCase(APITestCase):
         data = {
             'code': 'TUT-CM2-LON-001-UPDATED',
             'venue_id': updated_venue.id,
-            'lms_start_date': self.event1.lms_start_date.isoformat(),
-            'lms_end_date': self.event1.lms_end_date.isoformat(),
+            'start_date': self.event1.lms_start_date.date().isoformat(),
+            'end_date': self.event1.lms_end_date.date().isoformat(),
             'store_product': self.store_product.id
         }
 
@@ -232,8 +239,10 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertIn('venue', event_data)
         self.assertIn('is_soldout', event_data)
         self.assertIn('remain_space', event_data)
-        self.assertIn('lms_start_date', event_data)
-        self.assertIn('lms_end_date', event_data)
+        # Serializer keeps the legacy 'start_date'/'end_date' API keys
+        # for pact compatibility (sourced from lms_* via DRF source=).
+        self.assertIn('start_date', event_data)
+        self.assertIn('end_date', event_data)
 
     def test_retrieve_tutorial_event_response_structure(self):
         """Test tutorial event retrieve response contains expected fields."""
@@ -248,8 +257,10 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertIn('is_soldout', response.data)
         self.assertIn('finalisation_date', response.data)
         self.assertIn('remain_space', response.data)
-        self.assertIn('lms_start_date', response.data)
-        self.assertIn('lms_end_date', response.data)
+        # Serializer keeps the legacy 'start_date'/'end_date' API keys
+        # for pact compatibility (sourced from lms_* via DRF source=).
+        self.assertIn('start_date', response.data)
+        self.assertIn('end_date', response.data)
         self.assertIn('created_at', response.data)
         self.assertIn('updated_at', response.data)
 
