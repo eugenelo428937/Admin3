@@ -132,7 +132,7 @@ class OrderItemTutorialChoicesSerializerTests(TestCase):
         sp.save()
         event = TutorialEvents.objects.create(
             code='SP1-01-25A', store_product=sp,
-            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+            lms_start_date=date(2025, 1, 1), lms_end_date=date(2025, 2, 1))
         order = Order.objects.create(user=user)
         item = OrderItem.objects.create(
             order=order, purchasable=sp.purchasable_ptr)

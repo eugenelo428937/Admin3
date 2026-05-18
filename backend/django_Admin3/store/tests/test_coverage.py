@@ -340,8 +340,8 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
         TutorialEvents.objects.create(
             code=f'TUT-COV-{product.pk}',
             location=location,
-            start_date='2026-06-01',
-            end_date='2026-06-03',
+            lms_start_date='2026-06-01',
+            lms_end_date='2026-06-03',
             store_product=product,
         )
 

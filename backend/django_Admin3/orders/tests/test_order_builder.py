@@ -245,10 +245,10 @@ class TransferTutorialChoicesTests(TestCase):
         sp.save()
         self.event_a = TutorialEvents.objects.create(
             code='CM2-01-25A', store_product=sp,
-            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+            lms_start_date=date(2025, 1, 1), lms_end_date=date(2025, 2, 1))
         self.event_b = TutorialEvents.objects.create(
             code='CM2-02-25A', store_product=sp,
-            start_date=date(2025, 1, 8), end_date=date(2025, 2, 8))
+            lms_start_date=date(2025, 1, 8), lms_end_date=date(2025, 2, 8))
         self.cart_item = CartItem.objects.create(
             cart=self.cart, purchasable=sp.purchasable_ptr,
             actual_price='10.00', quantity=1)
@@ -337,7 +337,7 @@ class TutorialCheckoutAuthGateTests(TestCase):
         sp.save()
         ev = TutorialEvents.objects.create(
             code='CM2-01-25A', store_product=sp,
-            start_date=date(2025, 1, 1), end_date=date(2025, 2, 1))
+            lms_start_date=date(2025, 1, 1), lms_end_date=date(2025, 2, 1))
 
         cart = Cart.objects.create(user=user, session_key=session_key)
         cart_item = CartItem.objects.create(
