@@ -25,7 +25,7 @@ from catalog.models import (
     ProductProductVariation,
     ProductBundle,
 )
-from store.models import Product, Price, Bundle, BundleProduct
+from store.models import Product, MaterialProduct, Price, Bundle, BundleProduct
 
 User = get_user_model()
 
@@ -107,14 +107,14 @@ class StoreAdminTestCase(APITestCase):
             product_variation=cls.variation_ebook,
         )
 
-        # Store products
-        cls.store_product_1 = Product.objects.create(
+        # Store products (Phase 5: use MaterialProduct which sets kind='material')
+        cls.store_product_1 = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_printed,
             product_code='CM2-ST/PCSM-ST01P-ST/2026-04-ST',
             is_active=True,
         )
-        cls.store_product_2 = Product.objects.create(
+        cls.store_product_2 = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_ebook,
             product_code='CM2-ST/ECSM-ST01E-ST/2026-04-ST',
@@ -227,7 +227,7 @@ class TestStoreProductAdminWrite(StoreAdminTestCase):
     def test_delete_as_superuser_returns_204(self):
         """DELETE as superuser returns 204 for product with no dependents."""
         self.authenticate_superuser()
-        product = Product.objects.create(
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess_2,
             product_product_variation=self.ppv_ebook,
             product_code='TEST/DELETE/2026-04-ST',
@@ -535,7 +535,7 @@ class TestStoreProductAdminViewSet(StoreAdminTestCase):
     def test_delete_product(self):
         """DELETE removes product without dependents."""
         self.authenticate_superuser()
-        product = Product.objects.create(
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess_2,
             product_product_variation=self.ppv_ebook,
             product_code='DEL-ADMIN/TEST/2026-04-ST',

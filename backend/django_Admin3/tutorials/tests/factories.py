@@ -63,8 +63,9 @@ def make_store_product(subject=None, exam_session=None,
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat_prod, product_variation=pv,
     )
+    # Phase 5 Task 4b: TutorialProduct has no PPV — drop the kwarg.
     tp = TutorialProduct(
-        exam_session_subject=ess, product_product_variation=ppv,
+        exam_session_subject=ess,
         product_code=f'{subject.code}/{cat_product_code}/{variation_code}/{exam_session.session_code}',
         format=format,
     )

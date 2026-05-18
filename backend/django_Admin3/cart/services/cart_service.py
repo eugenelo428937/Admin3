@@ -191,8 +191,9 @@ class CartService:
 
         if not product and metadata.get('variationId'):
             ppv_id = metadata['variationId']
+            # Phase 5 Task 4b: PPV is on MaterialProduct now.
             product = StoreProduct.objects.filter(
-                product_product_variation_id=ppv_id
+                materialproduct__product_product_variation_id=ppv_id
             ).first()
             if product:
                 logger.info(
@@ -475,10 +476,22 @@ class CartService:
     # ─── Product type detection ─────────────────────────────────────────
 
     def _is_marking_product(self, product):
-        """Check if a product is a marking product."""
+        """Check if a product is a marking product.
+
+        Phase 5 Task 4b: the canonical check is the Purchasable kind
+        discriminator ('marking'). Falls back to the legacy name/group
+        heuristic for material rows whose PPV catalog name contains
+        'marking' (legacy data where the marking product was modelled as
+        a Material entry).
+        """
         try:
-            product_name = product.product.fullname.lower()
-            group_name = getattr(product.product, 'group_name', '')
+            if getattr(product, 'kind', None) == 'marking':
+                return True
+            catalog_product = product.product  # may be None for tutorial/marking
+            if catalog_product is None:
+                return False
+            product_name = catalog_product.fullname.lower()
+            group_name = getattr(catalog_product, 'group_name', '')
             return 'marking' in product_name or group_name == 'Markings'
         except Exception:
             return False

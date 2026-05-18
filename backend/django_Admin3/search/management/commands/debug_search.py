@@ -61,12 +61,13 @@ class Command(BaseCommand):
         service = SearchService()
         min_score = options['min_score'] if options['min_score'] is not None else service.min_fuzzy_score
 
+        # Phase 5 Task 4b: PPV lives on MaterialProduct now.
         all_products = StoreProduct.objects.filter(
             is_active=True
         ).select_related(
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         )
 
         scored = []

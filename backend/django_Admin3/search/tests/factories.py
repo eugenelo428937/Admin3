@@ -35,6 +35,7 @@ from catalog.products.models import Product as CatalogProduct
 from catalog.products.models import ProductVariation, ProductProductVariation
 from catalog.products.bundle.models import ProductBundle
 from store.models import Product as StoreProduct, Bundle, BundleProduct
+from store.models import MaterialProduct as StoreMaterialProduct
 from filtering.models import FilterGroup
 from filtering.tests.factories import create_filter_group
 
@@ -164,7 +165,15 @@ def create_store_product(exam_session_subject, catalog_product, variation, produ
         'is_active': True,
     }
     defaults.update(kwargs)
-    return StoreProduct.objects.create(**defaults)
+    # Phase 5: create via MaterialProduct subclass so kind='material' is set
+    # automatically via the subclass save() override. Return the parent
+    # ``StoreProduct`` view of the row so test assertions against
+    # ``StoreProduct.objects.filter(...)`` querysets compare equal — Django
+    # MTI's ``Model.__eq__`` checks ``_meta.concrete_model``, so a
+    # ``MaterialProduct`` instance is never equal to a ``Product`` instance
+    # even when they back the same row.
+    material = StoreMaterialProduct.objects.create(**defaults)
+    return StoreProduct.objects.get(pk=material.pk)
 
 
 def create_bundle_template(subject, bundle_name='Study Bundle', **kwargs):

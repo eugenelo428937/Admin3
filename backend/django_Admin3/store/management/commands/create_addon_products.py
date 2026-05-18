@@ -148,6 +148,14 @@ class Command(BaseCommand):
                     f"{base.purchasable_ptr.name} (Solutions)"
                     if base.purchasable_ptr.name else new_code
                 )
+                # Phase 5 Task 4b: PPV is on MaterialProduct now, so a
+                # base Product no longer has product_product_variation_id.
+                # Resolve via the materialproduct reverse-OneToOne.
+                base_ppv_id = getattr(
+                    getattr(base, 'materialproduct', None),
+                    'product_product_variation_id',
+                    None,
+                )
                 addon = MaterialProduct.objects.create(
                     kind=Purchasable.Kind.MATERIAL,
                     code=new_code,
@@ -159,7 +167,7 @@ class Command(BaseCommand):
                     dynamic_pricing=base.purchasable_ptr.dynamic_pricing,
                     vat_classification=base.purchasable_ptr.vat_classification,
                     exam_session_subject_id=base.exam_session_subject_id,
-                    product_product_variation_id=base.product_product_variation_id,
+                    product_product_variation_id=base_ppv_id,
                 )
                 created += 1
                 if seed_prices:

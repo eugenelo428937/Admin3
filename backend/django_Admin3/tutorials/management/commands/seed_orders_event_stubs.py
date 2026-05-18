@@ -110,15 +110,14 @@ class Command(BaseCommand):
         ppv, _ = ProductProductVariation.objects.get_or_create(
             product=cat_product, product_variation=variation,
         )
-        tp = TutorialProduct.objects.filter(
-            exam_session_subject=ess, product_product_variation=ppv,
-        ).first()
+        # Phase 5 Task 4b: TutorialProduct has no PPV — look up by
+        # canonical code (subject + catalog + variation + sitting).
+        canonical_code = f"{spec.subject_code}/{spec.catalog_product_code}/{spec.variation_code}/{spec.sitting}"
+        tp = TutorialProduct.objects.filter(product_code=canonical_code).first()
         if tp is not None:
             return tp
-        canonical_code = f"{spec.subject_code}/{spec.catalog_product_code}/{spec.variation_code}/{spec.sitting}"
         tp = TutorialProduct(
             exam_session_subject=ess,
-            product_product_variation=ppv,
             product_code=canonical_code,
             format=spec.variation_code,  # ProductVariation.code == TutorialProduct.Format value
         )

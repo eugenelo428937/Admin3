@@ -57,10 +57,17 @@ class Command(BaseCommand):
                     # value below. This avoids ambiguity when multiple catalog
                     # products share the same code (e.g., M1 exists for both Mock
                     # Exam eBook and Mock Exam Marking).
+                    # Phase 5 Task 4b: PPV moved to MaterialProduct and
+                    # MarkingProduct has none — match by either the legacy
+                    # Material-PPV path or by MarkingProduct.marking_template
+                    # (whose code/pk maps to the original catalog Product).
+                    from django.db.models import Q as _Q
                     store_product = StoreProduct.objects.filter(
-                        exam_session_subject=ess,
-                        product_product_variation__product__code=product_code,
-                        product_product_variation__product_variation__variation_type='Marking'
+                        _Q(exam_session_subject=ess) & (
+                            _Q(materialproduct__product_product_variation__product__code=product_code,
+                               materialproduct__product_product_variation__product_variation__variation_type='Marking')
+                            | _Q(markingproduct__marking_template__code=product_code)
+                        )
                     ).first()
                     if not store_product:
                         self.stderr.write(

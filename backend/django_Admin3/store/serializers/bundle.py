@@ -185,11 +185,15 @@ class BundleSerializer(serializers.ModelSerializer):
 
     def get_components(self, obj):
         """Get active bundle products as components with full nested data."""
+        # Phase 5 Task 4b: PPV lives on MaterialProduct now (not on the
+        # Product parent), so we must traverse via the materialproduct
+        # reverse-OneToOne. Non-material rows (tutorial/marking) simply
+        # skip this branch in the join.
         active_products = obj.bundle_products.filter(
             is_active=True
         ).select_related(
-            'product__product_product_variation__product',
-            'product__product_product_variation__product_variation',
+            'product__materialproduct__product_product_variation__product',
+            'product__materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'product__prices'
         ).order_by('sort_order')

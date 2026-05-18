@@ -33,7 +33,7 @@ class StoreCoverageTestDataMixin:
             Product as CatalogProduct, ProductVariation,
             ProductProductVariation, ProductBundle,
         )
-        from store.models import Product, Price, Bundle, BundleProduct
+        from store.models import MaterialProduct, Price, Bundle, BundleProduct
 
         # Create subject
         cls.subject = Subject.objects.create(
@@ -118,14 +118,14 @@ class StoreCoverageTestDataMixin:
             is_active=True,
         )
 
-        # Create store products
-        cls.store_product_printed = Product.objects.create(
+        # Create store products (Phase 5: use MaterialProduct which sets kind='material')
+        cls.store_product_printed = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_printed,
             product_code='CS1/PCSM01/2025-09',
             is_active=True
         )
-        cls.store_product_ebook = Product.objects.create(
+        cls.store_product_ebook = MaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv_ebook,
             product_code='CS1/ECSM01/2025-09',
@@ -311,61 +311,64 @@ class TestProductModelProperties(StoreCoverageTestDataMixin, TestCase):
         self.assertEqual(result, self.variation_printed)
 
     def test_variations_property_returns_queryset(self):
-        """Product.variations returns single-item queryset (line 136)."""
+        """Product.variations returns single-item queryset (line 136).
+
+        The queryset is filtered by PK on the base Product table, so the
+        returned instance is a plain Product (not a MaterialProduct subclass).
+        Compare by PK rather than identity to avoid MTI type mismatch.
+        """
         result = self.store_product_printed.variations
         self.assertEqual(result.count(), 1)
-        self.assertEqual(result.first(), self.store_product_printed)
+        self.assertEqual(result.first().pk, self.store_product_printed.pk)
 
     def test_tutorial_product_code_generation(self):
-        """Product code generation for tutorial/other type (lines 88-89).
+        """Product code generation for tutorial subclass (Phase 5).
 
-        Tutorial codes are derived from a linked TutorialEvent's
-        TutorialLocation.code. We bootstrap with an explicit
-        product_code (so save() doesn't try to auto-generate before the
-        event exists), attach the event/location, then re-trigger
-        generation by clearing product_code and saving again.
+        Phase 5: TutorialProduct._generate_tutorial_product_code() reads
+        from the subclass's tutorial_location FK directly (not from a
+        linked TutorialEvent). Format: {subject}/{location}/{format}/{session}.
         """
         from store.models import TutorialProduct
-        from tutorials.models import TutorialEvents, TutorialLocation
+        from tutorials.models import TutorialLocation
+
+        location = TutorialLocation.objects.create(name='London', code='LON')
 
         product = TutorialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_tutorial,
             is_active=True,
-            product_code='CS1/TUT/PLACEHOLDER',
             format='LO_6H',
+            tutorial_location=location,
         )
 
-        location = TutorialLocation.objects.create(name='London', code='LON')
-        TutorialEvents.objects.create(
-            code=f'TUT-COV-{product.pk}',
-            location=location,
-            lms_start_date='2026-06-01',
-            lms_end_date='2026-06-03',
-            store_product=product,
-        )
-
-        # Re-trigger auto-generation now that an event exists.
-        product.product_code = ''
-        product.save()
-        product.refresh_from_db()
-
-        # New format: {subject}/{location}/{variation_code}/{exam_session}
+        # New format: {subject}/{location}/{format}/{exam_session}
         self.assertTrue(product.product_code.startswith('CS1/LON/'))
         self.assertTrue(product.product_code.endswith('/2025-09'))
 
     def test_marking_product_code_generation(self):
-        """Product code generation for marking type (material/marking path)."""
-        from store.models import Product
+        """Product code generation for marking subclass (Phase 5).
 
-        product = Product.objects.create(
+        Phase 5: MarkingProduct._generate_marking_product_code() reads from
+        the subclass's marking_template FK. Format: {subject}/{template_code}/{session}.
+        """
+        from store.models import MarkingProduct
+        from marking.models import MarkingTemplate
+
+        marking_template = MarkingTemplate.objects.create(
+            code='MM1',
+            name='Mock Marking 1',
+        )
+
+        product = MarkingProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv_marking,
+            marking_template=marking_template,
             is_active=True
         )
 
-        # Marking format: {subject}/{variation_code}{product_code}/{exam_session}
+        # Marking format: {subject}/{template_code}/{exam_session}
         self.assertIn('CS1/', product.product_code)
+        self.assertIn('MM1', product.product_code)
         self.assertIn('2025-09', product.product_code)
 
 
@@ -470,11 +473,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings(record=True) as w:
@@ -492,11 +495,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id__in=[self.store_product_printed.id, self.store_product_ebook.id])
 
         with warnings.catch_warnings():
@@ -540,11 +543,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -568,11 +571,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():
@@ -602,11 +605,11 @@ class TestSearchSerializer(StoreCoverageTestDataMixin, TestCase):
         products = Product.objects.select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
         ).filter(id=self.store_product_printed.id)
 
         with warnings.catch_warnings():

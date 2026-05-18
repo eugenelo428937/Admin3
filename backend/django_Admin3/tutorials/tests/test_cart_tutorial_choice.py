@@ -47,8 +47,9 @@ def _seed_tutorial_event(subject_code='CB1', sitting_code='24',
     ppv, _ = ProductProductVariation.objects.get_or_create(
         product=cat_prod, product_variation=pv,
     )
+    # Phase 5 Task 4b: TutorialProduct has no PPV.
     sp = TutorialProduct(
-        exam_session_subject=ess, product_product_variation=ppv,
+        exam_session_subject=ess,
         product_code=f'{subject_code}/Live/{variation_code}/{sitting_code}',
         format=format,
     )
@@ -148,7 +149,6 @@ class CartTutorialChoiceTests(TestCase):
         )
         oc_sp = TutorialProduct(
             exam_session_subject=self.sp.exam_session_subject,
-            product_product_variation=oc_ppv,
             product_code='CB1/OC/OC/24',
             format='OC',
         )

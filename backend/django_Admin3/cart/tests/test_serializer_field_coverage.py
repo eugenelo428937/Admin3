@@ -31,7 +31,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import MaterialProduct as StoreMaterialProduct
 
 User = get_user_model()
 
@@ -64,7 +64,7 @@ class CartTestFixtures:
             product=cls.cat_product,
             product_variation=cls.variation,
         )
-        cls.store_product = StoreProduct.objects.create(
+        cls.store_product = StoreMaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
         )

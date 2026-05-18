@@ -53,15 +53,21 @@ class TestProductModel(TestCase):
     """T015: Test store.Product model fields and constraints."""
 
     def test_product_fields(self):
-        """Test Product model has required fields."""
+        """Test Product model has required fields.
+
+        Phase 5 Task 4: ``product_product_variation`` moved off Product
+        onto MaterialProduct. The parent Product retains everything else.
+        """
         from store.models import Product
         field_names = [f.name for f in Product._meta.get_fields()]
         self.assertIn('exam_session_subject', field_names)
-        self.assertIn('product_product_variation', field_names)
         self.assertIn('product_code', field_names)
         self.assertIn('is_active', field_names)
         self.assertIn('created_at', field_names)
         self.assertIn('updated_at', field_names)
+        # `materialproduct` is the reverse-OneToOne accessor pointing at
+        # the subclass where PPV now lives.
+        self.assertIn('materialproduct', field_names)
 
     def test_product_exam_session_subject_fk(self):
         """Test Product has FK to catalog.ExamSessionSubject."""
@@ -71,10 +77,20 @@ class TestProductModel(TestCase):
         self.assertEqual(ess_field.related_model, ExamSessionSubject)
 
     def test_product_ppv_fk(self):
-        """Test Product has FK to catalog.ProductProductVariation."""
-        from store.models import Product
+        """Phase 5 Task 4: PPV FK moved from Product to MaterialProduct.
+
+        The FK now lives on the subclass. Querying from
+        ``Product._meta.get_field('product_product_variation')`` raises;
+        we instead assert the FK on ``MaterialProduct``.
+        """
+        from store.models import Product, MaterialProduct
         from catalog.models import ProductProductVariation
-        ppv_field = Product._meta.get_field('product_product_variation')
+        # Field no longer on Product parent.
+        from django.core.exceptions import FieldDoesNotExist
+        with self.assertRaises(FieldDoesNotExist):
+            Product._meta.get_field('product_product_variation')
+        # Field is now on the MaterialProduct subclass.
+        ppv_field = MaterialProduct._meta.get_field('product_product_variation')
         self.assertEqual(ppv_field.related_model, ProductProductVariation)
 
     def test_product_code_unique(self):
@@ -146,10 +162,14 @@ class TestProductModelCreation(TestCase):
         )
 
     def test_create_product(self):
-        """Test creating a store Product."""
-        from store.models import Product
+        """Test creating a store Product (via MaterialProduct subclass).
 
-        product = Product.objects.create(
+        Phase 5: bare Product.save() requires kind to be set explicitly.
+        Use MaterialProduct which sets kind='material' in its own save().
+        """
+        from store.models import MaterialProduct
+
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -162,10 +182,13 @@ class TestProductModelCreation(TestCase):
         self.assertTrue(product.is_active)
 
     def test_product_str_method(self):
-        """Test Product __str__ method returns product_code."""
-        from store.models import Product
+        """Test Product __str__ method returns product_code.
 
-        product = Product.objects.create(
+        Phase 5: use MaterialProduct subclass which sets kind='material'.
+        """
+        from store.models import MaterialProduct
+
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -179,11 +202,16 @@ class TestProductModelCreation(TestCase):
         so that addon rows (Purchasable.is_addon=True) can clone a base
         product's PPV. Application-level safety (preventing accidental
         non-addon duplicates) is enforced in StoreProductAdminSerializer.
+
+        Phase 5: use MaterialProduct subclass which sets kind='material'.
+        Explicit product_code values are supplied so both rows have
+        distinct codes (auto-generation would produce the same code for
+        the same PPV+ESS pair).
         """
-        from store.models import Product
+        from store.models import MaterialProduct
 
         # Create first product
-        Product.objects.create(
+        MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04',
@@ -191,14 +219,15 @@ class TestProductModelCreation(TestCase):
         )
 
         # Same (ess, ppv) with a distinct product_code now succeeds.
-        duplicate = Product.objects.create(
+        duplicate = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             product_code='CM2/PCSM01P/2025-04-DUPE',
-            is_active=True
+            is_active=True,
+            is_addon=True,
         )
         self.assertEqual(
-            Product.objects.filter(
+            MaterialProduct.objects.filter(
                 exam_session_subject=self.ess,
                 product_product_variation=self.ppv,
             ).count(),
@@ -370,17 +399,21 @@ class TestProductCodeGeneration(TestCase):
         )
 
     def test_product_code_format(self):
-        """T019: Test product code follows format: {subject_code}/{prefix}{product_code}{variation_code}/{exam_session_code}."""
-        from store.models import Product
+        """T019: Test product code follows format: {subject_code}/{variation_code}{product_code}/{exam_session_code}.
+
+        Phase 5: use MaterialProduct subclass which sets kind='material' and
+        auto-generates product_code via Product._generate_material_code().
+        """
+        from store.models import MaterialProduct
 
         # Create product without explicit product_code to test generation
-        product = Product.objects.create(
+        product = MaterialProduct.objects.create(
             exam_session_subject=self.ess,
             product_product_variation=self.ppv,
             is_active=True
         )
 
-        # Expected format: SA1/PCSM01P/2025S1
+        # Expected format: SA1/PCSM01/2025S1 (variation code 'P' + product code 'CSM01')
         # Note: Exact format depends on implementation
         self.assertIsNotNone(product.product_code)
         self.assertIn(self.subject.code, product.product_code)

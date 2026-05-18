@@ -16,7 +16,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from filtering.models import FilterGroup, ProductProductGroup
-from store.models import Product as StoreProduct, Purchasable
+from store.models import Product as StoreProduct, Purchasable  # noqa: F401
 
 
 class NavigationDataAvailableTests(TestCase):
@@ -59,14 +59,18 @@ class NavigationDataAvailableTests(TestCase):
             ProductProductGroup.objects.create(
                 product_product_variation=ppv, product_group=self.tutorial_group,
             )
-            return cp, StoreProduct.objects.create(
+            # Phase 5: PPV lives on MaterialProduct. The navigation helper
+            # _has_available_store_product_for_catalog_product joins through
+            # ``product__materialproduct__product_product_variation``, so the
+            # test fixture must materialise as a MaterialProduct row even
+            # though we're driving the Tutorial dropdown — the catalog-side
+            # lookup is MTI-aware.
+            from store.models import MaterialProduct
+            return cp, MaterialProduct.objects.create(
                 exam_session_subject=ess,
                 product_product_variation=ppv,
-                kind=Purchasable.Kind.TUTORIAL,
                 is_active=True,
                 name=code,
-                # Pre-set product_code to bypass Tutorial code auto-generation
-                # (which requires a TutorialEvent — out of scope for this test).
                 product_code=f'{code}-CODE',
             )
 

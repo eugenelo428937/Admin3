@@ -148,10 +148,13 @@ def test_filter_group_handler_build_q():
 
 
 def test_filter_group_handler_count_path():
+    # Phase 5 Task 4b: PPV is on MaterialProduct now; traversal from a
+    # store.Product queryset goes through the materialproduct reverse
+    # OneToOne accessor.
     from filtering.services.filter_handlers import FilterGroupHandler
     handler = FilterGroupHandler()
     assert handler.count_path(config=None) == \
-        'product_product_variation__product_groups__product_group__name'
+        'materialproduct__product_product_variation__product_groups__product_group__name'
 
 
 # ── ProductIdHandler ──────────────────────────────────────────────────────
@@ -171,8 +174,9 @@ def test_product_id_handler_build_q_coerces_to_int():
     from filtering.services.filter_handlers import ProductIdHandler
     handler = ProductIdHandler()
     q = handler.build_q(config=None, values=['8242', '8226'])
+    # Phase 5 Task 4b: PPV is on MaterialProduct now.
     assert q.children == [
-        ('product_product_variation__product__id__in', [8242, 8226])
+        ('materialproduct__product_product_variation__product__id__in', [8242, 8226])
     ]
 
 
@@ -188,10 +192,11 @@ def test_product_id_handler_build_q_handles_invalid_values():
 
 
 def test_product_id_handler_count_path():
+    # Phase 5 Task 4b: PPV is on MaterialProduct now.
     from filtering.services.filter_handlers import ProductIdHandler
     handler = ProductIdHandler()
     assert handler.count_path(config=None) == \
-        'product_product_variation__product__id'
+        'materialproduct__product_product_variation__product__id'
 
 
 def test_product_id_handler_post_process_bucket_empty_when_no_selection():

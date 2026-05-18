@@ -102,8 +102,9 @@ class MarkingPaperHasTemplateFKTests(TestCase):
             ExamSession, ExamSessionSubject, Subject,
             Product as CatalogProduct, ProductVariation, ProductProductVariation,
         )
-        from store.models import Product as StoreProduct
-        # Build a minimal store.Product (which IS a Purchasable) to satisfy
+        from store.models import MarkingProduct as StoreMarkingProduct
+        from marking.models import MarkingTemplate
+        # Build a minimal MarkingProduct (which IS a Purchasable) to satisfy
         # the MarkingPaper.purchasable FK constraint that requires a row in
         # acted.products (a legacy DB-level constraint from migration 0003).
         exam_session = ExamSession.objects.create(
@@ -126,9 +127,14 @@ class MarkingPaperHasTemplateFKTests(TestCase):
         ppv = ProductProductVariation.objects.create(
             product=cat_product, product_variation=variation,
         )
-        p = StoreProduct.objects.create(
+        marking_template = MarkingTemplate.objects.create(
+            code='ORPH', name='Orphan Marking Series',
+        )
+        # Phase 5: use MarkingProduct subclass which sets kind='marking'
+        p = StoreMarkingProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
+            marking_template=marking_template,
         )
         with self.assertRaises(IntegrityError):
             with transaction.atomic():

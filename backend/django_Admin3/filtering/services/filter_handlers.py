@@ -130,14 +130,17 @@ class FilterGroupHandler(FilterHandler):
         # alias for the disjunctive-faceting GROUP BY, restricting the
         # count's scope to the filter's WHERE clause. The subquery keeps
         # the count's JOIN independent.
+        # Phase 5 Task 4b: PPV is on MaterialProduct now. Filter groups
+        # are linked to PPVs, so this handler can only match material
+        # rows — traverse via the materialproduct reverse-OneToOne.
         from store.models import Product as StoreProduct
         matching = StoreProduct.objects.filter(
-            product_product_variation__product_groups__product_group__name__in=values
+            materialproduct__product_product_variation__product_groups__product_group__name__in=values
         ).values_list('id', flat=True)
         return Q(id__in=matching)
 
     def count_path(self, config):
-        return 'product_product_variation__product_groups__product_group__name'
+        return 'materialproduct__product_product_variation__product_groups__product_group__name'
 
 
 class ProductIdHandler(FilterHandler):
@@ -170,10 +173,11 @@ class ProductIdHandler(FilterHandler):
         if not int_values:
             from django.db.models import Q as _Q
             return _Q(pk__in=[])  # no-op: matches nothing
-        return Q(product_product_variation__product__id__in=int_values)
+        # Phase 5 Task 4b: PPV is on MaterialProduct now.
+        return Q(materialproduct__product_product_variation__product__id__in=int_values)
 
     def count_path(self, config):
-        return 'product_product_variation__product__id'
+        return 'materialproduct__product_product_variation__product__id'
 
     def post_process_bucket(self, bucket, selected_values, config):
         """Restrict the bucket to the user's current selection and

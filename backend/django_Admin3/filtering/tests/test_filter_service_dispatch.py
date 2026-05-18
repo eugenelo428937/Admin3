@@ -70,7 +70,7 @@ def test_apply_filters_dispatches_on_filter_type():
         Subject, ExamSession, ExamSessionSubject, Product as CatalogProduct,
         ProductVariation, ProductProductVariation,
     )
-    from store.models import Product as StoreProduct
+    from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 
     subj1 = Subject.objects.create(code='CB1', description='Test 1', active=True)
     subj2 = Subject.objects.create(code='CB2', description='Test 2', active=True)
@@ -84,10 +84,10 @@ def test_apply_filters_dispatches_on_filter_type():
         code='P', name='Printed', variation_type='Material',
     )
     ppv = ProductProductVariation.objects.create(product=cprod, product_variation=pvar)
-    StoreProduct.objects.create(
+    StoreMaterialProduct.objects.create(
         exam_session_subject=ess1, product_product_variation=ppv, product_code='P1',
     )
-    StoreProduct.objects.create(
+    StoreMaterialProduct.objects.create(
         exam_session_subject=ess2, product_product_variation=ppv, product_code='P2',
     )
 
@@ -124,7 +124,7 @@ def test_generate_filter_counts_uses_handlers_for_path_and_q():
         Subject, ExamSession, ExamSessionSubject, Product as CatalogProduct,
         ProductVariation, ProductProductVariation,
     )
-    from store.models import Product as StoreProduct
+    from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 
     cb1 = Subject.objects.create(code='CB1', description='T1', active=True)
     cb2 = Subject.objects.create(code='CB2', description='T2', active=True)
@@ -136,10 +136,10 @@ def test_generate_filter_counts_uses_handlers_for_path_and_q():
     cp = CatalogProduct.objects.create(shortname='X', fullname='X', code='X', is_active=True)
     pv = ProductVariation.objects.create(code='P', name='Printed', variation_type='Material')
     ppv = ProductProductVariation.objects.create(product=cp, product_variation=pv)
-    StoreProduct.objects.create(
+    StoreMaterialProduct.objects.create(
         exam_session_subject=e1, product_product_variation=ppv, product_code='P1',
     )
-    StoreProduct.objects.create(
+    StoreMaterialProduct.objects.create(
         exam_session_subject=e2, product_product_variation=ppv, product_code='P2',
     )
 

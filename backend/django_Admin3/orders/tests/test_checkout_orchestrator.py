@@ -11,7 +11,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 from orders.services.checkout_orchestrator import (
     CheckoutOrchestrator,
     CheckoutValidationError,
@@ -39,7 +39,7 @@ class CheckoutOrchestratorTest(TestCase):
         cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
         variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
         ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
-        self.store_product = StoreProduct.objects.create(
+        self.store_product = StoreMaterialProduct.objects.create(
             exam_session_subject=ess, product_product_variation=ppv
         )
         self.cart = Cart.objects.create(user=self.user)

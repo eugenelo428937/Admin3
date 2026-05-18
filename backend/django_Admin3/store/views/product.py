@@ -28,11 +28,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     FR-012: Hides products when their catalog template is inactive.
     """
+    # Phase 5 Task 4b: product_product_variation moved to MaterialProduct
+    # subclass. Traverse via materialproduct reverse-OneToOne accessor.
     queryset = Product.objects.select_related(
         'exam_session_subject__exam_session',
         'exam_session_subject__subject',
-        'product_product_variation__product',
-        'product_product_variation__product_variation',
+        'materialproduct__product_product_variation__product',
+        'materialproduct__product_product_variation__product_variation',
     ).all()
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -107,11 +109,14 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # Get listing-visible products with related data (7-cond predicate;
         # the date window is enforced at cart-add, not in the list).
+        # Phase 5 Task 4b: PPV is on MaterialProduct now. Traverse via the
+        # materialproduct reverse-OneToOne; non-material rows simply skip
+        # those select_related paths and use plain attribute fallback.
         products = Product.available_for_listing().select_related(
             'exam_session_subject__exam_session',
             'exam_session_subject__subject',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).order_by('product_code')
 
         # Get active bundles with related data

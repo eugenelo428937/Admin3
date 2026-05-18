@@ -28,7 +28,7 @@ from catalog.products.models import (
     ProductProductVariation,
 )
 from filtering.models import FilterGroup, ProductProductGroup
-from store.models import Product as StoreProduct, Purchasable
+from store.models import MaterialProduct, Product as StoreProduct, Purchasable  # noqa: F401
 
 
 class OnlineClassroomLookupTests(TestCase):
@@ -77,10 +77,13 @@ class OnlineClassroomLookupTests(TestCase):
         ProductProductGroup.objects.create(
             product_product_variation=ppv, product_group=self.oc_group,
         )
-        StoreProduct.objects.create(
+        # Phase 5: PPV lives on MaterialProduct only. The navigation helper
+        # _has_available_store_product_for_variation joins through
+        # ``product__materialproduct__product_product_variation``, so we must
+        # materialise as a MaterialProduct row to satisfy that lookup.
+        MaterialProduct.objects.create(
             exam_session_subject=ess,
             product_product_variation=ppv,
-            kind=Purchasable.Kind.TUTORIAL,
             is_active=True,
             name='OC-PROD',
             product_code='OC-PROD-CODE',

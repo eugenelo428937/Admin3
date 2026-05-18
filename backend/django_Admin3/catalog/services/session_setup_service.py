@@ -52,15 +52,18 @@ class SessionSetupService:
 
         subject_to_new_ess = {ess.subject_id: ess for ess in new_ess_records}
 
-        # 2. Get active products from previous session, excluding tutorials
+        # 2. Get active products from previous session, excluding tutorials.
+        # Phase 5 Task 4b: product_product_variation moved from Product to
+        # MaterialProduct subclass. Exclude tutorials by kind (cheap) rather
+        # than by traversing the now-removed PPV path off Product.
         previous_products = Product.objects.filter(
             exam_session_subject__exam_session_id=previous_session_id,
             is_active=True,
         ).exclude(
-            product_product_variation__product_variation__variation_type='Tutorial'
+            kind='tutorial',
         ).select_related(
             'exam_session_subject__subject',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product_variation',
         )
 
         products_created = 0
@@ -78,17 +81,43 @@ class SessionSetupService:
                 skipped_subjects.add(prev_product.exam_session_subject.subject.code)
                 continue
 
-            # Create new product (product_code auto-generates on save)
-            new_product = Product(
-                exam_session_subject=new_ess,
-                product_product_variation=prev_product.product_product_variation,
-                is_active=True,
-            )
+            # Create new product (product_code auto-generates on save).
+            # Phase 5 Task 4b: PPV is on MaterialProduct, marking_template
+            # is on MarkingProduct. Dispatch to the subclass so the new
+            # row owns the correct subclass-local fields. Tutorial is
+            # excluded above (by kind filter), so only Material and
+            # Marking are handled here.
+            from store.models import MaterialProduct, MarkingProduct
+            if prev_product.kind == 'marking':
+                # Inherit marking_template from the previous MarkingProduct row.
+                prev_marking_template = getattr(
+                    getattr(prev_product, 'markingproduct', None),
+                    'marking_template', None,
+                )
+                new_product = MarkingProduct(
+                    exam_session_subject=new_ess,
+                    marking_template=prev_marking_template,
+                    is_active=True,
+                )
+            else:
+                # Default: treat as MaterialProduct (PPV is required).
+                new_product = MaterialProduct(
+                    exam_session_subject=new_ess,
+                    product_product_variation=prev_product.product_product_variation,
+                    is_active=True,
+                )
             new_product.save()
             products_created += 1
-            new_product_lookup[
-                (new_ess.id, prev_product.product_product_variation_id)
-            ] = new_product
+            # Phase 5 Task 4b: prev_product is a Product (parent); the PPV id
+            # lives on the materialproduct subclass now. Use getattr fallback
+            # for non-material rows (None) — they don't participate in the
+            # bundle template match anyway.
+            prev_ppv_id = getattr(
+                getattr(prev_product, 'materialproduct', None),
+                'product_product_variation_id',
+                None,
+            )
+            new_product_lookup[(new_ess.id, prev_ppv_id)] = new_product
 
             # 4. Copy prices for this product (Task 23: Price is keyed by
             # purchasable; Product is an MTI subclass so PK is shared).

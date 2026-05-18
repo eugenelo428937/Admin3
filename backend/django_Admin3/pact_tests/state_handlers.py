@@ -131,7 +131,8 @@ def setup_store_product():
 
     _subject, _es, ess, _cp, _var, ppv = setup_catalog_foundation()
 
-    store_product, _ = StoreProduct.objects.get_or_create(
+    from store.models import MaterialProduct as StoreMaterialProduct
+    store_product, _ = StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=ess,
         product_product_variation=ppv,
         defaults={
@@ -542,14 +543,16 @@ def setup_tutorial_catalog_product():
 
     Returns (store_product, catalog_product).
     """
-    from catalog.models import (
-        Product as CatalogProduct, ProductVariation,
-        ProductProductVariation,
-    )
+    from catalog.models import Product as CatalogProduct
     from store.models import TutorialProduct
+    from tutorials.models import TutorialLocation
 
     subject, exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
 
+    # Catalog "tutorial" product/variation/PPV are kept for any caller that
+    # asserts on a catalog row with fullname containing 'tutorial' (e.g.
+    # `products/all/`). Phase 5 decoupled TutorialProduct from these — they
+    # exist purely as catalog data now, not linked to the store row.
     tutorial_product, _ = CatalogProduct.objects.get_or_create(
         code='TUT01',
         defaults={
@@ -559,37 +562,19 @@ def setup_tutorial_catalog_product():
         },
     )
 
-    tutorial_variation, tv_created = ProductVariation.objects.get_or_create(
-        code='TLONCM2',
-        defaults={
-            'variation_type': 'Tutorial',
-            'name': 'London Face-to-Face Tutorial',
-            'description': 'Face-to-face tutorial in London',
-            'description_short': 'London tutorial',
-            'is_active': True,
-        },
+    # Phase 5: TutorialProduct identifies itself by
+    # (exam_session_subject, tutorial_location, format) — not PPV.
+    # product_code is auto-generated as {subject}/{location}/{format}/{session}.
+    location, _ = TutorialLocation.objects.get_or_create(
+        code='LON',
+        defaults={'name': 'London'},
     )
-    if not tv_created and not tutorial_variation.is_active:
-        tutorial_variation.is_active = True
-        tutorial_variation.save(update_fields=['is_active'])
-
-    tutorial_ppv, tppv_created = ProductProductVariation.objects.get_or_create(
-        product=tutorial_product,
-        product_variation=tutorial_variation,
-        defaults={'is_active': True},
-    )
-    if not tppv_created and not tutorial_ppv.is_active:
-        tutorial_ppv.is_active = True
-        tutorial_ppv.save(update_fields=['is_active'])
 
     tutorial_store_product, _ = TutorialProduct.objects.get_or_create(
         exam_session_subject=ess,
-        product_product_variation=tutorial_ppv,
-        defaults={
-            'product_code': 'CM2/TLONCM2/2025-04',
-            'is_active': True,
-            'format': 'F2F_3F',  # TLONCM2 = London Face-to-Face Tutorial
-        },
+        tutorial_location=location,
+        format='F2F_3F',
+        defaults={'is_active': True},
     )
 
     return tutorial_store_product, tutorial_product
@@ -942,7 +927,11 @@ def state_store_product_exists(params=None):
     so we build the parent Purchasable first (direct create populates
     auto_now_add fields correctly) and link the child explicitly.
     """
-    from store.models import Product as StoreProduct, Purchasable
+    from store.models import (
+        Product as StoreProduct,
+        MaterialProduct as StoreMaterialProduct,
+        Purchasable,
+    )
 
     store_product, _price = setup_store_product()
 
@@ -968,16 +957,26 @@ def state_store_product_exists(params=None):
         name='CM2 Printed Combined Study Material',
         is_active=True,
     )
-    # Build child Product linked to the parent via save_base(raw=True) to
-    # skip the custom save() logic (which would otherwise try to regenerate
-    # the parent's code/kind and re-save the parent).
+    # Build the MTI chain explicitly via save_base(raw=True) so we keep the
+    # explicit id=1 and skip the custom save() logic (which would otherwise
+    # try to regenerate the parent's code/kind and re-save the parent).
+    #
+    # The chain is Purchasable → Product → MaterialProduct. Phase 5 moved
+    # product_product_variation onto the MaterialProduct subclass; passing
+    # it on the Product layer is a no-op under save_base(raw=True) because
+    # the parent-level setter relies on the custom save() to flush
+    # _pending_ppv. So we land PPV on the MaterialProduct row directly.
     sp = StoreProduct(
         purchasable_ptr=parent,
         exam_session_subject=ess,
-        product_product_variation=ppv,
         product_code='CM2/PCSM01P/2025-04',
     )
     sp.save_base(raw=True, force_insert=True)
+    mp = StoreMaterialProduct(
+        product_ptr=sp,
+        product_product_variation=ppv,
+    )
+    mp.save_base(raw=True, force_insert=True)
     Price.objects.get_or_create(
         purchasable_id=sp.pk,
         price_type='standard',
@@ -1186,7 +1185,7 @@ def state_session_setup_data_exists_for_copy(params=None):
         ProductVariation, ProductProductVariation,
         ProductBundle,
     )
-    from store.models import Product as StoreProduct, Price
+    from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct, Price
 
     # Create subjects
     subject, _ = Subject.objects.get_or_create(
@@ -1260,7 +1259,7 @@ def state_session_setup_data_exists_for_copy(params=None):
     )
 
     # Store product in previous session
-    prev_store_product, _ = StoreProduct.objects.get_or_create(
+    prev_store_product, _ = StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=prev_ess,
         product_product_variation=ppv,
         defaults={'is_active': True},
@@ -1304,7 +1303,7 @@ def state_session_setup_data_exists_for_copy(params=None):
         product=sp9_cat_product,
         product_variation=sp9_variation,
     )
-    StoreProduct.objects.get_or_create(
+    StoreMaterialProduct.objects.get_or_create(
         exam_session_subject=sp9_prev_ess,
         product_product_variation=sp9_ppv,
         defaults={'is_active': True},

@@ -52,3 +52,21 @@ class MarkingProduct(Product):
         # partial unique index via RunSQL can be added in a later phase
         # if explicit DB-level enforcement is desired. (Same pattern as
         # TutorialProduct — see store/models/tutorial_product.py.)
+
+    def save(self, *args, **kwargs):
+        """Phase 5: MarkingProduct sets kind='marking' explicitly and
+        generates product_code from subclass fields. No PPV dependency."""
+        if not self.kind:
+            self.kind = self.Kind.MARKING  # 'marking'
+        if not self.product_code:
+            self.product_code = self._generate_marking_product_code()
+            self.code = self.product_code
+        super().save(*args, **kwargs)
+
+    def _generate_marking_product_code(self):
+        """Generate Marking product code: {subject}/{template_code}/{session}."""
+        ess = self.exam_session_subject
+        subject_code = ess.subject.code
+        exam_code = ess.exam_session.session_code
+        template_code = self.marking_template.code
+        return f"{subject_code}/{template_code}/{exam_code}"

@@ -36,22 +36,13 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.end_date',
         read_only=True
     )
-    variation_type = serializers.CharField(
-        source='product_product_variation.product_variation.variation_type',
-        read_only=True
-    )
-    variation_name = serializers.CharField(
-        source='product_product_variation.product_variation.name',
-        read_only=True
-    )
-    product_name = serializers.CharField(
-        source='product_product_variation.product.fullname',
-        read_only=True
-    )
-    product_shortname = serializers.CharField(
-        source='product_product_variation.product.shortname',
-        read_only=True
-    )
+    # Phase 5 Task 4b: PPV lives on MaterialProduct now. The legacy
+    # @property on Product returns None for non-material rows, so traverse
+    # via SerializerMethodField to defend against AttributeError on None.
+    variation_type = serializers.SerializerMethodField()
+    variation_name = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
+    product_shortname = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -85,6 +76,22 @@ class UnifiedProductSerializer(serializers.ModelSerializer):
         if ppv and ppv.product:
             return ppv.product.fullname
         return obj.product_code
+
+    def get_variation_type(self, obj):
+        ppv = obj.product_product_variation
+        return ppv.product_variation.variation_type if ppv else None
+
+    def get_variation_name(self, obj):
+        ppv = obj.product_product_variation
+        return ppv.product_variation.name if ppv else None
+
+    def get_product_name(self, obj):
+        ppv = obj.product_product_variation
+        return ppv.product.fullname if ppv else None
+
+    def get_product_shortname(self, obj):
+        ppv = obj.product_product_variation
+        return ppv.product.shortname if ppv else None
 
 
 class BundleComponentPriceSerializer(serializers.Serializer):
@@ -233,12 +240,13 @@ class UnifiedBundleSerializer(serializers.ModelSerializer):
         """
         from store.models import Purchasable
         available_purchasable_ids = Purchasable.objects.available_for_listing().values('pk')
+        # Phase 5 Task 4b: PPV is on MaterialProduct, not on Product parent.
         bundle_products = obj.bundle_products.filter(
             is_active=True,
             product_id__in=available_purchasable_ids,
         ).select_related(
-            'product__product_product_variation__product',
-            'product__product_product_variation__product_variation',
+            'product__materialproduct__product_product_variation__product',
+            'product__materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'product__prices',  # Prefetch prices to avoid N+1 queries
         ).order_by('sort_order')

@@ -52,16 +52,52 @@ def populate_location_ids():
         """)
         product_pk_col = cursor.fetchone()[0]
 
-        cursor.execute(f"""
-            UPDATE acted.tutorial_events te
-            SET location_id = tl.id
-            FROM acted.products sp
-            JOIN acted.catalog_product_product_variations ppv
-              ON ppv.id = sp.product_product_variation_id
-            JOIN acted.catalog_products cp
-              ON cp.id = ppv.product_id
-            JOIN acted.tutorial_locations tl
-              ON tl.name = cp.shortname
-            WHERE sp.{product_pk_col} = te.{col}
+        # Phase 5 Task 4b: product_product_variation_id moved off
+        # acted.products onto acted.material_products. Detect which
+        # table holds the column and use it. Material-only join (Tutorial
+        # rows that don't have a material counterpart are skipped).
+        cursor.execute("""
+            SELECT table_name
+            FROM information_schema.columns
+            WHERE table_schema = 'acted'
+              AND column_name = 'product_product_variation_id'
+              AND table_name IN ('products', 'material_products')
+            ORDER BY CASE table_name
+                WHEN 'material_products' THEN 0
+                WHEN 'products' THEN 1
+            END
+            LIMIT 1
         """)
+        ppv_row = cursor.fetchone()
+        if ppv_row is None:
+            return 0
+        ppv_table = ppv_row[0]
+        if ppv_table == 'material_products':
+            cursor.execute(f"""
+                UPDATE acted.tutorial_events te
+                SET location_id = tl.id
+                FROM acted.products sp
+                JOIN acted.material_products mp
+                  ON mp.product_ptr_id = sp.{product_pk_col}
+                JOIN acted.catalog_product_product_variations ppv
+                  ON ppv.id = mp.product_product_variation_id
+                JOIN acted.catalog_products cp
+                  ON cp.id = ppv.product_id
+                JOIN acted.tutorial_locations tl
+                  ON tl.name = cp.shortname
+                WHERE sp.{product_pk_col} = te.{col}
+            """)
+        else:
+            cursor.execute(f"""
+                UPDATE acted.tutorial_events te
+                SET location_id = tl.id
+                FROM acted.products sp
+                JOIN acted.catalog_product_product_variations ppv
+                  ON ppv.id = sp.product_product_variation_id
+                JOIN acted.catalog_products cp
+                  ON cp.id = ppv.product_id
+                JOIN acted.tutorial_locations tl
+                  ON tl.name = cp.shortname
+                WHERE sp.{product_pk_col} = te.{col}
+            """)
         return cursor.rowcount

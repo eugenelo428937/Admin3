@@ -11,7 +11,7 @@ from datetime import timedelta
 from rest_framework.test import APIClient
 from rest_framework import status
 from cart.models import Cart, CartItem
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 from catalog.models import (
     Product, ProductVariation, ProductProductVariation,
     ExamSession, Subject, ExamSessionSubject
@@ -114,14 +114,14 @@ class TestCartMultipleMaterialsBug(TestCase):
             is_active=True,
         )
 
-        # Create store products (purchasable items linking ESS to PPV)
-        self.store_product1 = StoreProduct.objects.create(
+        # Create store products (Phase 5: use MaterialProduct subclass)
+        self.store_product1 = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess1,
             product_product_variation=self.ppv1,
             product_code='CB1/PCN01/TEST2024'
         )
 
-        self.store_product2 = StoreProduct.objects.create(
+        self.store_product2 = StoreMaterialProduct.objects.create(
             exam_session_subject=self.ess2,
             product_product_variation=self.ppv2,
             product_code='CB2/PTV01/TEST2024'

@@ -5,8 +5,6 @@ Shares a PK with its parent Purchasable row (via MTI).
 
 Table: acted.products
 """
-import uuid
-
 from django.db import models
 
 from store.models.purchasable import Purchasable
@@ -31,12 +29,6 @@ class Product(Purchasable):
         related_name='store_products',
         help_text='The exam session subject this product is available for'
     )
-    product_product_variation = models.ForeignKey(
-        'catalog_products.ProductProductVariation',
-        on_delete=models.CASCADE,
-        related_name='store_products',
-        help_text='The product variation (template + variation combination)'
-    )
     product_code = models.CharField(
         max_length=64,
         unique=True,
@@ -53,113 +45,74 @@ class Product(Purchasable):
         verbose_name_plural = 'Store Products'
 
     def save(self, *args, **kwargs):
-        """Auto-generate product_code if not provided; mirror to Purchasable.code."""
-        # Phase 4e: derive kind from variation_type rather than defaulting
-        # to the legacy Kind.PRODUCT. Every new Product row now starts in
-        # its specialized kind directly — material / tutorial / marking.
+        """Phase 5: parent-class save. Each subclass (Material/Tutorial/
+        Marking) sets kind explicitly in its own save(). If a caller
+        instantiates a bare Product without setting kind, raise ValueError
+        — there is no longer a meaningful default for store products.
+
+        Code generation is now owned by each subclass:
+        - MaterialProduct.save() generates {subject}/{variation_code}{product_code}/{exam_session}
+        - TutorialProduct.save() / MarkingProduct.save() generate their own codes.
+
+        By the time we reach this parent save(), product_code is already
+        set by the subclass.
+
+        Legacy-kwarg fallback: when a caller uses
+        ``Product(product_product_variation=ppv)`` the PPV is stashed on
+        ``_pending_ppv`` via the property setter (kind defaults to
+        ``material``). If we reach Product.save() with a pending PPV and
+        kind='material', we delegate to MaterialProduct.save() so the
+        subclass row gets created with its PPV column populated.
+        """
         if not self.kind:
-            self.kind = self._derive_kind_from_variation_type()
-        # Code generation path — material/marking codes don't need PK, so we
-        # can compute pre-save; tutorial/other codes include the PK, so we
-        # must save once to get the PK, then regenerate and update.
-        if not self.product_code:
-            variation_type = self.product_product_variation.product_variation.variation_type
-            if variation_type in ('eBook', 'Printed', 'Marking'):
-                self.product_code = self._generate_product_code()
-                self.code = self.product_code
-                super().save(*args, **kwargs)
-            else:
-                # Tutorial/other codes include PK; save first with a unique
-                # placeholder to satisfy Purchasable.code's UNIQUE constraint,
-                # then regenerate with real product_code once PK is known.
-                if not self.code:
-                    self.code = f'pending-{uuid.uuid4().hex}'
-                super().save(*args, **kwargs)
-                self.product_code = self._generate_product_code()
-                self.code = self.product_code
-                super().save(update_fields=['product_code', 'code'])
-        else:
-            # product_code already set — mirror it to Purchasable.code
-            self.code = self.product_code
-            super().save(*args, **kwargs)
-
-    def _derive_kind_from_variation_type(self):
-        """Phase 4e: derive Purchasable.kind from the linked PPV's variation_type.
-
-        Eliminates the legacy Kind.PRODUCT default — every new Product row
-        now starts in its specialized kind (material / tutorial / marking),
-        removing the need for the Phase 2 split command to retroactively
-        reclassify.
-
-        Returns one of `Purchasable.Kind.MATERIAL`,
-        `Purchasable.Kind.TUTORIAL`, or `Purchasable.Kind.MARKING`.
-
-        Raises:
-            ValueError if `variation_type` is unrecognised — callers should
-            set `self.kind` explicitly for any non-standard variation rather
-            than relying on a silent fallback.
-        """
-        variation_type = self.product_product_variation.product_variation.variation_type
-        if variation_type in {'eBook', 'Printed', 'Hub'}:
-            return Purchasable.Kind.MATERIAL
-        # Tutorial-family: 'Tutorial' is the canonical type; 'Online
-        # Classroom Recording' is a legacy variant some catalog rows
-        # still use (the corresponding TutorialProduct row has format=OC).
-        if variation_type in {'Tutorial', 'Online Classroom Recording'}:
-            return Purchasable.Kind.TUTORIAL
-        if variation_type == 'Marking':
-            return Purchasable.Kind.MARKING
-        raise ValueError(
-            f'Cannot derive Purchasable.kind from variation_type={variation_type!r}; '
-            'set Product.kind explicitly before save() or extend '
-            'Product._derive_kind_from_variation_type to handle the new type.'
-        )
-
-    def _generate_product_code(self):
-        """Generate product code from related entities.
-
-        Format depends on variation type:
-        - Material/Marking (eBook, Printed, Marking):
-            {subject_code}/{variation_code}{product_code}/{exam_session_code}
-            Example: CB1/PC/26 , CP1/MM1/26S
-        - Tutorial/Other:
-            {subject_code}/{location}/{variation_code}/{exam_session_code}
-            Example: CB1/GSW/F2F_3F/26 (Tutorial Glasgow)
-
-        Tutorial location is derived from the first linked TutorialEvent's
-        TutorialLocation.code. A Product without an associated TutorialEvent
-        cannot produce a valid tutorial code — raise ValueError so the
-        caller fixes the data rather than silently producing a bad code.
-        """
-        ess = self.exam_session_subject
-        ppv = self.product_product_variation
-
-        subject_code = ess.subject.code
-        exam_code = ess.exam_session.session_code
-        product_code = ppv.product.code
-        variation = ppv.product_variation
-        variation_code = variation.code if variation.code else ''
-
-        # Material and Marking products: simpler format without prefix
-        if variation.variation_type in ('eBook', 'Printed', 'Marking'):
-            return f"{subject_code}/{variation_code}{product_code}/{exam_code}"
-
-        # Tutorial/other: location from first linked TutorialEvent.
-        # Local import avoids circular dependency with tutorials app.
-        from tutorials.models import TutorialEvents
-        event = (
-            TutorialEvents.objects
-            .filter(store_product=self)
-            .select_related('location')
-            .first()
-        )
-        if event is None or event.location is None or not event.location.code:
             raise ValueError(
-                f"Cannot generate tutorial product code for Product pk={self.pk}: "
-                "no TutorialEvent with a TutorialLocation.code is linked. "
-                "Create the event + location before saving the product."
+                'Phase 5: store.Product requires kind to be set explicitly. '
+                'Use MaterialProduct/TutorialProduct/MarkingProduct subclasses '
+                'which set kind in their own save() methods, or pass '
+                'kind=Purchasable.Kind.MATERIAL/TUTORIAL/MARKING.'
             )
-        return f"{subject_code}/{event.location.code}/{variation_code}/{exam_code}"
+
+        # If the caller used the legacy product_product_variation kwarg on
+        # a bare Product with kind='material', materialise the row as a
+        # MaterialProduct so the PPV FK column gets populated. For
+        # tutorial/marking kinds, the pending PPV is dropped (those
+        # subclasses don't store PPVs anymore).
+        pending_ppv = getattr(self, '_pending_ppv', None)
+        if (
+            pending_ppv is not None
+            and type(self).__name__ == 'Product'
+            and self.kind == self.Kind.MATERIAL
+        ):
+            from store.models.material_product import MaterialProduct
+            # Promote to MaterialProduct. Copy the attribute set, drop our
+            # transient slot, and save through the subclass.
+            mp = MaterialProduct(
+                kind=self.kind,
+                code=getattr(self, 'code', '') or '',
+                name=self.name,
+                description=self.description,
+                is_active=self.is_active,
+                dynamic_pricing=self.dynamic_pricing,
+                is_addon=self.is_addon,
+                vat_classification=self.vat_classification or '',
+                exam_session_subject=self.exam_session_subject,
+                product_code=self.product_code or '',
+                product_product_variation=pending_ppv,
+            )
+            mp.save(*args, **kwargs)
+            # Mirror the saved PK / product_code back to self so callers
+            # holding the original instance see the persisted state.
+            self.pk = mp.pk
+            self.product_code = mp.product_code
+            self.code = mp.code
+            # Clear the pending slot so subsequent saves do not retry.
+            self._pending_ppv = None
+            return
+
+        if self.product_code:
+            # Mirror product_code to Purchasable.code
+            self.code = self.product_code
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.product_code
@@ -208,20 +161,30 @@ class Product(Purchasable):
         This provides backward compatibility with code that used
         `cart_item.product.product` when product was an ESSP.
 
+        Phase 5 Task 4b: PPV lives only on MaterialProduct. Tutorial and
+        Marking rows return None — the caller is expected to branch on
+        the row's kind or check for None.
+
         Returns:
-            catalog.Product: The master product template
+            catalog.Product or None: master product template (None for
+            tutorial/marking rows).
         """
-        return self.product_product_variation.product
+        ppv = self.product_product_variation
+        return ppv.product if ppv is not None else None
 
     @property
     def product_variation(self):
         """
         Access the catalog.ProductVariation through the product_product_variation.
 
+        Phase 5 Task 4b: returns None for tutorial/marking rows (no PPV).
+
         Returns:
-            catalog.ProductVariation: The variation type (eBook, Printed, etc.)
+            catalog.ProductVariation or None: variation (None for
+            tutorial/marking rows).
         """
-        return self.product_product_variation.product_variation
+        ppv = self.product_product_variation
+        return ppv.product_variation if ppv is not None else None
 
     @property
     def variations(self):
@@ -238,3 +201,62 @@ class Product(Purchasable):
         # Return a queryset containing just this product
         # This maintains compatibility with code that called .first() or iterated
         return Product.objects.filter(pk=self.pk)
+
+    @property
+    def product_product_variation(self):
+        """Phase 5: backward-compat accessor delegating to
+        ``MaterialProduct.product_product_variation``.
+
+        The FK was moved off the ``Product`` parent in migration 0024 and
+        now lives exclusively on ``MaterialProduct``. Tutorial and Marking
+        subclasses have no PPV (their variation semantics live in
+        ``TutorialProduct.format`` / ``tutorial_location`` and
+        ``MarkingProduct.marking_template`` respectively), so this returns
+        ``None`` for non-Material rows.
+
+        The bare ``except Exception`` swallows both
+        ``MaterialProduct.DoesNotExist`` (raised by the reverse OneToOne
+        accessor for non-Material rows) and ``AttributeError`` (defensive).
+
+        Pending writes (set via the setter before ``save()`` runs) are
+        kept on the in-memory ``_pending_ppv`` slot so callers using the
+        legacy kwarg pattern ``Product(product_product_variation=ppv)``
+        see the value back before it lands on the DB row.
+        """
+        pending = getattr(self, '_pending_ppv', None)
+        if pending is not None:
+            return pending
+        try:
+            return self.materialproduct.product_product_variation
+        except Exception:
+            return None
+
+    @product_product_variation.setter
+    def product_product_variation(self, value):
+        """Phase 5 backward-compat setter.
+
+        Allows legacy callers like ``Product(product_product_variation=ppv)``
+        or ``Product.objects.create(product_product_variation=ppv, ...)`` to
+        continue working. The value is stashed on the instance and applied
+        in :meth:`save` by creating/updating the corresponding
+        ``MaterialProduct`` row.
+
+        For bare ``store.Product`` callers, setting a non-null PPV implies
+        ``kind='material'``; the setter sets ``kind`` automatically if it
+        has not been set yet. Subclass instances (Tutorial/Marking) leave
+        their kind alone — they don't store PPV anyway, so the pending
+        value is harmless and the subclass's own save() generates the
+        product_code.
+
+        Callers passing ``product_product_variation=None`` clear the
+        pending write but do NOT delete an existing MaterialProduct row.
+        """
+        self._pending_ppv = value
+        # Only default kind for bare Product instances. Subclasses set
+        # their own kind in their save() method.
+        if (
+            value is not None
+            and not self.kind
+            and type(self).__name__ == 'Product'
+        ):
+            self.kind = self.Kind.MATERIAL

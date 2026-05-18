@@ -30,11 +30,19 @@ class StoreProductListSerializer:
         Returns:
             List of dicts in the expected frontend format
         """
-        # Group products by (exam_session_subject_id, catalog_product_id)
+        # Group products by (exam_session_subject_id, catalog_product_id).
+        # Phase 5: Tutorial/Marking subclasses don't carry a PPV (their
+        # variation semantics live on the subclass). They are skipped here
+        # because the grouped response shape (catalog product + variations)
+        # only makes sense for Material rows — Tutorial/Marking products
+        # are surfaced through their own kind-specific endpoints.
         grouped = defaultdict(list)
 
         for sp in store_products:
-            key = (sp.exam_session_subject_id, sp.product_product_variation.product_id)
+            ppv = sp.product_product_variation
+            if ppv is None:
+                continue
+            key = (sp.exam_session_subject_id, ppv.product_id)
             grouped[key].append(sp)
 
         results = []
@@ -176,9 +184,12 @@ class StoreProductListSerializer:
         try:
             rec_ppv = recommendation.recommended_product_product_variation
 
-            # Find the store.Product for this recommendation in same exam session
+            # Find the store.Product for this recommendation in same exam session.
+            # Phase 5 Task 4b: PPV lives on MaterialProduct now — traverse via
+            # the materialproduct reverse-OneToOne (only material rows
+            # participate; tutorial/marking recommendations are not modelled).
             rec_store_product = StoreProduct.objects.filter(
-                product_product_variation=rec_ppv,
+                materialproduct__product_product_variation=rec_ppv,
                 exam_session_subject=exam_session_subject
             ).prefetch_related('prices').first()
 

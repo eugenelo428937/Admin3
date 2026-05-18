@@ -31,11 +31,12 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
     exposes inactive products.
     """
     pagination_class = AdminPagination
+    # Phase 5 Task 4b: PPV lives on MaterialProduct now.
     queryset = Product.objects.select_related(
         'exam_session_subject__exam_session',
         'exam_session_subject__subject',
-        'product_product_variation__product',
-        'product_product_variation__product_variation',
+        'materialproduct__product_product_variation__product',
+        'materialproduct__product_product_variation__product_variation',
     ).all()
     serializer_class = StoreProductAdminSerializer
     permission_classes = [IsSuperUser]
@@ -45,7 +46,7 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
         catalog_product_id = self.request.query_params.get('catalog_product_id')
         if catalog_product_id:
             qs = qs.filter(
-                product_product_variation__product_id=catalog_product_id
+                materialproduct__product_product_variation__product_id=catalog_product_id
             )
         exam_session_id = self.request.query_params.get('exam_session_id')
         if exam_session_id:
@@ -74,8 +75,9 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
             for gid in group_param.split(','):
                 gid = gid.strip()
                 if gid:
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
                     qs = qs.filter(
-                        product_product_variation__product__groups__id=gid
+                        materialproduct__product_product_variation__product__groups__id=gid
                     )
         # Order: active first, then by product_code
         return qs.order_by('-is_active', 'product_code')

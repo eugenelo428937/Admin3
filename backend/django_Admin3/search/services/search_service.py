@@ -191,16 +191,18 @@ class SearchService:
         """
         from catalog.models import ProductVariationRecommendation
 
+        # Phase 5 Task 4b: PPV is on MaterialProduct now (not on Product
+        # parent). Traverse via the materialproduct reverse-OneToOne.
         return StoreProduct.available_for_listing().select_related(
             'exam_session_subject__subject',
             'exam_session_subject__exam_session',
-            'product_product_variation__product',
-            'product_product_variation__product_variation',
+            'materialproduct__product_product_variation__product',
+            'materialproduct__product_product_variation__product_variation',
         ).prefetch_related(
             'prices',
-            'product_product_variation__product_groups__product_group',
+            'materialproduct__product_product_variation__product_groups__product_group',
             Prefetch(
-                'product_product_variation__recommendation',
+                'materialproduct__product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
                     'recommended_product_product_variation__product',
                     'recommended_product_product_variation__product_variation'
@@ -208,7 +210,7 @@ class SearchService:
             )
         ).order_by(
             'exam_session_subject__subject__code',
-            'product_product_variation__product__shortname'
+            'materialproduct__product_product_variation__product__shortname',
         )
 
     def _fuzzy_search_ids(self, queryset, query: str) -> List[int]:
@@ -232,20 +234,31 @@ class SearchService:
         return [pid for pid, _ in products_with_scores]
 
     def _build_searchable_text(self, store_product: StoreProduct) -> str:
-        """Build searchable text from store.Product fields."""
+        """Build searchable text from store.Product fields.
+
+        Phase 5: Tutorial and Marking subclasses don't link to
+        catalog.Product via ``product_product_variation`` (the parent's
+        backward-compat property returns ``None`` for those kinds).
+        Fall back to the subject code + product_code so those rows
+        still produce some matchable text instead of crashing.
+        """
         parts = []
 
-        catalog_product = store_product.product_product_variation.product
-        pv = store_product.product_product_variation.product_variation
+        ppv = store_product.product_product_variation
+        if ppv is not None:
+            catalog_product = ppv.product
+            pv = ppv.product_variation
+            if catalog_product.fullname:
+                parts.append(catalog_product.fullname)
+            if catalog_product.shortname:
+                parts.append(catalog_product.shortname)
+            if pv.name:
+                parts.append(pv.name)
 
-        if catalog_product.fullname:
-            parts.append(catalog_product.fullname)
-        if catalog_product.shortname:
-            parts.append(catalog_product.shortname)
         if store_product.exam_session_subject.subject.code:
             parts.append(store_product.exam_session_subject.subject.code)
-        if pv.name:
-            parts.append(pv.name)
+        if ppv is None and store_product.product_code:
+            parts.append(store_product.product_code)
 
         return ' '.join(parts).lower()
 
@@ -259,9 +272,15 @@ class SearchService:
         This replaces the previous max(scores) approach which flattened ranking
         by letting subject_bonus (95) dominate all other signals.
         """
-        catalog_product = store_product.product_product_variation.product
+        ppv = store_product.product_product_variation
+        catalog_product = ppv.product if ppv is not None else None
         subject_code = store_product.exam_session_subject.subject.code.lower()
-        product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
+        if catalog_product is not None:
+            product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
+        else:
+            # Phase 5: Tutorial/Marking rows have no catalog product — use
+            # the product_code as the matchable "name" segment.
+            product_name = (store_product.product_code or '').lower()
 
         # Subject code exact match bonus (binary: 0 or 100)
         subject_bonus = 100 if query.startswith(subject_code) else 0
@@ -354,8 +373,9 @@ class SearchService:
             'exam_session_subject__subject'
         ).prefetch_related(
             'bundle_products__product__prices',
-            'bundle_products__product__product_product_variation__product',
-            'bundle_products__product__product_product_variation__product_variation',
+            # Phase 5 Task 4b: PPV lives on MaterialProduct now.
+            'bundle_products__product__materialproduct__product_product_variation__product',
+            'bundle_products__product__materialproduct__product_product_variation__product_variation',
         )
 
         # Apply subject filter (at bundle level — bundles have their own ESS)
@@ -538,7 +558,8 @@ class SearchService:
                 elif isinstance(pid, str) and pid.isdigit():
                     int_product_ids.append(int(pid))
             if int_product_ids:
-                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
+                # Phase 5 Task 4b: PPV is on MaterialProduct now.
+                q_filter &= Q(materialproduct__product_product_variation__product__id__in=int_product_ids)
 
         if q_filter:
             product_qs = product_qs.filter(q_filter)
@@ -554,8 +575,9 @@ class SearchService:
             if values:
                 names = [v for v in values if v not in exclude]
                 if names:
+                    # Phase 5 Task 4b: PPV is on MaterialProduct now.
                     product_qs = product_qs.filter(
-                        product_product_variation__product_groups__product_group__name__in=names
+                        materialproduct__product_product_variation__product_groups__product_group__name__in=names
                     )
 
         return set(product_qs.distinct().values_list('id', flat=True))
@@ -673,8 +695,9 @@ class SearchService:
             )
 
         if category_ids:
+            # Phase 5 Task 4b: PPV is on MaterialProduct now.
             base_queryset = base_queryset.filter(
-                product_product_variation__product_groups__product_group__id__in=category_ids
+                materialproduct__product_product_variation__product_groups__product_group__id__in=category_ids
             ).distinct()
 
         if not query or len(query.strip()) < 2:

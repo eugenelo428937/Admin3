@@ -6,6 +6,7 @@ public-facing and form operations.
 """
 from rest_framework import serializers
 from store.models import Product
+from store.serializers.product import _LazyPPVRelatedField
 
 
 class StoreProductAdminSerializer(serializers.ModelSerializer):
@@ -13,6 +14,13 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
 
     Surfaces catalog product, variation, and exam session info via
     the ProductProductVariation and ExamSessionSubject FK chains.
+
+    Phase 5 Task 4b: ``product_product_variation`` lives on MaterialProduct
+    now. The legacy ``@property`` on Product delegates reads to
+    ``materialproduct.product_product_variation``, and the matching
+    setter routes writes through to a MaterialProduct row at save().
+    PPV-derived display fields are computed via SerializerMethodField so
+    they tolerate non-material (tutorial/marking) rows that lack a PPV.
     """
     subject_code = serializers.CharField(
         source='exam_session_subject.subject.code',
@@ -22,29 +30,15 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
         source='exam_session_subject.exam_session.session_code',
         read_only=True
     )
-    variation_type = serializers.CharField(
-        source='product_product_variation.product_variation.variation_type',
-        read_only=True
-    )
-    variation_name = serializers.CharField(
-        source='product_product_variation.product_variation.name',
-        read_only=True
-    )
-    variation_code = serializers.CharField(
-        source='product_product_variation.product_variation.code',
-        read_only=True
-    )
-    product_name = serializers.CharField(
-        source='product_product_variation.product.fullname',
-        read_only=True
-    )
-    catalog_product_id = serializers.IntegerField(
-        source='product_product_variation.product.id',
-        read_only=True
-    )
-    catalog_product_code = serializers.CharField(
-        source='product_product_variation.product.code',
-        read_only=True
+    variation_type = serializers.SerializerMethodField()
+    variation_name = serializers.SerializerMethodField()
+    variation_code = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
+    catalog_product_id = serializers.SerializerMethodField()
+    catalog_product_code = serializers.SerializerMethodField()
+    product_product_variation = _LazyPPVRelatedField(
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -58,6 +52,33 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['product_code', 'created_at', 'updated_at']
+
+    def _ppv(self, obj):
+        return obj.product_product_variation
+
+    def get_variation_type(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product_variation.variation_type if ppv else None
+
+    def get_variation_name(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product_variation.name if ppv else None
+
+    def get_variation_code(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product_variation.code if ppv else None
+
+    def get_product_name(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product.fullname if ppv else None
+
+    def get_catalog_product_id(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product.id if ppv else None
+
+    def get_catalog_product_code(self, obj):
+        ppv = self._ppv(obj)
+        return ppv.product.code if ppv else None
 
     def validate(self, attrs):
         """Reject duplicate (ESS, PPV) for non-addon admin writes.
@@ -77,9 +98,10 @@ class StoreProductAdminSerializer(serializers.ModelSerializer):
         if ess is None or ppv is None:
             return attrs
 
+        # Phase 5 Task 4b: PPV is on MaterialProduct now.
         qs = Product.objects.filter(
             exam_session_subject=ess,
-            product_product_variation=ppv,
+            materialproduct__product_product_variation=ppv,
             is_addon=False,
         )
         if self.instance is not None:

@@ -34,7 +34,7 @@ from catalog.models import (
     Subject, ExamSession, ExamSessionSubject,
     Product as CatalogProduct, ProductVariation, ProductProductVariation,
 )
-from store.models import Product as StoreProduct
+from store.models import Product as StoreProduct, MaterialProduct as StoreMaterialProduct
 
 User = get_user_model()
 
@@ -74,7 +74,8 @@ class CartTestDataMixin:
             product=cls.cat_product, product_variation=cls.variation,
             is_active=True,
         )
-        cls.store_product = StoreProduct.objects.create(
+        # Phase 5: use MaterialProduct subclass which sets kind='material'
+        cls.store_product = StoreMaterialProduct.objects.create(
             exam_session_subject=cls.ess,
             product_product_variation=cls.ppv,
         )
@@ -868,12 +869,14 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
     # ── _resolve_product ──
     def test_resolve_product_by_id(self):
         product = self.service._resolve_product(self.store_product.id, {})
-        self.assertEqual(product, self.store_product)
+        # _resolve_product returns via Product.objects queryset which yields
+        # the base Product proxy, not MaterialProduct; compare by PK.
+        self.assertEqual(product.pk, self.store_product.pk)
 
     def test_resolve_product_ppv_fallback(self):
         """_resolve_product falls back to PPV lookup if ID doesn't match."""
         product = self.service._resolve_product(99999, {'variationId': self.ppv.id})
-        self.assertEqual(product, self.store_product)
+        self.assertEqual(product.pk, self.store_product.pk)
 
     def test_resolve_product_not_found(self):
         product = self.service._resolve_product(99999, {})

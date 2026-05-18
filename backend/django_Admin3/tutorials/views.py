@@ -25,9 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class TutorialEventsViewSet(viewsets.ModelViewSet):
+    # Phase 5 Task 4b: TutorialProduct has no product_product_variation
+    # (PPV lives on MaterialProduct only). Drop the PPV select_related.
     queryset = TutorialEvents.objects.select_related(
         'store_product__exam_session_subject__subject',
-        'store_product__product_product_variation__product'
     ).prefetch_related('sessions__instructors').all()
     serializer_class = TutorialEventsSerializer
     permission_classes = [AllowAny]
