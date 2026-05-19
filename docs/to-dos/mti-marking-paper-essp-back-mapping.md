@@ -1,94 +1,71 @@
 # MTI — Remove `MarkingPaper` ESSP back-mapping
 
-> Created 2026-05-18. Tracks removal of the legacy ESSP back-mapping
-> property on `MarkingPaper` after Phase 5 finalised the MTI split.
+> Created 2026-05-18. **Completed 2026-05-19.**
+> Tracked removal of the legacy ESSP back-mapping property on
+> `MarkingPaper` after Phase 5 finalised the MTI split.
 
-## Background
+## Outcome
 
-Phase 5 of the Product MTI specialisation moved
-`product_product_variation` off the parent `store.Product` onto the
-`MaterialProduct` subclass, and gave `MarkingProduct` its own
-`marking_template` FK with `MarkingPaper.marking_template` made NOT
-NULL (migration `marking/migrations/0021_alter_markingpaper_template_not_null.py`).
+The `@property exam_session_subject_product` on
+`marking.models.MarkingPaper` has been deleted, along with its
+dedicated test class `MarkingPaperBackwardCompatTestCase`.
 
-But [`marking/models/marking_paper.py:80-109`](../../backend/django_Admin3/marking/models/marking_paper.py)
-still has an `@property exam_session_subject_product` that walks the
-**legacy ESSP-shaped path** to compute a backward-compatible
-`ExamSessionSubjectProduct` reference:
+## What the audit actually found
 
-```python
-@property
-def exam_session_subject_product(self):
-    """Backward-compat: returns the ESSP that legacy code expected.
-
-    Phase 5: branches on kind because Tutorial/Marking subclasses no
-    longer carry product_product_variation.
-    """
-    sp = self.store_product
-    if sp is None:
-        return None
-    if sp.kind == 'material':
-        ppv = sp.product_product_variation         # MaterialProduct path
-        ...
-    elif sp.kind == 'marking':
-        template = sp.markingproduct.marking_template  # MarkingProduct path
-        ...
-```
-
-This is the only spot left in the marking app that branches on
-`kind` to fan out into per-subclass FK paths.
-
-## Why it's still there
-
-It's a **backward-compat shim** for legacy code that called
-`marking_paper.exam_session_subject_product` expecting an ESSP. The
-audit at the time of Phase 5 flagged it as cleanup-when-ESSP-retires,
-not Phase 5 scope.
-
-## What to do
-
-### Step 1 — find every consumer of the property
+The original write-up flagged this as "cleanup-when-ESSP-retires" and
+warned the property might be load-bearing for legacy order/cart code.
+The 2026-05-19 audit (one ripgrep + targeted reads) showed otherwise:
 
 ```bash
 rg -n "\.exam_session_subject_product\b" --type py backend/django_Admin3/
 ```
 
-Likely hits: legacy order/cart code, marking submission services,
-maybe a serializer.
+- Two hits, both in `marking/tests/test_models.py` — the property's
+  own tests.
+- Other matches (`catalog/serializers/bundle_serializers.py:170,194`
+  and `catalog/tests/test_coverage_gaps.py:1765,1829`) reference
+  `…essp_product_variation.exam_session_subject_product`, which is
+  the FK on `catalog.ExamSessionSubjectProductVariation` pointing
+  back to ESSP — **a different attribute on a different model**.
+  The word-boundary regex matched both because `…product.` ends on
+  a non-word char.
+- Cart and orders apps: zero references.
 
-### Step 2 — for each consumer, decide
+So the property was already vestigial. Whatever legacy callers it
+guarded against had been migrated by other Phase 5/Phase 6 work by
+the time this to-do was filed.
 
-- **Does it actually need an ESSP?** Then this property is
-  load-bearing; can't be removed until ESSP itself retires (separate
-  initiative).
-- **Does it just need the paper's subject / session / template?**
-  Replace with direct access on `MarkingPaper` or
-  `store_product.markingproduct.marking_template`.
+## Changes
 
-### Step 3 — once consumers are migrated, delete the property
+1. Removed the property block and its enclosing
+   `# Backward-compatible properties for ESSP access` section header
+   from
+   [`backend/django_Admin3/marking/models/marking_paper.py`](../../backend/django_Admin3/marking/models/marking_paper.py).
+2. Removed the "Backward Compatibility" paragraph from the
+   `MarkingPaper` class docstring.
+3. Deleted `MarkingPaperBackwardCompatTestCase` from
+   [`backend/django_Admin3/marking/tests/test_models.py`](../../backend/django_Admin3/marking/tests/test_models.py).
 
-The property has no DB-state; removal is pure Python deletion plus a
-test sweep.
+The deleted class encoded a setUp scaffold that exercised the
+`MarkingTemplate.pk == catalog.Product.pk` Phase-3.1 backfill
+identity as a side-effect. That invariant is enforced by the
+backfill migration itself; no replacement assertion was added
+(scope kept tight per user direction).
 
-## Verification gates
+## Verification
 
-- `python manage.py test marking` green.
-- `python manage.py test cart orders` green (these are the most likely
-  consumers).
-- Pact provider tests green (the marking-related state handlers don't
-  touch this property, but worth confirming).
+All gates green on 2026-05-19:
 
-## Why this is deferred
-
-ESSP is still the canonical "what did the user order" reference in
-several order-history and reporting paths. Killing this property
-requires ESSP itself to retire — that's a larger initiative not on the
-Phase 5 roadmap.
+- `python -m pytest marking/` — 171 passed
+- `python -m pytest cart/ --ignore=cart/management` — 293 passed,
+  4 skipped (management dir excluded because pytest mistakenly
+  collects `test_`-prefixed management commands; pre-existing
+  unrelated issue tracked elsewhere)
+- `python -m pytest orders/` — 190 passed, 4 skipped
+- `python -m pytest pact_tests/` — 1 passed
 
 ## Related
 
-- Phase 4c plan:
-  [docs/superpowers/plans/2026-05-14-product-mti-specialization-phase-4c-marking.md](../superpowers/plans/2026-05-14-product-mti-specialization-phase-4c-marking.md)
 - Marking general to-dos:
   [marking.md](marking.md)
 - See also: [[mti-phase-6-remove-parent-ppv-scaffolding]]
