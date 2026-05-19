@@ -198,6 +198,11 @@ class SearchService:
             'exam_session_subject__exam_session',
             'materialproduct__product_product_variation__product',
             'materialproduct__product_product_variation__product_variation',
+            # Phase 5-followup: pull the subclass-local fields needed by the
+            # polymorphic serializer / fuzzy-text builder in one round-trip.
+            'tutorialproduct__tutorial_location',
+            'tutorialproduct__tutorial_course_template',
+            'markingproduct__marking_template',
         ).prefetch_related(
             'prices',
             'materialproduct__product_product_variation__product_groups__product_group',
@@ -210,7 +215,13 @@ class SearchService:
             )
         ).order_by(
             'exam_session_subject__subject__code',
-            'materialproduct__product_product_variation__product__shortname',
+            # Sorting on the material-only PPV shortname puts NULLs (every
+            # tutorial / marking row) in arbitrary positions relative to
+            # material rows. Use kind + product_code as the secondary key:
+            # alphabetical within a subject, with Material/Marking/Tutorial
+            # naturally grouped together.
+            'kind',
+            'product_code',
         )
 
     def _fuzzy_search_ids(self, queryset, query: str) -> List[int]:
@@ -234,33 +245,100 @@ class SearchService:
         return [pid for pid, _ in products_with_scores]
 
     def _build_searchable_text(self, store_product: StoreProduct) -> str:
-        """Build searchable text from store.Product fields.
+        """Build searchable text from store.Product fields, kind-aware.
 
-        Phase 5: Tutorial and Marking subclasses don't link to
-        catalog.Product via ``product_product_variation`` (the parent's
-        backward-compat property returns ``None`` for those kinds).
-        Fall back to the subject code + product_code so those rows
-        still produce some matchable text instead of crashing.
+        Material rows pull from the catalog PPV chain (fullname,
+        shortname, variation name). Tutorial rows surface the location
+        name + format display so 'London' / 'Live Online' match.
+        Marking rows surface the marking-template name/code so 'Mock
+        Marking' matches.
         """
         parts = []
+        kind = getattr(store_product, 'kind', None)
 
-        ppv = store_product.get_material_ppv()
-        if ppv is not None:
-            catalog_product = ppv.product
-            pv = ppv.product_variation
-            if catalog_product.fullname:
-                parts.append(catalog_product.fullname)
-            if catalog_product.shortname:
-                parts.append(catalog_product.shortname)
-            if pv.name:
-                parts.append(pv.name)
+        if kind == 'material':
+            ppv = store_product.get_material_ppv()
+            if ppv is not None:
+                catalog_product = ppv.product
+                pv = ppv.product_variation
+                if catalog_product.fullname:
+                    parts.append(catalog_product.fullname)
+                if catalog_product.shortname:
+                    parts.append(catalog_product.shortname)
+                if pv.name:
+                    parts.append(pv.name)
+        elif kind == 'tutorial':
+            try:
+                tutorial = store_product.tutorialproduct
+            except Exception:
+                tutorial = None
+            if tutorial is not None:
+                if tutorial.tutorial_location and tutorial.tutorial_location.name:
+                    parts.append(tutorial.tutorial_location.name)
+                # Format.choices labels read like 'Live Online 6 half days'
+                # — the words users actually type into search.
+                parts.append(tutorial.get_format_display())
+                template = tutorial.tutorial_course_template
+                if template and getattr(template, 'name', None):
+                    parts.append(template.name)
+        elif kind == 'marking':
+            try:
+                marking = store_product.markingproduct
+            except Exception:
+                marking = None
+            if marking is not None and marking.marking_template:
+                template = marking.marking_template
+                if template.name:
+                    parts.append(template.name)
+                if template.code:
+                    parts.append(template.code)
 
         if store_product.exam_session_subject.subject.code:
             parts.append(store_product.exam_session_subject.subject.code)
-        if ppv is None and store_product.product_code:
+        # Fallback: product_code helps when none of the rich fields fired
+        # (e.g. orphaned tutorial with no location and no template).
+        if not parts and store_product.product_code:
             parts.append(store_product.product_code)
 
         return ' '.join(parts).lower()
+
+    def _resolve_product_name(self, store_product: StoreProduct) -> str:
+        """Best human-readable "product name" for fuzzy `partial_ratio`.
+
+        Material: catalog shortname (or fullname). Tutorial: format
+        display (e.g. 'Live Online 6 half days'). Marking: template
+        name. Falls back to product_code if no rich name is reachable.
+        """
+        kind = getattr(store_product, 'kind', None)
+
+        if kind == 'material':
+            ppv = store_product.get_material_ppv()
+            if ppv is not None:
+                cp = ppv.product
+                name = cp.shortname or cp.fullname
+                if name:
+                    return name
+        elif kind == 'tutorial':
+            try:
+                tutorial = store_product.tutorialproduct
+            except Exception:
+                tutorial = None
+            if tutorial is not None:
+                # Prefer location name when known — it's what users
+                # type to find tutorials ('London'). Format display is
+                # the fallback for OC rows (no physical venue).
+                if tutorial.tutorial_location and tutorial.tutorial_location.name:
+                    return tutorial.tutorial_location.name
+                return tutorial.get_format_display() or ''
+        elif kind == 'marking':
+            try:
+                marking = store_product.markingproduct
+            except Exception:
+                marking = None
+            if marking is not None and marking.marking_template:
+                return marking.marking_template.name or ''
+
+        return store_product.product_code or ''
 
     def _calculate_fuzzy_score(self, query: str, searchable_text: str,
                                store_product: StoreProduct) -> int:
@@ -272,15 +350,8 @@ class SearchService:
         This replaces the previous max(scores) approach which flattened ranking
         by letting subject_bonus (95) dominate all other signals.
         """
-        ppv = store_product.get_material_ppv()
-        catalog_product = ppv.product if ppv is not None else None
         subject_code = store_product.exam_session_subject.subject.code.lower()
-        if catalog_product is not None:
-            product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
-        else:
-            # Phase 5: Tutorial/Marking rows have no catalog product — use
-            # the product_code as the matchable "name" segment.
-            product_name = (store_product.product_code or '').lower()
+        product_name = self._resolve_product_name(store_product).lower()
 
         # Subject code exact match bonus (binary: 0 or 100)
         subject_bonus = 100 if query.startswith(subject_code) else 0

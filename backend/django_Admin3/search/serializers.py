@@ -22,7 +22,12 @@ class StoreProductListSerializer:
     def serialize_grouped_products(cls, store_products):
         """
         Group store products by catalog.Product + exam_session_subject
-        and serialize in the expected format.
+        for material rows; emit tutorial / marking rows one-per-product.
+
+        Material rows preserve the legacy "group catalog product →
+        variations[]" shape. Tutorial / Marking rows are surfaced
+        polymorphically (each row tagged with ``kind`` so the frontend
+        can branch on it).
 
         Args:
             store_products: QuerySet or list of store.Product instances
@@ -30,18 +35,35 @@ class StoreProductListSerializer:
         Returns:
             List of dicts in the expected frontend format
         """
-        # Group products by (exam_session_subject_id, catalog_product_id).
-        # Phase 5: Tutorial/Marking subclasses don't carry a PPV (their
-        # variation semantics live on the subclass). They are skipped here
-        # because the grouped response shape (catalog product + variations)
-        # only makes sense for Material rows — Tutorial/Marking products
-        # are surfaced through their own kind-specific endpoints.
-        grouped = defaultdict(list)
+        material_rows = []
+        tutorial_rows = []
+        marking_rows = []
 
         for sp in store_products:
+            kind = getattr(sp, 'kind', None)
+            if kind == 'tutorial':
+                tutorial_rows.append(sp)
+            elif kind == 'marking':
+                marking_rows.append(sp)
+            elif sp.get_material_ppv() is not None:
+                material_rows.append(sp)
+            # Unknown / generic kinds are skipped — they shouldn't reach
+            # the search listing in the first place.
+
+        results = []
+        results.extend(cls._serialize_material_group(material_rows))
+        results.extend(cls._serialize_tutorial_row(sp) for sp in tutorial_rows)
+        results.extend(cls._serialize_marking_row(sp) for sp in marking_rows)
+        return results
+
+    @classmethod
+    def _serialize_material_group(cls, material_products):
+        """Group material rows by (ESS, catalog product) and emit one row
+        per group with a ``variations[]`` array — the legacy shape."""
+        grouped = defaultdict(list)
+        for sp in material_products:
             ppv = sp.get_material_ppv()
-            if ppv is None:
-                continue
+            # Caller has already filtered to material rows with a PPV.
             key = (sp.exam_session_subject_id, ppv.product_id)
             grouped[key].append(sp)
 
@@ -97,6 +119,7 @@ class StoreProductListSerializer:
                 'id': first.id,  # Use first store.Product id as primary
                 'essp_id': first.id,  # For backward compatibility
                 'store_product_id': first.id,
+                'kind': 'material',
                 'type': product_type,
                 'product_id': catalog_product.id,
                 'product_code': catalog_product.code,
@@ -115,6 +138,91 @@ class StoreProductListSerializer:
             results.append(product_data)
 
         return results
+
+    @classmethod
+    def _serialize_tutorial_row(cls, store_product):
+        """Emit one row for a TutorialProduct.
+
+        Carries location name + format display so the search grid can
+        render 'CM2 — Live Online 6 half days — London' without joining.
+        """
+        ess = store_product.exam_session_subject
+        # Cast to subclass to access TutorialProduct-only fields without
+        # an extra query (Phase 5: TutorialProduct is an MTI subclass of
+        # store.Product, fields live on the subclass row).
+        tutorial = store_product.tutorialproduct
+        location = tutorial.tutorial_location
+
+        prices = [
+            {
+                'id': price.id,
+                'price_type': price.price_type,
+                'amount': str(price.amount),
+                'currency': price.currency,
+            }
+            for price in store_product.prices.all()
+        ]
+
+        return {
+            'id': store_product.id,
+            'essp_id': store_product.id,
+            'store_product_id': store_product.id,
+            'kind': 'tutorial',
+            'type': 'Tutorial',
+            'product_code': store_product.product_code,
+            'product_name': tutorial.get_format_display(),
+            'product_short_name': tutorial.get_format_display(),
+            'subject_id': ess.subject.id,
+            'subject_code': ess.subject.code,
+            'subject_description': ess.subject.description,
+            'exam_session_code': ess.exam_session.session_code,
+            'exam_session_id': ess.exam_session.id,
+            'format': tutorial.format,
+            'format_display': tutorial.get_format_display(),
+            'tutorial_location_name': location.name if location else None,
+            'tutorial_location_code': location.code if location else None,
+            'prices': prices,
+        }
+
+    @classmethod
+    def _serialize_marking_row(cls, store_product):
+        """Emit one row for a MarkingProduct.
+
+        Carries the marking-template name/code so the search grid can
+        show 'CM2 — Mock Marking 1' without joining.
+        """
+        ess = store_product.exam_session_subject
+        marking = store_product.markingproduct
+        template = marking.marking_template
+
+        prices = [
+            {
+                'id': price.id,
+                'price_type': price.price_type,
+                'amount': str(price.amount),
+                'currency': price.currency,
+            }
+            for price in store_product.prices.all()
+        ]
+
+        return {
+            'id': store_product.id,
+            'essp_id': store_product.id,
+            'store_product_id': store_product.id,
+            'kind': 'marking',
+            'type': 'Markings',
+            'product_code': store_product.product_code,
+            'product_name': template.name,
+            'product_short_name': template.name,
+            'subject_id': ess.subject.id,
+            'subject_code': ess.subject.code,
+            'subject_description': ess.subject.description,
+            'exam_session_code': ess.exam_session.session_code,
+            'exam_session_id': ess.exam_session.id,
+            'marking_template_name': template.name,
+            'marking_template_code': template.code,
+            'prices': prices,
+        }
 
     @classmethod
     def _get_product_type(cls, product_product_variation):
