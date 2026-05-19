@@ -975,29 +975,9 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
         )
         self.assertTrue(self.service._is_tutorial_product(item))
 
-    def test_is_tutorial_product_by_code(self):
-        original = self.cat_product.code
-        self.cat_product.code = 'T'
-        self.cat_product.save()
-        item = CartItem(
-            cart=self.cart, product=self.store_product,
-            item_type='product', metadata={},
-        )
-        self.assertTrue(self.service._is_tutorial_product(item))
-        self.cat_product.code = original
-        self.cat_product.save()
-
-    def test_is_tutorial_product_by_fullname(self):
-        original = self.cat_product.fullname
-        self.cat_product.fullname = 'Tutorial Session Online'
-        self.cat_product.save()
-        item = CartItem(
-            cart=self.cart, product=self.store_product,
-            item_type='product', metadata={},
-        )
-        self.assertTrue(self.service._is_tutorial_product(item))
-        self.cat_product.fullname = original
-        self.cat_product.save()
+    # Phase 6: catalog-code/fullname tutorial detection on a Material row
+    # was removed — real tutorials are TutorialProduct rows (kind='tutorial').
+    # The dedicated kind-aware coverage lives in test_cart_service_kind_aware.py.
 
     def test_is_tutorial_product_false(self):
         item = CartItem(
@@ -1046,20 +1026,15 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
         self.cat_product.fullname = original
         self.cat_product.save()
 
-    def test_is_material_product_false(self):
-        original_code = self.cat_product.code
-        original_name = self.cat_product.fullname
-        self.cat_product.code = 'Z'
-        self.cat_product.fullname = 'Some Other Product'
-        self.cat_product.save()
+    def test_is_material_product_false_for_non_product_item(self):
+        """Phase 6: kind is canonical. A cart item without a Product
+        (e.g. fee or marking_voucher purchasable) is not material,
+        regardless of metadata shape."""
         item = CartItem(
-            cart=self.cart, product=self.store_product,
-            item_type='product', metadata={},
+            cart=self.cart, product=None,
+            item_type='fee', metadata={'variationName': 'Printed Book'},
         )
         self.assertFalse(self.service._is_material_product(item))
-        self.cat_product.code = original_code
-        self.cat_product.fullname = original_name
-        self.cat_product.save()
 
     def test_is_material_product_ppv_not_found(self):
         item = CartItem(

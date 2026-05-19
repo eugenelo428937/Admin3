@@ -29,6 +29,34 @@ def send_order_confirmation(order, user):
         # Don't re-raise — email failure should not break checkout
 
 
+def _product_display_name(product) -> str:
+    """Kind-aware human-readable name for an order line.
+
+    Phase 6: ``product`` is an MTI subclass of ``store.Product``. Each
+    kind has a different "what was actually ordered" source:
+      - material → catalog product fullname (e.g. 'Core Study Material CM2')
+      - marking  → marking template name    (e.g. 'Mock Marking 1')
+      - tutorial → format display label     (e.g. 'Live Online 6 half days')
+    Falls back to ``str(product)`` (the auto-generated product_code) for
+    any kind without a richer display source.
+    """
+    kind = getattr(product, 'kind', None)
+    try:
+        if kind == 'material':
+            ppv = product.get_material_ppv() if hasattr(product, 'get_material_ppv') else None
+            if ppv and ppv.product:
+                return ppv.product.fullname
+        elif kind == 'marking':
+            template = product.markingproduct.marking_template
+            if template:
+                return template.name or str(product)
+        elif kind == 'tutorial':
+            return product.tutorialproduct.get_format_display()
+    except (AttributeError, Exception):
+        pass
+    return str(product)
+
+
 def _get_user_country(user) -> str:
     try:
         if hasattr(user, 'userprofile'):
@@ -71,8 +99,7 @@ def _build_order_email_data(order, user, user_country: str) -> dict:
         }
 
         if item.product:
-            ppv = item.product.get_material_ppv() if hasattr(item.product, 'get_material_ppv') else None
-            display_name = ppv.product.fullname if (ppv and ppv.product) else str(item.product)
+            display_name = _product_display_name(item.product)
             item_data.update({
                 'name': display_name,
                 'product_name': display_name,
