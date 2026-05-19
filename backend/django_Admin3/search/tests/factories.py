@@ -36,6 +36,8 @@ from catalog.products.models import ProductVariation, ProductProductVariation
 from catalog.products.bundle.models import ProductBundle
 from store.models import Product as StoreProduct, Bundle, BundleProduct
 from store.models import MaterialProduct as StoreMaterialProduct
+from store.models import TutorialProduct as StoreTutorialProduct
+from store.models import MarkingProduct as StoreMarkingProduct
 from filtering.models import FilterGroup
 from filtering.tests.factories import create_filter_group
 
@@ -174,6 +176,58 @@ def create_store_product(exam_session_subject, catalog_product, variation, produ
     # even when they back the same row.
     material = StoreMaterialProduct.objects.create(**defaults)
     return StoreProduct.objects.get(pk=material.pk)
+
+
+def create_tutorial_location(name='London', code='LON', **kwargs):
+    """Create a tutorials.TutorialLocation."""
+    from tutorials.models import TutorialLocation
+    defaults = {'name': name, 'code': code}
+    defaults.update(kwargs)
+    return TutorialLocation.objects.create(**defaults)
+
+
+def create_tutorial_product(exam_session_subject, location=None, fmt='LO_6H', **kwargs):
+    """Create a store.TutorialProduct.
+
+    ``location`` defaults to a fresh London/LON row if omitted. ``fmt``
+    must be a valid TutorialProduct.Format choice.
+    """
+    if location is None:
+        location = create_tutorial_location()
+    defaults = {
+        'exam_session_subject': exam_session_subject,
+        'tutorial_location': location,
+        'format': fmt,
+        'is_active': True,
+    }
+    defaults.update(kwargs)
+    tutorial = StoreTutorialProduct.objects.create(**defaults)
+    return StoreProduct.objects.get(pk=tutorial.pk)
+
+
+def create_marking_template(code='MM1', name='Mock Marking 1', **kwargs):
+    """Create a marking.MarkingTemplate."""
+    from marking.models import MarkingTemplate
+    defaults = {'code': code, 'name': name}
+    defaults.update(kwargs)
+    return MarkingTemplate.objects.create(**defaults)
+
+
+def create_marking_product(exam_session_subject, template=None, **kwargs):
+    """Create a store.MarkingProduct.
+
+    ``template`` defaults to a fresh ``MM1 / Mock Marking 1`` row.
+    """
+    if template is None:
+        template = create_marking_template()
+    defaults = {
+        'exam_session_subject': exam_session_subject,
+        'marking_template': template,
+        'is_active': True,
+    }
+    defaults.update(kwargs)
+    marking = StoreMarkingProduct.objects.create(**defaults)
+    return StoreProduct.objects.get(pk=marking.pk)
 
 
 def create_bundle_template(subject, bundle_name='Study Bundle', **kwargs):

@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import MaterialProductCard from './ProductCard/MaterialProductCard';
+import SearchPreviewCard from './ProductCard/SearchPreviewCard';
 import type { ProductGridProps, BrowseProduct, SearchPagination } from '../../types/browse/browse.types';
 
 // Redux root state shape (minimal definition for selectors)
@@ -204,6 +205,14 @@ const ProductGrid = React.memo<ProductGridProps>(({
             <Grid container spacing={gridSpacing}>
                 {products.map((item) => {
                     const key = generateProductKey(item);
+                    // Tutorial / Marking search rows use a thin preview
+                    // card. The full TutorialProductCard / MarkingProductCard
+                    // expect detail-page shapes (events[], variations[])
+                    // that the search response intentionally omits — the
+                    // cart-add flow lives on the dedicated product page.
+                    const isSearchPreview =
+                        (item as any).kind === 'tutorial' ||
+                        (item as any).kind === 'marking';
                     return (
                         <Grid
                             key={key}
@@ -221,13 +230,17 @@ const ProductGrid = React.memo<ProductGridProps>(({
                                     justifyContent: 'center'
                                 }}
                             >
-                                <MaterialProductCard
-                                    product={item}
-                                    onAddToCart={onAddToCart ?? undefined}
-                                    allEsspIds={allEsspIds}
-                                    bulkDeadlines={bulkDeadlines}
-                                    vatCalculations={vatCalculations}
-                                />
+                                {isSearchPreview ? (
+                                    <SearchPreviewCard product={item} />
+                                ) : (
+                                    <MaterialProductCard
+                                        product={item}
+                                        onAddToCart={onAddToCart ?? undefined}
+                                        allEsspIds={allEsspIds}
+                                        bulkDeadlines={bulkDeadlines}
+                                        vatCalculations={vatCalculations}
+                                    />
+                                )}
                             </Box>
                         </Grid>
                     );
