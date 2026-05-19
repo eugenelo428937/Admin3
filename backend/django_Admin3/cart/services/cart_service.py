@@ -508,8 +508,28 @@ class CartService:
         except Exception:
             return {'has_expired': False, 'expired_count': 0, 'total_papers': 0}
 
+    def _product_kind(self, cart_item):
+        """Return the store kind of a cart_item's product, or None.
+
+        Phase 6 MTI: ``purchasable.kind`` ∈ {material, tutorial, marking,
+        marking_voucher, fee, ...}. The three store-product kinds are
+        what the classifier helpers below dispatch on.
+        """
+        product = cart_item.product
+        return getattr(product, 'kind', None) if product else None
+
     def _is_digital_product(self, cart_item):
-        """Check if cart item is a digital product (eBook, Hub)."""
+        """Check if cart item is a digital product (eBook, Hub, OC).
+
+        Phase 6: Tutorial and Marking rows are explicitly excluded —
+        they have their own VAT product_type categories. The positive
+        material-is-digital signals remain unchanged: metadata
+        ``variationId`` / ``variationName`` matching eBook/Hub, or
+        catalog code 'OC'. A material row with no metadata signals
+        stays non-digital (controllers tag digital lines explicitly).
+        """
+        if self._product_kind(cart_item) in ('tutorial', 'marking'):
+            return False
         try:
             metadata = cart_item.metadata or {}
             if metadata.get('variationId'):
@@ -536,12 +556,20 @@ class CartService:
             return False
 
     def _is_tutorial_product(self, cart_item):
-        """Check if cart item is a tutorial product. Prefers the relational
-        CartTutorialChoice rows; falls back to legacy metadata for old rows
-        that pre-date the relational migration."""
+        """Check if cart item is a tutorial product.
+
+        Phase 6: ``purchasable.kind == 'tutorial'`` is the canonical
+        signal. Relational ``CartTutorialChoice`` rows and legacy
+        ``metadata.type == 'tutorial'`` remain as fallbacks for
+        TutorialProduct rows whose ``kind`` discriminator is somehow
+        unset (defensive) and for non-product purchasables that legacy
+        code might tag with tutorial metadata.
+        """
+        if self._product_kind(cart_item) == 'tutorial':
+            return True
         # Relational check (only meaningful for persisted rows). Wrapped
         # in its own try so an unsaved CartItem (no PK → manager raises)
-        # falls through to the metadata/code checks below.
+        # falls through to the metadata check.
         try:
             if cart_item.pk and cart_item.tutorial_choices.exists():
                 return True
@@ -549,46 +577,18 @@ class CartService:
             pass
         try:
             metadata = cart_item.metadata or {}
-            if metadata.get('type') == 'tutorial':
-                return True
-            if cart_item.product:
-                ppv = cart_item.product.get_material_ppv()
-                product = ppv.product if ppv else None
-                if product and hasattr(product, 'code'):
-                    if (product.code in ['T', 'TUT']
-                            or 'tutorial' in product.fullname.lower()):
-                        return True
-            return False
+            return metadata.get('type') == 'tutorial'
         except Exception:
             return False
 
     def _is_material_product(self, cart_item):
-        """Check if cart item is a material product (printed, eBook, hub)."""
-        try:
-            metadata = cart_item.metadata or {}
-            if metadata.get('variationId'):
-                try:
-                    ppv = ProductProductVariation.objects.select_related('product_variation').get(
-                        id=metadata['variationId']
-                    )
-                    if ppv.product_variation.variation_type.lower() in ['ebook', 'printed', 'hub']:
-                        return True
-                except ProductProductVariation.DoesNotExist:
-                    pass
+        """Check if cart item is a material product (printed, eBook, hub).
 
-            variation_name = (metadata.get('variationName') or '').lower()
-            if any(t in variation_name for t in ['ebook', 'printed', 'hub']):
-                return True
-
-            if cart_item.product:
-                ppv = cart_item.product.get_material_ppv()
-                product = ppv.product if ppv else None
-                if product and hasattr(product, 'code'):
-                    if product.code in ['M', 'MAT', 'BOOK'] or 'material' in product.fullname.lower():
-                        return True
-            return False
-        except Exception:
-            return False
+        Phase 6: ``purchasable.kind == 'material'`` is the canonical
+        signal. Tutorial and Marking rows return False even if their
+        metadata happens to look material-shaped.
+        """
+        return self._product_kind(cart_item) == 'material'
 
     def _update_cart_flags(self, cart):
         """Update cart-level boolean flags based on item contents."""
@@ -741,7 +741,17 @@ class CartService:
         return 'GB'
 
     def _get_item_product_type(self, cart_item):
-        """Determine product type for rules engine context."""
+        """Determine product type for rules engine context.
+
+        Resolution order:
+          1. ``metadata.variationType`` — explicit controller override.
+          2. ``metadata.is_digital`` flag.
+          3. ``purchasable.kind`` — canonical Phase 6 discriminator
+             (marking/tutorial dispatch).
+          4. ``metadata.type == 'tutorial'`` — legacy fallback.
+          5. ``item_type == 'fee'`` — non-product purchasables.
+          6. Default ``'Digital'``.
+        """
         metadata = cart_item.metadata or {}
         VARIATION_MAP = {
             'eBook': 'Digital', 'Hub': 'Digital',
@@ -752,6 +762,11 @@ class CartService:
             return VARIATION_MAP.get(metadata['variationType'], 'Digital')
         if metadata.get('is_digital'):
             return 'Digital'
+        kind = self._product_kind(cart_item)
+        if kind == 'marking':
+            return 'Marking'
+        if kind == 'tutorial':
+            return 'Tutorial'
         if metadata.get('type') == 'tutorial':
             return 'Tutorial'
         if cart_item.item_type == 'fee':
@@ -759,12 +774,29 @@ class CartService:
         return 'Digital'
 
     def _get_item_product_code(self, cart_item):
-        """Extract product code for rules engine (FC, PBOR, etc.)."""
+        """Extract product code for rules engine (FC, PBOR, MM1, LO_6H, etc.).
+
+        Phase 6: kind-aware dispatch.
+          - material → catalog product code via ``get_material_ppv()``
+          - marking  → ``markingproduct.marking_template.code``
+          - tutorial → ``tutorialproduct.format`` (enum value, e.g. 'LO_6H')
+          - other    → ''
+        """
+        product = cart_item.product
+        if product is None:
+            return ''
         try:
-            if cart_item.product:
-                ppv = cart_item.product.get_material_ppv()
+            kind = getattr(product, 'kind', None)
+            if kind == 'material':
+                ppv = product.get_material_ppv()
                 if ppv and ppv.product:
                     return ppv.product.code or ''
+                return ''
+            if kind == 'marking':
+                template = product.markingproduct.marking_template
+                return getattr(template, 'code', '') or ''
+            if kind == 'tutorial':
+                return product.tutorialproduct.format or ''
         except (AttributeError, Exception):
             pass
         return ''

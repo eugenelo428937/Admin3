@@ -128,15 +128,17 @@ describe('CartVATError Component', () => {
     const retryButton = screen.getByRole('button', { name: /recalculate vat/i });
     fireEvent.click(retryButton);
 
+    // The retry failure message appears after the rejected promise's
+    // .catch handler fires — a microtask after onRetry is called. On
+    // slow CI runners getByText can race the state update, so wait for
+    // the actual visible text rather than the call alone.
     await waitFor(() => {
-      expect(onRetry).toHaveBeenCalled();
+      expect(screen.getByText(/retry failed|failed to recalculate/i)).toBeInTheDocument();
     });
 
-    // Error message should still be displayed
+    expect(onRetry).toHaveBeenCalled();
+    // Original error message remains displayed.
     expect(screen.getByText(/VAT calculation failed/i)).toBeInTheDocument();
-
-    // May show additional failure message
-    expect(screen.getByText(/retry failed|failed to recalculate/i)).toBeInTheDocument();
   });
 
   it('does not render when error prop is false', () => {
