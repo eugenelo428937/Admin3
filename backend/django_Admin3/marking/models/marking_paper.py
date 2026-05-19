@@ -24,11 +24,6 @@ class MarkingPaper(models.Model):
 
     Links to a ``store.Purchasable`` to identify which purchasable item
     (Product, MarkingVoucher, etc.) this marking paper belongs to.
-
-    **Backward Compatibility**:
-    The `exam_session_subject_product` property provides compatibility
-    with code that still expects the old ESSP reference; it only returns
-    a value when the linked purchasable is a ``store.Product``.
     """
     purchasable = models.ForeignKey(
         'store.Purchasable',
@@ -63,50 +58,6 @@ class MarkingPaper(models.Model):
 
     class Meta:
         db_table = '"acted"."marking_paper"'
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # Backward-compatible properties for ESSP access
-    # ─────────────────────────────────────────────────────────────────────────
-
-    @property
-    def exam_session_subject_product(self):
-        """Backward-compatible accessor returning a legacy
-        ExamSessionSubjectProduct (ESSP) for the linked store.Product.
-
-        Phase 5 Task 4b: PPV moved off Product onto MaterialProduct.
-        For Material rows we still look up via the (now-on-subclass) PPV
-        chain. For Marking rows the PPV is gone — the catalog template is
-        instead reachable via ``markingproduct.marking_template`` (whose
-        pk equals the original catalog.Product.pk per the Phase 3.1
-        backfill). For Tutorial rows there is no catalog link, so this
-        returns None.
-        """
-        from catalog.models import ExamSessionSubjectProduct
-        from store.models import Product as StoreProduct
-        if not self.purchasable_id:
-            return None
-        try:
-            store_product = StoreProduct.objects.get(pk=self.purchasable_id)
-        except StoreProduct.DoesNotExist:
-            return None
-
-        catalog_product_id = None
-        # Material rows: PPV chain on the subclass.
-        ppv = store_product.get_material_ppv()
-        if ppv is not None:
-            catalog_product_id = ppv.product_id
-        else:
-            # Marking rows: marking_template.pk == catalog.Product.pk.
-            marking_subclass = getattr(store_product, 'markingproduct', None)
-            if marking_subclass is not None:
-                catalog_product_id = marking_subclass.marking_template_id
-
-        if catalog_product_id is None:
-            return None
-        return ExamSessionSubjectProduct.objects.filter(
-            exam_session_subject=store_product.exam_session_subject,
-            product_id=catalog_product_id,
-        ).first()
 
     def __str__(self):
         if self.purchasable_id is None:
